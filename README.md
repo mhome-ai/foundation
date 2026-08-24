@@ -11,9 +11,10 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 - `mhome-runtime-paths`: process-safe runtime paths, endpoint names, and daemon ownership checks.
 
 Foundation crates may depend on third-party crates or lower-level crates in this workspace. They
-must not depend on Baycat, MeowCore, Agent, cloud compositions, databases, or product workflows.
-A crate belongs here only when it has multiple repository consumers or defines a genuinely shared
-leaf contract.
+must not depend on Baycat, MeowCore, Agent, or cloud implementations, databases, transports, or
+product workflows. Shared wire contracts and deterministic domain models are allowed when they
+remain leaf libraries. A crate belongs here only when it has multiple repository consumers or
+defines a genuinely shared leaf contract.
 
 ## Development
 
