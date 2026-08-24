@@ -58,7 +58,12 @@ if [[ "${publish}" != "--publish" ]]; then
 fi
 
 crate_url="https://crates.io/api/v1/crates/${package}/${version}"
-if curl --fail --silent --show-error --location "${crate_url}" >/dev/null 2>&1; then
+is_published() {
+  cargo info "${package}@${version}" --registry crates-io >/dev/null 2>&1 \
+    || curl --fail --silent --show-error --location "${crate_url}" >/dev/null 2>&1
+}
+
+if is_published; then
   echo "${package} ${version} is already published"
   exit 0
 fi
@@ -69,7 +74,7 @@ fi
 
 # Cargo can time out while waiting for the index after a successful immutable upload.
 for attempt in 1 2 3 4 5 6; do
-  if curl --fail --silent --show-error --location "${crate_url}" >/dev/null 2>&1; then
+  if is_published; then
     echo "${package} ${version} is published"
     exit 0
   fi
