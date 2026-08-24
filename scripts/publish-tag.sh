@@ -20,6 +20,11 @@ case "${tag}" in
     manifest="crates/core-api/Cargo.toml"
     version="${tag#mhome-core-api-v}"
     ;;
+  mhome-conversation-api-v*)
+    package="mhome-conversation-api"
+    manifest="crates/conversation-api/Cargo.toml"
+    version="${tag#mhome-conversation-api-v}"
+    ;;
   mhome-playground-models-v*)
     package="mhome-playground-models"
     manifest="crates/playground-models/Cargo.toml"

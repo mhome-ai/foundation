@@ -65,6 +65,12 @@ impl MessageContent {
             .collect::<Vec<_>>()
             .join("\n")
     }
+
+    pub fn has_non_text_parts(&self) -> bool {
+        self.parts
+            .iter()
+            .any(|part| !matches!(part, MessagePart::Text { .. }))
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

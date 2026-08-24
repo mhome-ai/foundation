@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Typed wire contract for the mHome conversation API"
 readme = "README.md"
 publish = ["crates-io"]
-include = ["src/**", "schema/**", "fixtures/**", "Cargo.toml", "README.md", "LICENSE"]
+include = ["src/**", "tests/**", "schema/**", "fixtures/**", "Cargo.toml", "README.md", "LICENSE"]
 
 [lib]
 name = "conversation_api"
