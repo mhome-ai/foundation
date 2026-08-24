@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/artifact",
+  "crates/machine-identity",
+  "crates/runtime-paths",
+]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+authors = ["MHOME AI"]
+repository = "https://github.com/mhome-ai/foundation"

@@ -1,0 +1,34 @@
+name: Publish tagged crate
+
+on:
+  push:
+    tags:
+      - "mhome-artifact-api-v*"
+      - "mhome-machine-identity-v*"
+      - "mhome-runtime-paths-v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: foundation-crate-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require release commit on main
+        run: git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+      - name: Verify and publish selected crate
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: bash scripts/publish-tag.sh "${GITHUB_REF_NAME}" --publish
