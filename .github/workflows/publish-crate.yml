@@ -10,6 +10,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 concurrency:
   group: foundation-crate-${{ github.ref }}
   cancel-in-progress: false
@@ -25,7 +28,7 @@ jobs:
       - name: Require release commit on main
         run: git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.94.0
         with:
           components: clippy,rustfmt
       - name: Verify and publish selected crate
