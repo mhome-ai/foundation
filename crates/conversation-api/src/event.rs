@@ -1,7 +1,8 @@
 use crate::{
     ActiveRun, ConversationMessage, PendingInteraction, QueuedMessage, RunOutcome, ThreadSummary,
 };
-use serde::{Deserialize, Serialize};
+use serde::de::Error as _;
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -85,84 +86,82 @@ pub struct SessionPolicyChangedData {
     pub updated_at_ms: Option<i64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(tag = "type")]
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(untagged)]
 pub enum ConversationEvent {
-    #[serde(rename = "snapshot.updated")]
-    SnapshotUpdated {
-        #[serde(default)]
-        #[serde(rename = "surfaceId")]
-        surface_id: String,
-        #[serde(rename = "threadId")]
-        thread_id: String,
-        #[serde(rename = "requestId")]
-        request_id: String,
-        #[serde(rename = "snapshotVersion")]
-        snapshot_version: u64,
-        #[serde(rename = "occurredAt")]
-        occurred_at: String,
-        data: Box<SnapshotUpdatedData>,
-    },
-    #[serde(rename = "thread.catalog_changed")]
-    CatalogChanged {
-        #[serde(default)]
-        #[serde(rename = "surfaceId")]
-        surface_id: String,
-        #[serde(rename = "catalogVersion")]
-        catalog_version: u64,
-        #[serde(rename = "occurredAt")]
-        occurred_at: String,
-        data: CatalogChangedData,
-    },
-    #[serde(rename = "queue.changed")]
-    QueueChanged {
-        #[serde(default)]
-        #[serde(rename = "surfaceId")]
-        surface_id: String,
-        #[serde(rename = "threadId")]
-        thread_id: String,
-        #[serde(rename = "queueVersion")]
-        queue_version: u64,
-        #[serde(rename = "occurredAt")]
-        occurred_at: String,
-        data: QueueChangedData,
-    },
-    #[serde(rename = "session.policy_changed")]
-    SessionPolicyChanged {
-        version: u64,
-        #[serde(default)]
-        #[serde(rename = "surfaceId")]
-        surface_id: String,
-        #[serde(rename = "occurredAt")]
-        occurred_at: String,
-        data: SessionPolicyChangedData,
-    },
-    #[serde(rename = "run.progress")]
-    Live {
-        #[serde(default)]
-        #[serde(rename = "surfaceId")]
-        surface_id: String,
-        #[serde(rename = "threadId")]
-        thread_id: String,
-        #[serde(rename = "requestId")]
-        request_id: String,
-        #[serde(rename = "baseSnapshotVersion")]
-        base_snapshot_version: u64,
-        offset: u64,
-        #[serde(rename = "occurredAt")]
-        occurred_at: String,
-        data: Value,
-    },
+    SnapshotUpdated(SnapshotUpdatedEvent),
+    CatalogChanged(CatalogChangedEvent),
+    QueueChanged(QueueChangedEvent),
+    SessionPolicyChanged(SessionPolicyChangedEvent),
+    Live(crate::LiveEvent),
+}
+
+impl<'de> Deserialize<'de> for ConversationEvent {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = Value::deserialize(deserializer)?;
+        let event_type = value
+            .get("type")
+            .and_then(Value::as_str)
+            .ok_or_else(|| D::Error::custom("conversation event type is required"))?;
+        match event_type {
+            "snapshot.updated" => serde_json::from_value(value)
+                .map(Self::SnapshotUpdated)
+                .map_err(D::Error::custom),
+            "thread.catalog_changed" => serde_json::from_value(value)
+                .map(Self::CatalogChanged)
+                .map_err(D::Error::custom),
+            "queue.changed" => serde_json::from_value(value)
+                .map(Self::QueueChanged)
+                .map_err(D::Error::custom),
+            "session.policy_changed" => serde_json::from_value(value)
+                .map(Self::SessionPolicyChanged)
+                .map_err(D::Error::custom),
+            _ => serde_json::from_value(value)
+                .map(Self::Live)
+                .map_err(D::Error::custom),
+        }
+    }
 }
 
 impl ConversationEvent {
     pub fn surface_id(&self) -> &str {
         match self {
-            Self::SnapshotUpdated { surface_id, .. }
-            | Self::CatalogChanged { surface_id, .. }
-            | Self::QueueChanged { surface_id, .. }
-            | Self::SessionPolicyChanged { surface_id, .. }
-            | Self::Live { surface_id, .. } => surface_id,
+            Self::SnapshotUpdated(event) => &event.surface_id,
+            Self::CatalogChanged(event) => &event.surface_id,
+            Self::QueueChanged(event) => &event.surface_id,
+            Self::SessionPolicyChanged(event) => &event.surface_id,
+            Self::Live(event) => &event.surface_id,
         }
     }
+
+    pub fn event_type(&self) -> &str {
+        match self {
+            Self::SnapshotUpdated(event) => &event.event_type,
+            Self::CatalogChanged(event) => &event.event_type,
+            Self::QueueChanged(event) => &event.event_type,
+            Self::SessionPolicyChanged(event) => &event.event_type,
+            Self::Live(event) => &event.event_type,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct DebugEvent {
+    #[serde(rename = "type")]
+    pub event_type: String,
+    pub surface_id: String,
+    pub thread_id: String,
+    pub request_id: String,
+    pub occurred_at: String,
+    pub data: DebugEventData,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DebugEventData {
+    pub scope: String,
+    pub payload: Value,
 }

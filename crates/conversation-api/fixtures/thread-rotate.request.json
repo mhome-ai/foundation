@@ -1,0 +1,12 @@
+{
+  "target": "/chat/thread/rotate",
+  "direction": "request",
+  "body": {
+    "operationId": "operation-1",
+    "threadId": "thread-1",
+    "expectedCatalogVersion": 2,
+    "expectedSnapshotVersion": 4,
+    "expectedSettingVersion": 1,
+    "reason": "idle_timeout"
+  }
+}

@@ -3,12 +3,14 @@
   "direction": "event",
   "body": {
     "type": "snapshot.updated",
+    "surfaceId": "messaging:feishu:account:chat",
     "threadId": "thread-2",
     "requestId": "request-1",
     "snapshotVersion": 3,
     "occurredAt": "2026-08-22T00:00:00Z",
     "data": {
       "reason": "interaction_required",
+      "sessionActivityAtUnixMs": 1787356800000,
       "messagesAdded": [],
       "activeRun": null,
       "pendingInteraction": {
