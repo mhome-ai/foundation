@@ -5,6 +5,7 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 ## Crates
 
 - `mhome-artifact-api`: storage-independent, scoped artifact references.
+- `mhome-conversation-api`: transport-neutral DTOs for the client-facing conversation protocol.
 - `mhome-machine-identity`: persistent local machine identity derivation and host naming.
 - `mhome-core-api`: shared core wire types and service contracts.
 - `mhome-playground-models`: deterministic playground device models and projections.

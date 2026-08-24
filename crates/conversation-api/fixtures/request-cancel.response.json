@@ -1,0 +1,10 @@
+{
+  "target": "/chat/request/cancel",
+  "direction": "response",
+  "body": {
+    "requestId": "request-1",
+    "phase": "running",
+    "outcome": "cancelling",
+    "queueVersion": 4
+  }
+}

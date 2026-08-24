@@ -1,0 +1,8 @@
+{
+  "target": "/chat/thread/archive",
+  "direction": "request",
+  "body": {
+    "threadId": "thread-1",
+    "expectedCatalogVersion": 3
+  }
+}

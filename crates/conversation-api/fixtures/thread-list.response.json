@@ -1,0 +1,12 @@
+{
+  "target": "/chat/thread/list",
+  "direction": "response",
+  "body": {
+    "catalogVersion": 2,
+    "activeThreadId": "thread-2",
+    "threads": [
+      { "threadId": "thread-2", "title": "New conversation", "state": "active", "createdAt": "2026-08-22T00:00:00Z", "updatedAt": "2026-08-22T00:00:00Z", "archivedAt": null, "purgeAfter": null },
+      { "threadId": "thread-1", "title": "Previous", "state": "archived", "createdAt": "2026-08-21T00:00:00Z", "updatedAt": "2026-08-22T00:00:00Z", "archivedAt": "2026-08-22T00:00:00Z", "purgeAfter": "2026-08-25T00:00:00Z" }
+    ]
+  }
+}

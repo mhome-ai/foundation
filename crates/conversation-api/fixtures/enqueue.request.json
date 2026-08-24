@@ -1,0 +1,5 @@
+{
+  "target": "/chat/message/enqueue",
+  "direction": "request",
+  "body": { "threadId": "thread-2", "requestId": "request-1", "message": "Hello", "imageRefs": [], "agentModelMode": "auto", "allowTools": true, "debug": false }
+}

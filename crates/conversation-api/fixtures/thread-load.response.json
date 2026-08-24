@@ -1,0 +1,10 @@
+{
+  "target": "/chat/thread/load",
+  "direction": "response",
+  "body": {
+    "thread": { "threadId": "thread-2", "title": "New conversation", "state": "active", "createdAt": "2026-08-22T00:00:00Z", "updatedAt": "2026-08-22T00:00:00Z", "archivedAt": null, "purgeAfter": null },
+    "snapshot": { "version": 0, "messages": [], "activeRun": null, "pendingInteraction": null, "runOutcomes": [] },
+    "live": { "baseSnapshotVersion": 0, "lastOffset": 0, "events": [] },
+    "queue": { "queueVersion": 0, "items": [] }
+  }
+}

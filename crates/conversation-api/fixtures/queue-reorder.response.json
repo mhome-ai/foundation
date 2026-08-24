@@ -1,0 +1,8 @@
+{
+  "target": "/chat/queue/reorder",
+  "direction": "response",
+  "body": {
+    "queueVersion": 4,
+    "items": []
+  }
+}
