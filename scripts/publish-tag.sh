@@ -15,10 +15,10 @@ case "${tag}" in
     manifest="crates/machine-identity/Cargo.toml"
     version="${tag#mhome-machine-identity-v}"
     ;;
-  mhome-meowcore-api-v*)
-    package="mhome-meowcore-api"
-    manifest="crates/meowcore-api/Cargo.toml"
-    version="${tag#mhome-meowcore-api-v}"
+  mhome-core-api-v*)
+    package="mhome-core-api"
+    manifest="crates/core-api/Cargo.toml"
+    version="${tag#mhome-core-api-v}"
     ;;
   mhome-playground-models-v*)
     package="mhome-playground-models"

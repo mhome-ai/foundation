@@ -3,7 +3,7 @@ resolver = "2"
 members = [
   "crates/artifact",
   "crates/machine-identity",
-  "crates/meowcore-api",
+  "crates/core-api",
   "crates/playground-models",
   "crates/runtime-paths",
 ]

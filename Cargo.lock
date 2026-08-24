@@ -418,6 +418,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "mhome-core-api"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "mhome-machine-identity"
 version = "0.1.0"
 dependencies = [
@@ -429,14 +437,6 @@ dependencies = [
  "serde_json",
  "sha2",
  "uuid",
-]
-
-[[package]]
-name = "mhome-meowcore-api"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
 ]
 
 [[package]]

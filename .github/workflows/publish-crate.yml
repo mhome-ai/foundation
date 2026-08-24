@@ -5,7 +5,7 @@ on:
     tags:
       - "mhome-artifact-api-v*"
       - "mhome-machine-identity-v*"
-      - "mhome-meowcore-api-v*"
+      - "mhome-core-api-v*"
       - "mhome-playground-models-v*"
       - "mhome-runtime-paths-v*"
 
