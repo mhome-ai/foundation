@@ -15,6 +15,16 @@ case "${tag}" in
     manifest="crates/machine-identity/Cargo.toml"
     version="${tag#mhome-machine-identity-v}"
     ;;
+  mhome-meowcore-api-v*)
+    package="mhome-meowcore-api"
+    manifest="crates/meowcore-api/Cargo.toml"
+    version="${tag#mhome-meowcore-api-v}"
+    ;;
+  mhome-playground-models-v*)
+    package="mhome-playground-models"
+    manifest="crates/playground-models/Cargo.toml"
+    version="${tag#mhome-playground-models-v}"
+    ;;
   mhome-runtime-paths-v*)
     package="mhome-runtime-paths"
     manifest="crates/runtime-paths/Cargo.toml"
@@ -40,7 +50,7 @@ fi
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked
-cargo publish -p "${package}" --locked --dry-run
+cargo publish -p "${package}" --locked --dry-run --allow-dirty
 
 if [[ "${publish}" != "--publish" ]]; then
   echo "verified ${package} ${version}"

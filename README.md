@@ -6,6 +6,8 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 
 - `mhome-artifact-api`: storage-independent, scoped artifact references.
 - `mhome-machine-identity`: persistent local machine identity derivation and host naming.
+- `mhome-meowcore-api`: shared MeowCore wire types and service contracts.
+- `mhome-playground-models`: deterministic playground device models and projections.
 - `mhome-runtime-paths`: process-safe runtime paths, endpoint names, and daemon ownership checks.
 
 Foundation crates may depend on third-party crates or lower-level crates in this workspace. They

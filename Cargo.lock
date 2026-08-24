@@ -432,6 +432,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "mhome-meowcore-api"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "mhome-playground-models"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "mhome-runtime-paths"
 version = "0.1.0"
 dependencies = [

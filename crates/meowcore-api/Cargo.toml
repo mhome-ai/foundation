@@ -1,0 +1,18 @@
+[package]
+name = "mhome-meowcore-api"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Shared wire types and service contracts for mHome MeowCore"
+readme = "README.md"
+publish = ["crates-io"]
+include = ["src/**", "Cargo.toml", "README.md", "LICENSE"]
+
+[lib]
+name = "meowcore_api"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
