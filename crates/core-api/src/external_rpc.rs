@@ -6,7 +6,7 @@ use crate::{
 };
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 4;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 5;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExternalCoreRequest {
@@ -44,7 +44,6 @@ pub enum ExternalCoreMethod {
     ListMdnsRecords,
     PollEvents,
     CompleteEvents,
-    NodeOnboardingIssuerInfo,
     CommissionChallengePayload,
     PairingStartPayload,
     SetupStartPayload,
@@ -179,13 +178,6 @@ pub struct ExternalCoreEventCompletion {
     pub response: Option<Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub error: Option<ExternalCoreError>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct NodeOnboardingIssuerInfoRequest {
-    pub tenant_id: String,
-    pub scope_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

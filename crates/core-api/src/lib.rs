@@ -647,6 +647,49 @@ pub const NODE_ONBOARDING_CHALLENGE_ALGORITHM: &str = "Ed25519";
 pub const NODE_ONBOARDING_TOKEN_ISSUER_PREFIX: &str = "meow-core:hub:";
 pub const NODE_ONBOARDING_TOKEN_AUDIENCE: &str = "meow-node:onboarding";
 pub const NODE_ONBOARDING_ES256_ALGORITHM: &str = "ES256";
+pub const NODE_ONBOARDING_TRANSACTION_TTL_SECONDS: u64 = 5 * 60;
+pub const HUB_CONNECTION_PROOF_TARGET: &str = "/identity/hub/prove";
+pub const HUB_CONNECTION_PROOF_PROTOCOL: &str = "meow.hub.connection.proof.v1";
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct HubConnectionProofRequest {
+    pub protocol: String,
+    pub hub_id: String,
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub nonce: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct HubConnectionProofResponse {
+    pub protocol: String,
+    pub hub_id: String,
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub nonce: String,
+    pub key_id: String,
+    pub signature: String,
+}
+
+/// Canonical, domain-separated bytes signed by the Hub for one physical WS connection.
+/// Length prefixes keep the encoding unambiguous without relying on JSON object ordering.
+pub fn hub_connection_proof_signing_payload(request: &HubConnectionProofRequest) -> Vec<u8> {
+    let fields = [
+        request.protocol.as_str(),
+        request.hub_id.as_str(),
+        request.tenant_id.as_str(),
+        request.scope_id.as_str(),
+        request.nonce.as_str(),
+    ];
+    let mut payload = Vec::new();
+    for field in fields {
+        payload.extend_from_slice(&(field.len() as u64).to_be_bytes());
+        payload.extend_from_slice(field.as_bytes());
+    }
+    payload
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -672,44 +715,6 @@ pub struct NodeChallengePayload {
     pub service_instance_id: String,
     pub instance_policy: NodeInstancePolicy,
     pub instance_slot: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct NodeOnboardingIssuerInfo {
-    pub tenant_id: String,
-    pub scope_id: String,
-    pub hub_id: String,
-    pub issuer: String,
-    pub audience: String,
-    pub algorithm: String,
-    pub kid: String,
-    pub public_key: String,
-    pub fingerprint: String,
-}
-
-impl NodeOnboardingIssuerInfo {
-    pub fn es256(
-        tenant_id: String,
-        scope_id: String,
-        hub_id: String,
-        issuer: String,
-        kid: String,
-        public_key: String,
-        fingerprint: String,
-    ) -> Self {
-        Self {
-            tenant_id,
-            scope_id,
-            hub_id,
-            issuer,
-            audience: NODE_ONBOARDING_TOKEN_AUDIENCE.to_string(),
-            algorithm: NODE_ONBOARDING_ES256_ALGORITHM.to_string(),
-            kid,
-            public_key,
-            fingerprint,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -927,6 +932,9 @@ pub enum ServiceCoreInput {
     NodeAuth {
         request: NodeAuthRequest,
     },
+    HubConnectionProof {
+        request: HubConnectionProofRequest,
+    },
     NodeRequest {
         target: String,
         payload: String,
@@ -973,6 +981,7 @@ pub enum ServiceCoreResponse {
         client_info: MwsClientInfo,
     },
     NodeAuth(NodeAuthResponse),
+    HubConnectionProof(HubConnectionProofResponse),
     NodeRequest {
         response_payload: Option<String>,
     },
@@ -1200,7 +1209,27 @@ pub struct HubMdnsInstanceRecord {
 
 #[cfg(test)]
 mod tests {
-    use super::{MwsMessage, MwsMessageType};
+    use super::{
+        hub_connection_proof_signing_payload, HubConnectionProofRequest, MwsMessage,
+        MwsMessageType, HUB_CONNECTION_PROOF_PROTOCOL,
+    };
+
+    #[test]
+    fn hub_connection_proof_payload_is_unambiguous_and_nonce_bound() {
+        let request = HubConnectionProofRequest {
+            protocol: HUB_CONNECTION_PROOF_PROTOCOL.to_string(),
+            hub_id: "hub-1".to_string(),
+            tenant_id: "tenant-1".to_string(),
+            scope_id: "scope-1".to_string(),
+            nonce: "nonce-1".to_string(),
+        };
+        let payload = hub_connection_proof_signing_payload(&request);
+        let mut changed = request.clone();
+        changed.nonce = "nonce-2".to_string();
+
+        assert_ne!(payload, hub_connection_proof_signing_payload(&changed));
+        assert!(payload.starts_with(&(HUB_CONNECTION_PROOF_PROTOCOL.len() as u64).to_be_bytes()));
+    }
 
     #[test]
     fn scoped_server_data_builds_scope_envelope() {
