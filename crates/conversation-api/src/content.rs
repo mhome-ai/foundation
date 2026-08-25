@@ -81,6 +81,4 @@ pub struct ConversationMessage {
     pub role: String,
     pub content: MessageContent,
     pub created_at: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub request_fingerprint: Option<String>,
 }
