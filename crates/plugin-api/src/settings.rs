@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+pub const VERSION: &str = crate::V1;
 pub const STATUS: &str = "settings/status";
 pub const UPDATE: &str = "settings/update";
 pub const REVERT: &str = "settings/revert";

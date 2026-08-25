@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-pub const VERSION: &str = crate::V1;
+pub const VERSION: &str = crate::settings::VERSION;
 pub const PLUGIN_TYPE: &str = "camera";
 pub const SETTINGS_STATUS: &str = crate::settings::STATUS;
 pub const SETTINGS_UPDATE: &str = crate::settings::UPDATE;
