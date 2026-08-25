@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Typed wire contracts for mHome Plugin control"
 readme = "README.md"
 publish = ["crates-io"]
-include = ["src/**", "Cargo.toml", "README.md", "LICENSE"]
+include = ["src/**", "contract/**", "Cargo.toml", "README.md", "LICENSE"]
 
 [lib]
 name = "plugin_api"

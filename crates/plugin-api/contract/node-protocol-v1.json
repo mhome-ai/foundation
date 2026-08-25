@@ -1,0 +1,41 @@
+{
+  "manifest": "mhome.node.protocol.v1",
+  "pluginApi": {
+    "version": "v1",
+    "controlTargetPrefix": "/app/plugin/control",
+    "controlRequestFields": ["pluginId", "version", "payload"],
+    "controlResponseFields": ["pluginId", "pluginType", "version", "data"],
+    "settingsChangedTarget": "/plugin/settings/changed",
+    "settingsChangedEventFields": [
+      "version",
+      "pluginId",
+      "pluginType",
+      "eventSeq",
+      "section",
+      "revision"
+    ]
+  },
+  "backendStatus": {
+    "nodeContract": "baycat.node.status.v1",
+    "contract": "baycat.backend.status.v1",
+    "queryTarget": "/backend/status",
+    "changedTarget": "/backend/status/changed",
+    "resourceEnvelopeFields": [
+      "contract",
+      "scopeId",
+      "hubGeneration",
+      "hubRevision",
+      "observedAtMs",
+      "resource",
+      "deleted",
+      "snapshot"
+    ],
+    "resourceTypes": [
+      "nodeInstance",
+      "nodeRuntime",
+      "managedService",
+      "hubConnection",
+      "scopeConnection"
+    ]
+  }
+}

@@ -4,6 +4,11 @@ pub mod contracts;
 pub mod settings;
 
 pub const V1: &str = "v1";
+pub const CONTROL_TARGET_PREFIX: &str = "/app/plugin/control";
+pub const CONTROL_TARGET_PREFIX_WITH_SLASH: &str = "/app/plugin/control/";
+/// Canonical, language-neutral v1 wire manifest. Non-Rust consumers vendor
+/// this immutable release artifact and validate their adapters at build time.
+pub const NODE_PROTOCOL_V1_MANIFEST: &str = include_str!("../contract/node-protocol-v1.json");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -68,6 +73,70 @@ impl std::error::Error for UnsupportedVersion {}
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn canonical_manifest_matches_rust_contract() {
+        let manifest: serde_json::Value =
+            serde_json::from_str(NODE_PROTOCOL_V1_MANIFEST).expect("valid protocol manifest");
+        assert_eq!(manifest["pluginApi"]["version"], V1);
+        assert_eq!(
+            manifest["pluginApi"]["controlTargetPrefix"],
+            CONTROL_TARGET_PREFIX
+        );
+        assert_eq!(
+            manifest["pluginApi"]["settingsChangedTarget"],
+            settings::CHANGED_TARGET
+        );
+
+        let request = serde_json::to_value(PluginControlRequest {
+            plugin_id: "camera-1".to_string(),
+            version: V1.to_string(),
+            payload: serde_json::json!({}),
+        })
+        .expect("serialize request");
+        assert_manifest_fields(&request, &manifest["pluginApi"]["controlRequestFields"]);
+
+        let response = serde_json::to_value(PluginControlResponse {
+            plugin_id: "camera-1".to_string(),
+            plugin_type: "camera".to_string(),
+            version: V1.to_string(),
+            data: serde_json::json!({}),
+        })
+        .expect("serialize response");
+        assert_manifest_fields(&response, &manifest["pluginApi"]["controlResponseFields"]);
+
+        let changed = serde_json::to_value(settings::ChangedEvent {
+            version: V1.to_string(),
+            plugin_id: "camera-1".to_string(),
+            plugin_type: "camera".to_string(),
+            event_seq: 1,
+            section: "recognition".to_string(),
+            revision: 1,
+        })
+        .expect("serialize settings event");
+        assert_manifest_fields(
+            &changed,
+            &manifest["pluginApi"]["settingsChangedEventFields"],
+        );
+    }
+
+    fn assert_manifest_fields(value: &serde_json::Value, expected: &serde_json::Value) {
+        let mut actual_fields = value
+            .as_object()
+            .expect("wire object")
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+        let mut expected_fields = expected
+            .as_array()
+            .expect("manifest fields")
+            .iter()
+            .map(|field| field.as_str().expect("field string").to_string())
+            .collect::<Vec<_>>();
+        actual_fields.sort();
+        expected_fields.sort();
+        assert_eq!(actual_fields, expected_fields);
+    }
 
     #[test]
     fn request_envelope_is_strict_and_uses_public_plugin_names() {
