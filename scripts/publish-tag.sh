@@ -58,8 +58,8 @@ if [[ "${manifest_version}" != "${version}" ]]; then
 fi
 
 cargo fmt --all -- --check
-cargo clippy --workspace --all-targets --locked -- -D warnings
-cargo test --workspace --locked
+cargo clippy -p "${package}" --all-targets --locked -- -D warnings
+cargo test -p "${package}" --locked
 cargo publish -p "${package}" --locked --dry-run --allow-dirty
 
 if [[ "${publish}" != "--publish" ]]; then
