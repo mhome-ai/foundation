@@ -1,9 +1,11 @@
 use conversation_api::{
-    ConversationEvent, ConversationQueue, DebugEvent, InteractionSubmitRequest,
-    InteractionSubmitResponse, MessageEnqueueRequest, MessageEnqueueResponse, QueueReorderRequest,
-    RequestCancelRequest, RequestCancelResponse, ThreadArchiveRequest, ThreadCatalog,
-    ThreadCreateRequest, ThreadListRequest, ThreadLoadRequest, ThreadLoadResponse,
-    ThreadRotateRequest, CHAT_DEBUG_TARGET, CHAT_EVENT_TARGET, MESSAGE_ENQUEUE_TARGET,
+    ConversationAccessMode, ConversationEvent, ConversationQueue, DebugEvent,
+    InteractionSubmitDisposition, InteractionSubmitRequest, InteractionSubmitResponse,
+    MessageEnqueueDisposition, MessageEnqueueRequest, MessageEnqueueResponse, QueueReorderRequest,
+    RequestCancelOutcome, RequestCancelPhase, RequestCancelRequest, RequestCancelResponse,
+    ThreadArchiveRequest, ThreadCatalog, ThreadCreateRequest, ThreadListRequest, ThreadLoadRequest,
+    ThreadLoadResponse, ThreadRotateRequest, CHAT_DEBUG_TARGET, CHAT_EVENT_TARGET,
+    MESSAGE_ENQUEUE_TARGET,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -138,6 +140,45 @@ fn every_bundled_fixture_matches_the_bundled_schema() {
 }
 
 #[test]
+fn target_manifest_matches_the_rust_inventory() {
+    let manifest: Value =
+        serde_json::from_str(include_str!("../manifest/targets.v1.json")).unwrap();
+    let request_targets = manifest["requestTargets"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|value| value.as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        request_targets,
+        vec![
+            conversation_api::THREAD_LIST_TARGET,
+            conversation_api::THREAD_CREATE_TARGET,
+            conversation_api::THREAD_ARCHIVE_TARGET,
+            conversation_api::THREAD_ROTATE_TARGET,
+            conversation_api::THREAD_LOAD_TARGET,
+            conversation_api::MESSAGE_ENQUEUE_TARGET,
+            conversation_api::QUEUE_REORDER_TARGET,
+            conversation_api::REQUEST_CANCEL_TARGET,
+            conversation_api::INTERACTION_SUBMIT_TARGET,
+        ]
+    );
+    let event_targets = manifest["eventTargets"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|value| value.as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        event_targets,
+        vec![
+            conversation_api::CHAT_EVENT_TARGET,
+            conversation_api::CHAT_DEBUG_TARGET,
+        ]
+    );
+}
+
+#[test]
 fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
     body::<ThreadListRequest>("thread-list.request.json");
     body::<ThreadCreateRequest>("thread-create.request.json");
@@ -150,7 +191,10 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
         MESSAGE_ENQUEUE_TARGET
     );
     let enqueue = body::<MessageEnqueueRequest>("enqueue.request.json");
-    assert_eq!(enqueue.access_mode.as_deref(), Some("interactive"));
+    assert_eq!(
+        enqueue.access_mode,
+        Some(ConversationAccessMode::Interactive)
+    );
     assert_eq!(enqueue.temperature, Some(0.2));
     assert_eq!(enqueue.image_refs.len(), 1);
     body::<ThreadArchiveRequest>("thread-archive.request.json");
@@ -160,10 +204,20 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
     body::<ThreadCatalog>("thread-archive.response.json");
     body::<ThreadCatalog>("thread-rotate.response.json");
     body::<ThreadLoadResponse>("thread-load.response.json");
-    body::<MessageEnqueueResponse>("enqueue.response.json");
-    body::<RequestCancelResponse>("request-cancel.response.json");
+    let enqueue_response = body::<MessageEnqueueResponse>("enqueue.response.json");
+    assert_eq!(
+        enqueue_response.disposition,
+        MessageEnqueueDisposition::Queued
+    );
+    let cancel_response = body::<RequestCancelResponse>("request-cancel.response.json");
+    assert_eq!(cancel_response.phase, RequestCancelPhase::Running);
+    assert_eq!(cancel_response.outcome, RequestCancelOutcome::Cancelling);
     body::<ConversationQueue>("queue-reorder.response.json");
-    body::<InteractionSubmitResponse>("interaction.response.json");
+    let interaction = body::<InteractionSubmitResponse>("interaction.response.json");
+    assert_eq!(
+        interaction.disposition,
+        InteractionSubmitDisposition::Accepted
+    );
 }
 
 #[test]

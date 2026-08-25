@@ -1,6 +1,6 @@
 [package]
 name = "mhome-conversation-api"
-version = "0.4.0"
+version = "0.5.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Typed wire contract for the mHome conversation API"
 readme = "README.md"
 publish = ["crates-io"]
-include = ["src/**", "tests/**", "schema/**", "fixtures/**", "Cargo.toml", "README.md", "LICENSE"]
+include = ["src/**", "tests/**", "schema/**", "fixtures/**", "manifest/**", "Cargo.toml", "README.md", "LICENSE"]
 
 [lib]
 name = "conversation_api"

@@ -74,12 +74,19 @@ pub struct MessageEnqueueRequest {
     #[serde(default)]
     pub image_refs: Vec<ImageReference>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub access_mode: Option<String>,
+    pub access_mode: Option<ConversationAccessMode>,
     pub agent_model_mode: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
     pub allow_tools: bool,
     pub debug: bool,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ConversationAccessMode {
+    Interactive,
+    FullAccess,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

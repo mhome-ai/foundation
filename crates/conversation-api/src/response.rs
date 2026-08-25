@@ -37,22 +37,49 @@ pub struct ThreadLoadResponse {
 #[serde(rename_all = "camelCase")]
 pub struct MessageEnqueueResponse {
     pub request_id: String,
-    pub disposition: String,
+    pub disposition: MessageEnqueueDisposition,
     pub queue_version: u64,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum MessageEnqueueDisposition {
+    Queued,
+    Duplicate,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct InteractionSubmitResponse {
     pub request_id: String,
-    pub disposition: String,
+    pub disposition: InteractionSubmitDisposition,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum InteractionSubmitDisposition {
+    Accepted,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RequestCancelResponse {
     pub request_id: String,
-    pub phase: String,
-    pub outcome: String,
+    pub phase: RequestCancelPhase,
+    pub outcome: RequestCancelOutcome,
     pub queue_version: u64,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RequestCancelPhase {
+    Waiting,
+    Running,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RequestCancelOutcome {
+    Cancelled,
+    Cancelling,
 }
