@@ -6,6 +6,7 @@ on:
       - "mhome-artifact-api-v*"
       - "mhome-machine-identity-v*"
       - "mhome-core-api-v*"
+      - "mhome-plugin-api-v*"
       - "mhome-playground-models-v*"
       - "mhome-runtime-paths-v*"
 
