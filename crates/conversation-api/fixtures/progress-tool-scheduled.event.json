@@ -1,0 +1,14 @@
+{
+  "target": "/chat/event",
+  "direction": "event",
+  "body": {
+    "type": "run.progress",
+    "surfaceId": "meow-link",
+    "threadId": "thread-1",
+    "requestId": "request-1",
+    "baseSnapshotVersion": 3,
+    "offset": 5,
+    "occurredAt": "2026-08-22T00:00:04Z",
+    "data": { "kind": "tool_scheduled", "toolNames": ["search", "fetch"] }
+  }
+}

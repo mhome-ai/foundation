@@ -1,6 +1,5 @@
 use crate::{ConversationMessage, PendingInteraction};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -111,25 +110,11 @@ pub struct ThreadSnapshot {
     pub run_outcomes: Vec<RunOutcome>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct LiveEvent {
-    pub surface_id: String,
-    pub thread_id: String,
-    pub request_id: String,
-    pub base_snapshot_version: u64,
-    pub offset: u64,
-    pub occurred_at: String,
-    #[serde(rename = "type")]
-    pub event_type: String,
-    pub data: Value,
-}
-
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct LiveSnapshot {
     pub base_snapshot_version: u64,
     pub last_offset: u64,
     #[serde(default)]
-    pub events: Vec<LiveEvent>,
+    pub events: Vec<crate::LiveConversationEvent>,
 }

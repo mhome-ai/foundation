@@ -44,6 +44,30 @@ const FIXTURES: &[(&str, &str)] = &[
         include_str!("../fixtures/live.event.json"),
     ),
     (
+        "progress-thinking.event.json",
+        include_str!("../fixtures/progress-thinking.event.json"),
+    ),
+    (
+        "progress-planning.event.json",
+        include_str!("../fixtures/progress-planning.event.json"),
+    ),
+    (
+        "progress-waiting.event.json",
+        include_str!("../fixtures/progress-waiting.event.json"),
+    ),
+    (
+        "progress-tool-scheduled.event.json",
+        include_str!("../fixtures/progress-tool-scheduled.event.json"),
+    ),
+    (
+        "progress-tool-started.event.json",
+        include_str!("../fixtures/progress-tool-started.event.json"),
+    ),
+    (
+        "system-failed.event.json",
+        include_str!("../fixtures/system-failed.event.json"),
+    ),
+    (
         "queue.event.json",
         include_str!("../fixtures/queue.event.json"),
     ),
@@ -226,6 +250,12 @@ fn every_chat_event_deserializes_without_provider_knowledge() {
         "catalog.event.json",
         "interaction.event.json",
         "live.event.json",
+        "progress-thinking.event.json",
+        "progress-planning.event.json",
+        "progress-waiting.event.json",
+        "progress-tool-scheduled.event.json",
+        "progress-tool-started.event.json",
+        "system-failed.event.json",
         "queue.event.json",
         "session.event.json",
     ] {
@@ -246,6 +276,24 @@ fn missing_surface_identity_is_rejected() {
     let mut event = fixture("live.event.json")["body"].clone();
     event.as_object_mut().unwrap().remove("surfaceId");
     assert!(serde_json::from_value::<ConversationEvent>(event).is_err());
+}
+
+#[test]
+fn conversation_events_reject_unknown_types_and_invalid_live_payloads() {
+    let mut unknown = fixture("live.event.json")["body"].clone();
+    unknown["type"] = Value::String("run.something_new".to_string());
+    assert!(serde_json::from_value::<ConversationEvent>(unknown).is_err());
+
+    let mut invalid_progress = fixture("progress-thinking.event.json")["body"].clone();
+    invalid_progress["data"]["toolName"] = Value::String("search".to_string());
+    assert!(serde_json::from_value::<ConversationEvent>(invalid_progress).is_err());
+
+    let mut legacy_preview = fixture("live.event.json")["body"].clone();
+    legacy_preview["data"]
+        .as_object_mut()
+        .unwrap()
+        .remove("append");
+    assert!(serde_json::from_value::<ConversationEvent>(legacy_preview).is_err());
 }
 
 #[test]

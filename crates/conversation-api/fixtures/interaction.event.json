@@ -9,7 +9,6 @@
     "snapshotVersion": 3,
     "occurredAt": "2026-08-22T00:00:00Z",
     "data": {
-      "reason": "interaction_required",
       "sessionActivityAtUnixMs": 1787356800000,
       "messagesAdded": [],
       "activeRun": null,
