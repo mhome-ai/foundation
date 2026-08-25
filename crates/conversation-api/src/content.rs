@@ -73,12 +73,19 @@ impl MessageContent {
     }
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ConversationMessageRole {
+    User,
+    Assistant,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ConversationMessage {
     pub message_id: String,
     pub request_id: String,
-    pub role: String,
+    pub role: ConversationMessageRole,
     pub content: MessageContent,
     pub created_at: String,
 }
