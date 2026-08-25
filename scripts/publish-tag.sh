@@ -30,6 +30,11 @@ case "${tag}" in
     manifest="crates/playground-models/Cargo.toml"
     version="${tag#mhome-playground-models-v}"
     ;;
+  mhome-plugin-api-v*)
+    package="mhome-plugin-api"
+    manifest="crates/plugin-api/Cargo.toml"
+    version="${tag#mhome-plugin-api-v}"
+    ;;
   mhome-runtime-paths-v*)
     package="mhome-runtime-paths"
     manifest="crates/runtime-paths/Cargo.toml"

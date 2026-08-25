@@ -723,6 +723,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "mhome-plugin-api"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "mhome-runtime-paths"
 version = "0.1.0"
 dependencies = [
