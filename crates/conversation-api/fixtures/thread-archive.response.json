@@ -1,0 +1,11 @@
+{
+  "target": "/chat/thread/archive",
+  "direction": "response",
+  "body": {
+    "catalogVersion": 3,
+    "activeThreadId": null,
+    "threads": [
+      { "threadId": "thread-2", "title": "New conversation", "state": "archived", "createdAt": "2026-08-22T00:00:00Z", "updatedAt": "2026-08-22T01:00:00Z", "archivedAt": "2026-08-22T01:00:00Z", "archiveReason": "user_requested", "purgeAfter": "2026-08-25T01:00:00Z" }
+    ]
+  }
+}

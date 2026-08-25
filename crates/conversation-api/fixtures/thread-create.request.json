@@ -1,0 +1,9 @@
+{
+  "target": "/chat/thread/create",
+  "direction": "request",
+  "body": {
+    "operationId": "operation-1",
+    "expectedCatalogVersion": 1,
+    "title": "New conversation"
+  }
+}

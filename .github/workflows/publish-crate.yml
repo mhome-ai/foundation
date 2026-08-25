@@ -9,6 +9,7 @@ on:
       - "mhome-plugin-api-v*"
       - "mhome-playground-models-v*"
       - "mhome-runtime-paths-v*"
+      - "mhome-conversation-api-v*"
 
 permissions:
   contents: read

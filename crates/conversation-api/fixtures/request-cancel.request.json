@@ -1,0 +1,8 @@
+{
+  "target": "/chat/request/cancel",
+  "direction": "request",
+  "body": {
+    "threadId": "thread-2",
+    "requestId": "request-1"
+  }
+}

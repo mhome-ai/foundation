@@ -1,0 +1,11 @@
+{
+  "target": "/chat/interaction/submit",
+  "direction": "request",
+  "body": {
+    "threadId": "thread-2",
+    "batchId": "batch-1",
+    "decisions": [
+      { "actionId": "action-1", "decision": "approve" }
+    ]
+  }
+}

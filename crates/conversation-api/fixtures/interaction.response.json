@@ -1,0 +1,8 @@
+{
+  "target": "/chat/interaction/submit",
+  "direction": "response",
+  "body": {
+    "requestId": "request-1",
+    "disposition": "accepted"
+  }
+}

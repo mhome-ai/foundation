@@ -1,0 +1,9 @@
+{
+  "target": "/chat/message/enqueue",
+  "direction": "response",
+  "body": {
+    "requestId": "request-1",
+    "disposition": "queued",
+    "queueVersion": 4
+  }
+}

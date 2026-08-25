@@ -134,7 +134,7 @@
         }
       }
     },
-    "catalogResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "enum": ["/chat/thread/list", "/chat/thread/create", "/chat/thread/archive"] }, "direction": { "const": "response" }, "body": { "$ref": "#/$defs/catalog" } } },
+    "catalogResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "enum": ["/chat/thread/list", "/chat/thread/create", "/chat/thread/archive", "/chat/thread/rotate"] }, "direction": { "const": "response" }, "body": { "$ref": "#/$defs/catalog" } } },
     "loadResponseFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/chat/thread/load" }, "direction": { "const": "response" }, "body": { "$ref": "#/$defs/loadResponse" } } },
     "enqueueResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/chat/message/enqueue" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["requestId", "disposition", "queueVersion"], "properties": { "requestId": { "$ref": "#/$defs/id" }, "disposition": { "enum": ["queued", "duplicate"] }, "queueVersion": { "type": "integer", "minimum": 0 } } } } },
     "queueResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/chat/queue/reorder" }, "direction": { "const": "response" }, "body": { "$ref": "#/$defs/queue" } } },

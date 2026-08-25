@@ -1,0 +1,9 @@
+{
+  "target": "/chat/queue/reorder",
+  "direction": "request",
+  "body": {
+    "threadId": "thread-2",
+    "expectedQueueVersion": 3,
+    "orderedRequestIds": ["request-2", "request-1"]
+  }
+}

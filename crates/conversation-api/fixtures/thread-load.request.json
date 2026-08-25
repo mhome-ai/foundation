@@ -1,0 +1,8 @@
+{
+  "target": "/chat/thread/load",
+  "direction": "request",
+  "body": {
+    "threadId": "thread-2",
+    "knownSnapshotVersion": 3
+  }
+}

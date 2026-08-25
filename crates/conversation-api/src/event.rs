@@ -88,6 +88,7 @@ pub struct SessionPolicyChangedData {
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(untagged)]
+#[allow(clippy::large_enum_variant)]
 pub enum ConversationEvent {
     SnapshotUpdated(SnapshotUpdatedEvent),
     CatalogChanged(CatalogChangedEvent),

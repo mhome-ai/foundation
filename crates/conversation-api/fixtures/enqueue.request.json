@@ -1,5 +1,21 @@
 {
   "target": "/chat/message/enqueue",
   "direction": "request",
-  "body": { "threadId": "thread-2", "requestId": "request-1", "message": "Hello", "imageRefs": [], "agentModelMode": "auto", "allowTools": true, "debug": false }
+  "body": {
+    "threadId": "thread-2",
+    "requestId": "request-1",
+    "message": "Hello",
+    "imageRefs": [
+      {
+        "base64": "aGVsbG8=",
+        "format": "png",
+        "createdAt": 1787587200000
+      }
+    ],
+    "accessMode": "interactive",
+    "agentModelMode": "auto",
+    "temperature": 0.2,
+    "allowTools": true,
+    "debug": false
+  }
 }
