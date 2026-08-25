@@ -193,3 +193,18 @@ fn missing_surface_identity_is_rejected() {
     event.as_object_mut().unwrap().remove("surfaceId");
     assert!(serde_json::from_value::<ConversationEvent>(event).is_err());
 }
+
+#[test]
+fn command_only_enums_reject_internal_state_values() {
+    let mut rotate = fixture("thread-rotate.request.json");
+    rotate["body"]["reason"] = Value::String("replaced".to_string());
+    assert!(serde_json::from_value::<ThreadRotateRequest>(rotate["body"].clone()).is_err());
+
+    let mut enqueue = fixture("enqueue.request.json");
+    enqueue["body"]["accessMode"] = Value::String("internal".to_string());
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/conversation-frame.v1.schema.json")).unwrap();
+    assert!(!jsonschema::validator_for(&schema)
+        .unwrap()
+        .is_valid(&enqueue));
+}

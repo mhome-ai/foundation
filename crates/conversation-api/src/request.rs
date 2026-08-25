@@ -1,4 +1,4 @@
-use crate::{InteractionDecision, ThreadArchiveReason};
+use crate::InteractionDecision;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -29,7 +29,14 @@ pub struct ThreadRotateRequest {
     pub expected_catalog_version: u64,
     pub expected_snapshot_version: u64,
     pub expected_setting_version: u64,
-    pub reason: ThreadArchiveReason,
+    pub reason: ThreadRotateReason,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ThreadRotateReason {
+    IdleTimeout,
+    UserRequested,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
