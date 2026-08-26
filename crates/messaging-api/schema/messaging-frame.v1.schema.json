@@ -1,26 +1,259 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mhome.dev/schema/messaging-frame.v1.schema.json",
-  "type": "object",
-  "required": ["target", "body"],
-  "additionalProperties": false,
-  "properties": {
-    "target": {
-      "enum": [
-        "/messaging/provider/list",
-        "/messaging/connection/list",
-        "/messaging/connection/update",
-        "/messaging/connection/delete",
-        "/messaging/connection/test",
-        "/messaging/connection/status",
-        "/messaging/account/bind",
-        "/messaging/account/unbind",
-        "/messaging/account/binding/list",
-        "/messaging/setup/options",
-        "/messaging/setup/start",
-        "/messaging/setup/status"
+  "$id": "urn:mhome:messaging-api:frame:v1",
+  "title": "mHome messaging management API conformance frame v1",
+  "$ref": "#/$defs/frame",
+  "$defs": {
+    "id": { "type": "string", "minLength": 1 },
+    "providerId": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "placement": { "enum": ["local", "cloud"] },
+    "extension": { "type": "object" },
+    "stringList": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+
+    "frontendProvider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "deprecated", "supportedPlacements"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "deprecated": { "type": "boolean" },
+        "supportedPlacements": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/placement" }
+        }
+      }
+    },
+    "providerMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "displayName", "placement", "deprecated", "available", "setupFlow", "capabilities"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "displayName": { "$ref": "#/$defs/id" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "deprecated": { "type": "boolean" },
+        "available": { "type": "boolean" },
+        "disabledReason": { "$ref": "#/$defs/id" },
+        "setupFlow": { "$ref": "#/$defs/id" },
+        "capabilities": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "messagingConnection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "connectionId", "accountId", "enabled", "status", "boundToCurrentScope", "providerData"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "connectionId": { "$ref": "#/$defs/id" },
+        "accountId": { "$ref": "#/$defs/id" },
+        "displayName": { "$ref": "#/$defs/id" },
+        "enabled": { "type": "boolean" },
+        "status": { "$ref": "#/$defs/id" },
+        "statusMessage": { "$ref": "#/$defs/id" },
+        "boundToCurrentScope": { "type": "boolean" },
+        "providerData": { "$ref": "#/$defs/extension" }
+      }
+    },
+    "providerStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "enabled", "providerData"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "enabled": { "type": "boolean" },
+        "providerData": { "$ref": "#/$defs/extension" }
+      }
+    },
+    "accountBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenantId", "scopeId", "userId", "default"],
+      "properties": {
+        "tenantId": { "$ref": "#/$defs/id" },
+        "scopeId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "default": { "type": "boolean" }
+      }
+    },
+    "setupAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "$ref": "#/$defs/id" },
+        "url": { "type": "string", "format": "uri" }
+      }
+    },
+    "setupState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "providerData"],
+      "properties": {
+        "setupId": { "$ref": "#/$defs/id" },
+        "status": { "$ref": "#/$defs/id" },
+        "expiresAtMs": { "type": "integer", "minimum": 0 },
+        "action": { "$ref": "#/$defs/setupAction" },
+        "providerData": { "$ref": "#/$defs/extension" },
+        "connectionId": { "$ref": "#/$defs/id" },
+        "message": { "type": "string" }
+      }
+    },
+
+    "providerListRequestBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["placement", "frontendProviders"],
+      "properties": {
+        "placement": { "$ref": "#/$defs/placement" },
+        "frontendProviders": { "type": "array", "items": { "$ref": "#/$defs/frontendProvider" } }
+      }
+    },
+    "providerPlacementBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" }
+      }
+    },
+    "connectionUpdateBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "data"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "connectionId": { "$ref": "#/$defs/id" },
+        "data": { "$ref": "#/$defs/extension" }
+      }
+    },
+    "connectionRequestBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "connectionId"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "connectionId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "connectionTestBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "data"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "data": { "$ref": "#/$defs/extension" }
+      }
+    },
+    "accountBindingRequestBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "accountId"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "accountId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "setupStartBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "data"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "data": { "$ref": "#/$defs/extension" }
+      }
+    },
+    "setupStatusBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "setupId"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "setupId": { "$ref": "#/$defs/id" }
+      }
+    },
+
+    "requestFrame": {
+      "oneOf": [
+        { "$ref": "#/$defs/providerListRequest" },
+        { "$ref": "#/$defs/connectionListRequest" },
+        { "$ref": "#/$defs/connectionUpdateRequest" },
+        { "$ref": "#/$defs/connectionDeleteRequest" },
+        { "$ref": "#/$defs/connectionTestRequest" },
+        { "$ref": "#/$defs/connectionStatusRequest" },
+        { "$ref": "#/$defs/accountBindRequest" },
+        { "$ref": "#/$defs/accountUnbindRequest" },
+        { "$ref": "#/$defs/accountBindingListRequest" },
+        { "$ref": "#/$defs/setupOptionsRequest" },
+        { "$ref": "#/$defs/setupStartRequest" },
+        { "$ref": "#/$defs/setupStatusRequest" }
       ]
     },
-    "body": { "type": "object" }
+    "responseFrame": {
+      "oneOf": [
+        { "$ref": "#/$defs/providerListResponse" },
+        { "$ref": "#/$defs/connectionListResponse" },
+        { "$ref": "#/$defs/connectionUpdateResponse" },
+        { "$ref": "#/$defs/connectionDeleteResponse" },
+        { "$ref": "#/$defs/connectionTestResponse" },
+        { "$ref": "#/$defs/connectionStatusResponse" },
+        { "$ref": "#/$defs/accountBindResponse" },
+        { "$ref": "#/$defs/accountUnbindResponse" },
+        { "$ref": "#/$defs/accountBindingListResponse" },
+        { "$ref": "#/$defs/setupOptionsResponse" },
+        { "$ref": "#/$defs/setupStartResponse" },
+        { "$ref": "#/$defs/setupStatusResponse" }
+      ]
+    },
+    "frame": { "oneOf": [{ "$ref": "#/$defs/requestFrame" }, { "$ref": "#/$defs/responseFrame" }] },
+
+    "providerListRequest": { "$ref": "#/$defs/providerListRequestFrame" },
+    "providerListRequestFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/provider/list" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/providerListRequestBody" } } },
+    "connectionListRequest": { "$ref": "#/$defs/providerPlacementRequestFrame" },
+    "connectionStatusRequest": { "$ref": "#/$defs/providerPlacementStatusRequestFrame" },
+    "setupOptionsRequest": { "$ref": "#/$defs/providerPlacementSetupRequestFrame" },
+    "providerPlacementRequestFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/list" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/providerPlacementBody" } } },
+    "providerPlacementStatusRequestFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/status" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/providerPlacementBody" } } },
+    "providerPlacementSetupRequestFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/options" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/providerPlacementBody" } } },
+    "connectionUpdateRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/update" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/connectionUpdateBody" } } },
+    "connectionDeleteRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/delete" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/connectionRequestBody" } } },
+    "connectionTestRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/test" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/connectionTestBody" } } },
+    "accountBindRequest": { "$ref": "#/$defs/accountBindRequestFrame" },
+    "accountUnbindRequest": { "$ref": "#/$defs/accountUnbindRequestFrame" },
+    "accountBindingListRequest": { "$ref": "#/$defs/accountBindingListRequestFrame" },
+    "accountBindRequestFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/account/bind" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/accountBindingRequestBody" } } },
+    "accountUnbindRequestFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/account/unbind" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/accountBindingRequestBody" } } },
+    "accountBindingListRequestFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/account/binding/list" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/accountBindingRequestBody" } } },
+    "setupStartRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/start" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/setupStartBody" } } },
+    "setupStatusRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/status" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/setupStatusBody" } } },
+
+    "providerListResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/provider/list" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["providers"], "properties": { "providers": { "type": "array", "items": { "$ref": "#/$defs/providerMetadata" } } } } } },
+    "connectionListResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/list" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["connections"], "properties": { "connections": { "type": "array", "items": { "$ref": "#/$defs/messagingConnection" } } } } } },
+    "connectionUpdateResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/update" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["connection"], "properties": { "connection": { "$ref": "#/$defs/messagingConnection" } } } } },
+    "connectionDeleteResponse": { "$ref": "#/$defs/connectionDeleteMutationFrame" },
+    "accountBindResponse": { "$ref": "#/$defs/accountBindMutationFrame" },
+    "accountUnbindResponse": { "$ref": "#/$defs/accountUnbindMutationFrame" },
+    "connectionDeleteMutationFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/delete" }, "direction": { "const": "response" }, "body": { "$ref": "#/$defs/mutationBody" } } },
+    "accountBindMutationFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/account/bind" }, "direction": { "const": "response" }, "body": { "$ref": "#/$defs/mutationBody" } } },
+    "accountUnbindMutationFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/account/unbind" }, "direction": { "const": "response" }, "body": { "$ref": "#/$defs/mutationBody" } } },
+    "mutationBody": { "type": "object", "additionalProperties": false, "required": ["success"], "properties": { "success": { "type": "boolean" } } },
+    "connectionTestResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/test" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["result"], "properties": { "result": { "$ref": "#/$defs/extension" } } } } },
+    "connectionStatusResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/status" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["status"], "properties": { "status": { "$ref": "#/$defs/providerStatus" } } } } },
+    "accountBindingListResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/account/binding/list" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["bindings"], "properties": { "bindings": { "type": "array", "items": { "$ref": "#/$defs/accountBinding" } } } } } },
+    "setupOptionsResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/options" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["options"], "properties": { "options": { "$ref": "#/$defs/extension" } } } } },
+    "setupStartResponse": { "$ref": "#/$defs/setupStartResponseFrame" },
+    "setupStatusResponse": { "$ref": "#/$defs/setupStatusResponseFrame" },
+    "setupStartResponseFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/start" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["setup"], "properties": { "setup": { "$ref": "#/$defs/setupState" } } } } },
+    "setupStatusResponseFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/status" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["setup"], "properties": { "setup": { "$ref": "#/$defs/setupState" } } } } }
   }
 }

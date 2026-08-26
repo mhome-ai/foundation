@@ -1,0 +1,10 @@
+{
+  "target": "/messaging/connection/update",
+  "direction": "request",
+  "body": {
+    "provider": "telegram",
+    "placement": "local",
+    "connectionId": "connection-1",
+    "data": { "enabled": true }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "target": "/messaging/account/bind",
+  "direction": "response",
+  "body": { "provider": "telegram", "placement": "local", "accountId": "123456" }
+}

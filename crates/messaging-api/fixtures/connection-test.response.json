@@ -1,0 +1,5 @@
+{
+  "target": "/messaging/connection/test",
+  "direction": "response",
+  "body": { "result": { "reachable": true } }
+}

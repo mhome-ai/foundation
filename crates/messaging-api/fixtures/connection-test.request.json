@@ -1,0 +1,5 @@
+{
+  "target": "/messaging/connection/test",
+  "direction": "request",
+  "body": { "provider": "telegram", "placement": "local", "data": { "botToken": "secret" } }
+}

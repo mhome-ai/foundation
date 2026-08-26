@@ -1,0 +1,16 @@
+{
+  "target": "/messaging/connection/update",
+  "direction": "response",
+  "body": {
+    "connection": {
+      "provider": "telegram",
+      "placement": "local",
+      "connectionId": "connection-1",
+      "accountId": "123456",
+      "enabled": true,
+      "status": "connected",
+      "boundToCurrentScope": true,
+      "providerData": {}
+    }
+  }
+}

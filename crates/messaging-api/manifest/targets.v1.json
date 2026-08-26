@@ -1,5 +1,21 @@
 {
+  "manifest": "mhome.messaging.targets.v1",
+  "contractVersion": "0.2.0",
   "requestTargets": [
+    "/messaging/provider/list",
+    "/messaging/connection/list",
+    "/messaging/connection/update",
+    "/messaging/connection/delete",
+    "/messaging/connection/test",
+    "/messaging/connection/status",
+    "/messaging/account/bind",
+    "/messaging/account/unbind",
+    "/messaging/account/binding/list",
+    "/messaging/setup/options",
+    "/messaging/setup/start",
+    "/messaging/setup/status"
+  ],
+  "responseTargets": [
     "/messaging/provider/list",
     "/messaging/connection/list",
     "/messaging/connection/update",

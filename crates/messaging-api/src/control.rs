@@ -1,10 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-fn empty_object() -> Value {
-    Value::Object(Default::default())
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Placement {
@@ -24,7 +20,6 @@ pub struct FrontendProvider {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ProviderListRequest {
     pub placement: Placement,
-    #[serde(default)]
     pub frontend_providers: Vec<FrontendProvider>,
 }
 
@@ -39,7 +34,6 @@ pub struct ProviderMetadata {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub disabled_reason: Option<String>,
     pub setup_flow: String,
-    #[serde(default)]
     pub capabilities: Vec<String>,
 }
 
@@ -63,7 +57,6 @@ pub struct ConnectionUpdateRequest {
     pub placement: Placement,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub connection_id: Option<String>,
-    #[serde(default = "empty_object")]
     pub data: Value,
 }
 
@@ -80,7 +73,6 @@ pub struct ConnectionRequest {
 pub struct ConnectionTestRequest {
     pub provider: String,
     pub placement: Placement,
-    #[serde(default = "empty_object")]
     pub data: Value,
 }
 
@@ -98,7 +90,6 @@ pub struct MessagingConnection {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status_message: Option<String>,
     pub bound_to_current_scope: bool,
-    #[serde(default = "empty_object")]
     pub provider_data: Value,
 }
 
@@ -117,7 +108,6 @@ pub struct ConnectionUpdateResponse {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ConnectionTestResponse {
-    #[serde(default = "empty_object")]
     pub result: Value,
 }
 
@@ -127,7 +117,6 @@ pub struct ProviderStatus {
     pub provider: String,
     pub placement: Placement,
     pub enabled: bool,
-    #[serde(default = "empty_object")]
     pub provider_data: Value,
 }
 
@@ -171,14 +160,12 @@ pub struct AccountBindingListResponse {
 pub struct SetupStartRequest {
     pub provider: String,
     pub placement: Placement,
-    #[serde(default = "empty_object")]
     pub data: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SetupOptionsResponse {
-    #[serde(default = "empty_object")]
     pub options: Value,
 }
 
@@ -209,7 +196,6 @@ pub struct SetupState {
     pub expires_at_ms: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub action: Option<SetupAction>,
-    #[serde(default = "empty_object")]
     pub provider_data: Value,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub connection_id: Option<String>,

@@ -1,0 +1,12 @@
+{
+  "target": "/messaging/connection/status",
+  "direction": "response",
+  "body": {
+    "status": {
+      "provider": "telegram",
+      "placement": "local",
+      "enabled": true,
+      "providerData": { "connected": 1 }
+    }
+  }
+}

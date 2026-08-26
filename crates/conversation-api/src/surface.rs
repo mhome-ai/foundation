@@ -61,7 +61,12 @@ fn encode_component(value: &str) -> String {
 }
 
 fn decode_component(value: &str) -> Option<String> {
-    String::from_utf8(URL_SAFE_NO_PAD.decode(value).ok()?).ok()
+    let decoded = URL_SAFE_NO_PAD.decode(value).ok()?;
+    if URL_SAFE_NO_PAD.encode(&decoded) != value {
+        return None;
+    }
+    let decoded = String::from_utf8(decoded).ok()?;
+    (!decoded.trim().is_empty() && decoded.trim() == decoded).then_some(decoded)
 }
 
 #[cfg(test)]
@@ -87,5 +92,11 @@ mod tests {
         assert!(messaging_surface_id("not-valid!", "a", "c").is_none());
         assert!(messaging_surface_id("feishu", "", "c").is_none());
         assert!(parse_messaging_surface_id("messaging:feishu:bad!:bad!").is_none());
+    }
+
+    #[test]
+    fn messaging_surface_rejects_non_canonical_components() {
+        assert!(parse_messaging_surface_id("messaging:telegram:Ym90OjE=:Y2hhdDoy").is_none());
+        assert!(parse_messaging_surface_id("messaging:telegram:IGJvdCA:Y2hhdDoy").is_none());
     }
 }

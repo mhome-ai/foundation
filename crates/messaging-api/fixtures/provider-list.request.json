@@ -1,5 +1,6 @@
 {
   "target": "/messaging/provider/list",
+  "direction": "request",
   "body": {
     "placement": "cloud",
     "frontendProviders": [

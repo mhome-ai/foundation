@@ -1,0 +1,5 @@
+{
+  "target": "/messaging/setup/options",
+  "direction": "request",
+  "body": { "provider": "telegram", "placement": "local" }
+}

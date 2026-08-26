@@ -1,5 +1,6 @@
 {
   "target": "/messaging/connection/list",
+  "direction": "response",
   "body": {
     "connections": [
       {

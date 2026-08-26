@@ -1,12 +1,11 @@
 {
-  "target": "/messaging/setup/status",
+  "target": "/messaging/setup/start",
   "direction": "response",
   "body": {
     "setup": {
       "setupId": "setup-1",
-      "status": "waiting",
+      "status": "action_required",
       "expiresAtMs": 1893456000000,
-      "action": { "type": "open_url", "url": "https://example.invalid/setup" },
       "providerData": { "pairingCode": "ABCD" }
     }
   }

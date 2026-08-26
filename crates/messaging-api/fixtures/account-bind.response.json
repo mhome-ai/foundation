@@ -1,0 +1,5 @@
+{
+  "target": "/messaging/account/bind",
+  "direction": "response",
+  "body": { "success": true }
+}
