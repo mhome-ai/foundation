@@ -1026,7 +1026,6 @@ pub enum ServiceCoreEffect {
     Surface {
         tenant_id: String,
         scope_id: String,
-        user_id: String,
         surface_id: String,
         target: String,
         payload: String,
