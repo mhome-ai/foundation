@@ -1,0 +1,21 @@
+{
+  "target": "/messaging/connection/list",
+  "body": {
+    "connections": [
+      {
+        "provider": "telegram",
+        "placement": "local",
+        "connectionId": "connection-1",
+        "accountId": "123456",
+        "displayName": "Home bot",
+        "enabled": true,
+        "status": "connected",
+        "boundToCurrentScope": true,
+        "providerData": {
+          "botUsername": "home_bot",
+          "transport": "long_polling"
+        }
+      }
+    ]
+  }
+}

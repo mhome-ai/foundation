@@ -1,22 +1,21 @@
 [package]
-name = "mhome-conversation-api"
-version = "0.8.0"
+name = "mhome-messaging-api"
+version = "0.1.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "Typed wire contract for the mHome conversation API"
+description = "Typed wire contract for mHome messaging provider management"
 readme = "README.md"
 publish = ["crates-io"]
 include = ["src/**", "tests/**", "schema/**", "fixtures/**", "manifest/**", "Cargo.toml", "README.md", "LICENSE"]
 
 [lib]
-name = "conversation_api"
+name = "messaging_api"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-base64 = "0.22"
 
 [dev-dependencies]
 jsonschema = { version = "0.30", default-features = false }

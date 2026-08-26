@@ -10,6 +10,7 @@ on:
       - "mhome-playground-models-v*"
       - "mhome-runtime-paths-v*"
       - "mhome-conversation-api-v*"
+      - "mhome-messaging-api-v*"
 
 permissions:
   contents: read

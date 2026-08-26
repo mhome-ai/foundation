@@ -1,0 +1,16 @@
+{
+  "target": "/messaging/provider/list",
+  "body": {
+    "providers": [
+      {
+        "provider": "telegram",
+        "displayName": "Telegram",
+        "placement": "cloud",
+        "deprecated": false,
+        "available": true,
+        "setupFlow": "pairing_code",
+        "capabilities": ["text", "markdown"]
+      }
+    ]
+  }
+}

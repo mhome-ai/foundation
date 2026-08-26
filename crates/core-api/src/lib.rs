@@ -929,6 +929,17 @@ pub enum ServiceCoreInput {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         surface_id: Option<String>,
     },
+    /// Invokes the canonical Conversation application boundary without a
+    /// websocket/client transport identity.
+    ConversationRequest {
+        target: String,
+        payload: String,
+        tenant_id: String,
+        scope_id: String,
+        user_id: String,
+        surface_id: String,
+        is_test: bool,
+    },
     NodeAuth {
         request: NodeAuthRequest,
     },
@@ -979,6 +990,9 @@ pub enum ServiceCoreResponse {
     ClientRequest {
         response_payload: Option<String>,
         client_info: MwsClientInfo,
+    },
+    ConversationRequest {
+        response_payload: Option<String>,
     },
     NodeAuth(NodeAuthResponse),
     HubConnectionProof(HubConnectionProofResponse),

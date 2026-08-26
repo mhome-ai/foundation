@@ -1,0 +1,13 @@
+{
+  "target": "/messaging/provider/list",
+  "body": {
+    "placement": "cloud",
+    "frontendProviders": [
+      {
+        "provider": "telegram",
+        "deprecated": false,
+        "supportedPlacements": ["cloud", "local"]
+      }
+    ]
+  }
+}

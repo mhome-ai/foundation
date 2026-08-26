@@ -1,0 +1,8 @@
+{
+  "target": "/messaging/setup/start",
+  "body": {
+    "provider": "telegram",
+    "placement": "local",
+    "data": { "botToken": "secret" }
+  }
+}
