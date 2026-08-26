@@ -684,7 +684,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-conversation-api"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "base64",
  "jsonschema",
@@ -694,7 +694,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "serde",
  "serde_json",

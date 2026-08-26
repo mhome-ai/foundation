@@ -1,5 +1,6 @@
 use crate::{
-    ActiveRun, ConversationMessage, PendingInteraction, QueuedMessage, RunOutcome, ThreadSummary,
+    ActiveRun, ConversationMessage, ConversationSurface, PendingInteraction, QueuedMessage,
+    RunOutcome, ThreadSummary,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -49,7 +50,7 @@ event_type!(DebugEventType, RunDebug, "run.debug");
 pub struct SnapshotUpdatedEvent {
     #[serde(rename = "type")]
     pub event_type: SnapshotUpdatedEventType,
-    pub surface_id: String,
+    pub surface_id: ConversationSurface,
     pub thread_id: String,
     pub request_id: String,
     pub snapshot_version: u64,
@@ -74,7 +75,7 @@ pub struct SnapshotUpdatedData {
 pub struct QueueChangedEvent {
     #[serde(rename = "type")]
     pub event_type: QueueChangedEventType,
-    pub surface_id: String,
+    pub surface_id: ConversationSurface,
     pub thread_id: String,
     pub queue_version: u64,
     pub occurred_at: String,
@@ -93,7 +94,7 @@ pub struct QueueChangedData {
 pub struct CatalogChangedEvent {
     #[serde(rename = "type")]
     pub event_type: CatalogChangedEventType,
-    pub surface_id: String,
+    pub surface_id: ConversationSurface,
     pub catalog_version: u64,
     pub occurred_at: String,
     pub data: CatalogChangedData,
@@ -112,7 +113,7 @@ pub struct SessionPolicyChangedEvent {
     #[serde(rename = "type")]
     pub event_type: SessionPolicyChangedEventType,
     pub version: u64,
-    pub surface_id: String,
+    pub surface_id: ConversationSurface,
     pub occurred_at: String,
     pub data: SessionPolicyChangedData,
 }
@@ -129,7 +130,7 @@ pub struct SessionPolicyChangedData {
 pub struct AssistantPreviewEvent {
     #[serde(rename = "type")]
     pub event_type: AssistantPreviewEventType,
-    pub surface_id: String,
+    pub surface_id: ConversationSurface,
     pub thread_id: String,
     pub request_id: String,
     pub base_snapshot_version: u64,
@@ -150,7 +151,7 @@ pub struct AssistantPreviewData {
 pub struct RunProgressEvent {
     #[serde(rename = "type")]
     pub event_type: RunProgressEventType,
-    pub surface_id: String,
+    pub surface_id: ConversationSurface,
     pub thread_id: String,
     pub request_id: String,
     pub base_snapshot_version: u64,
@@ -179,7 +180,7 @@ pub enum RunProgressData {
 pub struct RunSystemFailedEvent {
     #[serde(rename = "type")]
     pub event_type: RunSystemFailedEventType,
-    pub surface_id: String,
+    pub surface_id: ConversationSurface,
     pub thread_id: String,
     pub request_id: String,
     pub base_snapshot_version: u64,
@@ -205,7 +206,7 @@ pub enum LiveConversationEvent {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LiveEventMetadata {
-    pub surface_id: String,
+    pub surface_id: ConversationSurface,
     pub thread_id: String,
     pub request_id: String,
     pub base_snapshot_version: u64,
@@ -260,7 +261,7 @@ impl LiveConversationEvent {
         }
     }
 
-    pub fn surface_id(&self) -> &str {
+    pub fn surface(&self) -> &ConversationSurface {
         match self {
             Self::AssistantPreview(event) => &event.surface_id,
             Self::RunProgress(event) => &event.surface_id,
@@ -307,7 +308,7 @@ pub enum ConversationEvent {
 }
 
 impl ConversationEvent {
-    pub fn surface_id(&self) -> &str {
+    pub fn surface(&self) -> &ConversationSurface {
         match self {
             Self::SnapshotUpdated(event) => &event.surface_id,
             Self::CatalogChanged(event) => &event.surface_id,
@@ -337,7 +338,7 @@ impl ConversationEvent {
 pub struct DebugEvent {
     #[serde(rename = "type")]
     pub event_type: DebugEventType,
-    pub surface_id: String,
+    pub surface_id: ConversationSurface,
     pub thread_id: String,
     pub request_id: String,
     pub occurred_at: String,

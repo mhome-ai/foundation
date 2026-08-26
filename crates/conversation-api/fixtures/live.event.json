@@ -3,7 +3,7 @@
   "direction": "event",
   "body": {
     "type": "assistant.preview",
-    "surfaceId": "messaging:feishu:account:chat",
+    "surfaceId": "cs1:mg:feishu:YWNjb3VudA:Y2hhdA",
     "threadId": "thread-1",
     "requestId": "request-1",
     "baseSnapshotVersion": 3,

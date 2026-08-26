@@ -262,7 +262,7 @@ fn every_chat_event_deserializes_without_provider_knowledge() {
         let event = fixture(name);
         assert_eq!(event["target"], CHAT_EVENT_TARGET);
         let typed: ConversationEvent = serde_json::from_value(event["body"].clone()).unwrap();
-        assert!(!typed.surface_id().is_empty());
+        assert!(!typed.surface().canonical_id().is_empty());
         assert!(!typed.event_type().is_empty());
     }
 

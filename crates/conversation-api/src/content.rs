@@ -86,6 +86,8 @@ pub struct ConversationMessage {
     pub message_id: String,
     pub request_id: String,
     pub role: ConversationMessageRole,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub author_user_id: Option<String>,
     pub content: MessageContent,
     pub created_at: String,
 }

@@ -3,7 +3,7 @@
   "direction": "event",
   "body": {
     "type": "run.progress",
-    "surfaceId": "meow-link",
+    "surfaceId": "cs1:cp:dXNlci0x",
     "threadId": "thread-1",
     "requestId": "request-1",
     "baseSnapshotVersion": 3,

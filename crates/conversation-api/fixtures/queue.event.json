@@ -3,7 +3,7 @@
   "direction": "event",
   "body": {
     "type": "queue.changed",
-    "surfaceId": "messaging:feishu:account:chat",
+    "surfaceId": "cs1:mg:feishu:YWNjb3VudA:Y2hhdA",
     "threadId": "thread-1",
     "queueVersion": 4,
     "occurredAt": "2026-08-22T00:00:00Z",

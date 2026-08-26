@@ -936,7 +936,7 @@ pub enum ServiceCoreInput {
         payload: String,
         tenant_id: String,
         scope_id: String,
-        user_id: String,
+        actor_user_id: String,
         surface_id: String,
         is_test: bool,
     },

@@ -45,6 +45,8 @@ pub struct ThreadCatalog {
 pub struct QueuedMessage {
     pub request_id: String,
     pub thread_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub author_user_id: Option<String>,
     pub content: crate::MessageContent,
     pub created_at: String,
 }
