@@ -1,0 +1,11 @@
+{
+  "target": "/chat/turn/submit",
+  "direction": "response",
+  "body": {
+    "requestId": "request-2",
+    "threadId": "thread-3",
+    "disposition": "queued",
+    "sessionDisposition": "rotated_idle_timeout",
+    "queueVersion": 1
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "target": "/chat/turn/submit",
+  "direction": "request",
+  "body": {
+    "requestId": "request-2",
+    "title": "Kitchen chat",
+    "message": "Turn on the lights",
+    "imageRefs": [],
+    "accessMode": "interactive",
+    "agentModelMode": "auto",
+    "temperature": null,
+    "allowTools": true,
+    "debug": false,
+    "occurredAtUnixMs": 1787587200000
+  }
+}

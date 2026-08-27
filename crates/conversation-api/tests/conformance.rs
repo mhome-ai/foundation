@@ -4,7 +4,8 @@ use conversation_api::{
     MessageEnqueueDisposition, MessageEnqueueRequest, MessageEnqueueResponse, QueueReorderRequest,
     RequestCancelOutcome, RequestCancelPhase, RequestCancelRequest, RequestCancelResponse,
     ThreadArchiveRequest, ThreadCatalog, ThreadCreateRequest, ThreadListRequest, ThreadLoadRequest,
-    ThreadLoadResponse, ThreadRotateRequest, CHAT_DEBUG_TARGET, CHAT_EVENT_TARGET,
+    ThreadLoadResponse, ThreadRotateRequest, TurnSessionDisposition, TurnSubmitDisposition,
+    TurnSubmitRequest, TurnSubmitResponse, CHAT_DEBUG_TARGET, CHAT_EVENT_TARGET,
     MESSAGE_ENQUEUE_TARGET,
 };
 use serde::de::DeserializeOwned;
@@ -26,6 +27,14 @@ const FIXTURES: &[(&str, &str)] = &[
     (
         "enqueue.response.json",
         include_str!("../fixtures/enqueue.response.json"),
+    ),
+    (
+        "turn-submit.request.json",
+        include_str!("../fixtures/turn-submit.request.json"),
+    ),
+    (
+        "turn-submit.response.json",
+        include_str!("../fixtures/turn-submit.response.json"),
     ),
     (
         "interaction.request.json",
@@ -182,6 +191,7 @@ fn target_manifest_matches_the_rust_inventory() {
             conversation_api::THREAD_ROTATE_TARGET,
             conversation_api::THREAD_LOAD_TARGET,
             conversation_api::MESSAGE_ENQUEUE_TARGET,
+            conversation_api::TURN_SUBMIT_TARGET,
             conversation_api::QUEUE_REORDER_TARGET,
             conversation_api::REQUEST_CANCEL_TARGET,
             conversation_api::INTERACTION_SUBMIT_TARGET,
@@ -232,6 +242,14 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
     assert_eq!(
         enqueue_response.disposition,
         MessageEnqueueDisposition::Queued
+    );
+    let turn = body::<TurnSubmitRequest>("turn-submit.request.json");
+    assert_eq!(turn.occurred_at_unix_ms, 1_787_587_200_000);
+    let turn_response = body::<TurnSubmitResponse>("turn-submit.response.json");
+    assert_eq!(turn_response.disposition, TurnSubmitDisposition::Queued);
+    assert_eq!(
+        turn_response.session_disposition,
+        TurnSessionDisposition::RotatedIdleTimeout
     );
     let cancel_response = body::<RequestCancelResponse>("request-cancel.response.json");
     assert_eq!(cancel_response.phase, RequestCancelPhase::Running);

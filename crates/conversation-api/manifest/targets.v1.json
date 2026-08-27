@@ -7,6 +7,7 @@
     "/chat/thread/rotate",
     "/chat/thread/load",
     "/chat/message/enqueue",
+    "/chat/turn/submit",
     "/chat/queue/reorder",
     "/chat/request/cancel",
     "/chat/interaction/submit"

@@ -50,6 +50,32 @@ pub enum MessageEnqueueDisposition {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+pub struct TurnSubmitResponse {
+    pub request_id: String,
+    pub thread_id: String,
+    pub disposition: TurnSubmitDisposition,
+    pub session_disposition: TurnSessionDisposition,
+    pub queue_version: u64,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TurnSubmitDisposition {
+    Queued,
+    Duplicate,
+    BlockedPendingInteraction,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TurnSessionDisposition {
+    Existing,
+    Created,
+    RotatedIdleTimeout,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct InteractionSubmitResponse {
     pub request_id: String,
     pub disposition: InteractionSubmitDisposition,
