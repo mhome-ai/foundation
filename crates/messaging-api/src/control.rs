@@ -34,7 +34,44 @@ pub struct ProviderMetadata {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub disabled_reason: Option<String>,
     pub setup_flow: String,
-    pub capabilities: Vec<String>,
+    pub capabilities: Vec<ContentCapability>,
+    pub management_operations: Vec<ManagementOperation>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ContentCapability {
+    Text,
+    Markdown,
+    Image,
+    Audio,
+    Interaction,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum ManagementOperation {
+    #[serde(rename = "connection.list")]
+    ConnectionList,
+    #[serde(rename = "connection.update")]
+    ConnectionUpdate,
+    #[serde(rename = "connection.delete")]
+    ConnectionDelete,
+    #[serde(rename = "connection.test")]
+    ConnectionTest,
+    #[serde(rename = "connection.status")]
+    ConnectionStatus,
+    #[serde(rename = "account.bind")]
+    AccountBind,
+    #[serde(rename = "account.unbind")]
+    AccountUnbind,
+    #[serde(rename = "account.binding.list")]
+    AccountBindingList,
+    #[serde(rename = "setup.options")]
+    SetupOptions,
+    #[serde(rename = "setup.start")]
+    SetupStart,
+    #[serde(rename = "setup.status")]
+    SetupStatus,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mhome:messaging-api:normalized-inbound:v1",
+  "title": "mHome normalized messaging inbound v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "eventId", "address", "actor", "content"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "eventId": { "$ref": "#/$defs/id" },
+    "address": { "$ref": "#/$defs/address" },
+    "actor": { "$ref": "#/$defs/actor" },
+    "content": { "$ref": "#/$defs/content" },
+    "occurredAtMs": { "type": "integer", "minimum": 0 }
+  },
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "pattern": "^\\S(?:.*\\S)?$" },
+    "providerId": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "address": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "accountId", "conversationId", "audience"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "accountId": { "$ref": "#/$defs/id" },
+        "conversationId": { "$ref": "#/$defs/id" },
+        "laneId": { "$ref": "#/$defs/id" },
+        "audience": { "enum": ["personal", "shared"] }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "accountId", "externalUserId"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "accountId": { "$ref": "#/$defs/id" },
+        "externalUserId": { "$ref": "#/$defs/id" },
+        "displayName": { "$ref": "#/$defs/id" }
+      }
+    },
+    "content": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "text"],
+          "properties": {
+            "type": { "const": "text" },
+            "text": { "$ref": "#/$defs/id" },
+            "providerMessageId": { "$ref": "#/$defs/id" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "providerMessageId", "providerFileId"],
+          "properties": {
+            "type": { "const": "audio" },
+            "providerMessageId": { "$ref": "#/$defs/id" },
+            "providerFileId": { "$ref": "#/$defs/id" },
+            "durationSeconds": { "type": "integer", "minimum": 0 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "actionId", "token", "decision"],
+          "properties": {
+            "type": { "const": "interaction" },
+            "actionId": { "$ref": "#/$defs/id" },
+            "token": { "$ref": "#/$defs/id" },
+            "decision": { "enum": ["approve", "reject"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "decision"],
+          "properties": {
+            "type": { "const": "interaction_choice" },
+            "decision": { "enum": ["approve", "reject"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "actionId", "selectionId", "optionIndex"],
+          "properties": {
+            "type": { "const": "selection" },
+            "actionId": { "$ref": "#/$defs/id" },
+            "selectionId": { "$ref": "#/$defs/id" },
+            "optionIndex": { "type": "integer", "minimum": 0 }
+          }
+        }
+      ]
+    }
+  }
+}

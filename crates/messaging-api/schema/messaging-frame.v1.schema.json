@@ -8,7 +8,14 @@
     "providerId": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
     "placement": { "enum": ["local", "cloud"] },
     "extension": { "type": "object" },
-    "stringList": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+    "contentCapability": { "enum": ["text", "markdown", "image", "audio", "interaction"] },
+    "managementOperation": {
+      "enum": [
+        "connection.list", "connection.update", "connection.delete", "connection.test",
+        "connection.status", "account.bind", "account.unbind", "account.binding.list",
+        "setup.options", "setup.start", "setup.status"
+      ]
+    },
 
     "frontendProvider": {
       "type": "object",
@@ -28,7 +35,7 @@
     "providerMetadata": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["provider", "displayName", "placement", "deprecated", "available", "setupFlow", "capabilities"],
+      "required": ["provider", "displayName", "placement", "deprecated", "available", "setupFlow", "capabilities", "managementOperations"],
       "properties": {
         "provider": { "$ref": "#/$defs/providerId" },
         "displayName": { "$ref": "#/$defs/id" },
@@ -37,7 +44,16 @@
         "available": { "type": "boolean" },
         "disabledReason": { "$ref": "#/$defs/id" },
         "setupFlow": { "$ref": "#/$defs/id" },
-        "capabilities": { "$ref": "#/$defs/stringList" }
+        "capabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/contentCapability" },
+          "uniqueItems": true
+        },
+        "managementOperations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/managementOperation" },
+          "uniqueItems": true
+        }
       }
     },
     "messagingConnection": {

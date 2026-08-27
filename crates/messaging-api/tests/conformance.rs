@@ -1,9 +1,9 @@
 use messaging_api::{
     AccountBindingListResponse, AccountBindingRequest, ConnectionListResponse, ConnectionRequest,
     ConnectionStatusResponse, ConnectionTestRequest, ConnectionTestResponse,
-    ConnectionUpdateRequest, ConnectionUpdateResponse, MutationResponse, ProviderListRequest,
-    ProviderListResponse, ProviderPlacementRequest, SetupOptionsResponse, SetupResponse,
-    SetupStartRequest, SetupStatusRequest, MANAGEMENT_TARGETS,
+    ConnectionUpdateRequest, ConnectionUpdateResponse, MutationResponse, NormalizedInbound,
+    ProviderListRequest, ProviderListResponse, ProviderPlacementRequest, SetupOptionsResponse,
+    SetupResponse, SetupStartRequest, SetupStatusRequest, MANAGEMENT_TARGETS,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -129,6 +129,27 @@ fn body<T: DeserializeOwned>(name: &str) -> T {
         .unwrap_or_else(|| panic!("missing fixture: {name}"));
     let frame: Value = serde_json::from_str(raw).unwrap();
     serde_json::from_value(frame["body"].clone()).unwrap()
+}
+
+#[test]
+fn normalized_inbound_fixture_matches_schema_and_semantic_validation() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/normalized-inbound.v1.schema.json")).unwrap();
+    let fixture: Value = serde_json::from_str(include_str!(
+        "../fixtures/normalized-inbound.shared-text.json"
+    ))
+    .unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    let errors = validator
+        .iter_errors(&fixture)
+        .map(|error| error.to_string())
+        .collect::<Vec<_>>();
+    assert!(
+        errors.is_empty(),
+        "normalized inbound fixture failed: {errors:?}"
+    );
+    let inbound: NormalizedInbound = serde_json::from_value(fixture).unwrap();
+    assert!(inbound.validate().is_ok());
 }
 
 #[test]

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "eventId": "telegram:update:41",
+  "address": {
+    "provider": "telegram",
+    "accountId": "bot-7",
+    "conversationId": "chat-42",
+    "laneId": "topic-3",
+    "audience": "shared"
+  },
+  "actor": {
+    "provider": "telegram",
+    "accountId": "bot-7",
+    "externalUserId": "user-9",
+    "displayName": "Yihan"
+  },
+  "content": {
+    "type": "text",
+    "text": "hello",
+    "providerMessageId": "message-5"
+  },
+  "occurredAtMs": 1787760000000
+}

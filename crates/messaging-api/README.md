@@ -1,7 +1,8 @@
 # mhome-messaging-api
 
-Transport-neutral management contract for messaging providers. The crate owns the typed Rust DTOs,
-the target inventory, strict request/response JSON Schema, and cross-language conformance fixtures.
+Transport-neutral control and normalized data-plane contracts for messaging providers. The crate
+owns typed Rust DTOs, target and capability inventories, strict JSON Schemas, and cross-language
+conformance fixtures.
 
 The common contract deliberately treats `data`, `providerData`, `options`, and `result` as provider
 extension objects. Their contents are decoded and validated by the selected provider; all fields
@@ -11,5 +12,7 @@ Conformance frames contain `target`, `direction`, and `body`. `direction` is par
 artifact used by tests and generators; the surrounding MWS transport continues to carry request and
 response correlation.
 
-It intentionally contains no provider SDK, transport, runtime lifecycle, persistence, or Agent
-integration.
+`control` models the MWS management API. `model` defines the canonical provider-independent address,
+external actor, and inbound content semantics implemented independently by local Rust and cloud
+Java runtimes. Neither module contains provider SDKs, transport callbacks, runtime lifecycle,
+persistence, or Agent integration.
