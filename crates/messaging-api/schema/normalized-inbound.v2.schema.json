@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:mhome:messaging-api:normalized-inbound:v1",
-  "title": "mHome normalized messaging inbound v1",
+  "$id": "urn:mhome:messaging-api:normalized-inbound:v2",
+  "title": "mHome normalized messaging inbound v2",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "eventId", "address", "actor", "content"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "eventId": { "$ref": "#/$defs/id" },
     "address": { "$ref": "#/$defs/address" },
     "actor": { "$ref": "#/$defs/actor" },
@@ -67,32 +67,10 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["type", "actionId", "token", "decision"],
+          "required": ["type", "token"],
           "properties": {
-            "type": { "const": "interaction" },
-            "actionId": { "$ref": "#/$defs/id" },
-            "token": { "$ref": "#/$defs/id" },
-            "decision": { "enum": ["approve", "reject"] }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["type", "decision"],
-          "properties": {
-            "type": { "const": "interaction_choice" },
-            "decision": { "enum": ["approve", "reject"] }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["type", "actionId", "selectionId", "optionIndex"],
-          "properties": {
-            "type": { "const": "selection" },
-            "actionId": { "$ref": "#/$defs/id" },
-            "selectionId": { "$ref": "#/$defs/id" },
-            "optionIndex": { "type": "integer", "minimum": 0 }
+            "type": { "const": "action_selected" },
+            "token": { "$ref": "#/$defs/id" }
           }
         }
       ]

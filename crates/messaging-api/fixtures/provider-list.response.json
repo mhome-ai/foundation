@@ -10,7 +10,10 @@
         "deprecated": false,
         "available": true,
         "setupFlow": "pairing_code",
-        "capabilities": ["text", "markdown"],
+        "audiences": ["personal", "shared"],
+        "inboundCapabilities": ["text", "audio", "action"],
+        "outboundCapabilities": ["text", "markdown", "action"],
+        "deliveryMode": "unrestricted",
         "managementOperations": [
           "connection.list",
           "connection.update",
@@ -19,7 +22,8 @@
           "setup.options",
           "setup.start",
           "setup.status"
-        ]
+        ],
+        "providerData": {}
       }
     ]
   }

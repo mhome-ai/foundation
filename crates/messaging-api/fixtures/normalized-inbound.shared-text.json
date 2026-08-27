@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "eventId": "telegram:update:41",
   "address": {
     "provider": "telegram",

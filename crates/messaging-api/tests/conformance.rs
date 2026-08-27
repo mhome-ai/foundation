@@ -185,7 +185,7 @@ fn body<T: DeserializeOwned>(name: &str) -> T {
 #[test]
 fn normalized_inbound_fixture_matches_schema_and_semantic_validation() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/normalized-inbound.v1.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/normalized-inbound.v2.schema.json")).unwrap();
     let fixture: Value = serde_json::from_str(include_str!(
         "../fixtures/normalized-inbound.shared-text.json"
     ))
@@ -206,7 +206,7 @@ fn normalized_inbound_fixture_matches_schema_and_semantic_validation() {
 #[test]
 fn normalized_inbound_corpus_seals_schema_and_semantics() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/normalized-inbound.v1.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/normalized-inbound.v2.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     let corpus: Value = serde_json::from_str(include_str!(
         "../fixtures/normalized-inbound.conformance.json"
@@ -240,7 +240,7 @@ fn normalized_inbound_corpus_seals_schema_and_semantics() {
 #[test]
 fn every_management_target_has_typed_request_and_response_fixtures() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/messaging-frame.v1.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/messaging-frame.v2.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     for (name, raw) in VALID_FIXTURES {
         let frame: Value = serde_json::from_str(raw).unwrap();
@@ -309,7 +309,7 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
 #[test]
 fn invalid_frames_are_rejected() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/messaging-frame.v1.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/messaging-frame.v2.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     for (name, raw) in INVALID_FIXTURES {
         let frame: Value = serde_json::from_str(raw).unwrap();

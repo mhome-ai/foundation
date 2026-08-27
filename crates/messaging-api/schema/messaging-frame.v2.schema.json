@@ -1,14 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:mhome:messaging-api:frame:v1",
-  "title": "mHome messaging management API conformance frame v1",
+  "$id": "urn:mhome:messaging-api:frame:v2",
+  "title": "mHome messaging management API conformance frame v2",
   "$ref": "#/$defs/frame",
   "$defs": {
     "id": { "type": "string", "minLength": 1 },
     "providerId": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
     "placement": { "enum": ["local", "cloud"] },
     "extension": { "type": "object" },
-    "contentCapability": { "enum": ["text", "markdown", "image", "audio", "interaction"] },
+    "audience": { "enum": ["personal", "shared"] },
+    "contentCapability": { "enum": ["text", "markdown", "image", "audio", "action"] },
+    "deliveryMode": { "enum": ["unrestricted", "session_window"] },
     "managementOperation": {
       "enum": [
         "connection.list", "connection.update", "connection.delete", "connection.test",
@@ -37,7 +39,7 @@
     "providerMetadata": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["provider", "displayName", "placement", "deprecated", "available", "setupFlow", "capabilities", "managementOperations"],
+      "required": ["provider", "displayName", "placement", "deprecated", "available", "setupFlow", "audiences", "inboundCapabilities", "outboundCapabilities", "deliveryMode", "managementOperations", "providerData"],
       "properties": {
         "provider": { "$ref": "#/$defs/providerId" },
         "displayName": { "$ref": "#/$defs/id" },
@@ -46,16 +48,28 @@
         "available": { "type": "boolean" },
         "disabledReason": { "$ref": "#/$defs/id" },
         "setupFlow": { "$ref": "#/$defs/id" },
-        "capabilities": {
+        "audiences": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/audience" },
+          "uniqueItems": true
+        },
+        "inboundCapabilities": {
           "type": "array",
           "items": { "$ref": "#/$defs/contentCapability" },
           "uniqueItems": true
         },
+        "outboundCapabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/contentCapability" },
+          "uniqueItems": true
+        },
+        "deliveryMode": { "$ref": "#/$defs/deliveryMode" },
         "managementOperations": {
           "type": "array",
           "items": { "$ref": "#/$defs/managementOperation" },
           "uniqueItems": true
-        }
+        },
+        "providerData": { "$ref": "#/$defs/extension" }
       }
     },
     "messagingConnection": {

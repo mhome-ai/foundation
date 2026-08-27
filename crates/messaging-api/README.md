@@ -17,6 +17,12 @@ external actor, and inbound content semantics implemented independently by local
 Java runtimes. Neither module contains provider SDKs, transport callbacks, runtime lifecycle,
 persistence, or Agent integration.
 
+Interactive delivery is modeled as an `ActionSet` of user-facing labels and opaque tokens. An
+inbound selection contains only `ActionSelected { token }`; approval decisions, dialog values, and
+provider callback payloads stay in runtime-owned route stores. Setup claims and account lifecycle
+are framework application ports rather than chat content, so they are intentionally not part of
+this public normalized data plane.
+
 Shared-conversation discovery, group binding challenges, and self-service actor links are common
 management operations. Challenge requests never carry a target user: each runtime derives the user
 from its authenticated request context, authorizes scope ownership or membership, and stores only a

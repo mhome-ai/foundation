@@ -2,7 +2,7 @@ use conversation_api::ConversationSurface;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-pub const NORMALIZED_INBOUND_SCHEMA_VERSION: u16 = 1;
+pub const NORMALIZED_INBOUND_SCHEMA_VERSION: u16 = 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -129,11 +129,42 @@ impl ExternalActor {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum InteractionDecision {
-    Approve,
-    Reject,
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActionOption {
+    pub label: String,
+    pub token: String,
+}
+
+impl ActionOption {
+    pub fn new(
+        label: impl Into<String>,
+        token: impl Into<String>,
+    ) -> Result<Self, MessagingModelError> {
+        Ok(Self {
+            label: segment(label.into(), "action label is invalid")?,
+            token: segment(token.into(), "action token is invalid")?,
+        })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActionSet {
+    pub options: Vec<ActionOption>,
+}
+
+impl ActionSet {
+    pub fn new(options: Vec<ActionOption>) -> Result<Self, MessagingModelError> {
+        if options.is_empty() {
+            return Err(MessagingModelError("action set cannot be empty"));
+        }
+        for option in &options {
+            segment_ref(&option.label, "action label is invalid")?;
+            segment_ref(&option.token, "action token is invalid")?;
+        }
+        Ok(Self { options })
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -155,18 +186,8 @@ pub enum NormalizedInboundContent {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         duration_seconds: Option<u32>,
     },
-    Interaction {
-        action_id: String,
+    ActionSelected {
         token: String,
-        decision: InteractionDecision,
-    },
-    InteractionChoice {
-        decision: InteractionDecision,
-    },
-    Selection {
-        action_id: String,
-        selection_id: String,
-        option_index: u32,
     },
 }
 
@@ -227,7 +248,9 @@ fn validate_content(content: &NormalizedInboundContent) -> Result<(), MessagingM
             text,
             provider_message_id,
         } => {
-            segment_ref(text, "messaging text is invalid")?;
+            if text.is_empty() {
+                return Err(MessagingModelError("messaging text is invalid"));
+            }
             optional_ref(provider_message_id, "provider message id is invalid")?;
         }
         NormalizedInboundContent::Audio {
@@ -238,20 +261,8 @@ fn validate_content(content: &NormalizedInboundContent) -> Result<(), MessagingM
             segment_ref(provider_message_id, "provider message id is invalid")?;
             segment_ref(provider_file_id, "provider file id is invalid")?;
         }
-        NormalizedInboundContent::Interaction {
-            action_id, token, ..
-        } => {
-            segment_ref(action_id, "interaction action id is invalid")?;
-            segment_ref(token, "interaction token is invalid")?;
-        }
-        NormalizedInboundContent::InteractionChoice { .. } => {}
-        NormalizedInboundContent::Selection {
-            action_id,
-            selection_id,
-            ..
-        } => {
-            segment_ref(action_id, "selection action id is invalid")?;
-            segment_ref(selection_id, "selection id is invalid")?;
+        NormalizedInboundContent::ActionSelected { token } => {
+            segment_ref(token, "action token is invalid")?;
         }
     }
     Ok(())
@@ -340,5 +351,41 @@ mod tests {
             occurred_at_ms: None,
         };
         assert!(inbound.validate().is_err());
+    }
+
+    #[test]
+    fn actions_only_expose_labels_and_opaque_tokens() {
+        let actions = ActionSet::new(vec![
+            ActionOption::new("Approve", "route-approve").unwrap(),
+            ActionOption::new("Reject", "route-reject").unwrap(),
+        ])
+        .unwrap();
+        assert_eq!(actions.options.len(), 2);
+        assert!(ActionSet::new(Vec::new()).is_err());
+        assert!(ActionOption::new("Approve", " ").is_err());
+    }
+
+    #[test]
+    fn inbound_text_preserves_whitespace_allowed_by_the_schema() {
+        let inbound = NormalizedInbound {
+            schema_version: NORMALIZED_INBOUND_SCHEMA_VERSION,
+            event_id: "event".to_string(),
+            address: MessagingAddress::new(
+                "telegram",
+                "bot",
+                "chat",
+                None,
+                ConversationAudience::Personal,
+            )
+            .unwrap(),
+            actor: ExternalActor::new("telegram", "bot", "user", None).unwrap(),
+            content: NormalizedInboundContent::Text {
+                text: " message with spacing ".to_string(),
+                provider_message_id: None,
+            },
+            conversation_display_name: None,
+            occurred_at_ms: None,
+        };
+        assert!(inbound.validate().is_ok());
     }
 }

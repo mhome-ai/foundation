@@ -1,3 +1,4 @@
+use crate::ConversationAudience;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -34,8 +35,12 @@ pub struct ProviderMetadata {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub disabled_reason: Option<String>,
     pub setup_flow: String,
-    pub capabilities: Vec<ContentCapability>,
+    pub audiences: Vec<ConversationAudience>,
+    pub inbound_capabilities: Vec<ContentCapability>,
+    pub outbound_capabilities: Vec<ContentCapability>,
+    pub delivery_mode: DeliveryMode,
     pub management_operations: Vec<ManagementOperation>,
+    pub provider_data: Value,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -45,7 +50,14 @@ pub enum ContentCapability {
     Markdown,
     Image,
     Audio,
-    Interaction,
+    Action,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DeliveryMode {
+    Unrestricted,
+    SessionWindow,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
