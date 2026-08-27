@@ -16,3 +16,7 @@ response correlation.
 external actor, and inbound content semantics implemented independently by local Rust and cloud
 Java runtimes. Neither module contains provider SDKs, transport callbacks, runtime lifecycle,
 persistence, or Agent integration.
+
+`fixtures/normalized-inbound.conformance.json` is the executable cross-language corpus. Every
+runtime implementation must accept every `valid` case and reject every `invalid` case; adding a
+content variant or validation rule requires updating this corpus in the same change.

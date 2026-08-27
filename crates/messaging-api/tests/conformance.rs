@@ -153,6 +153,40 @@ fn normalized_inbound_fixture_matches_schema_and_semantic_validation() {
 }
 
 #[test]
+fn normalized_inbound_corpus_seals_schema_and_semantics() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/normalized-inbound.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    let corpus: Value = serde_json::from_str(include_str!(
+        "../fixtures/normalized-inbound.conformance.json"
+    ))
+    .unwrap();
+
+    for case in corpus["valid"].as_array().unwrap() {
+        let name = case["name"].as_str().unwrap();
+        let value = case["value"].clone();
+        assert!(
+            validator.is_valid(&value),
+            "valid case failed schema: {name}"
+        );
+        let inbound: NormalizedInbound = serde_json::from_value(value).unwrap();
+        assert!(
+            inbound.validate().is_ok(),
+            "valid case failed semantics: {name}"
+        );
+    }
+
+    for case in corpus["invalid"].as_array().unwrap() {
+        let name = case["name"].as_str().unwrap();
+        let value = case["value"].clone();
+        let rejected = !validator.is_valid(&value)
+            || serde_json::from_value::<NormalizedInbound>(value)
+                .map_or(true, |inbound| inbound.validate().is_err());
+        assert!(rejected, "invalid case was accepted: {name}");
+    }
+}
+
+#[test]
 fn every_management_target_has_typed_request_and_response_fixtures() {
     let schema: Value =
         serde_json::from_str(include_str!("../schema/messaging-frame.v1.schema.json")).unwrap();

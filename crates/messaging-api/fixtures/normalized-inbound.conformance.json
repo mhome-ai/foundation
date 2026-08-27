@@ -1,0 +1,128 @@
+{
+  "valid": [
+    {
+      "name": "personal_text",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event-personal-text",
+        "address": { "provider": "telegram", "accountId": "bot-1", "conversationId": "chat-1", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot-1", "externalUserId": "user-1", "displayName": "User One" },
+        "content": { "type": "text", "text": "hello", "providerMessageId": "message-1" },
+        "occurredAtMs": 1
+      }
+    },
+    {
+      "name": "shared_text_with_lane",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event-shared-text",
+        "address": { "provider": "feishu", "accountId": "app-1", "conversationId": "group-1", "laneId": "thread-1", "audience": "shared" },
+        "actor": { "provider": "feishu", "accountId": "app-1", "externalUserId": "open-id-1" },
+        "content": { "type": "text", "text": "group hello" }
+      }
+    },
+    {
+      "name": "audio",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event-audio",
+        "address": { "provider": "telegram", "accountId": "bot-1", "conversationId": "chat-1", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot-1", "externalUserId": "user-1" },
+        "content": { "type": "audio", "providerMessageId": "message-2", "providerFileId": "file-1", "durationSeconds": 0 }
+      }
+    },
+    {
+      "name": "interaction",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event-interaction",
+        "address": { "provider": "feishu", "accountId": "app-1", "conversationId": "chat-1", "audience": "personal" },
+        "actor": { "provider": "feishu", "accountId": "app-1", "externalUserId": "open-id-1" },
+        "content": { "type": "interaction", "actionId": "approve", "token": "route-1", "decision": "approve" }
+      }
+    },
+    {
+      "name": "interaction_choice",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event-choice",
+        "address": { "provider": "telegram", "accountId": "bot-1", "conversationId": "chat-1", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot-1", "externalUserId": "user-1" },
+        "content": { "type": "interaction_choice", "decision": "reject" }
+      }
+    },
+    {
+      "name": "selection",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event-selection",
+        "address": { "provider": "telegram", "accountId": "bot-1", "conversationId": "chat-1", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot-1", "externalUserId": "user-1" },
+        "content": { "type": "selection", "actionId": "callback-1", "selectionId": "dialog-1", "optionIndex": 0 }
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "provider_starts_with_digit",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event",
+        "address": { "provider": "1telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
+        "actor": { "provider": "1telegram", "accountId": "bot", "externalUserId": "user" },
+        "content": { "type": "text", "text": "hello" }
+      }
+    },
+    {
+      "name": "negative_occurrence_time",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event",
+        "address": { "provider": "telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot", "externalUserId": "user" },
+        "content": { "type": "text", "text": "hello" },
+        "occurredAtMs": -1
+      }
+    },
+    {
+      "name": "actor_account_mismatch",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event",
+        "address": { "provider": "telegram", "accountId": "bot-a", "conversationId": "chat", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot-b", "externalUserId": "user" },
+        "content": { "type": "text", "text": "hello" }
+      }
+    },
+    {
+      "name": "edge_whitespace",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": " event ",
+        "address": { "provider": "telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot", "externalUserId": "user" },
+        "content": { "type": "text", "text": "hello" }
+      }
+    },
+    {
+      "name": "negative_audio_duration",
+      "value": {
+        "schemaVersion": 1,
+        "eventId": "event",
+        "address": { "provider": "telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot", "externalUserId": "user" },
+        "content": { "type": "audio", "providerMessageId": "message", "providerFileId": "file", "durationSeconds": -1 }
+      }
+    },
+    {
+      "name": "unknown_schema_version",
+      "value": {
+        "schemaVersion": 2,
+        "eventId": "event",
+        "address": { "provider": "telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot", "externalUserId": "user" },
+        "content": { "type": "text", "text": "hello" }
+      }
+    }
+  ]
+}

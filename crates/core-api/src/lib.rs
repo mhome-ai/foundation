@@ -911,6 +911,22 @@ pub struct ProviderToolCall {
     pub arguments_json: String,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ScopeAccessRequirement {
+    Member,
+    Owner,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ScopeAuthorizationRequest {
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub user_id: String,
+    pub requirement: ScopeAccessRequirement,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ServiceCoreInput {
     ClientAuth {
@@ -939,6 +955,11 @@ pub enum ServiceCoreInput {
         actor_user_id: String,
         surface_id: String,
         is_test: bool,
+    },
+    /// Authorizes a trusted headless actor before a non-Conversation operation
+    /// such as binding a shared messaging surface.
+    ScopeAuthorization {
+        request: ScopeAuthorizationRequest,
     },
     NodeAuth {
         request: NodeAuthRequest,
@@ -993,6 +1014,9 @@ pub enum ServiceCoreResponse {
     },
     ConversationRequest {
         response_payload: Option<String>,
+    },
+    ScopeAuthorization {
+        authorized: bool,
     },
     NodeAuth(NodeAuthResponse),
     HubConnectionProof(HubConnectionProofResponse),

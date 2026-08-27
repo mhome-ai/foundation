@@ -197,6 +197,11 @@ impl NormalizedInbound {
                 "messaging actor and address account do not match",
             ));
         }
+        if self.occurred_at_ms.is_some_and(|value| value < 0) {
+            return Err(MessagingModelError(
+                "messaging occurrence time cannot be negative",
+            ));
+        }
         validate_content(&self.content)?;
         Ok(Self {
             schema_version: self.schema_version,
@@ -207,16 +212,6 @@ impl NormalizedInbound {
             occurred_at_ms: self.occurred_at_ms,
         })
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum InboundDispositionKind {
-    Ignored,
-    ProviderHandled,
-    Conversation,
-    RetryableFailure,
-    TerminalFailure,
 }
 
 fn validate_content(content: &NormalizedInboundContent) -> Result<(), MessagingModelError> {
@@ -258,6 +253,10 @@ fn validate_content(content: &NormalizedInboundContent) -> Result<(), MessagingM
 fn provider_id(value: String) -> Result<String, MessagingModelError> {
     let normalized = value.trim().to_ascii_lowercase();
     if normalized.is_empty()
+        || !normalized
+            .as_bytes()
+            .first()
+            .is_some_and(u8::is_ascii_lowercase)
         || !normalized
             .bytes()
             .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'_')
