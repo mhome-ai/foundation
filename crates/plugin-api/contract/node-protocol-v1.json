@@ -15,6 +15,37 @@
       "revision"
     ]
   },
+  "llm": {
+    "version": "v1",
+    "runtimeTargetPrefix": "/llm/app/",
+    "routes": {
+      "modelImportStart": "model/import/start",
+      "modelImportStatus": "model/import/status",
+      "modelImportFinalize": "model/import/finalize",
+      "modelImportCancel": "model/import/cancel"
+    },
+    "modelImportUploadPathPrefix": "/llm/model/import/upload",
+    "modelImportUploadHeaders": {
+      "authorization": "authorization",
+      "offset": "x-upload-offset",
+      "chunkSha256": "x-chunk-sha256"
+    },
+    "modelImportStartRequestFields": [
+      "displayName",
+      "fileName",
+      "artifactSha256",
+      "sizeBytes",
+      "idempotencyKey"
+    ],
+    "modelImportOperationRequestFields": ["operationId"],
+    "modelImportChunkResponseFields": [
+      "ok",
+      "operationId",
+      "receivedBytes",
+      "reason",
+      "detail"
+    ]
+  },
   "backendStatus": {
     "nodeContract": "baycat.node.status.v1",
     "contract": "baycat.backend.status.v1",

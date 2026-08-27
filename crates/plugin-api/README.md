@@ -6,6 +6,11 @@ The crate owns the common control/runtime envelopes, the reusable settings proto
 public request contracts for built-in Plugin types. It deliberately contains no transport,
 dispatch, authorization, persistence, runtime lifecycle, or Plugin implementation logic.
 
+The LLM v1 contract also owns the runtime target prefix, resumable custom-model import control
+routes, snapshots, upload grant, chunk acknowledgement, and LAN HTTP upload path prefix.
+File-system paths are intentionally absent from the Node-facing contract: a client-side service
+reads the local artifact and transfers only its bytes and public metadata.
+
 Cargo package versions and wire contract versions are independent. Each built-in Plugin contract
 declares its own wire version so that one Plugin can evolve without forcing unrelated Plugins to
 change version.

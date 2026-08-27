@@ -118,6 +118,64 @@ mod tests {
             &changed,
             &manifest["pluginApi"]["settingsChangedEventFields"],
         );
+        assert_eq!(
+            manifest["llm"]["runtimeTargetPrefix"],
+            contracts::llm::RUNTIME_TARGET_PREFIX
+        );
+        assert_eq!(
+            manifest["llm"]["routes"]["modelImportStart"],
+            contracts::llm::MODEL_IMPORT_START
+        );
+        assert_eq!(
+            manifest["llm"]["routes"]["modelImportStatus"],
+            contracts::llm::MODEL_IMPORT_STATUS
+        );
+        assert_eq!(
+            manifest["llm"]["routes"]["modelImportFinalize"],
+            contracts::llm::MODEL_IMPORT_FINALIZE
+        );
+        assert_eq!(
+            manifest["llm"]["routes"]["modelImportCancel"],
+            contracts::llm::MODEL_IMPORT_CANCEL
+        );
+        assert_eq!(
+            manifest["llm"]["modelImportUploadPathPrefix"],
+            contracts::llm::MODEL_IMPORT_UPLOAD_PATH_PREFIX
+        );
+        assert_eq!(
+            manifest["llm"]["modelImportUploadHeaders"]["offset"],
+            contracts::llm::MODEL_IMPORT_OFFSET_HEADER
+        );
+        assert_eq!(
+            manifest["llm"]["modelImportUploadHeaders"]["chunkSha256"],
+            contracts::llm::MODEL_IMPORT_CHUNK_SHA256_HEADER
+        );
+        let import = serde_json::to_value(contracts::llm::ModelImportStartRequest {
+            display_name: "Local model".to_string(),
+            file_name: "model.gguf".to_string(),
+            artifact_sha256: "a".repeat(64),
+            size_bytes: 4,
+            idempotency_key: "import-1".to_string(),
+        })
+        .expect("serialize LLM import request");
+        assert_manifest_fields(&import, &manifest["llm"]["modelImportStartRequestFields"]);
+        let operation = serde_json::to_value(contracts::llm::ModelImportOperationRequest {
+            operation_id: "operation-1".to_string(),
+        })
+        .expect("serialize LLM import operation request");
+        assert_manifest_fields(
+            &operation,
+            &manifest["llm"]["modelImportOperationRequestFields"],
+        );
+        let chunk = serde_json::to_value(contracts::llm::ModelImportChunkResponse {
+            ok: false,
+            operation_id: "operation-1".to_string(),
+            received_bytes: 4,
+            reason: Some("UPLOAD_OFFSET_MISMATCH".to_string()),
+            detail: Some("offset mismatch".to_string()),
+        })
+        .expect("serialize LLM import chunk response");
+        assert_manifest_fields(&chunk, &manifest["llm"]["modelImportChunkResponseFields"]);
     }
 
     fn assert_manifest_fields(value: &serde_json::Value, expected: &serde_json::Value) {

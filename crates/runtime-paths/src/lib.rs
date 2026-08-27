@@ -163,6 +163,11 @@ impl RuntimePaths {
         self.workdir.join("artifacts")
     }
 
+    /// Transient files owned by workdir-scoped framework services.
+    pub fn tmp_root(&self) -> PathBuf {
+        self.workdir.join("tmp")
+    }
+
     pub fn component_config_path(&self, component_name: &str) -> PathBuf {
         self.config_root().join(format!("{component_name}.yaml"))
     }
@@ -309,6 +314,15 @@ mod tests {
         assert_eq!(
             paths.service_log_path("meowcore"),
             PathBuf::from("/tmp/meow-runtime-test/log/meow-core.log")
+        );
+    }
+
+    #[test]
+    fn tmp_root_is_workdir_scoped() {
+        let paths = RuntimePaths::for_workdir("/tmp/meow-runtime-test");
+        assert_eq!(
+            paths.tmp_root(),
+            PathBuf::from("/tmp/meow-runtime-test/tmp")
         );
     }
 
