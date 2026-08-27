@@ -19,5 +19,6 @@
     "text": "hello",
     "providerMessageId": "message-5"
   },
+  "conversationDisplayName": "Project room",
   "occurredAtMs": 1787760000000
 }

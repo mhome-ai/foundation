@@ -17,6 +17,12 @@ external actor, and inbound content semantics implemented independently by local
 Java runtimes. Neither module contains provider SDKs, transport callbacks, runtime lifecycle,
 persistence, or Agent integration.
 
+Shared-conversation discovery, group binding challenges, and self-service actor links are common
+management operations. Challenge requests never carry a target user: each runtime derives the user
+from its authenticated request context, authorizes scope ownership or membership, and stores only a
+short-lived one-time code hash. Provider adapters remain responsible only for translating provider
+events and sending provider-native replies.
+
 `fixtures/normalized-inbound.conformance.json` is the executable cross-language corpus. Every
 runtime implementation must accept every `valid` case and reject every `invalid` case; adding a
 content variant or validation rule requires updating this corpus in the same change.

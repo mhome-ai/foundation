@@ -1,0 +1,1 @@
+{"target":"/messaging/actor/link/list","direction":"response","body":{"links":[{"linkId":"link_a","provider":"telegram","placement":"local","accountId":"bot_a","displayName":"Alice","createdAtMs":1720000000000}]}}

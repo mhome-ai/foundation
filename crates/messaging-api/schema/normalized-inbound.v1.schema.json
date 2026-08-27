@@ -11,10 +11,12 @@
     "address": { "$ref": "#/$defs/address" },
     "actor": { "$ref": "#/$defs/actor" },
     "content": { "$ref": "#/$defs/content" },
+    "conversationDisplayName": { "$ref": "#/$defs/id" },
     "occurredAtMs": { "type": "integer", "minimum": 0 }
   },
   "$defs": {
     "id": { "type": "string", "minLength": 1, "pattern": "^\\S(?:.*\\S)?$" },
+    "text": { "type": "string", "minLength": 1 },
     "providerId": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
     "address": {
       "type": "object",
@@ -47,7 +49,7 @@
           "required": ["type", "text"],
           "properties": {
             "type": { "const": "text" },
-            "text": { "$ref": "#/$defs/id" },
+            "text": { "$ref": "#/$defs/text" },
             "providerMessageId": { "$ref": "#/$defs/id" }
           }
         },

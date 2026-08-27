@@ -1,9 +1,12 @@
 use messaging_api::{
-    AccountBindingListResponse, AccountBindingRequest, ConnectionListResponse, ConnectionRequest,
-    ConnectionStatusResponse, ConnectionTestRequest, ConnectionTestResponse,
-    ConnectionUpdateRequest, ConnectionUpdateResponse, MutationResponse, NormalizedInbound,
-    ProviderListRequest, ProviderListResponse, ProviderPlacementRequest, SetupOptionsResponse,
-    SetupResponse, SetupStartRequest, SetupStatusRequest, MANAGEMENT_TARGETS,
+    AccountBindingListResponse, AccountBindingRequest, ActorLinkCodeCreateRequest,
+    ActorLinkDeleteRequest, ActorLinkListRequest, ActorLinkListResponse, ChallengeCodeResponse,
+    ConnectionListResponse, ConnectionRequest, ConnectionStatusResponse, ConnectionTestRequest,
+    ConnectionTestResponse, ConnectionUpdateRequest, ConnectionUpdateResponse, MutationResponse,
+    NormalizedInbound, ProviderListRequest, ProviderListResponse, ProviderPlacementRequest,
+    SetupOptionsResponse, SetupResponse, SetupStartRequest, SetupStatusRequest,
+    SurfaceBindCodeCreateRequest, SurfaceListRequest, SurfaceListResponse, SurfaceRequest,
+    MANAGEMENT_TARGETS,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -104,6 +107,54 @@ const VALID_FIXTURES: &[(&str, &str)] = &[
     (
         "setup-status.response.json",
         include_str!("../fixtures/setup-status.response.json"),
+    ),
+    (
+        "surface-list.request.json",
+        include_str!("../fixtures/surface-list.request.json"),
+    ),
+    (
+        "surface-list.response.json",
+        include_str!("../fixtures/surface-list.response.json"),
+    ),
+    (
+        "surface-dismiss.request.json",
+        include_str!("../fixtures/surface-dismiss.request.json"),
+    ),
+    (
+        "surface-dismiss.response.json",
+        include_str!("../fixtures/surface-dismiss.response.json"),
+    ),
+    (
+        "surface-bind-code-create.request.json",
+        include_str!("../fixtures/surface-bind-code-create.request.json"),
+    ),
+    (
+        "surface-bind-code-create.response.json",
+        include_str!("../fixtures/surface-bind-code-create.response.json"),
+    ),
+    (
+        "actor-link-code-create.request.json",
+        include_str!("../fixtures/actor-link-code-create.request.json"),
+    ),
+    (
+        "actor-link-code-create.response.json",
+        include_str!("../fixtures/actor-link-code-create.response.json"),
+    ),
+    (
+        "actor-link-list.request.json",
+        include_str!("../fixtures/actor-link-list.request.json"),
+    ),
+    (
+        "actor-link-list.response.json",
+        include_str!("../fixtures/actor-link-list.response.json"),
+    ),
+    (
+        "actor-link-delete.request.json",
+        include_str!("../fixtures/actor-link-delete.request.json"),
+    ),
+    (
+        "actor-link-delete.response.json",
+        include_str!("../fixtures/actor-link-delete.response.json"),
     ),
 ];
 
@@ -241,6 +292,18 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
     body::<SetupResponse>("setup-start.response.json");
     body::<SetupStatusRequest>("setup-status.request.json");
     body::<SetupResponse>("setup-status.response.json");
+    body::<SurfaceListRequest>("surface-list.request.json");
+    body::<SurfaceListResponse>("surface-list.response.json");
+    body::<SurfaceRequest>("surface-dismiss.request.json");
+    body::<MutationResponse>("surface-dismiss.response.json");
+    body::<SurfaceBindCodeCreateRequest>("surface-bind-code-create.request.json");
+    body::<ChallengeCodeResponse>("surface-bind-code-create.response.json");
+    body::<ActorLinkCodeCreateRequest>("actor-link-code-create.request.json");
+    body::<ChallengeCodeResponse>("actor-link-code-create.response.json");
+    body::<ActorLinkListRequest>("actor-link-list.request.json");
+    body::<ActorLinkListResponse>("actor-link-list.response.json");
+    body::<ActorLinkDeleteRequest>("actor-link-delete.request.json");
+    body::<MutationResponse>("actor-link-delete.response.json");
 }
 
 #[test]

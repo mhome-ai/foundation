@@ -1,0 +1,1 @@
+{"target":"/messaging/actor/link-code/create","direction":"request","body":{"provider":"telegram","placement":"local","surfaceId":"mg:telegram:bot_a:group_a"}}

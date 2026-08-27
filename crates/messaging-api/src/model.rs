@@ -179,6 +179,8 @@ pub struct NormalizedInbound {
     pub actor: ExternalActor,
     pub content: NormalizedInboundContent,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conversation_display_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub occurred_at_ms: Option<i64>,
 }
 
@@ -203,12 +205,17 @@ impl NormalizedInbound {
             ));
         }
         validate_content(&self.content)?;
+        optional_ref(
+            &self.conversation_display_name,
+            "messaging conversation display name is invalid",
+        )?;
         Ok(Self {
             schema_version: self.schema_version,
             event_id,
             address,
             actor,
             content: self.content,
+            conversation_display_name: self.conversation_display_name,
             occurred_at_ms: self.occurred_at_ms,
         })
     }
@@ -329,6 +336,7 @@ mod tests {
                 text: "hello".to_string(),
                 provider_message_id: None,
             },
+            conversation_display_name: None,
             occurred_at_ms: None,
         };
         assert!(inbound.validate().is_err());

@@ -72,6 +72,18 @@ pub enum ManagementOperation {
     SetupStart,
     #[serde(rename = "setup.status")]
     SetupStatus,
+    #[serde(rename = "surface.list")]
+    SurfaceList,
+    #[serde(rename = "surface.dismiss")]
+    SurfaceDismiss,
+    #[serde(rename = "surface.bind_code.create")]
+    SurfaceBindCodeCreate,
+    #[serde(rename = "actor.link_code.create")]
+    ActorLinkCodeCreate,
+    #[serde(rename = "actor.link.list")]
+    ActorLinkList,
+    #[serde(rename = "actor.link.delete")]
+    ActorLinkDelete,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -244,4 +256,119 @@ pub struct SetupState {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SetupResponse {
     pub setup: SetupState,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SurfaceState {
+    Pending,
+    Bound,
+    Dismissed,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SurfaceListRequest {
+    pub provider: String,
+    pub placement: Placement,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub account_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub state: Option<SurfaceState>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MessagingSurface {
+    pub provider: String,
+    pub placement: Placement,
+    pub account_id: String,
+    pub surface_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub display_name: Option<String>,
+    pub state: SurfaceState,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope_id: Option<String>,
+    pub first_seen_at_ms: i64,
+    pub last_seen_at_ms: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SurfaceListResponse {
+    pub surfaces: Vec<MessagingSurface>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SurfaceRequest {
+    pub provider: String,
+    pub placement: Placement,
+    pub surface_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SurfaceBindCodeCreateRequest {
+    pub provider: String,
+    pub placement: Placement,
+    pub surface_id: String,
+    pub scope_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkCodeCreateRequest {
+    pub provider: String,
+    pub placement: Placement,
+    pub surface_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ChallengeCode {
+    pub code: String,
+    pub command: String,
+    pub expires_at_ms: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ChallengeCodeResponse {
+    pub challenge: ChallengeCode,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkListRequest {
+    pub provider: String,
+    pub placement: Placement,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub surface_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkView {
+    pub link_id: String,
+    pub provider: String,
+    pub placement: Placement,
+    pub account_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub display_name: Option<String>,
+    pub created_at_ms: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkListResponse {
+    pub links: Vec<ActorLinkView>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkDeleteRequest {
+    pub provider: String,
+    pub placement: Placement,
+    pub link_id: String,
 }

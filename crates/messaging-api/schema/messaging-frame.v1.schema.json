@@ -13,7 +13,9 @@
       "enum": [
         "connection.list", "connection.update", "connection.delete", "connection.test",
         "connection.status", "account.bind", "account.unbind", "account.binding.list",
-        "setup.options", "setup.start", "setup.status"
+        "setup.options", "setup.start", "setup.status",
+        "surface.list", "surface.dismiss", "surface.bind_code.create",
+        "actor.link_code.create", "actor.link.list", "actor.link.delete"
       ]
     },
 
@@ -118,6 +120,46 @@
         "message": { "type": "string" }
       }
     },
+    "surfaceState": { "enum": ["pending", "bound", "dismissed"] },
+    "messagingSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "accountId", "surfaceId", "state", "firstSeenAtMs", "lastSeenAtMs"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "accountId": { "$ref": "#/$defs/id" },
+        "surfaceId": { "$ref": "#/$defs/id" },
+        "displayName": { "$ref": "#/$defs/id" },
+        "state": { "$ref": "#/$defs/surfaceState" },
+        "scopeId": { "$ref": "#/$defs/id" },
+        "firstSeenAtMs": { "type": "integer", "minimum": 0 },
+        "lastSeenAtMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "challengeCode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "command", "expiresAtMs"],
+      "properties": {
+        "code": { "$ref": "#/$defs/id" },
+        "command": { "$ref": "#/$defs/id" },
+        "expiresAtMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "actorLinkView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["linkId", "provider", "placement", "accountId", "createdAtMs"],
+      "properties": {
+        "linkId": { "$ref": "#/$defs/id" },
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "accountId": { "$ref": "#/$defs/id" },
+        "displayName": { "$ref": "#/$defs/id" },
+        "createdAtMs": { "type": "integer", "minimum": 0 }
+      }
+    },
 
     "providerListRequestBody": {
       "type": "object",
@@ -198,6 +240,58 @@
         "setupId": { "$ref": "#/$defs/id" }
       }
     },
+    "surfaceListBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "accountId": { "$ref": "#/$defs/id" },
+        "state": { "$ref": "#/$defs/surfaceState" }
+      }
+    },
+    "surfaceRequestBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "surfaceId"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "surfaceId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "surfaceBindCodeCreateBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "surfaceId", "scopeId"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "surfaceId": { "$ref": "#/$defs/id" },
+        "scopeId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "actorLinkListBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "surfaceId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "actorLinkDeleteBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "linkId"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "linkId": { "$ref": "#/$defs/id" }
+      }
+    },
 
     "requestFrame": {
       "oneOf": [
@@ -212,7 +306,13 @@
         { "$ref": "#/$defs/accountBindingListRequest" },
         { "$ref": "#/$defs/setupOptionsRequest" },
         { "$ref": "#/$defs/setupStartRequest" },
-        { "$ref": "#/$defs/setupStatusRequest" }
+        { "$ref": "#/$defs/setupStatusRequest" },
+        { "$ref": "#/$defs/surfaceListRequest" },
+        { "$ref": "#/$defs/surfaceDismissRequest" },
+        { "$ref": "#/$defs/surfaceBindCodeCreateRequest" },
+        { "$ref": "#/$defs/actorLinkCodeCreateRequest" },
+        { "$ref": "#/$defs/actorLinkListRequest" },
+        { "$ref": "#/$defs/actorLinkDeleteRequest" }
       ]
     },
     "responseFrame": {
@@ -228,7 +328,13 @@
         { "$ref": "#/$defs/accountBindingListResponse" },
         { "$ref": "#/$defs/setupOptionsResponse" },
         { "$ref": "#/$defs/setupStartResponse" },
-        { "$ref": "#/$defs/setupStatusResponse" }
+        { "$ref": "#/$defs/setupStatusResponse" },
+        { "$ref": "#/$defs/surfaceListResponse" },
+        { "$ref": "#/$defs/surfaceDismissResponse" },
+        { "$ref": "#/$defs/surfaceBindCodeCreateResponse" },
+        { "$ref": "#/$defs/actorLinkCodeCreateResponse" },
+        { "$ref": "#/$defs/actorLinkListResponse" },
+        { "$ref": "#/$defs/actorLinkDeleteResponse" }
       ]
     },
     "frame": { "oneOf": [{ "$ref": "#/$defs/requestFrame" }, { "$ref": "#/$defs/responseFrame" }] },
@@ -252,6 +358,12 @@
     "accountBindingListRequestFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/account/binding/list" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/accountBindingRequestBody" } } },
     "setupStartRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/start" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/setupStartBody" } } },
     "setupStatusRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/status" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/setupStatusBody" } } },
+    "surfaceListRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/surface/list" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/surfaceListBody" } } },
+    "surfaceDismissRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/surface/dismiss" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/surfaceRequestBody" } } },
+    "surfaceBindCodeCreateRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/surface/bind-code/create" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/surfaceBindCodeCreateBody" } } },
+    "actorLinkCodeCreateRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link-code/create" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/surfaceRequestBody" } } },
+    "actorLinkListRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link/list" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/actorLinkListBody" } } },
+    "actorLinkDeleteRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link/delete" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/actorLinkDeleteBody" } } },
 
     "providerListResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/provider/list" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["providers"], "properties": { "providers": { "type": "array", "items": { "$ref": "#/$defs/providerMetadata" } } } } } },
     "connectionListResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/connection/list" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["connections"], "properties": { "connections": { "type": "array", "items": { "$ref": "#/$defs/messagingConnection" } } } } } },
@@ -270,6 +382,16 @@
     "setupStartResponse": { "$ref": "#/$defs/setupStartResponseFrame" },
     "setupStatusResponse": { "$ref": "#/$defs/setupStatusResponseFrame" },
     "setupStartResponseFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/start" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["setup"], "properties": { "setup": { "$ref": "#/$defs/setupState" } } } } },
-    "setupStatusResponseFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/status" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["setup"], "properties": { "setup": { "$ref": "#/$defs/setupState" } } } } }
+    "setupStatusResponseFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/setup/status" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["setup"], "properties": { "setup": { "$ref": "#/$defs/setupState" } } } } },
+    "surfaceListResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/surface/list" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["surfaces"], "properties": { "surfaces": { "type": "array", "items": { "$ref": "#/$defs/messagingSurface" } } } } } },
+    "surfaceDismissResponse": { "$ref": "#/$defs/surfaceDismissMutationFrame" },
+    "surfaceDismissMutationFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/surface/dismiss" }, "direction": { "const": "response" }, "body": { "$ref": "#/$defs/mutationBody" } } },
+    "surfaceBindCodeCreateResponse": { "$ref": "#/$defs/surfaceBindCodeCreateResponseFrame" },
+    "surfaceBindCodeCreateResponseFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/surface/bind-code/create" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["challenge"], "properties": { "challenge": { "$ref": "#/$defs/challengeCode" } } } } },
+    "actorLinkCodeCreateResponse": { "$ref": "#/$defs/actorLinkCodeCreateResponseFrame" },
+    "actorLinkCodeCreateResponseFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link-code/create" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["challenge"], "properties": { "challenge": { "$ref": "#/$defs/challengeCode" } } } } },
+    "actorLinkListResponse": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link/list" }, "direction": { "const": "response" }, "body": { "type": "object", "additionalProperties": false, "required": ["links"], "properties": { "links": { "type": "array", "items": { "$ref": "#/$defs/actorLinkView" } } } } } },
+    "actorLinkDeleteResponse": { "$ref": "#/$defs/actorLinkDeleteMutationFrame" },
+    "actorLinkDeleteMutationFrame": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link/delete" }, "direction": { "const": "response" }, "body": { "$ref": "#/$defs/mutationBody" } } }
   }
 }

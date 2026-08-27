@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.messaging.targets.v1",
-  "contractVersion": "0.2.0",
+  "contractVersion": "0.5.0",
   "requestTargets": [
     "/messaging/provider/list",
     "/messaging/connection/list",
@@ -13,7 +13,13 @@
     "/messaging/account/binding/list",
     "/messaging/setup/options",
     "/messaging/setup/start",
-    "/messaging/setup/status"
+    "/messaging/setup/status",
+    "/messaging/surface/list",
+    "/messaging/surface/dismiss",
+    "/messaging/surface/bind-code/create",
+    "/messaging/actor/link-code/create",
+    "/messaging/actor/link/list",
+    "/messaging/actor/link/delete"
   ],
   "responseTargets": [
     "/messaging/provider/list",
@@ -27,6 +33,12 @@
     "/messaging/account/binding/list",
     "/messaging/setup/options",
     "/messaging/setup/start",
-    "/messaging/setup/status"
+    "/messaging/setup/status",
+    "/messaging/surface/list",
+    "/messaging/surface/dismiss",
+    "/messaging/surface/bind-code/create",
+    "/messaging/actor/link-code/create",
+    "/messaging/actor/link/list",
+    "/messaging/actor/link/delete"
   ]
 }

@@ -18,7 +18,8 @@
         "eventId": "event-shared-text",
         "address": { "provider": "feishu", "accountId": "app-1", "conversationId": "group-1", "laneId": "thread-1", "audience": "shared" },
         "actor": { "provider": "feishu", "accountId": "app-1", "externalUserId": "open-id-1" },
-        "content": { "type": "text", "text": "group hello" }
+        "content": { "type": "text", "text": "group hello" },
+        "conversationDisplayName": "Project room"
       }
     },
     {

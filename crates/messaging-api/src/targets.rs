@@ -10,6 +10,12 @@ pub const ACCOUNT_BINDING_LIST_TARGET: &str = "/messaging/account/binding/list";
 pub const SETUP_OPTIONS_TARGET: &str = "/messaging/setup/options";
 pub const SETUP_START_TARGET: &str = "/messaging/setup/start";
 pub const SETUP_STATUS_TARGET: &str = "/messaging/setup/status";
+pub const SURFACE_LIST_TARGET: &str = "/messaging/surface/list";
+pub const SURFACE_DISMISS_TARGET: &str = "/messaging/surface/dismiss";
+pub const SURFACE_BIND_CODE_CREATE_TARGET: &str = "/messaging/surface/bind-code/create";
+pub const ACTOR_LINK_CODE_CREATE_TARGET: &str = "/messaging/actor/link-code/create";
+pub const ACTOR_LINK_LIST_TARGET: &str = "/messaging/actor/link/list";
+pub const ACTOR_LINK_DELETE_TARGET: &str = "/messaging/actor/link/delete";
 
 pub const MANAGEMENT_TARGETS: &[&str] = &[
     PROVIDER_LIST_TARGET,
@@ -24,6 +30,12 @@ pub const MANAGEMENT_TARGETS: &[&str] = &[
     SETUP_OPTIONS_TARGET,
     SETUP_START_TARGET,
     SETUP_STATUS_TARGET,
+    SURFACE_LIST_TARGET,
+    SURFACE_DISMISS_TARGET,
+    SURFACE_BIND_CODE_CREATE_TARGET,
+    ACTOR_LINK_CODE_CREATE_TARGET,
+    ACTOR_LINK_LIST_TARGET,
+    ACTOR_LINK_DELETE_TARGET,
 ];
 
 pub fn is_management_target(target: &str) -> bool {
