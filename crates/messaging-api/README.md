@@ -29,6 +29,11 @@ from its authenticated request context, authorizes scope ownership or membership
 short-lived one-time code hash. Provider adapters remain responsible only for translating provider
 events and sending provider-native replies.
 
+Actor links are provider-account-scoped identities. One exact external identity maps to at most one
+mHome principal, while a principal may own any number of external identities across or within
+provider accounts. Actor-link management therefore targets an account, never a conversation
+surface; shared-surface binding remains a separate scope relationship.
+
 `fixtures/normalized-inbound.conformance.json` is the executable cross-language corpus. Every
 runtime implementation must accept every `valid` case and reject every `invalid` case; adding a
 content variant or validation rule requires updating this corpus in the same change.

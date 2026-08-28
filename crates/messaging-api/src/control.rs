@@ -333,7 +333,7 @@ pub struct SurfaceBindCodeCreateRequest {
 pub struct ActorLinkCodeCreateRequest {
     pub provider: String,
     pub placement: Placement,
-    pub surface_id: String,
+    pub account_id: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -356,7 +356,7 @@ pub struct ActorLinkListRequest {
     pub provider: String,
     pub placement: Placement,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub surface_id: Option<String>,
+    pub account_id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -366,9 +366,11 @@ pub struct ActorLinkView {
     pub provider: String,
     pub placement: Placement,
     pub account_id: String,
+    pub external_user_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub display_name: Option<String>,
     pub created_at_ms: i64,
+    pub updated_at_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

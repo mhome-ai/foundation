@@ -164,14 +164,16 @@
     "actorLinkView": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["linkId", "provider", "placement", "accountId", "createdAtMs"],
+      "required": ["linkId", "provider", "placement", "accountId", "externalUserId", "createdAtMs", "updatedAtMs"],
       "properties": {
         "linkId": { "$ref": "#/$defs/id" },
         "provider": { "$ref": "#/$defs/providerId" },
         "placement": { "$ref": "#/$defs/placement" },
         "accountId": { "$ref": "#/$defs/id" },
+        "externalUserId": { "$ref": "#/$defs/id" },
         "displayName": { "$ref": "#/$defs/id" },
-        "createdAtMs": { "type": "integer", "minimum": 0 }
+        "createdAtMs": { "type": "integer", "minimum": 0 },
+        "updatedAtMs": { "type": "integer", "minimum": 0 }
       }
     },
 
@@ -293,7 +295,17 @@
       "properties": {
         "provider": { "$ref": "#/$defs/providerId" },
         "placement": { "$ref": "#/$defs/placement" },
-        "surfaceId": { "$ref": "#/$defs/id" }
+        "accountId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "actorLinkCodeCreateBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "placement", "accountId"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "accountId": { "$ref": "#/$defs/id" }
       }
     },
     "actorLinkDeleteBody": {
@@ -375,7 +387,7 @@
     "surfaceListRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/surface/list" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/surfaceListBody" } } },
     "surfaceDismissRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/surface/dismiss" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/surfaceRequestBody" } } },
     "surfaceBindCodeCreateRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/surface/bind-code/create" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/surfaceBindCodeCreateBody" } } },
-    "actorLinkCodeCreateRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link-code/create" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/surfaceRequestBody" } } },
+    "actorLinkCodeCreateRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link-code/create" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/actorLinkCodeCreateBody" } } },
     "actorLinkListRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link/list" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/actorLinkListBody" } } },
     "actorLinkDeleteRequest": { "type": "object", "additionalProperties": false, "required": ["target", "direction", "body"], "properties": { "target": { "const": "/messaging/actor/link/delete" }, "direction": { "const": "request" }, "body": { "$ref": "#/$defs/actorLinkDeleteBody" } } },
 
