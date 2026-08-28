@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "eventId": "telegram:update:41",
   "address": {
     "provider": "telegram",
@@ -15,9 +15,9 @@
     "displayName": "Yihan"
   },
   "content": {
-    "type": "text",
-    "text": "hello",
-    "providerMessageId": "message-5"
+    "type": "message",
+    "providerMessageId": "message-5",
+    "parts": [{ "type": "text", "text": "hello" }]
   },
   "conversationDisplayName": "Project room",
   "occurredAtMs": 1787760000000

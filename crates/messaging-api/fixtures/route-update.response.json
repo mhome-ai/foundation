@@ -1,0 +1,19 @@
+{
+  "target": "/messaging/route/update",
+  "direction": "response",
+  "body": {
+    "route": {
+      "provider": "telegram",
+      "placement": "cloud",
+      "routeId": "route-1",
+      "accountId": "official-bot",
+      "conversationId": "chat-1",
+      "audience": "personal",
+      "externalActorId": "user-1",
+      "tenantId": "tenant-1",
+      "scopeId": "scope-1",
+      "enabled": false,
+      "providerData": {}
+    }
+  }
+}

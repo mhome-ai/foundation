@@ -1,0 +1,8 @@
+{
+  "target": "/chat/session/start",
+  "direction": "request",
+  "body": {
+    "operationId": "operation-2",
+    "reason": "user_requested"
+  }
+}

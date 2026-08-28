@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/account/bind",
+  "target": "/messaging/account-grant/create",
   "direction": "response",
   "body": { "provider": "telegram", "placement": "local", "accountId": "123456" }
 }

@@ -2,7 +2,7 @@ use conversation_api::ConversationSurface;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-pub const NORMALIZED_INBOUND_SCHEMA_VERSION: u16 = 2;
+pub const NORMALIZED_INBOUND_SCHEMA_VERSION: u16 = 3;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -167,6 +167,51 @@ impl ActionSet {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ProviderMediaKind {
+    Image,
+    Audio,
+    Video,
+    File,
+}
+
+/// Provider-scoped, short-lived media handle. It must be materialized before entering Conversation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProviderMediaRef {
+    pub handle: String,
+    pub kind: ProviderMediaKind,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub size_bytes: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub file_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duration_ms: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub width_px: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub height_px: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub caption: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transcript: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(
+    tag = "type",
+    rename_all = "snake_case",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum InboundMessagePart {
+    Text { text: String },
+    Media { reference: ProviderMediaRef },
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(
     tag = "type",
@@ -175,16 +220,10 @@ impl ActionSet {
     deny_unknown_fields
 )]
 pub enum NormalizedInboundContent {
-    Text {
-        text: String,
+    Message {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         provider_message_id: Option<String>,
-    },
-    Audio {
-        provider_message_id: String,
-        provider_file_id: String,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        duration_seconds: Option<u32>,
+        parts: Vec<InboundMessagePart>,
     },
     ActionSelected {
         token: String,
@@ -244,26 +283,51 @@ impl NormalizedInbound {
 
 fn validate_content(content: &NormalizedInboundContent) -> Result<(), MessagingModelError> {
     match content {
-        NormalizedInboundContent::Text {
-            text,
+        NormalizedInboundContent::Message {
             provider_message_id,
+            parts,
         } => {
-            if text.is_empty() {
-                return Err(MessagingModelError("messaging text is invalid"));
+            if parts.is_empty() {
+                return Err(MessagingModelError("messaging message has no parts"));
             }
             optional_ref(provider_message_id, "provider message id is invalid")?;
-        }
-        NormalizedInboundContent::Audio {
-            provider_message_id,
-            provider_file_id,
-            ..
-        } => {
-            segment_ref(provider_message_id, "provider message id is invalid")?;
-            segment_ref(provider_file_id, "provider file id is invalid")?;
+            for part in parts {
+                match part {
+                    InboundMessagePart::Text { text } if text.is_empty() => {
+                        return Err(MessagingModelError("messaging text is invalid"));
+                    }
+                    InboundMessagePart::Text { .. } => {}
+                    InboundMessagePart::Media { reference } => validate_media(reference)?,
+                }
+            }
         }
         NormalizedInboundContent::ActionSelected { token } => {
             segment_ref(token, "action token is invalid")?;
         }
+    }
+    Ok(())
+}
+
+fn validate_media(reference: &ProviderMediaRef) -> Result<(), MessagingModelError> {
+    segment_ref(&reference.handle, "provider media handle is invalid")?;
+    optional_ref(&reference.mime_type, "provider media MIME type is invalid")?;
+    optional_ref(&reference.file_name, "provider media file name is invalid")?;
+    optional_ref(&reference.caption, "provider media caption is invalid")?;
+    optional_ref(
+        &reference.transcript,
+        "provider media transcript is invalid",
+    )?;
+    if reference.size_bytes == Some(0)
+        || reference.duration_ms == Some(0)
+        || reference.width_px == Some(0)
+        || reference.height_px == Some(0)
+    {
+        return Err(MessagingModelError("provider media metadata is invalid"));
+    }
+    if reference.width_px.is_some() != reference.height_px.is_some() {
+        return Err(MessagingModelError(
+            "provider media dimensions must be complete",
+        ));
     }
     Ok(())
 }
@@ -343,9 +407,11 @@ mod tests {
             )
             .unwrap(),
             actor: ExternalActor::new("telegram", "bot-b", "user", None).unwrap(),
-            content: NormalizedInboundContent::Text {
-                text: "hello".to_string(),
+            content: NormalizedInboundContent::Message {
                 provider_message_id: None,
+                parts: vec![InboundMessagePart::Text {
+                    text: "hello".to_string(),
+                }],
             },
             conversation_display_name: None,
             occurred_at_ms: None,
@@ -379,9 +445,11 @@ mod tests {
             )
             .unwrap(),
             actor: ExternalActor::new("telegram", "bot", "user", None).unwrap(),
-            content: NormalizedInboundContent::Text {
-                text: " message with spacing ".to_string(),
+            content: NormalizedInboundContent::Message {
                 provider_message_id: None,
+                parts: vec![InboundMessagePart::Text {
+                    text: " message with spacing ".to_string(),
+                }],
             },
             conversation_display_name: None,
             occurred_at_ms: None,

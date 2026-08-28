@@ -4,8 +4,11 @@
   "body": {
     "requestId": "request-2",
     "title": "Kitchen chat",
-    "message": "Turn on the lights",
-    "imageRefs": [],
+    "content": {
+      "parts": [
+        { "type": "text", "text": "Turn on the lights" }
+      ]
+    },
     "accessMode": "interactive",
     "agentModelMode": "auto",
     "temperature": null,

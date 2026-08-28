@@ -4,14 +4,19 @@
   "body": {
     "threadId": "thread-2",
     "requestId": "request-1",
-    "message": "Hello",
-    "imageRefs": [
-      {
-        "base64": "aGVsbG8=",
-        "format": "png",
-        "createdAt": 1787587200000
-      }
-    ],
+    "content": {
+      "parts": [
+        { "type": "text", "text": "Hello" },
+        {
+          "type": "image",
+          "source": { "kind": "artifact", "uri": "artifact://image-1" },
+          "mime_type": "image/png",
+          "width_px": 640,
+          "height_px": 480,
+          "size_bytes": 1024
+        }
+      ]
+    },
     "accessMode": "interactive",
     "agentModelMode": "auto",
     "temperature": 0.2,

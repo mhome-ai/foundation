@@ -74,6 +74,39 @@ pub enum TurnSessionDisposition {
     RotatedIdleTimeout,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionStartResponse {
+    pub operation_id: String,
+    pub thread_id: String,
+    pub disposition: SessionStartDisposition,
+    pub catalog: crate::ThreadCatalog,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum SessionStartDisposition {
+    Rotated,
+    AlreadyApplied,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct InteractionAnswerResponse {
+    pub request_id: String,
+    pub thread_id: String,
+    pub disposition: InteractionAnswerDisposition,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum InteractionAnswerDisposition {
+    Accepted,
+    Duplicate,
+    Unavailable,
+    ExpiredSession,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct InteractionSubmitResponse {

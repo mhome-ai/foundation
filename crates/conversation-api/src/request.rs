@@ -1,4 +1,4 @@
-use crate::InteractionDecision;
+use crate::{InteractionDecision, MessageContent};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -47,32 +47,12 @@ pub struct ThreadLoadRequest {
     pub known_snapshot_version: Option<u64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ImageReference {
-    pub base64: String,
-    pub format: ImageFormat,
-    pub created_at: u64,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
-pub enum ImageFormat {
-    Jpeg,
-    Png,
-    Webp,
-    Gif,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MessageEnqueueRequest {
     pub thread_id: String,
     pub request_id: String,
-    #[serde(default)]
-    pub message: String,
-    #[serde(default)]
-    pub image_refs: Vec<ImageReference>,
+    pub content: MessageContent,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub access_mode: Option<ConversationAccessMode>,
     pub agent_model_mode: String,
@@ -89,10 +69,7 @@ pub struct TurnSubmitRequest {
     pub request_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
-    #[serde(default)]
-    pub message: String,
-    #[serde(default)]
-    pub image_refs: Vec<ImageReference>,
+    pub content: MessageContent,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub access_mode: Option<ConversationAccessMode>,
     pub agent_model_mode: String,
@@ -100,6 +77,30 @@ pub struct TurnSubmitRequest {
     pub temperature: Option<f32>,
     pub allow_tools: bool,
     pub debug: bool,
+    pub occurred_at_unix_ms: i64,
+}
+
+/// Starts a new active session without exposing thread storage preconditions to the caller.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SessionStartRequest {
+    pub operation_id: String,
+    pub reason: SessionStartReason,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum SessionStartReason {
+    UserRequested,
+}
+
+/// Answers the current pending interaction without requiring thread or policy state.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct InteractionAnswerRequest {
+    pub request_id: String,
+    pub batch_id: String,
+    pub decisions: Vec<InteractionDecision>,
     pub occurred_at_unix_ms: i64,
 }
 

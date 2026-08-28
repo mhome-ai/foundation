@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/account/unbind",
+  "target": "/messaging/account-grant/delete",
   "direction": "response",
   "body": { "success": true }
 }

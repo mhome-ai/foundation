@@ -50,6 +50,8 @@ pub enum ContentCapability {
     Markdown,
     Image,
     Audio,
+    Video,
+    File,
     Action,
 }
 
@@ -62,22 +64,28 @@ pub enum DeliveryMode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ManagementOperation {
-    #[serde(rename = "connection.list")]
-    ConnectionList,
-    #[serde(rename = "connection.update")]
-    ConnectionUpdate,
-    #[serde(rename = "connection.delete")]
-    ConnectionDelete,
-    #[serde(rename = "connection.test")]
-    ConnectionTest,
-    #[serde(rename = "connection.status")]
-    ConnectionStatus,
-    #[serde(rename = "account.bind")]
-    AccountBind,
-    #[serde(rename = "account.unbind")]
-    AccountUnbind,
-    #[serde(rename = "account.binding.list")]
-    AccountBindingList,
+    #[serde(rename = "provider_account.list")]
+    ProviderAccountList,
+    #[serde(rename = "provider_account.update")]
+    ProviderAccountUpdate,
+    #[serde(rename = "provider_account.delete")]
+    ProviderAccountDelete,
+    #[serde(rename = "provider_account.test")]
+    ProviderAccountTest,
+    #[serde(rename = "provider_account.status")]
+    ProviderAccountStatus,
+    #[serde(rename = "account_grant.create")]
+    AccountGrantCreate,
+    #[serde(rename = "account_grant.delete")]
+    AccountGrantDelete,
+    #[serde(rename = "account_grant.list")]
+    AccountGrantList,
+    #[serde(rename = "route.list")]
+    RouteList,
+    #[serde(rename = "route.update")]
+    RouteUpdate,
+    #[serde(rename = "route.delete")]
+    RouteDelete,
     #[serde(rename = "setup.options")]
     SetupOptions,
     #[serde(rename = "setup.start")]
@@ -113,62 +121,67 @@ pub struct ProviderPlacementRequest {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ConnectionUpdateRequest {
+pub struct ProviderAccountUpdateRequest {
     pub provider: String,
     pub placement: Placement,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub connection_id: Option<String>,
+    pub account_id: String,
     pub data: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ConnectionRequest {
+pub struct ProviderAccountRequest {
     pub provider: String,
     pub placement: Placement,
-    pub connection_id: String,
+    pub account_id: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ConnectionTestRequest {
+pub struct ProviderAccountTestRequest {
     pub provider: String,
     pub placement: Placement,
     pub data: Value,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ProviderAccountOwnership {
+    System,
+    User,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct MessagingConnection {
+pub struct ProviderAccount {
     pub provider: String,
     pub placement: Placement,
-    pub connection_id: String,
     pub account_id: String,
+    pub ownership: ProviderAccountOwnership,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub display_name: Option<String>,
     pub enabled: bool,
     pub status: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status_message: Option<String>,
-    pub bound_to_current_scope: bool,
     pub provider_data: Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ConnectionListResponse {
-    pub connections: Vec<MessagingConnection>,
+pub struct ProviderAccountListResponse {
+    pub accounts: Vec<ProviderAccount>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ConnectionUpdateResponse {
-    pub connection: MessagingConnection,
+pub struct ProviderAccountUpdateResponse {
+    pub account: ProviderAccount,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ConnectionTestResponse {
+pub struct ProviderAccountTestResponse {
     pub result: Value,
 }
 
@@ -183,7 +196,7 @@ pub struct ProviderStatus {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ConnectionStatusResponse {
+pub struct ProviderAccountStatusResponse {
     pub status: ProviderStatus,
 }
 
@@ -195,7 +208,7 @@ pub struct MutationResponse {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AccountBindingRequest {
+pub struct AccountGrantRequest {
     pub provider: String,
     pub placement: Placement,
     pub account_id: String,
@@ -203,7 +216,10 @@ pub struct AccountBindingRequest {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AccountBinding {
+pub struct AccountGrant {
+    pub provider: String,
+    pub placement: Placement,
+    pub account_id: String,
     pub tenant_id: String,
     pub scope_id: String,
     pub user_id: String,
@@ -212,8 +228,69 @@ pub struct AccountBinding {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AccountBindingListResponse {
-    pub bindings: Vec<AccountBinding>,
+pub struct AccountGrantListResponse {
+    pub grants: Vec<AccountGrant>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RouteListRequest {
+    pub provider: String,
+    pub placement: Placement,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub account_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audience: Option<ConversationAudience>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RouteRequest {
+    pub provider: String,
+    pub placement: Placement,
+    pub route_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RouteUpdateRequest {
+    pub provider: String,
+    pub placement: Placement,
+    pub route_id: String,
+    pub data: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MessagingRoute {
+    pub provider: String,
+    pub placement: Placement,
+    pub route_id: String,
+    pub account_id: String,
+    pub conversation_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lane_id: Option<String>,
+    pub audience: ConversationAudience,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub external_actor_id: Option<String>,
+    pub tenant_id: String,
+    pub scope_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub display_name: Option<String>,
+    pub enabled: bool,
+    pub provider_data: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RouteListResponse {
+    pub routes: Vec<MessagingRoute>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RouteUpdateResponse {
+    pub route: MessagingRoute,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -259,7 +336,9 @@ pub struct SetupState {
     pub action: Option<SetupAction>,
     pub provider_data: Value,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub connection_id: Option<String>,
+    pub account_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub route_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
 }

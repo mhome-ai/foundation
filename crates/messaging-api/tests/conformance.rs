@@ -1,12 +1,13 @@
 use messaging_api::{
-    AccountBindingListResponse, AccountBindingRequest, ActorLinkCodeCreateRequest,
+    AccountGrantListResponse, AccountGrantRequest, ActorLinkCodeCreateRequest,
     ActorLinkDeleteRequest, ActorLinkListRequest, ActorLinkListResponse, ChallengeCodeResponse,
-    ConnectionListResponse, ConnectionRequest, ConnectionStatusResponse, ConnectionTestRequest,
-    ConnectionTestResponse, ConnectionUpdateRequest, ConnectionUpdateResponse, MutationResponse,
-    NormalizedInbound, ProviderListRequest, ProviderListResponse, ProviderPlacementRequest,
-    SetupOptionsResponse, SetupResponse, SetupStartRequest, SetupStatusRequest,
-    SurfaceBindCodeCreateRequest, SurfaceListRequest, SurfaceListResponse, SurfaceRequest,
-    MANAGEMENT_TARGETS,
+    MutationResponse, NormalizedInbound, ProviderAccountListResponse, ProviderAccountRequest,
+    ProviderAccountStatusResponse, ProviderAccountTestRequest, ProviderAccountTestResponse,
+    ProviderAccountUpdateRequest, ProviderAccountUpdateResponse, ProviderListRequest,
+    ProviderListResponse, ProviderPlacementRequest, RouteListRequest, RouteListResponse,
+    RouteRequest, RouteUpdateRequest, RouteUpdateResponse, SetupOptionsResponse, SetupResponse,
+    SetupStartRequest, SetupStatusRequest, SurfaceBindCodeCreateRequest, SurfaceListRequest,
+    SurfaceListResponse, SurfaceRequest, MANAGEMENT_TARGETS,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -21,68 +22,92 @@ const VALID_FIXTURES: &[(&str, &str)] = &[
         include_str!("../fixtures/provider-list.response.json"),
     ),
     (
-        "connection-list.request.json",
-        include_str!("../fixtures/connection-list.request.json"),
+        "provider-account-list.request.json",
+        include_str!("../fixtures/provider-account-list.request.json"),
     ),
     (
-        "connection-list.response.json",
-        include_str!("../fixtures/connection-list.response.json"),
+        "provider-account-list.response.json",
+        include_str!("../fixtures/provider-account-list.response.json"),
     ),
     (
-        "connection-update.request.json",
-        include_str!("../fixtures/connection-update.request.json"),
+        "provider-account-update.request.json",
+        include_str!("../fixtures/provider-account-update.request.json"),
     ),
     (
-        "connection-update.response.json",
-        include_str!("../fixtures/connection-update.response.json"),
+        "provider-account-update.response.json",
+        include_str!("../fixtures/provider-account-update.response.json"),
     ),
     (
-        "connection-delete.request.json",
-        include_str!("../fixtures/connection-delete.request.json"),
+        "provider-account-delete.request.json",
+        include_str!("../fixtures/provider-account-delete.request.json"),
     ),
     (
-        "connection-delete.response.json",
-        include_str!("../fixtures/connection-delete.response.json"),
+        "provider-account-delete.response.json",
+        include_str!("../fixtures/provider-account-delete.response.json"),
     ),
     (
-        "connection-test.request.json",
-        include_str!("../fixtures/connection-test.request.json"),
+        "provider-account-test.request.json",
+        include_str!("../fixtures/provider-account-test.request.json"),
     ),
     (
-        "connection-test.response.json",
-        include_str!("../fixtures/connection-test.response.json"),
+        "provider-account-test.response.json",
+        include_str!("../fixtures/provider-account-test.response.json"),
     ),
     (
-        "connection-status.request.json",
-        include_str!("../fixtures/connection-status.request.json"),
+        "provider-account-status.request.json",
+        include_str!("../fixtures/provider-account-status.request.json"),
     ),
     (
-        "connection-status.response.json",
-        include_str!("../fixtures/connection-status.response.json"),
+        "provider-account-status.response.json",
+        include_str!("../fixtures/provider-account-status.response.json"),
     ),
     (
-        "account-bind.request.json",
-        include_str!("../fixtures/account-bind.request.json"),
+        "account-grant-create.request.json",
+        include_str!("../fixtures/account-grant-create.request.json"),
     ),
     (
-        "account-bind.response.json",
-        include_str!("../fixtures/account-bind.response.json"),
+        "account-grant-create.response.json",
+        include_str!("../fixtures/account-grant-create.response.json"),
     ),
     (
-        "account-unbind.request.json",
-        include_str!("../fixtures/account-unbind.request.json"),
+        "account-grant-delete.request.json",
+        include_str!("../fixtures/account-grant-delete.request.json"),
     ),
     (
-        "account-unbind.response.json",
-        include_str!("../fixtures/account-unbind.response.json"),
+        "account-grant-delete.response.json",
+        include_str!("../fixtures/account-grant-delete.response.json"),
     ),
     (
-        "account-binding-list.request.json",
-        include_str!("../fixtures/account-binding-list.request.json"),
+        "account-grant-list.request.json",
+        include_str!("../fixtures/account-grant-list.request.json"),
     ),
     (
-        "account-binding-list.response.json",
-        include_str!("../fixtures/account-binding-list.response.json"),
+        "account-grant-list.response.json",
+        include_str!("../fixtures/account-grant-list.response.json"),
+    ),
+    (
+        "route-list.request.json",
+        include_str!("../fixtures/route-list.request.json"),
+    ),
+    (
+        "route-list.response.json",
+        include_str!("../fixtures/route-list.response.json"),
+    ),
+    (
+        "route-update.request.json",
+        include_str!("../fixtures/route-update.request.json"),
+    ),
+    (
+        "route-update.response.json",
+        include_str!("../fixtures/route-update.response.json"),
+    ),
+    (
+        "route-delete.request.json",
+        include_str!("../fixtures/route-delete.request.json"),
+    ),
+    (
+        "route-delete.response.json",
+        include_str!("../fixtures/route-delete.response.json"),
     ),
     (
         "setup-options.request.json",
@@ -185,7 +210,7 @@ fn body<T: DeserializeOwned>(name: &str) -> T {
 #[test]
 fn normalized_inbound_fixture_matches_schema_and_semantic_validation() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/normalized-inbound.v2.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/normalized-inbound.v3.schema.json")).unwrap();
     let fixture: Value = serde_json::from_str(include_str!(
         "../fixtures/normalized-inbound.shared-text.json"
     ))
@@ -206,7 +231,7 @@ fn normalized_inbound_fixture_matches_schema_and_semantic_validation() {
 #[test]
 fn normalized_inbound_corpus_seals_schema_and_semantics() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/normalized-inbound.v2.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/normalized-inbound.v3.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     let corpus: Value = serde_json::from_str(include_str!(
         "../fixtures/normalized-inbound.conformance.json"
@@ -240,7 +265,7 @@ fn normalized_inbound_corpus_seals_schema_and_semantics() {
 #[test]
 fn every_management_target_has_typed_request_and_response_fixtures() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/messaging-frame.v2.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/messaging-frame.v3.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     for (name, raw) in VALID_FIXTURES {
         let frame: Value = serde_json::from_str(raw).unwrap();
@@ -270,22 +295,28 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
 
     body::<ProviderListRequest>("provider-list.request.json");
     body::<ProviderListResponse>("provider-list.response.json");
-    body::<ProviderPlacementRequest>("connection-list.request.json");
-    body::<ConnectionListResponse>("connection-list.response.json");
-    body::<ConnectionUpdateRequest>("connection-update.request.json");
-    body::<ConnectionUpdateResponse>("connection-update.response.json");
-    body::<ConnectionRequest>("connection-delete.request.json");
-    body::<MutationResponse>("connection-delete.response.json");
-    body::<ConnectionTestRequest>("connection-test.request.json");
-    body::<ConnectionTestResponse>("connection-test.response.json");
-    body::<ProviderPlacementRequest>("connection-status.request.json");
-    body::<ConnectionStatusResponse>("connection-status.response.json");
-    body::<AccountBindingRequest>("account-bind.request.json");
-    body::<MutationResponse>("account-bind.response.json");
-    body::<AccountBindingRequest>("account-unbind.request.json");
-    body::<MutationResponse>("account-unbind.response.json");
-    body::<AccountBindingRequest>("account-binding-list.request.json");
-    body::<AccountBindingListResponse>("account-binding-list.response.json");
+    body::<ProviderPlacementRequest>("provider-account-list.request.json");
+    body::<ProviderAccountListResponse>("provider-account-list.response.json");
+    body::<ProviderAccountUpdateRequest>("provider-account-update.request.json");
+    body::<ProviderAccountUpdateResponse>("provider-account-update.response.json");
+    body::<ProviderAccountRequest>("provider-account-delete.request.json");
+    body::<MutationResponse>("provider-account-delete.response.json");
+    body::<ProviderAccountTestRequest>("provider-account-test.request.json");
+    body::<ProviderAccountTestResponse>("provider-account-test.response.json");
+    body::<ProviderPlacementRequest>("provider-account-status.request.json");
+    body::<ProviderAccountStatusResponse>("provider-account-status.response.json");
+    body::<AccountGrantRequest>("account-grant-create.request.json");
+    body::<MutationResponse>("account-grant-create.response.json");
+    body::<AccountGrantRequest>("account-grant-delete.request.json");
+    body::<MutationResponse>("account-grant-delete.response.json");
+    body::<AccountGrantRequest>("account-grant-list.request.json");
+    body::<AccountGrantListResponse>("account-grant-list.response.json");
+    body::<RouteListRequest>("route-list.request.json");
+    body::<RouteListResponse>("route-list.response.json");
+    body::<RouteUpdateRequest>("route-update.request.json");
+    body::<RouteUpdateResponse>("route-update.response.json");
+    body::<RouteRequest>("route-delete.request.json");
+    body::<MutationResponse>("route-delete.response.json");
     body::<ProviderPlacementRequest>("setup-options.request.json");
     body::<SetupOptionsResponse>("setup-options.response.json");
     body::<SetupStartRequest>("setup-start.request.json");
@@ -309,7 +340,7 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
 #[test]
 fn invalid_frames_are_rejected() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/messaging-frame.v2.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/messaging-frame.v3.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     for (name, raw) in INVALID_FIXTURES {
         let frame: Value = serde_json::from_str(raw).unwrap();
@@ -321,7 +352,7 @@ fn invalid_frames_are_rejected() {
 
     let missing: Value = serde_json::from_str(INVALID_FIXTURES[0].1).unwrap();
     assert!(
-        serde_json::from_value::<ConnectionTestRequest>(missing["body"].clone()).is_err(),
+        serde_json::from_value::<ProviderAccountTestRequest>(missing["body"].clone()).is_err(),
         "Rust DTO unexpectedly accepted a missing required extension object"
     );
 }

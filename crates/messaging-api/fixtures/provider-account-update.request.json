@@ -1,10 +1,10 @@
 {
-  "target": "/messaging/connection/update",
+  "target": "/messaging/provider-account/update",
   "direction": "request",
   "body": {
     "provider": "telegram",
     "placement": "local",
-    "connectionId": "connection-1",
+    "accountId": "123456",
     "data": { "enabled": true }
   }
 }

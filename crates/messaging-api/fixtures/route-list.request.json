@@ -1,0 +1,5 @@
+{
+  "target": "/messaging/route/list",
+  "direction": "request",
+  "body": { "provider": "telegram", "placement": "cloud", "audience": "personal" }
+}

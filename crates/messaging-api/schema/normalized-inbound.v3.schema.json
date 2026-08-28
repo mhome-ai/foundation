@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:mhome:messaging-api:normalized-inbound:v2",
-  "title": "mHome normalized messaging inbound v2",
+  "$id": "urn:mhome:messaging-api:normalized-inbound:v3",
+  "title": "mHome normalized messaging inbound v3",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "eventId", "address", "actor", "content"],
   "properties": {
-    "schemaVersion": { "const": 2 },
+    "schemaVersion": { "const": 3 },
     "eventId": { "$ref": "#/$defs/id" },
     "address": { "$ref": "#/$defs/address" },
     "actor": { "$ref": "#/$defs/actor" },
@@ -41,7 +41,28 @@
         "displayName": { "$ref": "#/$defs/id" }
       }
     },
-    "content": {
+    "media": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["handle", "kind"],
+      "properties": {
+        "handle": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["image", "audio", "video", "file"] },
+        "mimeType": { "$ref": "#/$defs/id" },
+        "sizeBytes": { "type": "integer", "minimum": 1 },
+        "fileName": { "$ref": "#/$defs/id" },
+        "durationMs": { "type": "integer", "minimum": 1 },
+        "widthPx": { "type": "integer", "minimum": 1 },
+        "heightPx": { "type": "integer", "minimum": 1 },
+        "caption": { "$ref": "#/$defs/id" },
+        "transcript": { "$ref": "#/$defs/id" }
+      },
+      "dependentRequired": {
+        "widthPx": ["heightPx"],
+        "heightPx": ["widthPx"]
+      }
+    },
+    "part": {
       "oneOf": [
         {
           "type": "object",
@@ -49,19 +70,35 @@
           "required": ["type", "text"],
           "properties": {
             "type": { "const": "text" },
-            "text": { "$ref": "#/$defs/text" },
-            "providerMessageId": { "$ref": "#/$defs/id" }
+            "text": { "$ref": "#/$defs/text" }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["type", "providerMessageId", "providerFileId"],
+          "required": ["type", "reference"],
           "properties": {
-            "type": { "const": "audio" },
+            "type": { "const": "media" },
+            "reference": { "$ref": "#/$defs/media" }
+          }
+        }
+      ]
+    },
+    "content": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "parts"],
+          "properties": {
+            "type": { "const": "message" },
             "providerMessageId": { "$ref": "#/$defs/id" },
-            "providerFileId": { "$ref": "#/$defs/id" },
-            "durationSeconds": { "type": "integer", "minimum": 0 }
+            "parts": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": { "$ref": "#/$defs/part" }
+            }
           }
         },
         {

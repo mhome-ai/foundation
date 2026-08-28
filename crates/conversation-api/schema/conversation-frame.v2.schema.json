@@ -1,0 +1,2374 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mhome:conversation-api:frame:v2",
+  "title": "mHome conversation API conformance frame v2",
+  "$ref": "#/$defs/frame",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "previewValue": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "text"
+          ],
+          "properties": {
+            "type": {
+              "const": "text"
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "items"
+          ],
+          "properties": {
+            "type": {
+              "const": "text_list"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "const": "number"
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "const": "bool"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "interactionPreview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actionCode",
+        "title",
+        "message",
+        "tone",
+        "details",
+        "proceedLabel",
+        "rejectLabel"
+      ],
+      "properties": {
+        "actionCode": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "$ref": "#/$defs/id"
+        },
+        "message": {
+          "type": "string"
+        },
+        "tone": {
+          "enum": [
+            "normal",
+            "danger"
+          ]
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "value"
+            ],
+            "properties": {
+              "label": {
+                "$ref": "#/$defs/id"
+              },
+              "value": {
+                "$ref": "#/$defs/previewValue"
+              }
+            }
+          }
+        },
+        "proceedLabel": {
+          "$ref": "#/$defs/id"
+        },
+        "rejectLabel": {
+          "$ref": "#/$defs/id"
+        },
+        "clientTask": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "integrationIds"
+          ],
+          "properties": {
+            "type": {
+              "const": "install_integrations"
+            },
+            "integrationIds": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/id"
+              }
+            }
+          }
+        }
+      }
+    },
+    "pendingInteraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "batchId",
+        "title",
+        "message",
+        "items"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "batchId": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "$ref": "#/$defs/id"
+        },
+        "message": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "actionId",
+              "kind",
+              "preview"
+            ],
+            "properties": {
+              "actionId": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "enum": [
+                  "approval",
+                  "user_action"
+                ]
+              },
+              "expiresAt": {
+                "$ref": "#/$defs/time"
+              },
+              "preview": {
+                "$ref": "#/$defs/interactionPreview"
+              }
+            }
+          }
+        }
+      }
+    },
+    "threadSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "threadId",
+        "title",
+        "state",
+        "createdAt",
+        "updatedAt",
+        "archivedAt",
+        "purgeAfter"
+      ],
+      "properties": {
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "$ref": "#/$defs/id"
+        },
+        "state": {
+          "enum": [
+            "active",
+            "archived"
+          ]
+        },
+        "createdAt": {
+          "$ref": "#/$defs/time"
+        },
+        "updatedAt": {
+          "$ref": "#/$defs/time"
+        },
+        "archivedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "archiveReason": {
+          "enum": [
+            "idle_timeout",
+            "user_requested",
+            "replaced"
+          ]
+        },
+        "purgeAfter": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "catalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalogVersion",
+        "activeThreadId",
+        "threads"
+      ],
+      "properties": {
+        "catalogVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "activeThreadId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "threads": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/threadSummary"
+          }
+        }
+      }
+    },
+    "mediaSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "uri"
+      ],
+      "properties": {
+        "kind": {
+          "const": "artifact"
+        },
+        "uri": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "contentPart": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "text"
+          ],
+          "properties": {
+            "type": {
+              "const": "text"
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "source"
+          ],
+          "properties": {
+            "type": {
+              "const": "image"
+            },
+            "source": {
+              "$ref": "#/$defs/mediaSource"
+            },
+            "mime_type": {
+              "type": "string"
+            },
+            "size_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "alt_text": {
+              "type": "string"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "width_px": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "height_px": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "source"
+          ],
+          "properties": {
+            "type": {
+              "const": "audio"
+            },
+            "source": {
+              "$ref": "#/$defs/mediaSource"
+            },
+            "mime_type": {
+              "type": "string"
+            },
+            "size_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "transcript": {
+              "type": "string"
+            },
+            "duration_ms": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "source"
+          ],
+          "properties": {
+            "type": {
+              "const": "video"
+            },
+            "source": {
+              "$ref": "#/$defs/mediaSource"
+            },
+            "mime_type": {
+              "type": "string"
+            },
+            "size_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "alt_text": {
+              "type": "string"
+            },
+            "duration_ms": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "width_px": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "height_px": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "source"
+          ],
+          "properties": {
+            "type": {
+              "const": "file"
+            },
+            "source": {
+              "$ref": "#/$defs/mediaSource"
+            },
+            "mime_type": {
+              "type": "string"
+            },
+            "size_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "const": "json"
+            },
+            "value": true
+          }
+        }
+      ]
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parts"
+      ],
+      "properties": {
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contentPart"
+          }
+        }
+      }
+    },
+    "message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "messageId",
+        "requestId",
+        "role",
+        "content",
+        "createdAt"
+      ],
+      "properties": {
+        "messageId": {
+          "$ref": "#/$defs/id"
+        },
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "role": {
+          "enum": [
+            "user",
+            "assistant"
+          ]
+        },
+        "authorUserId": {
+          "$ref": "#/$defs/id"
+        },
+        "content": {
+          "$ref": "#/$defs/content"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/time"
+        }
+      }
+    },
+    "activeRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "startedAt"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "startedAt": {
+          "$ref": "#/$defs/time"
+        }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "source": {
+          "enum": [
+            "llm_provider",
+            "agent_runtime"
+          ]
+        },
+        "code": {
+          "$ref": "#/$defs/id"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "runOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "status"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "interaction_required",
+            "interrupted",
+            "agent_failed",
+            "system_failed"
+          ]
+        },
+        "errorCode": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failure": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/failure"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "queuedMessage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "threadId",
+        "content",
+        "createdAt"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "authorUserId": {
+          "$ref": "#/$defs/id"
+        },
+        "content": {
+          "$ref": "#/$defs/content"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/time"
+        }
+      }
+    },
+    "queue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "queueVersion",
+        "items"
+      ],
+      "properties": {
+        "queueVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/queuedMessage"
+          }
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "messages",
+        "activeRun",
+        "pendingInteraction",
+        "runOutcomes"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/message"
+          }
+        },
+        "activeRun": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/activeRun"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pendingInteraction": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/pendingInteraction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runOutcomes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/runOutcome"
+          }
+        }
+      }
+    },
+    "assistantPreviewEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "surfaceId",
+        "threadId",
+        "requestId",
+        "baseSnapshotVersion",
+        "offset",
+        "occurredAt",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "assistant.preview"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "baseSnapshotVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/time"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text",
+            "append"
+          ],
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "append": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "runProgressData": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "thinking"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "planning"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "waiting_external"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "toolNames"
+          ],
+          "properties": {
+            "kind": {
+              "const": "tool_scheduled"
+            },
+            "toolNames": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/id"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "toolName"
+          ],
+          "properties": {
+            "kind": {
+              "const": "tool_started"
+            },
+            "toolName": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
+    },
+    "runProgressEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "surfaceId",
+        "threadId",
+        "requestId",
+        "baseSnapshotVersion",
+        "offset",
+        "occurredAt",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "run.progress"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "baseSnapshotVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/time"
+        },
+        "data": {
+          "$ref": "#/$defs/runProgressData"
+        }
+      }
+    },
+    "runSystemFailedEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "surfaceId",
+        "threadId",
+        "requestId",
+        "baseSnapshotVersion",
+        "offset",
+        "occurredAt",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "run.system_failed"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "baseSnapshotVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/time"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "$ref": "#/$defs/id"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "liveEvent": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/assistantPreviewEvent"
+        },
+        {
+          "$ref": "#/$defs/runProgressEvent"
+        },
+        {
+          "$ref": "#/$defs/runSystemFailedEvent"
+        }
+      ]
+    },
+    "live": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseSnapshotVersion",
+        "lastOffset",
+        "events"
+      ],
+      "properties": {
+        "baseSnapshotVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lastOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/liveEvent"
+          }
+        }
+      }
+    },
+    "threadSession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "activityAtUnixMs"
+      ],
+      "properties": {
+        "activityAtUnixMs": {
+          "type": "integer"
+        }
+      }
+    },
+    "threadSync": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "snapshotVersion"
+          ],
+          "properties": {
+            "mode": {
+              "const": "unchanged"
+            },
+            "snapshotVersion": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "baseSnapshotVersion",
+            "snapshotVersion",
+            "events"
+          ],
+          "properties": {
+            "mode": {
+              "const": "delta"
+            },
+            "baseSnapshotVersion": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "snapshotVersion": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "events": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/snapshotEvent"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "snapshot"
+          ],
+          "properties": {
+            "mode": {
+              "const": "snapshot"
+            },
+            "snapshot": {
+              "$ref": "#/$defs/snapshot"
+            }
+          }
+        }
+      ]
+    },
+    "loadResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "thread",
+        "session",
+        "sync",
+        "live",
+        "queue"
+      ],
+      "properties": {
+        "thread": {
+          "$ref": "#/$defs/threadSummary"
+        },
+        "session": {
+          "$ref": "#/$defs/threadSession"
+        },
+        "sync": {
+          "$ref": "#/$defs/threadSync"
+        },
+        "live": {
+          "$ref": "#/$defs/live"
+        },
+        "queue": {
+          "$ref": "#/$defs/queue"
+        }
+      }
+    },
+    "snapshotEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "surfaceId",
+        "threadId",
+        "requestId",
+        "snapshotVersion",
+        "occurredAt",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "snapshot.updated"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "snapshotVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/time"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sessionActivityAtUnixMs",
+            "messagesAdded",
+            "activeRun",
+            "pendingInteraction",
+            "runOutcome"
+          ],
+          "properties": {
+            "sessionActivityAtUnixMs": {
+              "type": "integer"
+            },
+            "messagesAdded": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/message"
+              }
+            },
+            "activeRun": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/activeRun"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pendingInteraction": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/pendingInteraction"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "runOutcome": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/runOutcome"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "catalogEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "surfaceId",
+        "catalogVersion",
+        "occurredAt",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "thread.catalog_changed"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "catalogVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/time"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "activeThreadId",
+            "threads"
+          ],
+          "properties": {
+            "activeThreadId": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "threads": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/threadSummary"
+              }
+            }
+          }
+        }
+      }
+    },
+    "queueEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "surfaceId",
+        "threadId",
+        "queueVersion",
+        "occurredAt",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "queue.changed"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "queueVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/time"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "items",
+            "activeRun"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/queuedMessage"
+              }
+            },
+            "activeRun": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/activeRun"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "sessionEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "version",
+        "surfaceId",
+        "occurredAt",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "session.policy_changed"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/time"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "idleTimeoutMinutes",
+            "updatedAtMs"
+          ],
+          "properties": {
+            "idleTimeoutMinutes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "updatedAtMs": {
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "debugEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "surfaceId",
+        "threadId",
+        "requestId",
+        "occurredAt",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "run.debug"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/time"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope",
+            "payload"
+          ],
+          "properties": {
+            "scope": {
+              "$ref": "#/$defs/id"
+            },
+            "payload": true
+          }
+        }
+      }
+    },
+    "frame": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/listRequest"
+        },
+        {
+          "$ref": "#/$defs/createRequest"
+        },
+        {
+          "$ref": "#/$defs/archiveRequest"
+        },
+        {
+          "$ref": "#/$defs/rotateRequest"
+        },
+        {
+          "$ref": "#/$defs/loadRequest"
+        },
+        {
+          "$ref": "#/$defs/enqueueRequest"
+        },
+        {
+          "$ref": "#/$defs/turnSubmitRequest"
+        },
+        {
+          "$ref": "#/$defs/sessionStartRequest"
+        },
+        {
+          "$ref": "#/$defs/interactionAnswerRequest"
+        },
+        {
+          "$ref": "#/$defs/reorderRequest"
+        },
+        {
+          "$ref": "#/$defs/cancelRequest"
+        },
+        {
+          "$ref": "#/$defs/interactionRequest"
+        },
+        {
+          "$ref": "#/$defs/catalogResponse"
+        },
+        {
+          "$ref": "#/$defs/loadResponseFrame"
+        },
+        {
+          "$ref": "#/$defs/enqueueResponse"
+        },
+        {
+          "$ref": "#/$defs/turnSubmitResponse"
+        },
+        {
+          "$ref": "#/$defs/sessionStartResponse"
+        },
+        {
+          "$ref": "#/$defs/interactionAnswerResponse"
+        },
+        {
+          "$ref": "#/$defs/queueResponse"
+        },
+        {
+          "$ref": "#/$defs/cancelResponse"
+        },
+        {
+          "$ref": "#/$defs/interactionResponse"
+        },
+        {
+          "$ref": "#/$defs/chatEventFrame"
+        },
+        {
+          "$ref": "#/$defs/debugEventFrame"
+        }
+      ]
+    },
+    "listRequest": {
+      "$ref": "#/$defs/emptyRequestFrame"
+    },
+    "emptyRequestFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/thread/list"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "maxProperties": 0
+        }
+      }
+    },
+    "createRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/thread/create"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operationId",
+            "expectedCatalogVersion"
+          ],
+          "properties": {
+            "operationId": {
+              "$ref": "#/$defs/id"
+            },
+            "expectedCatalogVersion": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "title": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      }
+    },
+    "archiveRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/thread/archive"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "threadId",
+            "expectedCatalogVersion"
+          ],
+          "properties": {
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "expectedCatalogVersion": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "rotateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/thread/rotate"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operationId",
+            "threadId",
+            "expectedCatalogVersion",
+            "expectedSnapshotVersion",
+            "expectedSettingVersion",
+            "reason"
+          ],
+          "properties": {
+            "operationId": {
+              "$ref": "#/$defs/id"
+            },
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "expectedCatalogVersion": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "expectedSnapshotVersion": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "expectedSettingVersion": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "enum": [
+                "idle_timeout",
+                "user_requested"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "loadRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/thread/load"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "threadId"
+          ],
+          "properties": {
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "knownSnapshotVersion": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "enqueueRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/message/enqueue"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "threadId",
+            "requestId",
+            "content",
+            "agentModelMode",
+            "allowTools",
+            "debug"
+          ],
+          "properties": {
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "content": {
+              "$ref": "#/$defs/content"
+            },
+            "accessMode": {
+              "enum": [
+                "interactive",
+                "full_access"
+              ]
+            },
+            "agentModelMode": {
+              "$ref": "#/$defs/id"
+            },
+            "temperature": {
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "allowTools": {
+              "type": "boolean"
+            },
+            "debug": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "turnSubmitRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/turn/submit"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requestId",
+            "content",
+            "agentModelMode",
+            "allowTools",
+            "debug",
+            "occurredAtUnixMs"
+          ],
+          "properties": {
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "title": {
+              "$ref": "#/$defs/id"
+            },
+            "content": {
+              "$ref": "#/$defs/content"
+            },
+            "accessMode": {
+              "enum": [
+                "interactive",
+                "full_access"
+              ]
+            },
+            "agentModelMode": {
+              "$ref": "#/$defs/id"
+            },
+            "temperature": {
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "allowTools": {
+              "type": "boolean"
+            },
+            "debug": {
+              "type": "boolean"
+            },
+            "occurredAtUnixMs": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "reorderRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/queue/reorder"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "threadId",
+            "expectedQueueVersion",
+            "orderedRequestIds"
+          ],
+          "properties": {
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "expectedQueueVersion": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "orderedRequestIds": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/id"
+              }
+            }
+          }
+        }
+      }
+    },
+    "cancelRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/request/cancel"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "threadId",
+            "requestId"
+          ],
+          "properties": {
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      }
+    },
+    "interactionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/interaction/submit"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "threadId",
+            "batchId",
+            "decisions"
+          ],
+          "properties": {
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "batchId": {
+              "$ref": "#/$defs/id"
+            },
+            "decisions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "actionId",
+                  "decision"
+                ],
+                "properties": {
+                  "actionId": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "decision": {
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "catalogResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "enum": [
+            "/chat/thread/list",
+            "/chat/thread/create",
+            "/chat/thread/archive",
+            "/chat/thread/rotate"
+          ]
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/catalog"
+        }
+      }
+    },
+    "loadResponseFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/thread/load"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/loadResponse"
+        }
+      }
+    },
+    "enqueueResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/message/enqueue"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requestId",
+            "disposition",
+            "queueVersion"
+          ],
+          "properties": {
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "disposition": {
+              "enum": [
+                "queued",
+                "duplicate"
+              ]
+            },
+            "queueVersion": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "turnSubmitResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/turn/submit"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requestId",
+            "threadId",
+            "disposition",
+            "sessionDisposition",
+            "queueVersion"
+          ],
+          "properties": {
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "disposition": {
+              "enum": [
+                "queued",
+                "duplicate",
+                "blocked_pending_interaction"
+              ]
+            },
+            "sessionDisposition": {
+              "enum": [
+                "existing",
+                "created",
+                "rotated_idle_timeout"
+              ]
+            },
+            "queueVersion": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "queueResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/queue/reorder"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/queue"
+        }
+      }
+    },
+    "cancelResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/request/cancel"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requestId",
+            "phase",
+            "outcome",
+            "queueVersion"
+          ],
+          "properties": {
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "phase": {
+              "enum": [
+                "waiting",
+                "running"
+              ]
+            },
+            "outcome": {
+              "enum": [
+                "cancelled",
+                "cancelling"
+              ]
+            },
+            "queueVersion": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "interactionResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/interaction/submit"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requestId",
+            "disposition"
+          ],
+          "properties": {
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "disposition": {
+              "const": "accepted"
+            }
+          }
+        }
+      }
+    },
+    "chatEventFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/event"
+        },
+        "direction": {
+          "const": "event"
+        },
+        "body": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/catalogEvent"
+            },
+            {
+              "$ref": "#/$defs/queueEvent"
+            },
+            {
+              "$ref": "#/$defs/snapshotEvent"
+            },
+            {
+              "$ref": "#/$defs/sessionEvent"
+            },
+            {
+              "$ref": "#/$defs/liveEvent"
+            }
+          ]
+        }
+      }
+    },
+    "debugEventFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/debug"
+        },
+        "direction": {
+          "const": "event"
+        },
+        "body": {
+          "$ref": "#/$defs/debugEvent"
+        }
+      }
+    },
+    "sessionStartRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/session/start"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operationId",
+            "reason"
+          ],
+          "properties": {
+            "operationId": {
+              "$ref": "#/$defs/id"
+            },
+            "reason": {
+              "const": "user_requested"
+            }
+          }
+        }
+      }
+    },
+    "sessionStartResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/session/start"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operationId",
+            "threadId",
+            "disposition",
+            "catalog"
+          ],
+          "properties": {
+            "operationId": {
+              "$ref": "#/$defs/id"
+            },
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "disposition": {
+              "enum": [
+                "rotated",
+                "already_applied"
+              ]
+            },
+            "catalog": {
+              "$ref": "#/$defs/catalog"
+            }
+          }
+        }
+      }
+    },
+    "interactionAnswerRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/interaction/answer"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requestId",
+            "batchId",
+            "decisions",
+            "occurredAtUnixMs"
+          ],
+          "properties": {
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "batchId": {
+              "$ref": "#/$defs/id"
+            },
+            "decisions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "actionId",
+                  "decision"
+                ],
+                "properties": {
+                  "actionId": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "decision": {
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ]
+                  }
+                }
+              }
+            },
+            "occurredAtUnixMs": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "interactionAnswerResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/interaction/answer"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requestId",
+            "threadId",
+            "disposition"
+          ],
+          "properties": {
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "threadId": {
+              "$ref": "#/$defs/id"
+            },
+            "disposition": {
+              "enum": [
+                "accepted",
+                "duplicate",
+                "unavailable",
+                "expired_session"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,8 +1,10 @@
 use conversation_api::{
     ConversationAccessMode, ConversationEvent, ConversationQueue, DebugEvent,
+    InteractionAnswerDisposition, InteractionAnswerRequest, InteractionAnswerResponse,
     InteractionSubmitDisposition, InteractionSubmitRequest, InteractionSubmitResponse,
-    MessageEnqueueDisposition, MessageEnqueueRequest, MessageEnqueueResponse, QueueReorderRequest,
-    RequestCancelOutcome, RequestCancelPhase, RequestCancelRequest, RequestCancelResponse,
+    MessageEnqueueDisposition, MessageEnqueueRequest, MessageEnqueueResponse, MessagePart,
+    QueueReorderRequest, RequestCancelOutcome, RequestCancelPhase, RequestCancelRequest,
+    RequestCancelResponse, SessionStartDisposition, SessionStartRequest, SessionStartResponse,
     ThreadArchiveRequest, ThreadCatalog, ThreadCreateRequest, ThreadListRequest, ThreadLoadRequest,
     ThreadLoadResponse, ThreadRotateRequest, TurnSessionDisposition, TurnSubmitDisposition,
     TurnSubmitRequest, TurnSubmitResponse, CHAT_DEBUG_TARGET, CHAT_EVENT_TARGET,
@@ -35,6 +37,22 @@ const FIXTURES: &[(&str, &str)] = &[
     (
         "turn-submit.response.json",
         include_str!("../fixtures/turn-submit.response.json"),
+    ),
+    (
+        "session-start.request.json",
+        include_str!("../fixtures/session-start.request.json"),
+    ),
+    (
+        "session-start.response.json",
+        include_str!("../fixtures/session-start.response.json"),
+    ),
+    (
+        "interaction-answer.request.json",
+        include_str!("../fixtures/interaction-answer.request.json"),
+    ),
+    (
+        "interaction-answer.response.json",
+        include_str!("../fixtures/interaction-answer.response.json"),
     ),
     (
         "interaction.request.json",
@@ -157,7 +175,7 @@ fn body<T: DeserializeOwned>(name: &str) -> T {
 #[test]
 fn every_bundled_fixture_matches_the_bundled_schema() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/conversation-frame.v1.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/conversation-frame.v2.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     for (name, raw) in FIXTURES {
         let value: Value = serde_json::from_str(raw).unwrap();
@@ -192,6 +210,8 @@ fn target_manifest_matches_the_rust_inventory() {
             conversation_api::THREAD_LOAD_TARGET,
             conversation_api::MESSAGE_ENQUEUE_TARGET,
             conversation_api::TURN_SUBMIT_TARGET,
+            conversation_api::SESSION_START_TARGET,
+            conversation_api::INTERACTION_ANSWER_TARGET,
             conversation_api::QUEUE_REORDER_TARGET,
             conversation_api::REQUEST_CANCEL_TARGET,
             conversation_api::INTERACTION_SUBMIT_TARGET,
@@ -230,7 +250,11 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
         Some(ConversationAccessMode::Interactive)
     );
     assert_eq!(enqueue.temperature, Some(0.2));
-    assert_eq!(enqueue.image_refs.len(), 1);
+    assert_eq!(enqueue.content.parts.len(), 2);
+    assert!(matches!(
+        enqueue.content.parts[1],
+        MessagePart::Image { .. }
+    ));
     body::<ThreadArchiveRequest>("thread-archive.request.json");
     body::<ThreadRotateRequest>("thread-rotate.request.json");
     body::<ThreadCatalog>("thread-list.response.json");
@@ -250,6 +274,15 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
     assert_eq!(
         turn_response.session_disposition,
         TurnSessionDisposition::RotatedIdleTimeout
+    );
+    body::<SessionStartRequest>("session-start.request.json");
+    let session_start = body::<SessionStartResponse>("session-start.response.json");
+    assert_eq!(session_start.disposition, SessionStartDisposition::Rotated);
+    body::<InteractionAnswerRequest>("interaction-answer.request.json");
+    let interaction_answer = body::<InteractionAnswerResponse>("interaction-answer.response.json");
+    assert_eq!(
+        interaction_answer.disposition,
+        InteractionAnswerDisposition::Accepted
     );
     let cancel_response = body::<RequestCancelResponse>("request-cancel.response.json");
     assert_eq!(cancel_response.phase, RequestCancelPhase::Running);
@@ -323,7 +356,7 @@ fn command_only_enums_reject_internal_state_values() {
     let mut enqueue = fixture("enqueue.request.json");
     enqueue["body"]["accessMode"] = Value::String("internal".to_string());
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/conversation-frame.v1.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/conversation-frame.v2.schema.json")).unwrap();
     assert!(!jsonschema::validator_for(&schema)
         .unwrap()
         .is_valid(&enqueue));

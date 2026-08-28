@@ -1,15 +1,14 @@
 {
-  "target": "/messaging/connection/update",
+  "target": "/messaging/provider-account/update",
   "direction": "response",
   "body": {
-    "connection": {
+    "account": {
       "provider": "telegram",
       "placement": "local",
-      "connectionId": "connection-1",
       "accountId": "123456",
+      "ownership": "user",
       "enabled": true,
       "status": "connected",
-      "boundToCurrentScope": true,
       "providerData": {}
     }
   }

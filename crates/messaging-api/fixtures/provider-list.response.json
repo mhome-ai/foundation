@@ -15,10 +15,11 @@
         "outboundCapabilities": ["text", "markdown", "action"],
         "deliveryMode": "unrestricted",
         "managementOperations": [
-          "connection.list",
-          "connection.update",
-          "connection.delete",
-          "connection.status",
+          "provider_account.list",
+          "provider_account.status",
+          "route.list",
+          "route.update",
+          "route.delete",
           "setup.options",
           "setup.start",
           "setup.status"

@@ -1,12 +1,15 @@
 pub const PROVIDER_LIST_TARGET: &str = "/messaging/provider/list";
-pub const CONNECTION_LIST_TARGET: &str = "/messaging/connection/list";
-pub const CONNECTION_UPDATE_TARGET: &str = "/messaging/connection/update";
-pub const CONNECTION_DELETE_TARGET: &str = "/messaging/connection/delete";
-pub const CONNECTION_TEST_TARGET: &str = "/messaging/connection/test";
-pub const CONNECTION_STATUS_TARGET: &str = "/messaging/connection/status";
-pub const ACCOUNT_BIND_TARGET: &str = "/messaging/account/bind";
-pub const ACCOUNT_UNBIND_TARGET: &str = "/messaging/account/unbind";
-pub const ACCOUNT_BINDING_LIST_TARGET: &str = "/messaging/account/binding/list";
+pub const PROVIDER_ACCOUNT_LIST_TARGET: &str = "/messaging/provider-account/list";
+pub const PROVIDER_ACCOUNT_UPDATE_TARGET: &str = "/messaging/provider-account/update";
+pub const PROVIDER_ACCOUNT_DELETE_TARGET: &str = "/messaging/provider-account/delete";
+pub const PROVIDER_ACCOUNT_TEST_TARGET: &str = "/messaging/provider-account/test";
+pub const PROVIDER_ACCOUNT_STATUS_TARGET: &str = "/messaging/provider-account/status";
+pub const ACCOUNT_GRANT_CREATE_TARGET: &str = "/messaging/account-grant/create";
+pub const ACCOUNT_GRANT_DELETE_TARGET: &str = "/messaging/account-grant/delete";
+pub const ACCOUNT_GRANT_LIST_TARGET: &str = "/messaging/account-grant/list";
+pub const ROUTE_LIST_TARGET: &str = "/messaging/route/list";
+pub const ROUTE_UPDATE_TARGET: &str = "/messaging/route/update";
+pub const ROUTE_DELETE_TARGET: &str = "/messaging/route/delete";
 pub const SETUP_OPTIONS_TARGET: &str = "/messaging/setup/options";
 pub const SETUP_START_TARGET: &str = "/messaging/setup/start";
 pub const SETUP_STATUS_TARGET: &str = "/messaging/setup/status";
@@ -19,14 +22,17 @@ pub const ACTOR_LINK_DELETE_TARGET: &str = "/messaging/actor/link/delete";
 
 pub const MANAGEMENT_TARGETS: &[&str] = &[
     PROVIDER_LIST_TARGET,
-    CONNECTION_LIST_TARGET,
-    CONNECTION_UPDATE_TARGET,
-    CONNECTION_DELETE_TARGET,
-    CONNECTION_TEST_TARGET,
-    CONNECTION_STATUS_TARGET,
-    ACCOUNT_BIND_TARGET,
-    ACCOUNT_UNBIND_TARGET,
-    ACCOUNT_BINDING_LIST_TARGET,
+    PROVIDER_ACCOUNT_LIST_TARGET,
+    PROVIDER_ACCOUNT_UPDATE_TARGET,
+    PROVIDER_ACCOUNT_DELETE_TARGET,
+    PROVIDER_ACCOUNT_TEST_TARGET,
+    PROVIDER_ACCOUNT_STATUS_TARGET,
+    ACCOUNT_GRANT_CREATE_TARGET,
+    ACCOUNT_GRANT_DELETE_TARGET,
+    ACCOUNT_GRANT_LIST_TARGET,
+    ROUTE_LIST_TARGET,
+    ROUTE_UPDATE_TARGET,
+    ROUTE_DELETE_TARGET,
     SETUP_OPTIONS_TARGET,
     SETUP_START_TARGET,
     SETUP_STATUS_TARGET,

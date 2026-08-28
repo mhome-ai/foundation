@@ -21,6 +21,12 @@ pub enum MessagePart {
         alt_text: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         detail: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        width_px: Option<u32>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        height_px: Option<u32>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        size_bytes: Option<u64>,
     },
     Audio {
         source: MediaSource,
@@ -28,6 +34,25 @@ pub enum MessagePart {
         mime_type: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         transcript: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        duration_ms: Option<u64>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        size_bytes: Option<u64>,
+    },
+    Video {
+        source: MediaSource,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        mime_type: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        alt_text: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        duration_ms: Option<u64>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        width_px: Option<u32>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        height_px: Option<u32>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        size_bytes: Option<u64>,
     },
     File {
         source: MediaSource,
@@ -35,6 +60,8 @@ pub enum MessagePart {
         mime_type: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         name: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        size_bytes: Option<u64>,
     },
     Json {
         value: Value,
