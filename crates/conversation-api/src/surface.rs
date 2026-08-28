@@ -393,5 +393,6 @@ mod tests {
         ] {
             assert!(value.parse::<ConversationSurface>().is_err(), "{value}");
         }
+        assert!(ConversationSurface::messaging_personal("1bad", "a", "b", None).is_err());
     }
 }
