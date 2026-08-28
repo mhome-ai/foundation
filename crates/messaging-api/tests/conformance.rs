@@ -361,6 +361,7 @@ fn invalid_frames_are_rejected() {
 fn target_manifest_matches_rust_inventory() {
     let manifest: Value =
         serde_json::from_str(include_str!("../manifest/targets.v1.json")).unwrap();
+    assert_eq!(manifest["contractVersion"], env!("CARGO_PKG_VERSION"));
     for field in ["requestTargets", "responseTargets"] {
         let targets = manifest[field]
             .as_array()

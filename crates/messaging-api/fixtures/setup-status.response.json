@@ -4,10 +4,11 @@
   "body": {
     "setup": {
       "setupId": "setup-1",
-      "status": "waiting",
-      "expiresAtMs": 1893456000000,
-      "action": { "type": "open_url", "url": "https://example.invalid/setup" },
-      "providerData": { "pairingCode": "ABCD" }
+      "status": "complete",
+      "providerData": {},
+      "accountId": "official-bot",
+      "routeId": "route-1",
+      "message": "Connected"
     }
   }
 }

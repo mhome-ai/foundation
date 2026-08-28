@@ -194,6 +194,7 @@ fn every_bundled_fixture_matches_the_bundled_schema() {
 fn target_manifest_matches_the_rust_inventory() {
     let manifest: Value =
         serde_json::from_str(include_str!("../manifest/targets.v1.json")).unwrap();
+    assert_eq!(manifest["contractVersion"], env!("CARGO_PKG_VERSION"));
     let request_targets = manifest["requestTargets"]
         .as_array()
         .unwrap()

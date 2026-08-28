@@ -8,6 +8,10 @@
       "type": "string",
       "minLength": 1
     },
+    "surfaceId": {
+      "type": "string",
+      "pattern": "^cs1:(?:(?:cp|cg):[A-Za-z0-9_-]+|(?:mp|mg):[a-z][a-z0-9_]*:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+(?::[A-Za-z0-9_-]+)?)$"
+    },
     "time": {
       "type": "string",
       "format": "date-time"
@@ -729,7 +733,7 @@
           "const": "assistant.preview"
         },
         "surfaceId": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/surfaceId"
         },
         "threadId": {
           "$ref": "#/$defs/id"
@@ -860,7 +864,7 @@
           "const": "run.progress"
         },
         "surfaceId": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/surfaceId"
         },
         "threadId": {
           "$ref": "#/$defs/id"
@@ -902,7 +906,7 @@
           "const": "run.system_failed"
         },
         "surfaceId": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/surfaceId"
         },
         "threadId": {
           "$ref": "#/$defs/id"
@@ -1100,7 +1104,7 @@
           "const": "snapshot.updated"
         },
         "surfaceId": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/surfaceId"
         },
         "threadId": {
           "$ref": "#/$defs/id"
@@ -1184,7 +1188,7 @@
           "const": "thread.catalog_changed"
         },
         "surfaceId": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/surfaceId"
         },
         "catalogVersion": {
           "type": "integer",
@@ -1237,7 +1241,7 @@
           "const": "queue.changed"
         },
         "surfaceId": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/surfaceId"
         },
         "threadId": {
           "$ref": "#/$defs/id"
@@ -1296,7 +1300,7 @@
           "minimum": 1
         },
         "surfaceId": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/surfaceId"
         },
         "occurredAt": {
           "$ref": "#/$defs/time"
@@ -1343,7 +1347,7 @@
           "const": "run.debug"
         },
         "surfaceId": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/surfaceId"
         },
         "threadId": {
           "$ref": "#/$defs/id"

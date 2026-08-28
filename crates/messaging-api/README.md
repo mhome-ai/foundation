@@ -29,6 +29,15 @@ from its authenticated request context, authorizes scope ownership or membership
 short-lived one-time code hash. Provider adapters remain responsible only for translating provider
 events and sending provider-native replies.
 
+An account grant authorizes one mHome principal and scope to use one provider account. A route binds
+one provider conversation to that principal/scope (personal) or scope (shared). Routes deliberately
+address the provider's base conversation only; lane identity remains on each normalized address and
+canonical Conversation surface so topic-level threads do not multiply authorization records.
+
+Setup is provider-extensible but has a common lifecycle. A completed setup may return both the
+created provider `accountId` and the initial personal `routeId`; providers that only configure an
+account omit `routeId` until the first inbound conversation creates the route.
+
 Actor links are provider-account-scoped identities. One exact external identity maps to at most one
 mHome principal, while a principal may own any number of external identities across or within
 provider accounts. Actor-link management therefore targets an account, never a conversation

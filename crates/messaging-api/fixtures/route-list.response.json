@@ -17,6 +17,20 @@
         "displayName": "Telegram",
         "enabled": true,
         "providerData": {}
+      },
+      {
+        "provider": "feishu",
+        "placement": "local",
+        "routeId": "route-2",
+        "accountId": "app-1",
+        "conversationId": "chat-2",
+        "audience": "shared",
+        "tenantId": "tenant-1",
+        "scopeId": "scope-2",
+        "boundByUserId": "mhome-user-1",
+        "displayName": "Project room",
+        "enabled": true,
+        "providerData": {}
       }
     ]
   }
