@@ -257,28 +257,48 @@ pub struct RouteUpdateRequest {
     pub provider: String,
     pub placement: Placement,
     pub route_id: String,
-    pub data: Value,
+    pub scope_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct MessagingRoute {
-    pub provider: String,
-    pub placement: Placement,
-    pub route_id: String,
-    pub account_id: String,
-    pub conversation_id: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub lane_id: Option<String>,
-    pub audience: ConversationAudience,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub external_actor_id: Option<String>,
-    pub tenant_id: String,
-    pub scope_id: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub display_name: Option<String>,
-    pub enabled: bool,
-    pub provider_data: Value,
+#[serde(
+    tag = "audience",
+    rename_all = "lowercase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum MessagingRoute {
+    Personal {
+        provider: String,
+        placement: Placement,
+        route_id: String,
+        account_id: String,
+        conversation_id: String,
+        external_actor_id: String,
+        tenant_id: String,
+        user_id: String,
+        scope_id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        display_name: Option<String>,
+        enabled: bool,
+        provider_data: Value,
+    },
+    Shared {
+        provider: String,
+        placement: Placement,
+        route_id: String,
+        account_id: String,
+        conversation_id: String,
+        tenant_id: String,
+        scope_id: String,
+        bound_by_user_id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        display_name: Option<String>,
+        enabled: bool,
+        provider_data: Value,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

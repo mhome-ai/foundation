@@ -11,6 +11,7 @@
       "audience": "personal",
       "externalActorId": "user-1",
       "tenantId": "tenant-1",
+      "userId": "mhome-user-1",
       "scopeId": "scope-1",
       "enabled": false,
       "providerData": {}

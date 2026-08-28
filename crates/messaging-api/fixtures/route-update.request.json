@@ -5,6 +5,7 @@
     "provider": "telegram",
     "placement": "cloud",
     "routeId": "route-1",
-    "data": { "enabled": false }
+    "scopeId": "scope-1",
+    "enabled": false
   }
 }

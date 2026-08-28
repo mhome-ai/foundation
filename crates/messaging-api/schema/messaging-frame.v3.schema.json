@@ -277,61 +277,122 @@
       }
     },
     "messagingRoute": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement",
-        "routeId",
-        "accountId",
-        "conversationId",
-        "audience",
-        "tenantId",
-        "scopeId",
-        "enabled",
-        "providerData"
-      ],
-      "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "provider",
+            "placement",
+            "routeId",
+            "accountId",
+            "conversationId",
+            "externalActorId",
+            "tenantId",
+            "userId",
+            "scopeId",
+            "enabled",
+            "providerData"
+          ],
+          "properties": {
+            "audience": {
+              "const": "personal"
+            },
+            "provider": {
+              "$ref": "#/$defs/providerId"
+            },
+            "placement": {
+              "$ref": "#/$defs/placement"
+            },
+            "routeId": {
+              "$ref": "#/$defs/id"
+            },
+            "accountId": {
+              "$ref": "#/$defs/id"
+            },
+            "conversationId": {
+              "$ref": "#/$defs/id"
+            },
+            "tenantId": {
+              "$ref": "#/$defs/id"
+            },
+            "scopeId": {
+              "$ref": "#/$defs/id"
+            },
+            "displayName": {
+              "$ref": "#/$defs/id"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "providerData": {
+              "$ref": "#/$defs/extension"
+            },
+            "externalActorId": {
+              "$ref": "#/$defs/id"
+            },
+            "userId": {
+              "$ref": "#/$defs/id"
+            }
+          }
         },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        },
-        "routeId": {
-          "$ref": "#/$defs/id"
-        },
-        "accountId": {
-          "$ref": "#/$defs/id"
-        },
-        "conversationId": {
-          "$ref": "#/$defs/id"
-        },
-        "laneId": {
-          "$ref": "#/$defs/id"
-        },
-        "audience": {
-          "$ref": "#/$defs/audience"
-        },
-        "externalActorId": {
-          "$ref": "#/$defs/id"
-        },
-        "tenantId": {
-          "$ref": "#/$defs/id"
-        },
-        "scopeId": {
-          "$ref": "#/$defs/id"
-        },
-        "displayName": {
-          "$ref": "#/$defs/id"
-        },
-        "enabled": {
-          "type": "boolean"
-        },
-        "providerData": {
-          "$ref": "#/$defs/extension"
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "provider",
+            "placement",
+            "routeId",
+            "accountId",
+            "conversationId",
+            "tenantId",
+            "scopeId",
+            "boundByUserId",
+            "enabled",
+            "providerData"
+          ],
+          "properties": {
+            "audience": {
+              "const": "shared"
+            },
+            "provider": {
+              "$ref": "#/$defs/providerId"
+            },
+            "placement": {
+              "$ref": "#/$defs/placement"
+            },
+            "routeId": {
+              "$ref": "#/$defs/id"
+            },
+            "accountId": {
+              "$ref": "#/$defs/id"
+            },
+            "conversationId": {
+              "$ref": "#/$defs/id"
+            },
+            "tenantId": {
+              "$ref": "#/$defs/id"
+            },
+            "scopeId": {
+              "$ref": "#/$defs/id"
+            },
+            "displayName": {
+              "$ref": "#/$defs/id"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "providerData": {
+              "$ref": "#/$defs/extension"
+            },
+            "boundByUserId": {
+              "$ref": "#/$defs/id"
+            }
+          }
         }
-      }
+      ]
     },
     "setupAction": {
       "type": "object",
@@ -677,7 +738,7 @@
         "provider",
         "placement",
         "routeId",
-        "data"
+        "scopeId"
       ],
       "properties": {
         "provider": {
@@ -689,8 +750,11 @@
         "routeId": {
           "$ref": "#/$defs/id"
         },
-        "data": {
-          "$ref": "#/$defs/extension"
+        "scopeId": {
+          "$ref": "#/$defs/id"
+        },
+        "enabled": {
+          "type": "boolean"
         }
       }
     },
