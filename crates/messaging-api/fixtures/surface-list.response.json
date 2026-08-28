@@ -1,1 +1,1 @@
-{"target":"/messaging/surface/list","direction":"response","body":{"surfaces":[{"provider":"feishu","placement":"local","accountId":"cli_a","surfaceId":"mg:feishu:cli_a:chat_a","displayName":"Project room","state":"pending","firstSeenAtMs":1720000000000,"lastSeenAtMs":1720000001000}]}}
+{"target":"/messaging/surface/list","direction":"response","body":{"surfaces":[{"provider":"feishu","placement":"local","accountId":"cli_a","surfaceId":"cs1:mg:feishu:Y2xpX2E:Y2hhdF9h","displayName":"Project room","state":"pending","firstSeenAtMs":1720000000000,"lastSeenAtMs":1720000001000}]}}

@@ -305,6 +305,10 @@ fn normalize_provider(value: String) -> Result<String, SurfaceParseError> {
     let normalized = value.trim().to_ascii_lowercase();
     (!normalized.is_empty()
         && normalized
+            .as_bytes()
+            .first()
+            .is_some_and(u8::is_ascii_lowercase)
+        && normalized
             .bytes()
             .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'_'))
     .then_some(normalized)
