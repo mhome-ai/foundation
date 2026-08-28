@@ -6,7 +6,7 @@ use crate::{
 };
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 6;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 7;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExternalCoreRequest {
@@ -161,6 +161,31 @@ pub struct ExternalCoreEvent {
 pub enum ExternalCoreEventKind {
     MdnsRecordsChanged,
     ServiceEffects,
+    HostRuntimeRequest,
+}
+
+/// A platform capability request emitted by an externally hosted Core.
+///
+/// Core owns the onboarding workflow. The native host owns LAN discovery and
+/// transport to a discovered candidate, so Android can satisfy this contract
+/// without moving application logic into the mobile shell.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExternalHostRuntimeRequest {
+    pub method: ExternalHostRuntimeMethod,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub candidate_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub action: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payload: Option<Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum ExternalHostRuntimeMethod {
+    Discovery,
+    CandidateRequest,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
