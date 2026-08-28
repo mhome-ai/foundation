@@ -6,7 +6,7 @@ use crate::{
 };
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 7;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 8;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExternalCoreRequest {
@@ -162,6 +162,7 @@ pub enum ExternalCoreEventKind {
     MdnsRecordsChanged,
     ServiceEffects,
     HostRuntimeRequest,
+    ScopeOwnedDataPurgeRequested,
 }
 
 /// A platform capability request emitted by an externally hosted Core.
@@ -186,6 +187,13 @@ pub struct ExternalHostRuntimeRequest {
 pub enum ExternalHostRuntimeMethod {
     Discovery,
     CandidateRequest,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ScopeOwnedDataPurgeRequest {
+    pub tenant_id: String,
+    pub scope_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -257,4 +265,30 @@ pub struct ExternalCoreHealth {
     pub started_at: Option<String>,
     #[serde(default)]
     pub capabilities: Vec<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn scope_owned_data_purge_event_uses_the_v8_wire_shape() {
+        let event = ExternalCoreEvent {
+            event_id: "event-1".to_string(),
+            kind: ExternalCoreEventKind::ScopeOwnedDataPurgeRequested,
+            payload: serde_json::to_value(ScopeOwnedDataPurgeRequest {
+                tenant_id: "tenant-1".to_string(),
+                scope_id: "scope-1".to_string(),
+            })
+            .unwrap(),
+            expects_response: true,
+        };
+
+        let value = serde_json::to_value(event).unwrap();
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 8);
+        assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
+        assert_eq!(value["payload"]["tenantId"], "tenant-1");
+        assert_eq!(value["payload"]["scopeId"], "scope-1");
+        assert_eq!(value["expectsResponse"], true);
+    }
 }
