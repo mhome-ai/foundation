@@ -543,6 +543,7 @@ pub struct NodeAuthResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeTokenIssueRequest {
+    pub transaction_id: String,
     pub node_type: String,
     pub candidate_host_id: String,
     pub candidate_fingerprint: String,
@@ -648,8 +649,29 @@ pub const NODE_ONBOARDING_TOKEN_ISSUER_PREFIX: &str = "meow-core:hub:";
 pub const NODE_ONBOARDING_TOKEN_AUDIENCE: &str = "meow-node:onboarding";
 pub const NODE_ONBOARDING_ES256_ALGORITHM: &str = "ES256";
 pub const NODE_ONBOARDING_TRANSACTION_TTL_SECONDS: u64 = 5 * 60;
+pub const NODE_ONBOARDING_START_TARGET: &str = "/identity/node/onboarding/start";
+pub const NODE_TOKEN_ISSUE_TARGET: &str = "/identity/node/issue";
+pub const NODE_TOKEN_REVOKE_TARGET: &str = "/identity/node/revoke";
+pub const NODE_TOKEN_LIST_TARGET: &str = "/identity/node/list";
 pub const HUB_CONNECTION_PROOF_TARGET: &str = "/identity/hub/prove";
 pub const HUB_CONNECTION_PROOF_PROTOCOL: &str = "meow.hub.connection.proof.v1";
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NodeOnboardingStartRequest {
+    pub node_type: String,
+    pub candidate_host_id: String,
+    pub candidate_fingerprint: String,
+    pub idempotency_key: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NodeOnboardingStartResponse {
+    pub transaction_id: String,
+    pub nonce: String,
+    pub expires_at: i64,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -717,7 +739,7 @@ pub struct NodeChallengePayload {
     pub instance_slot: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeTokenIssueResponse {
     pub token: String,
@@ -1248,7 +1270,7 @@ pub struct HubMdnsInstanceRecord {
 mod tests {
     use super::{
         hub_connection_proof_signing_payload, HubConnectionProofRequest, MwsMessage,
-        MwsMessageType, HUB_CONNECTION_PROOF_PROTOCOL,
+        MwsMessageType, NodeOnboardingStartRequest, HUB_CONNECTION_PROOF_PROTOCOL,
     };
 
     #[test]
@@ -1282,5 +1304,28 @@ mod tests {
         assert_eq!(message.r#type.as_deref(), Some(MwsMessageType::SERVER_DATA));
         assert_eq!(message.payload.as_deref(), Some("{}"));
         assert!(message.client_info.is_none());
+    }
+
+    #[test]
+    fn node_onboarding_start_contract_uses_camel_case_and_rejects_unknown_fields() {
+        let request = NodeOnboardingStartRequest {
+            node_type: "matter".to_string(),
+            candidate_host_id: "host-1".to_string(),
+            candidate_fingerprint: "sha256:abc".to_string(),
+            idempotency_key: "attempt-1".to_string(),
+        };
+
+        let json = serde_json::to_value(&request).expect("serialize start request");
+        assert_eq!(json["candidateHostId"], "host-1");
+        assert_eq!(json["idempotencyKey"], "attempt-1");
+
+        let invalid = serde_json::json!({
+            "nodeType": "matter",
+            "candidateHostId": "host-1",
+            "candidateFingerprint": "sha256:abc",
+            "idempotencyKey": "attempt-1",
+            "nonce": "caller-must-not-supply-this"
+        });
+        assert!(serde_json::from_value::<NodeOnboardingStartRequest>(invalid).is_err());
     }
 }
