@@ -49,13 +49,13 @@ node scripts/stage-protocol-package.mjs messaging "${staging}"
 npm pack "${staging}"
 ```
 
-New npm packages are bootstrapped once with the repository `NPM_TOKEN` secret. After the first
-publish, configure each package's npm Trusted Publisher for GitHub Actions with organization
-`mhome-ai`, repository `foundation`, and workflow `publish-crate.yml`. The workflow grants
-`id-token: write` and uses a compatible npm CLI, so subsequent publishes authenticate with
-short-lived OIDC credentials and generate provenance without a long-lived npm publish token.
-After all protocol packages have a Trusted Publisher, remove the `NPM_TOKEN` repository secret and
-revoke the bootstrap token on npm.
+The published protocol packages trust GitHub Actions for organization `mhome-ai`, repository
+`foundation`, and workflow `publish-crate.yml`. The workflow grants `id-token: write` and uses a
+compatible npm CLI, so releases authenticate with short-lived OIDC credentials and generate
+provenance without an npm publish token. A future package that does not yet have an npm settings
+page must be bootstrapped once with a temporary `NPM_TOKEN` wired to `NODE_AUTH_TOKEN`; immediately
+after that first publish, configure its Trusted Publisher, remove the repository secret and workflow
+fallback, and revoke the bootstrap token on npm.
 
 `mhome-artifact-api` 0.1.0 was originally published from Baycat. This repository contains the same
 source and becomes authoritative beginning with its next release.
