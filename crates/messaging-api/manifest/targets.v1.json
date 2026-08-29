@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.messaging.targets.v1",
-  "contractVersion": "0.10.2",
+  "contractVersion": "0.11.0",
   "requestTargets": [
     "/messaging/provider/list",
     "/messaging/provider-account/list",
@@ -21,6 +21,8 @@
     "/messaging/surface/dismiss",
     "/messaging/surface/bind-code/create",
     "/messaging/actor/link-code/create",
+    "/messaging/actor/link-claim/status",
+    "/messaging/actor/link-claim/confirm",
     "/messaging/actor/link/list",
     "/messaging/actor/link/delete"
   ],
@@ -44,7 +46,12 @@
     "/messaging/surface/dismiss",
     "/messaging/surface/bind-code/create",
     "/messaging/actor/link-code/create",
+    "/messaging/actor/link-claim/status",
+    "/messaging/actor/link-claim/confirm",
     "/messaging/actor/link/list",
     "/messaging/actor/link/delete"
+  ],
+  "eventTargets": [
+    "/messaging/actor/link-claim/event"
   ]
 }

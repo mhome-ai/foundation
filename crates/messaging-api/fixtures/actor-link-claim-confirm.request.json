@@ -1,0 +1,1 @@
+{"target":"/messaging/actor/link-claim/confirm","direction":"request","body":{"provider":"telegram","placement":"local","challengeId":"challenge_01"}}

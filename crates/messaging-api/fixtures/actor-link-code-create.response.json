@@ -1,1 +1,1 @@
-{"target":"/messaging/actor/link-code/create","direction":"response","body":{"challenge":{"code":"P4V8N6","command":"/link P4V8N6","expiresAtMs":1720000300000}}}
+{"target":"/messaging/actor/link-code/create","direction":"response","body":{"challenge":{"challengeId":"challenge_01","code":"P4V8N6","command":"/link P4V8N6","target":{"audience":"shared","surfaceId":"mg:telegram:bot_a:family"},"expiresAtMs":1720000300000}}}

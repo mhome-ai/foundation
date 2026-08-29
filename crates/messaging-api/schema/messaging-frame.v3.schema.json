@@ -64,6 +64,8 @@
         "surface.dismiss",
         "surface.bind_code.create",
         "actor.link_code.create",
+        "actor.link_claim.status",
+        "actor.link_claim.confirm",
         "actor.link.list",
         "actor.link.delete"
       ]
@@ -870,7 +872,8 @@
       "required": [
         "provider",
         "placement",
-        "accountId"
+        "accountId",
+        "target"
       ],
       "properties": {
         "provider": {
@@ -881,6 +884,9 @@
         },
         "accountId": {
           "$ref": "#/$defs/id"
+        },
+        "target": {
+          "$ref": "#/$defs/actorLinkTarget"
         }
       }
     },
@@ -1818,7 +1824,7 @@
           ],
           "properties": {
             "challenge": {
-              "$ref": "#/$defs/challengeCode"
+              "$ref": "#/$defs/actorLinkChallenge"
             }
           }
         }
@@ -1976,6 +1982,12 @@
           "$ref": "#/$defs/actorLinkCodeCreateRequest"
         },
         {
+          "$ref": "#/$defs/actorLinkClaimStatusRequest"
+        },
+        {
+          "$ref": "#/$defs/actorLinkClaimConfirmRequest"
+        },
+        {
           "$ref": "#/$defs/actorLinkListRequest"
         },
         {
@@ -2043,6 +2055,15 @@
           "$ref": "#/$defs/actorLinkCodeCreateResponse"
         },
         {
+          "$ref": "#/$defs/actorLinkClaimStatusResponse"
+        },
+        {
+          "$ref": "#/$defs/actorLinkClaimConfirmResponse"
+        },
+        {
+          "$ref": "#/$defs/actorLinkClaimEventResponse"
+        },
+        {
           "$ref": "#/$defs/actorLinkListResponse"
         },
         {
@@ -2057,6 +2078,398 @@
         },
         {
           "$ref": "#/$defs/responseFrame"
+        }
+      ]
+    },
+    "actorLinkTarget": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience"
+          ],
+          "properties": {
+            "audience": {
+              "const": "personal"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "surfaceId"
+          ],
+          "properties": {
+            "audience": {
+              "const": "shared"
+            },
+            "surfaceId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
+    },
+    "messagingAddress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "accountId",
+        "conversationId",
+        "audience"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "conversationId": {
+          "$ref": "#/$defs/id"
+        },
+        "laneId": {
+          "$ref": "#/$defs/id"
+        },
+        "audience": {
+          "$ref": "#/$defs/audience"
+        }
+      }
+    },
+    "externalActor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "accountId",
+        "externalUserId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "externalUserId": {
+          "$ref": "#/$defs/id"
+        },
+        "displayName": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "actorLinkCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor",
+        "address",
+        "eventId"
+      ],
+      "properties": {
+        "actor": {
+          "$ref": "#/$defs/externalActor"
+        },
+        "address": {
+          "$ref": "#/$defs/messagingAddress"
+        },
+        "eventId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "actorLinkClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challengeId",
+        "provider",
+        "placement",
+        "accountId",
+        "target",
+        "expiresAtMs",
+        "lifecycle"
+      ],
+      "properties": {
+        "challengeId": {
+          "$ref": "#/$defs/id"
+        },
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "target": {
+          "$ref": "#/$defs/actorLinkTarget"
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/actorLinkClaimLifecycle"
+        }
+      }
+    },
+    "actorLinkChallenge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challengeId",
+        "code",
+        "command",
+        "target",
+        "expiresAtMs"
+      ],
+      "properties": {
+        "challengeId": {
+          "$ref": "#/$defs/id"
+        },
+        "code": {
+          "$ref": "#/$defs/id"
+        },
+        "command": {
+          "$ref": "#/$defs/id"
+        },
+        "target": {
+          "$ref": "#/$defs/actorLinkTarget"
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "actorLinkClaimBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "challengeId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "challengeId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "actorLinkClaimResponseBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim"
+      ],
+      "properties": {
+        "claim": {
+          "$ref": "#/$defs/actorLinkClaim"
+        }
+      }
+    },
+    "actorLinkClaimStatusRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/messaging/actor/link-claim/status"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimBody"
+        }
+      }
+    },
+    "actorLinkClaimStatusResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/messaging/actor/link-claim/status"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimResponseBody"
+        }
+      }
+    },
+    "actorLinkClaimConfirmRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/messaging/actor/link-claim/confirm"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimBody"
+        }
+      }
+    },
+    "actorLinkClaimConfirmResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/messaging/actor/link-claim/confirm"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimResponseBody"
+        }
+      }
+    },
+    "actorLinkClaimEventResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/messaging/actor/link-claim/event"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimResponseBody"
+        }
+      }
+    },
+    "actorLinkClaimLifecycle": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "issued"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "superseded"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "expired"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "candidate"
+          ],
+          "properties": {
+            "state": {
+              "const": "awaiting_confirmation"
+            },
+            "candidate": {
+              "$ref": "#/$defs/actorLinkCandidate"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "candidate"
+          ],
+          "properties": {
+            "state": {
+              "const": "confirming"
+            },
+            "candidate": {
+              "$ref": "#/$defs/actorLinkCandidate"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "candidate",
+            "linkId"
+          ],
+          "properties": {
+            "state": {
+              "const": "completed"
+            },
+            "candidate": {
+              "$ref": "#/$defs/actorLinkCandidate"
+            },
+            "linkId": {
+              "$ref": "#/$defs/id"
+            }
+          }
         }
       ]
     }

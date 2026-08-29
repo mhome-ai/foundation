@@ -1,5 +1,6 @@
 use messaging_api::{
-    AccountGrantListResponse, AccountGrantRequest, ActorLinkCodeCreateRequest,
+    AccountGrantListResponse, AccountGrantRequest, ActorLinkChallengeResponse, ActorLinkClaimEvent,
+    ActorLinkClaimRequest, ActorLinkClaimResponse, ActorLinkCodeCreateRequest,
     ActorLinkDeleteRequest, ActorLinkListRequest, ActorLinkListResponse, ChallengeCodeResponse,
     MutationResponse, NormalizedInbound, ProviderAccountListResponse, ProviderAccountRequest,
     ProviderAccountStatusResponse, ProviderAccountTestRequest, ProviderAccountTestResponse,
@@ -166,6 +167,26 @@ const VALID_FIXTURES: &[(&str, &str)] = &[
         include_str!("../fixtures/actor-link-code-create.response.json"),
     ),
     (
+        "actor-link-claim-status.request.json",
+        include_str!("../fixtures/actor-link-claim-status.request.json"),
+    ),
+    (
+        "actor-link-claim-status.response.json",
+        include_str!("../fixtures/actor-link-claim-status.response.json"),
+    ),
+    (
+        "actor-link-claim-confirm.request.json",
+        include_str!("../fixtures/actor-link-claim-confirm.request.json"),
+    ),
+    (
+        "actor-link-claim-confirm.response.json",
+        include_str!("../fixtures/actor-link-claim-confirm.response.json"),
+    ),
+    (
+        "actor-link-claim-event.response.json",
+        include_str!("../fixtures/actor-link-claim-event.response.json"),
+    ),
+    (
         "actor-link-list.request.json",
         include_str!("../fixtures/actor-link-list.request.json"),
     ),
@@ -330,7 +351,12 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
     body::<SurfaceBindCodeCreateRequest>("surface-bind-code-create.request.json");
     body::<ChallengeCodeResponse>("surface-bind-code-create.response.json");
     body::<ActorLinkCodeCreateRequest>("actor-link-code-create.request.json");
-    body::<ChallengeCodeResponse>("actor-link-code-create.response.json");
+    body::<ActorLinkChallengeResponse>("actor-link-code-create.response.json");
+    body::<ActorLinkClaimRequest>("actor-link-claim-status.request.json");
+    body::<ActorLinkClaimResponse>("actor-link-claim-status.response.json");
+    body::<ActorLinkClaimRequest>("actor-link-claim-confirm.request.json");
+    body::<ActorLinkClaimResponse>("actor-link-claim-confirm.response.json");
+    body::<ActorLinkClaimEvent>("actor-link-claim-event.response.json");
     body::<ActorLinkListRequest>("actor-link-list.request.json");
     body::<ActorLinkListResponse>("actor-link-list.response.json");
     body::<ActorLinkDeleteRequest>("actor-link-delete.request.json");
@@ -371,4 +397,11 @@ fn target_manifest_matches_rust_inventory() {
             .collect::<Vec<_>>();
         assert_eq!(targets, MANAGEMENT_TARGETS, "manifest field {field}");
     }
+    let event_targets = manifest["eventTargets"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|value| value.as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(event_targets, messaging_api::EVENT_TARGETS);
 }

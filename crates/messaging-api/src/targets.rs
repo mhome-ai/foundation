@@ -17,6 +17,9 @@ pub const SURFACE_LIST_TARGET: &str = "/messaging/surface/list";
 pub const SURFACE_DISMISS_TARGET: &str = "/messaging/surface/dismiss";
 pub const SURFACE_BIND_CODE_CREATE_TARGET: &str = "/messaging/surface/bind-code/create";
 pub const ACTOR_LINK_CODE_CREATE_TARGET: &str = "/messaging/actor/link-code/create";
+pub const ACTOR_LINK_CLAIM_STATUS_TARGET: &str = "/messaging/actor/link-claim/status";
+pub const ACTOR_LINK_CLAIM_CONFIRM_TARGET: &str = "/messaging/actor/link-claim/confirm";
+pub const ACTOR_LINK_CLAIM_EVENT_TARGET: &str = "/messaging/actor/link-claim/event";
 pub const ACTOR_LINK_LIST_TARGET: &str = "/messaging/actor/link/list";
 pub const ACTOR_LINK_DELETE_TARGET: &str = "/messaging/actor/link/delete";
 
@@ -40,9 +43,13 @@ pub const MANAGEMENT_TARGETS: &[&str] = &[
     SURFACE_DISMISS_TARGET,
     SURFACE_BIND_CODE_CREATE_TARGET,
     ACTOR_LINK_CODE_CREATE_TARGET,
+    ACTOR_LINK_CLAIM_STATUS_TARGET,
+    ACTOR_LINK_CLAIM_CONFIRM_TARGET,
     ACTOR_LINK_LIST_TARGET,
     ACTOR_LINK_DELETE_TARGET,
 ];
+
+pub const EVENT_TARGETS: &[&str] = &[ACTOR_LINK_CLAIM_EVENT_TARGET];
 
 pub fn is_management_target(target: &str) -> bool {
     MANAGEMENT_TARGETS.contains(&target)

@@ -24,8 +24,12 @@ are framework application ports rather than chat content, so they are intentiona
 this public normalized data plane.
 
 Shared-conversation discovery, group binding challenges, and self-service actor links are common
-management operations. Challenge requests never carry a target user: each runtime derives the user
-from its authenticated request context, authorizes scope ownership or membership, and stores only a
+management operations. Actor-link challenges explicitly target either a personal conversation or
+one already-bound shared surface. A shared `/link` command records an immutable external-actor
+candidate and requires confirmation by the authenticated challenge creator; a personal command may
+complete immediately. Status is the recovery source of truth and the matching event target is only
+a realtime hint. Challenge requests never carry a target user: each runtime derives the user from
+its authenticated request context, authorizes scope ownership or membership, and stores only a
 short-lived one-time code hash. Provider adapters remain responsible only for translating provider
 events and sending provider-native replies.
 

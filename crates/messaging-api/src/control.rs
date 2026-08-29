@@ -1,4 +1,4 @@
-use crate::ConversationAudience;
+use crate::{ConversationAudience, ExternalActor, MessagingAddress};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -100,6 +100,10 @@ pub enum ManagementOperation {
     SurfaceBindCodeCreate,
     #[serde(rename = "actor.link_code.create")]
     ActorLinkCodeCreate,
+    #[serde(rename = "actor.link_claim.status")]
+    ActorLinkClaimStatus,
+    #[serde(rename = "actor.link_claim.confirm")]
+    ActorLinkClaimConfirm,
     #[serde(rename = "actor.link.list")]
     ActorLinkList,
     #[serde(rename = "actor.link.delete")]
@@ -433,6 +437,19 @@ pub struct ActorLinkCodeCreateRequest {
     pub provider: String,
     pub placement: Placement,
     pub account_id: String,
+    pub target: ActorLinkTarget,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(
+    tag = "audience",
+    rename_all = "lowercase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum ActorLinkTarget {
+    Personal,
+    Shared { surface_id: String },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -441,6 +458,85 @@ pub struct ChallengeCode {
     pub code: String,
     pub command: String,
     pub expires_at_ms: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkChallenge {
+    pub challenge_id: String,
+    pub code: String,
+    pub command: String,
+    pub target: ActorLinkTarget,
+    pub expires_at_ms: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkChallengeResponse {
+    pub challenge: ActorLinkChallenge,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkCandidate {
+    pub actor: ExternalActor,
+    pub address: MessagingAddress,
+    pub event_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkClaim {
+    pub challenge_id: String,
+    pub provider: String,
+    pub placement: Placement,
+    pub account_id: String,
+    pub target: ActorLinkTarget,
+    pub expires_at_ms: i64,
+    pub lifecycle: ActorLinkClaimLifecycle,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(
+    tag = "state",
+    rename_all = "snake_case",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum ActorLinkClaimLifecycle {
+    Issued,
+    AwaitingConfirmation {
+        candidate: ActorLinkCandidate,
+    },
+    Confirming {
+        candidate: ActorLinkCandidate,
+    },
+    Completed {
+        candidate: ActorLinkCandidate,
+        link_id: String,
+    },
+    Superseded,
+    Expired,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkClaimRequest {
+    pub provider: String,
+    pub placement: Placement,
+    pub challenge_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkClaimResponse {
+    pub claim: ActorLinkClaim,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActorLinkClaimEvent {
+    pub claim: ActorLinkClaim,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
