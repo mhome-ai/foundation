@@ -43,5 +43,4 @@ jobs:
       - name: Verify and publish selected crate
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: bash scripts/publish-tag.sh "${GITHUB_REF_NAME}" --publish
