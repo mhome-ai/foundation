@@ -1,3 +1,5 @@
+use crate::ManagementOperation;
+
 pub const PROVIDER_LIST_TARGET: &str = "/messaging/provider/list";
 pub const PROVIDER_ACCOUNT_LIST_TARGET: &str = "/messaging/provider-account/list";
 pub const PROVIDER_ACCOUNT_UPDATE_TARGET: &str = "/messaging/provider-account/update";
@@ -53,4 +55,36 @@ pub const EVENT_TARGETS: &[&str] = &[ACTOR_LINK_CLAIM_EVENT_TARGET];
 
 pub fn is_management_target(target: &str) -> bool {
     MANAGEMENT_TARGETS.contains(&target)
+}
+
+/// Returns the provider capability required by a provider-scoped management target.
+/// Provider discovery is intentionally not capability-gated because it selects no provider.
+pub fn required_management_operation(target: &str) -> Option<ManagementOperation> {
+    use ManagementOperation::*;
+    Some(match target {
+        PROVIDER_ACCOUNT_LIST_TARGET => ProviderAccountList,
+        PROVIDER_ACCOUNT_UPDATE_TARGET => ProviderAccountUpdate,
+        PROVIDER_ACCOUNT_DELETE_TARGET => ProviderAccountDelete,
+        PROVIDER_ACCOUNT_TEST_TARGET => ProviderAccountTest,
+        PROVIDER_ACCOUNT_STATUS_TARGET => ProviderAccountStatus,
+        SHARED_ACCOUNT_GRANT_CREATE_TARGET => SharedAccountGrantCreate,
+        SHARED_ACCOUNT_GRANT_DELETE_TARGET => SharedAccountGrantDelete,
+        SHARED_ACCOUNT_GRANT_LIST_TARGET => SharedAccountGrantList,
+        ROUTE_LIST_TARGET => RouteList,
+        ROUTE_UPDATE_TARGET => RouteUpdate,
+        ROUTE_DELETE_TARGET => RouteDelete,
+        SETUP_OPTIONS_TARGET => SetupOptions,
+        SETUP_START_TARGET => SetupStart,
+        SETUP_STATUS_TARGET => SetupStatus,
+        SURFACE_LIST_TARGET => SurfaceList,
+        SURFACE_DISMISS_TARGET => SurfaceDismiss,
+        SURFACE_BIND_CODE_CREATE_TARGET => SurfaceBindCodeCreate,
+        ACTOR_LINK_CODE_CREATE_TARGET => ActorLinkCodeCreate,
+        ACTOR_LINK_CLAIM_STATUS_TARGET => ActorLinkClaimStatus,
+        ACTOR_LINK_CLAIM_CONFIRM_TARGET => ActorLinkClaimConfirm,
+        ACTOR_LINK_LIST_TARGET => ActorLinkList,
+        ACTOR_LINK_DELETE_TARGET => ActorLinkDelete,
+        PROVIDER_LIST_TARGET | ACTOR_LINK_CLAIM_EVENT_TARGET => return None,
+        _ => return None,
+    })
 }

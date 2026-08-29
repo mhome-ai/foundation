@@ -285,6 +285,59 @@ fn normalized_inbound_corpus_seals_schema_and_semantics() {
 }
 
 #[test]
+fn command_corpus_seals_parser_and_scope_ordering() {
+    use messaging_api::{
+        parse_messaging_command, sort_scope_ids, MessagingCommandParse, MessagingSystemCommand,
+    };
+
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/messaging-commands.v1.schema.json")).unwrap();
+    let corpus: Value = serde_json::from_str(include_str!(
+        "../fixtures/messaging-commands.conformance.json"
+    ))
+    .unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    assert!(validator.is_valid(&corpus));
+
+    for case in corpus["parseCases"].as_array().unwrap() {
+        let actual = match parse_messaging_command(case["input"].as_str().unwrap()) {
+            MessagingCommandParse::NotCommand => serde_json::json!({ "kind": "not_command" }),
+            MessagingCommandParse::InvalidSwitch => {
+                serde_json::json!({ "kind": "invalid_switch" })
+            }
+            MessagingCommandParse::Command(MessagingSystemCommand::Info) => {
+                serde_json::json!({ "kind": "command", "command": "info" })
+            }
+            MessagingCommandParse::Command(MessagingSystemCommand::Help) => {
+                serde_json::json!({ "kind": "command", "command": "help" })
+            }
+            MessagingCommandParse::Command(MessagingSystemCommand::Rotate) => {
+                serde_json::json!({ "kind": "command", "command": "rotate" })
+            }
+            MessagingCommandParse::Command(MessagingSystemCommand::Switch { selection }) => {
+                serde_json::json!({
+                    "kind": "command",
+                    "command": "switch",
+                    "selection": selection,
+                })
+            }
+        };
+        assert_eq!(actual, case["result"], "command case {}", case["name"]);
+    }
+
+    for case in corpus["orderingCases"].as_array().unwrap() {
+        let mut scope_ids = case["scopeIds"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_str().unwrap().to_string())
+            .collect::<Vec<_>>();
+        sort_scope_ids(&mut scope_ids);
+        assert_eq!(serde_json::json!(scope_ids), case["expected"]);
+    }
+}
+
+#[test]
 fn every_management_target_has_typed_request_and_response_fixtures() {
     let schema: Value =
         serde_json::from_str(include_str!("../schema/messaging-frame.v3.schema.json")).unwrap();
@@ -405,4 +458,12 @@ fn target_manifest_matches_rust_inventory() {
         .map(|value| value.as_str().unwrap())
         .collect::<Vec<_>>();
     assert_eq!(event_targets, messaging_api::EVENT_TARGETS);
+
+    for target in MANAGEMENT_TARGETS {
+        assert_eq!(
+            messaging_api::required_management_operation(target).is_some(),
+            *target != messaging_api::PROVIDER_LIST_TARGET,
+            "management capability mapping for {target}"
+        );
+    }
 }

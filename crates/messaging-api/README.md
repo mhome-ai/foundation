@@ -17,6 +17,11 @@ external actor, and inbound content semantics implemented independently by local
 Java runtimes. Neither module contains provider SDKs, transport callbacks, runtime lifecycle,
 persistence, or Agent integration.
 
+`commands` owns the small provider-independent chat command grammar. `/info`, `/help`, `/new`,
+`/clear`, and `/switch N` have identical parsing semantics in every runtime. Scope choices are
+ordered by their stable `scopeId`; providers remain free to render the resulting labels in their
+native format. The published command corpus is the cross-language source of truth.
+
 Every normalized message carries provider-neutral attention evidence: `addressed` means the
 provider determined that the bot was explicitly targeted, `unaddressed` means it determined the
 opposite, and `unknown` means the provider has no equivalent signal. Provider adapters extract this

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "parseCases": [
+    { "name": "info", "input": "/info", "result": { "kind": "command", "command": "info" } },
+    { "name": "case-insensitive-help", "input": " /HELP ", "result": { "kind": "command", "command": "help" } },
+    { "name": "new-rotates", "input": "/new", "result": { "kind": "command", "command": "rotate" } },
+    { "name": "clear-rotates", "input": "/clear", "result": { "kind": "command", "command": "rotate" } },
+    { "name": "spaced-switch", "input": "/switch 3", "result": { "kind": "command", "command": "switch", "selection": 3 } },
+    { "name": "compact-switch", "input": "/SWITCH2", "result": { "kind": "command", "command": "switch", "selection": 2 } },
+    { "name": "missing-switch-selection", "input": "/switch", "result": { "kind": "invalid_switch" } },
+    { "name": "zero-switch-selection", "input": "/switch 0", "result": { "kind": "invalid_switch" } },
+    { "name": "negative-switch-selection", "input": "/switch -1", "result": { "kind": "invalid_switch" } },
+    { "name": "unknown-text", "input": "hello", "result": { "kind": "not_command" } },
+    { "name": "unknown-command", "input": "/usage", "result": { "kind": "not_command" } }
+  ],
+  "orderingCases": [
+    { "name": "stable-scope-id-order", "scopeIds": ["scope-z", "scope-a", "scope-m"], "expected": ["scope-a", "scope-m", "scope-z"] },
+    { "name": "lexical-order-is-case-sensitive", "scopeIds": ["scope-b", "Scope-a"], "expected": ["Scope-a", "scope-b"] }
+  ]
+}
