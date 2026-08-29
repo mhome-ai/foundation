@@ -301,8 +301,10 @@ fn validate_content(content: &NormalizedInboundContent) -> Result<(), MessagingM
             attention: _,
             parts,
         } => {
-            if parts.is_empty() {
-                return Err(MessagingModelError("messaging message has no parts"));
+            if parts.is_empty() || parts.len() > 16 {
+                return Err(MessagingModelError(
+                    "messaging message part count is invalid",
+                ));
             }
             optional_ref(provider_message_id, "provider message id is invalid")?;
             for part in parts {
@@ -471,5 +473,34 @@ mod tests {
             occurred_at_ms: None,
         };
         assert!(inbound.validate().is_ok());
+    }
+
+    #[test]
+    fn inbound_rejects_more_parts_than_the_schema_allows() {
+        let inbound = NormalizedInbound {
+            schema_version: NORMALIZED_INBOUND_SCHEMA_VERSION,
+            event_id: "event".to_string(),
+            address: MessagingAddress::new(
+                "telegram",
+                "bot",
+                "chat",
+                None,
+                ConversationAudience::Personal,
+            )
+            .unwrap(),
+            actor: ExternalActor::new("telegram", "bot", "user", None).unwrap(),
+            content: NormalizedInboundContent::Message {
+                provider_message_id: None,
+                attention: MessageAttention::Unknown,
+                parts: (0..17)
+                    .map(|index| InboundMessagePart::Text {
+                        text: format!("part-{index}"),
+                    })
+                    .collect(),
+            },
+            conversation_display_name: None,
+            occurred_at_ms: None,
+        };
+        assert!(inbound.validate().is_err());
     }
 }
