@@ -34,7 +34,8 @@ Publication is immutable and restricted to the allowlist in `scripts/publish-tag
 The conversation, messaging, and Plugin protocol crates also publish matching, data-only npm
 packages for JavaScript consumers' build-time conformance checks. Each npm package contains the
 crate's manifest, JSON Schemas, and fixtures without an executable or browser entry point. Its
-version is identical to the Cargo crate version and is published from the same release tag:
+version is identical to the Cargo crate version and is published publicly with provenance from the
+same release tag:
 
 - `@mhome/conversation-protocol`
 - `@mhome/messaging-protocol`

@@ -14,6 +14,16 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
       const staged = stageProtocolPackage(name, path.join(tempRoot, "package"));
       assert.equal(staged.packageJson.name, config.npmName);
       assert.equal(staged.packageJson.version, staged.descriptor.contractVersion);
+      assert.equal(staged.packageJson.license, "MIT");
+      assert.deepEqual(staged.packageJson.repository, {
+        type: "git",
+        url: "git+https://github.com/mhome-ai/foundation.git",
+        directory: config.crateDir,
+      });
+      assert.deepEqual(staged.packageJson.publishConfig, {
+        access: "public",
+        provenance: true,
+      });
       assert.equal(staged.packageJson.main, undefined);
       assert.equal(staged.packageJson.module, undefined);
       assert.equal(staged.packageJson.browser, undefined);

@@ -19,10 +19,13 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     schemas: Object.freeze({
       frame: "schema/messaging-frame.v3.schema.json",
       normalizedInbound: "schema/normalized-inbound.v4.schema.json",
+      messagingCommands: "schema/messaging-commands.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",
       invalid: "fixtures/invalid",
+      normalizedInbound: "fixtures/normalized-inbound.conformance.json",
+      messagingCommands: "fixtures/messaging-commands.conformance.json",
     }),
   }),
   plugin: Object.freeze({

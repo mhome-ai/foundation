@@ -71,6 +71,17 @@ export function stageProtocolPackage(name, outputDir) {
     name: config.npmName,
     version,
     description: `Build-time protocol artifacts for ${config.protocol}`,
+    license: "MIT",
+    repository: {
+      type: "git",
+      url: "git+https://github.com/mhome-ai/foundation.git",
+      directory: config.crateDir,
+    },
+    homepage: "https://github.com/mhome-ai/foundation#readme",
+    bugs: {
+      url: "https://github.com/mhome-ai/foundation/issues",
+    },
+    keywords: ["mhome", "protocol", "json-schema", "fixtures"],
     private: false,
     files: [
       "protocol.json",
@@ -89,7 +100,7 @@ export function stageProtocolPackage(name, outputDir) {
       "./schema/*": "./schema/*",
       "./fixtures/*": "./fixtures/*",
     },
-    publishConfig: { access: "public" },
+    publishConfig: { access: "public", provenance: true },
   };
   fs.writeFileSync(
     path.join(stagingRoot, "protocol.json"),
