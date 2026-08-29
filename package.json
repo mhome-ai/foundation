@@ -1,0 +1,8 @@
+{
+  "name": "mhome-foundation-release-tools",
+  "private": true,
+  "scripts": {
+    "stage:protocol": "node scripts/stage-protocol-package.mjs",
+    "test:protocol-packages": "node --test scripts/tests/*.test.mjs"
+  }
+}

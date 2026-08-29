@@ -31,5 +31,22 @@ Crates are versioned independently. A tag named `<package>-v<version>` publishes
 for example `mhome-runtime-paths-v0.1.0`. The tag version must equal that package's manifest version.
 Publication is immutable and restricted to the allowlist in `scripts/publish-tag.sh`.
 
+The conversation, messaging, and Plugin protocol crates also publish matching, data-only npm
+packages for JavaScript consumers' build-time conformance checks. Each npm package contains the
+crate's manifest, JSON Schemas, and fixtures without an executable or browser entry point. Its
+version is identical to the Cargo crate version and is published from the same release tag:
+
+- `@mhome/conversation-protocol`
+- `@mhome/messaging-protocol`
+- `@mhome/plugin-protocol`
+
+Run `npm run test:protocol-packages` to verify package staging. To inspect a tarball locally:
+
+```bash
+staging="$(mktemp -d)/package"
+node scripts/stage-protocol-package.mjs messaging "${staging}"
+npm pack "${staging}"
+```
+
 `mhome-artifact-api` 0.1.0 was originally published from Baycat. This repository contains the same
 source and becomes authoritative beginning with its next release.

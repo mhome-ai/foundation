@@ -3,6 +3,8 @@ set -euo pipefail
 
 tag="${1:?release tag is required}"
 publish="${2:-}"
+protocol=""
+npm_package=""
 
 case "${tag}" in
   mhome-artifact-api-v*)
@@ -24,11 +26,15 @@ case "${tag}" in
     package="mhome-conversation-api"
     manifest="crates/conversation-api/Cargo.toml"
     version="${tag#mhome-conversation-api-v}"
+    protocol="conversation"
+    npm_package="@mhome/conversation-protocol"
     ;;
   mhome-messaging-api-v*)
     package="mhome-messaging-api"
     manifest="crates/messaging-api/Cargo.toml"
     version="${tag#mhome-messaging-api-v}"
+    protocol="messaging"
+    npm_package="@mhome/messaging-protocol"
     ;;
   mhome-playground-models-v*)
     package="mhome-playground-models"
@@ -39,6 +45,8 @@ case "${tag}" in
     package="mhome-plugin-api"
     manifest="crates/plugin-api/Cargo.toml"
     version="${tag#mhome-plugin-api-v}"
+    protocol="plugin"
+    npm_package="@mhome/plugin-protocol"
     ;;
   mhome-runtime-paths-v*)
     package="mhome-runtime-paths"
@@ -67,8 +75,27 @@ cargo clippy -p "${package}" --all-targets --locked -- -D warnings
 cargo test -p "${package}" --locked
 cargo publish -p "${package}" --locked --dry-run --allow-dirty
 
+staging_root=""
+protocol_tarball=""
+if [[ -n "${protocol}" ]]; then
+  staging_root="$(mktemp -d)"
+  trap 'rm -rf "${staging_root}"' EXIT
+  node scripts/stage-protocol-package.mjs "${protocol}" "${staging_root}/package"
+  npm pack "${staging_root}/package" --pack-destination "${staging_root}" >/dev/null
+  protocol_tarball="$(find "${staging_root}" -maxdepth 1 -name '*.tgz' -print -quit)"
+  if [[ -z "${protocol_tarball}" ]]; then
+    echo "failed to build ${npm_package} ${version}" >&2
+    exit 1
+  fi
+  npm publish "${protocol_tarball}" --dry-run --access public >/dev/null
+fi
+
 if [[ "${publish}" != "--publish" ]]; then
-  echo "verified ${package} ${version}"
+  if [[ -n "${npm_package}" ]]; then
+    echo "verified ${package} and ${npm_package} ${version}"
+  else
+    echo "verified ${package} ${version}"
+  fi
   exit 0
 fi
 
@@ -80,21 +107,30 @@ is_published() {
 
 if is_published; then
   echo "${package} ${version} is already published"
-  exit 0
-fi
-
-if cargo publish -p "${package}" --locked; then
-  exit 0
-fi
-
-# Cargo can time out while waiting for the index after a successful immutable upload.
-for attempt in 1 2 3 4 5 6; do
-  if is_published; then
-    echo "${package} ${version} is published"
-    exit 0
+else
+  cargo_publish_failed="false"
+  cargo publish -p "${package}" --locked || cargo_publish_failed="true"
+  if [[ "${cargo_publish_failed}" == "true" ]]; then
+    # Cargo can time out while waiting for the index after a successful immutable upload.
+    published_after_retry="false"
+    for attempt in 1 2 3 4 5 6; do
+      if is_published; then
+        published_after_retry="true"
+        break
+      fi
+      sleep $((attempt * 5))
+    done
+    if [[ "${published_after_retry}" != "true" ]]; then
+      echo "publishing ${package} ${version} failed" >&2
+      exit 1
+    fi
   fi
-  sleep $((attempt * 5))
-done
+fi
 
-echo "publishing ${package} ${version} failed" >&2
-exit 1
+if [[ -n "${npm_package}" ]]; then
+  if npm view "${npm_package}@${version}" version >/dev/null 2>&1; then
+    echo "${npm_package} ${version} is already published"
+  else
+    npm publish "${protocol_tarball}" --access public --provenance
+  fi
+fi
