@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/account-grant/create",
+  "target": "/messaging/shared-account-grant/list",
   "direction": "request",
   "body": { "provider": "telegram", "placement": "local", "accountId": "123456" }
 }

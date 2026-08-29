@@ -51,9 +51,9 @@
         "provider_account.delete",
         "provider_account.test",
         "provider_account.status",
-        "account_grant.create",
-        "account_grant.delete",
-        "account_grant.list",
+        "shared_account_grant.create",
+        "shared_account_grant.delete",
+        "shared_account_grant.list",
         "route.list",
         "route.update",
         "route.delete",
@@ -242,7 +242,7 @@
         }
       }
     },
-    "accountGrant": {
+    "sharedAccountGrant": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -251,8 +251,9 @@
         "accountId",
         "tenantId",
         "scopeId",
-        "userId",
-        "default"
+        "grantedByUserId",
+        "createdAtMs",
+        "updatedAtMs"
       ],
       "properties": {
         "provider": {
@@ -270,11 +271,14 @@
         "scopeId": {
           "$ref": "#/$defs/id"
         },
-        "userId": {
+        "grantedByUserId": {
           "$ref": "#/$defs/id"
         },
-        "default": {
-          "type": "boolean"
+        "createdAtMs": {
+          "type": "integer"
+        },
+        "updatedAtMs": {
+          "type": "integer"
         }
       }
     },
@@ -671,13 +675,32 @@
         }
       }
     },
-    "accountGrantBody": {
+    "sharedAccountGrantBody": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "provider",
         "placement",
         "accountId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "sharedAccountGrantListBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement"
       ],
       "properties": {
         "provider": {
@@ -734,31 +757,65 @@
       }
     },
     "routeUpdateBody": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement",
-        "routeId",
-        "scopeId"
-      ],
-      "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "provider",
+            "placement",
+            "routeId"
+          ],
+          "properties": {
+            "audience": {
+              "const": "personal"
+            },
+            "provider": {
+              "$ref": "#/$defs/providerId"
+            },
+            "placement": {
+              "$ref": "#/$defs/placement"
+            },
+            "routeId": {
+              "$ref": "#/$defs/id"
+            },
+            "scopeId": {
+              "$ref": "#/$defs/id"
+            },
+            "enabled": {
+              "type": "boolean"
+            }
+          }
         },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        },
-        "routeId": {
-          "$ref": "#/$defs/id"
-        },
-        "scopeId": {
-          "$ref": "#/$defs/id"
-        },
-        "enabled": {
-          "type": "boolean"
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "provider",
+            "placement",
+            "routeId"
+          ],
+          "properties": {
+            "audience": {
+              "const": "shared"
+            },
+            "provider": {
+              "$ref": "#/$defs/providerId"
+            },
+            "placement": {
+              "$ref": "#/$defs/placement"
+            },
+            "routeId": {
+              "$ref": "#/$defs/id"
+            },
+            "enabled": {
+              "type": "boolean"
+            }
+          }
         }
-      }
+      ]
     },
     "setupStartBody": {
       "type": "object",
@@ -1220,7 +1277,7 @@
         }
       }
     },
-    "accountGrantCreateRequest": {
+    "sharedAccountGrantCreateRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1230,17 +1287,17 @@
       ],
       "properties": {
         "target": {
-          "const": "/messaging/account-grant/create"
+          "const": "/messaging/shared-account-grant/create"
         },
         "direction": {
           "const": "request"
         },
         "body": {
-          "$ref": "#/$defs/accountGrantBody"
+          "$ref": "#/$defs/sharedAccountGrantBody"
         }
       }
     },
-    "accountGrantCreateResponse": {
+    "sharedAccountGrantCreateResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1250,7 +1307,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/messaging/account-grant/create"
+          "const": "/messaging/shared-account-grant/create"
         },
         "direction": {
           "const": "response"
@@ -1260,7 +1317,7 @@
         }
       }
     },
-    "accountGrantDeleteRequest": {
+    "sharedAccountGrantDeleteRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1270,17 +1327,17 @@
       ],
       "properties": {
         "target": {
-          "const": "/messaging/account-grant/delete"
+          "const": "/messaging/shared-account-grant/delete"
         },
         "direction": {
           "const": "request"
         },
         "body": {
-          "$ref": "#/$defs/accountGrantBody"
+          "$ref": "#/$defs/sharedAccountGrantBody"
         }
       }
     },
-    "accountGrantDeleteResponse": {
+    "sharedAccountGrantDeleteResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1290,7 +1347,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/messaging/account-grant/delete"
+          "const": "/messaging/shared-account-grant/delete"
         },
         "direction": {
           "const": "response"
@@ -1300,7 +1357,7 @@
         }
       }
     },
-    "accountGrantListRequest": {
+    "sharedAccountGrantListRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1310,17 +1367,17 @@
       ],
       "properties": {
         "target": {
-          "const": "/messaging/account-grant/list"
+          "const": "/messaging/shared-account-grant/list"
         },
         "direction": {
           "const": "request"
         },
         "body": {
-          "$ref": "#/$defs/accountGrantBody"
+          "$ref": "#/$defs/sharedAccountGrantListBody"
         }
       }
     },
-    "accountGrantListResponse": {
+    "sharedAccountGrantListResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1330,7 +1387,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/messaging/account-grant/list"
+          "const": "/messaging/shared-account-grant/list"
         },
         "direction": {
           "const": "response"
@@ -1345,7 +1402,7 @@
             "grants": {
               "type": "array",
               "items": {
-                "$ref": "#/$defs/accountGrant"
+                "$ref": "#/$defs/sharedAccountGrant"
               }
             }
           }
@@ -1943,13 +2000,13 @@
           "$ref": "#/$defs/providerAccountStatusRequest"
         },
         {
-          "$ref": "#/$defs/accountGrantCreateRequest"
+          "$ref": "#/$defs/sharedAccountGrantCreateRequest"
         },
         {
-          "$ref": "#/$defs/accountGrantDeleteRequest"
+          "$ref": "#/$defs/sharedAccountGrantDeleteRequest"
         },
         {
-          "$ref": "#/$defs/accountGrantListRequest"
+          "$ref": "#/$defs/sharedAccountGrantListRequest"
         },
         {
           "$ref": "#/$defs/routeListRequest"
@@ -2016,13 +2073,13 @@
           "$ref": "#/$defs/providerAccountStatusResponse"
         },
         {
-          "$ref": "#/$defs/accountGrantCreateResponse"
+          "$ref": "#/$defs/sharedAccountGrantCreateResponse"
         },
         {
-          "$ref": "#/$defs/accountGrantDeleteResponse"
+          "$ref": "#/$defs/sharedAccountGrantDeleteResponse"
         },
         {
-          "$ref": "#/$defs/accountGrantListResponse"
+          "$ref": "#/$defs/sharedAccountGrantListResponse"
         },
         {
           "$ref": "#/$defs/routeListResponse"

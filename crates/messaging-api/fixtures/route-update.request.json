@@ -2,6 +2,7 @@
   "target": "/messaging/route/update",
   "direction": "request",
   "body": {
+    "audience": "personal",
     "provider": "telegram",
     "placement": "cloud",
     "routeId": "route-1",

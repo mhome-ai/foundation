@@ -1,9 +1,0 @@
-{
-  "target": "/messaging/account-grant/list",
-  "direction": "response",
-  "body": {
-    "grants": [
-      { "provider": "telegram", "placement": "local", "accountId": "123456", "tenantId": "tenant-1", "scopeId": "scope-1", "userId": "user-1", "default": true }
-    ]
-  }
-}

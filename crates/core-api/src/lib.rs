@@ -949,6 +949,21 @@ pub struct ScopeAuthorizationRequest {
     pub requirement: ScopeAccessRequirement,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ScopeMembershipListRequest {
+    pub tenant_id: String,
+    pub user_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ScopeMembership {
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub user_id: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ServiceCoreInput {
     ClientAuth {
@@ -982,6 +997,10 @@ pub enum ServiceCoreInput {
     /// such as binding a shared messaging surface.
     ScopeAuthorization {
         request: ScopeAuthorizationRequest,
+    },
+    /// Lists authoritative scope memberships for a trusted headless principal.
+    ScopeMembershipList {
+        request: ScopeMembershipListRequest,
     },
     NodeAuth {
         request: NodeAuthRequest,
@@ -1039,6 +1058,9 @@ pub enum ServiceCoreResponse {
     },
     ScopeAuthorization {
         authorized: bool,
+    },
+    ScopeMembershipList {
+        memberships: Vec<ScopeMembership>,
     },
     NodeAuth(NodeAuthResponse),
     HubConnectionProof(HubConnectionProofResponse),

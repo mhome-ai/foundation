@@ -1,14 +1,15 @@
 use messaging_api::{
-    AccountGrantListResponse, AccountGrantRequest, ActorLinkChallengeResponse, ActorLinkClaimEvent,
-    ActorLinkClaimRequest, ActorLinkClaimResponse, ActorLinkCodeCreateRequest,
-    ActorLinkDeleteRequest, ActorLinkListRequest, ActorLinkListResponse, ChallengeCodeResponse,
-    MutationResponse, NormalizedInbound, ProviderAccountListResponse, ProviderAccountRequest,
-    ProviderAccountStatusResponse, ProviderAccountTestRequest, ProviderAccountTestResponse,
-    ProviderAccountUpdateRequest, ProviderAccountUpdateResponse, ProviderListRequest,
-    ProviderListResponse, ProviderPlacementRequest, RouteListRequest, RouteListResponse,
-    RouteRequest, RouteUpdateRequest, RouteUpdateResponse, SetupOptionsResponse, SetupResponse,
-    SetupStartRequest, SetupStatusRequest, SurfaceBindCodeCreateRequest, SurfaceListRequest,
-    SurfaceListResponse, SurfaceRequest, MANAGEMENT_TARGETS,
+    ActorLinkChallengeResponse, ActorLinkClaimEvent, ActorLinkClaimRequest, ActorLinkClaimResponse,
+    ActorLinkCodeCreateRequest, ActorLinkDeleteRequest, ActorLinkListRequest,
+    ActorLinkListResponse, ChallengeCodeResponse, MutationResponse, NormalizedInbound,
+    ProviderAccountListResponse, ProviderAccountRequest, ProviderAccountStatusResponse,
+    ProviderAccountTestRequest, ProviderAccountTestResponse, ProviderAccountUpdateRequest,
+    ProviderAccountUpdateResponse, ProviderListRequest, ProviderListResponse,
+    ProviderPlacementRequest, RouteListRequest, RouteListResponse, RouteRequest,
+    RouteUpdateRequest, RouteUpdateResponse, SetupOptionsResponse, SetupResponse,
+    SetupStartRequest, SetupStatusRequest, SharedAccountGrantListRequest,
+    SharedAccountGrantListResponse, SharedAccountGrantRequest, SurfaceBindCodeCreateRequest,
+    SurfaceListRequest, SurfaceListResponse, SurfaceRequest, MANAGEMENT_TARGETS,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -63,28 +64,28 @@ const VALID_FIXTURES: &[(&str, &str)] = &[
         include_str!("../fixtures/provider-account-status.response.json"),
     ),
     (
-        "account-grant-create.request.json",
-        include_str!("../fixtures/account-grant-create.request.json"),
+        "shared-account-grant-create.request.json",
+        include_str!("../fixtures/shared-account-grant-create.request.json"),
     ),
     (
-        "account-grant-create.response.json",
-        include_str!("../fixtures/account-grant-create.response.json"),
+        "shared-account-grant-create.response.json",
+        include_str!("../fixtures/shared-account-grant-create.response.json"),
     ),
     (
-        "account-grant-delete.request.json",
-        include_str!("../fixtures/account-grant-delete.request.json"),
+        "shared-account-grant-delete.request.json",
+        include_str!("../fixtures/shared-account-grant-delete.request.json"),
     ),
     (
-        "account-grant-delete.response.json",
-        include_str!("../fixtures/account-grant-delete.response.json"),
+        "shared-account-grant-delete.response.json",
+        include_str!("../fixtures/shared-account-grant-delete.response.json"),
     ),
     (
-        "account-grant-list.request.json",
-        include_str!("../fixtures/account-grant-list.request.json"),
+        "shared-account-grant-list.request.json",
+        include_str!("../fixtures/shared-account-grant-list.request.json"),
     ),
     (
-        "account-grant-list.response.json",
-        include_str!("../fixtures/account-grant-list.response.json"),
+        "shared-account-grant-list.response.json",
+        include_str!("../fixtures/shared-account-grant-list.response.json"),
     ),
     (
         "route-list.request.json",
@@ -326,12 +327,12 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
     body::<ProviderAccountTestResponse>("provider-account-test.response.json");
     body::<ProviderPlacementRequest>("provider-account-status.request.json");
     body::<ProviderAccountStatusResponse>("provider-account-status.response.json");
-    body::<AccountGrantRequest>("account-grant-create.request.json");
-    body::<MutationResponse>("account-grant-create.response.json");
-    body::<AccountGrantRequest>("account-grant-delete.request.json");
-    body::<MutationResponse>("account-grant-delete.response.json");
-    body::<AccountGrantRequest>("account-grant-list.request.json");
-    body::<AccountGrantListResponse>("account-grant-list.response.json");
+    body::<SharedAccountGrantRequest>("shared-account-grant-create.request.json");
+    body::<MutationResponse>("shared-account-grant-create.response.json");
+    body::<SharedAccountGrantRequest>("shared-account-grant-delete.request.json");
+    body::<MutationResponse>("shared-account-grant-delete.response.json");
+    body::<SharedAccountGrantListRequest>("shared-account-grant-list.request.json");
+    body::<SharedAccountGrantListResponse>("shared-account-grant-list.response.json");
     body::<RouteListRequest>("route-list.request.json");
     body::<RouteListResponse>("route-list.response.json");
     body::<RouteUpdateRequest>("route-update.request.json");

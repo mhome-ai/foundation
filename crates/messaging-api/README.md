@@ -39,13 +39,17 @@ its authenticated request context, authorizes scope ownership or membership, and
 short-lived one-time code hash. Provider adapters remain responsible only for translating provider
 events and sending provider-native replies.
 
-An account grant authorizes one mHome principal and scope to use one provider account. A personal
-route belongs to that principal and depends on its grant. A shared route belongs directly to one
-scope; `boundByUserId` is immutable audit metadata and is not its owner or an ongoing account grant.
-Current scope owners manage shared routes. Any linked actor who is still a member of the bound scope
-may answer a shared interaction, while personal interactions remain restricted to the personal route
-owner. Routes deliberately address the provider's base conversation only; lane identity remains on
-each normalized address and canonical Conversation surface so topic-level threads do not multiply
+A personal route belongs to one linked mHome user. Its `scopeId` is only the conversation's current
+scope: authorization comes from live scope membership, and `/switch` may move it to any scope the
+user still belongs to. Personal routes never depend on an account grant.
+
+A shared account grant authorizes one provider account to serve one scope. It has no beneficiary
+user and no default flag; `grantedByUserId` is audit metadata. Every shared route is fixed to one
+scope, depends on the matching shared account grant, and cannot switch scopes. Current scope owners
+manage grants and shared routes. Any linked actor who is still a member of the bound scope may answer
+a shared interaction, while personal interactions remain restricted to the personal route owner.
+Routes deliberately address the provider's base conversation only; lane identity remains on each
+normalized address and canonical Conversation surface so topic-level threads do not multiply
 authorization records.
 
 Setup is provider-extensible but has a common lifecycle. A completed setup may return both the

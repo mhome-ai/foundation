@@ -1,0 +1,9 @@
+{
+  "target": "/messaging/shared-account-grant/list",
+  "direction": "response",
+  "body": {
+    "grants": [
+      { "provider": "telegram", "placement": "local", "accountId": "123456", "tenantId": "tenant-1", "scopeId": "scope-1", "grantedByUserId": "user-1", "createdAtMs": 1787961600000, "updatedAtMs": 1787961600000 }
+    ]
+  }
+}

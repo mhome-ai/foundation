@@ -4,9 +4,9 @@ pub const PROVIDER_ACCOUNT_UPDATE_TARGET: &str = "/messaging/provider-account/up
 pub const PROVIDER_ACCOUNT_DELETE_TARGET: &str = "/messaging/provider-account/delete";
 pub const PROVIDER_ACCOUNT_TEST_TARGET: &str = "/messaging/provider-account/test";
 pub const PROVIDER_ACCOUNT_STATUS_TARGET: &str = "/messaging/provider-account/status";
-pub const ACCOUNT_GRANT_CREATE_TARGET: &str = "/messaging/account-grant/create";
-pub const ACCOUNT_GRANT_DELETE_TARGET: &str = "/messaging/account-grant/delete";
-pub const ACCOUNT_GRANT_LIST_TARGET: &str = "/messaging/account-grant/list";
+pub const SHARED_ACCOUNT_GRANT_CREATE_TARGET: &str = "/messaging/shared-account-grant/create";
+pub const SHARED_ACCOUNT_GRANT_DELETE_TARGET: &str = "/messaging/shared-account-grant/delete";
+pub const SHARED_ACCOUNT_GRANT_LIST_TARGET: &str = "/messaging/shared-account-grant/list";
 pub const ROUTE_LIST_TARGET: &str = "/messaging/route/list";
 pub const ROUTE_UPDATE_TARGET: &str = "/messaging/route/update";
 pub const ROUTE_DELETE_TARGET: &str = "/messaging/route/delete";
@@ -30,9 +30,9 @@ pub const MANAGEMENT_TARGETS: &[&str] = &[
     PROVIDER_ACCOUNT_DELETE_TARGET,
     PROVIDER_ACCOUNT_TEST_TARGET,
     PROVIDER_ACCOUNT_STATUS_TARGET,
-    ACCOUNT_GRANT_CREATE_TARGET,
-    ACCOUNT_GRANT_DELETE_TARGET,
-    ACCOUNT_GRANT_LIST_TARGET,
+    SHARED_ACCOUNT_GRANT_CREATE_TARGET,
+    SHARED_ACCOUNT_GRANT_DELETE_TARGET,
+    SHARED_ACCOUNT_GRANT_LIST_TARGET,
     ROUTE_LIST_TARGET,
     ROUTE_UPDATE_TARGET,
     ROUTE_DELETE_TARGET,

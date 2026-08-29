@@ -74,12 +74,12 @@ pub enum ManagementOperation {
     ProviderAccountTest,
     #[serde(rename = "provider_account.status")]
     ProviderAccountStatus,
-    #[serde(rename = "account_grant.create")]
-    AccountGrantCreate,
-    #[serde(rename = "account_grant.delete")]
-    AccountGrantDelete,
-    #[serde(rename = "account_grant.list")]
-    AccountGrantList,
+    #[serde(rename = "shared_account_grant.create")]
+    SharedAccountGrantCreate,
+    #[serde(rename = "shared_account_grant.delete")]
+    SharedAccountGrantDelete,
+    #[serde(rename = "shared_account_grant.list")]
+    SharedAccountGrantList,
     #[serde(rename = "route.list")]
     RouteList,
     #[serde(rename = "route.update")]
@@ -212,7 +212,7 @@ pub struct MutationResponse {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AccountGrantRequest {
+pub struct SharedAccountGrantRequest {
     pub provider: String,
     pub placement: Placement,
     pub account_id: String,
@@ -220,20 +220,30 @@ pub struct AccountGrantRequest {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AccountGrant {
+pub struct SharedAccountGrantListRequest {
+    pub provider: String,
+    pub placement: Placement,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub account_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SharedAccountGrant {
     pub provider: String,
     pub placement: Placement,
     pub account_id: String,
     pub tenant_id: String,
     pub scope_id: String,
-    pub user_id: String,
-    pub default: bool,
+    pub granted_by_user_id: String,
+    pub created_at_ms: i64,
+    pub updated_at_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AccountGrantListResponse {
-    pub grants: Vec<AccountGrant>,
+pub struct SharedAccountGrantListResponse {
+    pub grants: Vec<SharedAccountGrant>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -256,14 +266,29 @@ pub struct RouteRequest {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RouteUpdateRequest {
-    pub provider: String,
-    pub placement: Placement,
-    pub route_id: String,
-    pub scope_id: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub enabled: Option<bool>,
+#[serde(
+    tag = "audience",
+    rename_all = "lowercase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum RouteUpdateRequest {
+    Personal {
+        provider: String,
+        placement: Placement,
+        route_id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        scope_id: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        enabled: Option<bool>,
+    },
+    Shared {
+        provider: String,
+        placement: Placement,
+        route_id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        enabled: Option<bool>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
