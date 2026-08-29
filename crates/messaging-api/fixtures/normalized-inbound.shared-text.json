@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "eventId": "telegram:update:41",
   "address": {
     "provider": "telegram",
@@ -17,6 +17,7 @@
   "content": {
     "type": "message",
     "providerMessageId": "message-5",
+    "attention": "addressed",
     "parts": [{ "type": "text", "text": "hello" }]
   },
   "conversationDisplayName": "Project room",

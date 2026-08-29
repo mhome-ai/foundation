@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:mhome:messaging-api:normalized-inbound:v3",
-  "title": "mHome normalized messaging inbound v3",
+  "$id": "urn:mhome:messaging-api:normalized-inbound:v4",
+  "title": "mHome normalized messaging inbound v4",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "eventId", "address", "actor", "content"],
   "properties": {
-    "schemaVersion": { "const": 3 },
+    "schemaVersion": { "const": 4 },
     "eventId": { "$ref": "#/$defs/id" },
     "address": { "$ref": "#/$defs/address" },
     "actor": { "$ref": "#/$defs/actor" },
@@ -89,10 +89,11 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["type", "parts"],
+          "required": ["type", "attention", "parts"],
           "properties": {
             "type": { "const": "message" },
             "providerMessageId": { "$ref": "#/$defs/id" },
+            "attention": { "enum": ["addressed", "unaddressed", "unknown"] },
             "parts": {
               "type": "array",
               "minItems": 1,

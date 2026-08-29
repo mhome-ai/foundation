@@ -3,35 +3,36 @@
     {
       "name": "personal_text",
       "value": {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "eventId": "event-personal-text",
         "address": { "provider": "telegram", "accountId": "bot-1", "conversationId": "chat-1", "audience": "personal" },
         "actor": { "provider": "telegram", "accountId": "bot-1", "externalUserId": "user-1", "displayName": "User One" },
-        "content": { "type": "message", "providerMessageId": "message-1", "parts": [{ "type": "text", "text": "hello" }] },
+        "content": { "type": "message", "providerMessageId": "message-1", "attention": "unknown", "parts": [{ "type": "text", "text": "hello" }] },
         "occurredAtMs": 1
       }
     },
     {
       "name": "shared_text_with_lane",
       "value": {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "eventId": "event-shared-text",
         "address": { "provider": "feishu", "accountId": "app-1", "conversationId": "group-1", "laneId": "thread-1", "audience": "shared" },
         "actor": { "provider": "feishu", "accountId": "app-1", "externalUserId": "open-id-1" },
-        "content": { "type": "message", "parts": [{ "type": "text", "text": "group hello" }] },
+        "content": { "type": "message", "attention": "addressed", "parts": [{ "type": "text", "text": "group hello" }] },
         "conversationDisplayName": "Project room"
       }
     },
     {
       "name": "audio_with_transcript",
       "value": {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "eventId": "event-audio",
         "address": { "provider": "telegram", "accountId": "bot-1", "conversationId": "chat-1", "audience": "personal" },
         "actor": { "provider": "telegram", "accountId": "bot-1", "externalUserId": "user-1" },
         "content": {
           "type": "message",
           "providerMessageId": "message-2",
+          "attention": "unknown",
           "parts": [{ "type": "media", "reference": { "handle": "file-1", "kind": "audio", "mimeType": "audio/ogg", "durationMs": 1200, "transcript": "hello" } }]
         }
       }
@@ -39,7 +40,7 @@
     {
       "name": "action_selected",
       "value": {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "eventId": "event-action-selected",
         "address": { "provider": "feishu", "accountId": "app-1", "conversationId": "chat-1", "audience": "personal" },
         "actor": { "provider": "feishu", "accountId": "app-1", "externalUserId": "open-id-1" },
@@ -51,52 +52,52 @@
     {
       "name": "provider_starts_with_digit",
       "value": {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "eventId": "event",
         "address": { "provider": "1telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
         "actor": { "provider": "1telegram", "accountId": "bot", "externalUserId": "user" },
-        "content": { "type": "message", "parts": [{ "type": "text", "text": "hello" }] }
+        "content": { "type": "message", "attention": "unknown", "parts": [{ "type": "text", "text": "hello" }] }
       }
     },
     {
       "name": "negative_occurrence_time",
       "value": {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "eventId": "event",
         "address": { "provider": "telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
         "actor": { "provider": "telegram", "accountId": "bot", "externalUserId": "user" },
-        "content": { "type": "message", "parts": [{ "type": "text", "text": "hello" }] },
+        "content": { "type": "message", "attention": "unknown", "parts": [{ "type": "text", "text": "hello" }] },
         "occurredAtMs": -1
       }
     },
     {
       "name": "actor_account_mismatch",
       "value": {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "eventId": "event",
         "address": { "provider": "telegram", "accountId": "bot-a", "conversationId": "chat", "audience": "personal" },
         "actor": { "provider": "telegram", "accountId": "bot-b", "externalUserId": "user" },
-        "content": { "type": "message", "parts": [{ "type": "text", "text": "hello" }] }
+        "content": { "type": "message", "attention": "unknown", "parts": [{ "type": "text", "text": "hello" }] }
       }
     },
     {
       "name": "empty_message",
       "value": {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "eventId": "event",
         "address": { "provider": "telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
         "actor": { "provider": "telegram", "accountId": "bot", "externalUserId": "user" },
-        "content": { "type": "message", "parts": [] }
+        "content": { "type": "message", "attention": "unknown", "parts": [] }
       }
     },
     {
       "name": "incomplete_media_dimensions",
       "value": {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "eventId": "event",
         "address": { "provider": "telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
         "actor": { "provider": "telegram", "accountId": "bot", "externalUserId": "user" },
-        "content": { "type": "message", "parts": [{ "type": "media", "reference": { "handle": "file", "kind": "image", "widthPx": 100 } }] }
+        "content": { "type": "message", "attention": "unknown", "parts": [{ "type": "media", "reference": { "handle": "file", "kind": "image", "widthPx": 100 } }] }
       }
     },
     {
@@ -105,6 +106,16 @@
         "schemaVersion": 2,
         "eventId": "event",
         "address": { "provider": "telegram", "accountId": "bot", "conversationId": "chat", "audience": "personal" },
+        "actor": { "provider": "telegram", "accountId": "bot", "externalUserId": "user" },
+        "content": { "type": "message", "attention": "unknown", "parts": [{ "type": "text", "text": "hello" }] }
+      }
+    },
+    {
+      "name": "missing_message_attention",
+      "value": {
+        "schemaVersion": 4,
+        "eventId": "event",
+        "address": { "provider": "telegram", "accountId": "bot", "conversationId": "chat", "audience": "shared" },
         "actor": { "provider": "telegram", "accountId": "bot", "externalUserId": "user" },
         "content": { "type": "message", "parts": [{ "type": "text", "text": "hello" }] }
       }

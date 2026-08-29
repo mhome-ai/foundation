@@ -17,6 +17,12 @@ external actor, and inbound content semantics implemented independently by local
 Java runtimes. Neither module contains provider SDKs, transport callbacks, runtime lifecycle,
 persistence, or Agent integration.
 
+Every normalized message carries provider-neutral attention evidence: `addressed` means the
+provider determined that the bot was explicitly targeted, `unaddressed` means it determined the
+opposite, and `unknown` means the provider has no equivalent signal. Provider adapters extract this
+evidence; common runtimes ignore only `unaddressed` messages on shared surfaces. Personal messages,
+actions, and providers with unknown attention continue through the normal pipeline.
+
 Interactive delivery is modeled as an `ActionSet` of user-facing labels and opaque tokens. An
 inbound selection contains only `ActionSelected { token }`; approval decisions, dialog values, and
 provider callback payloads stay in runtime-owned route stores. Setup claims and account lifecycle

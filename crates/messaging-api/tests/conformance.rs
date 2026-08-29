@@ -231,7 +231,7 @@ fn body<T: DeserializeOwned>(name: &str) -> T {
 #[test]
 fn normalized_inbound_fixture_matches_schema_and_semantic_validation() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/normalized-inbound.v3.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/normalized-inbound.v4.schema.json")).unwrap();
     let fixture: Value = serde_json::from_str(include_str!(
         "../fixtures/normalized-inbound.shared-text.json"
     ))
@@ -252,7 +252,7 @@ fn normalized_inbound_fixture_matches_schema_and_semantic_validation() {
 #[test]
 fn normalized_inbound_corpus_seals_schema_and_semantics() {
     let schema: Value =
-        serde_json::from_str(include_str!("../schema/normalized-inbound.v3.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/normalized-inbound.v4.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     let corpus: Value = serde_json::from_str(include_str!(
         "../fixtures/normalized-inbound.conformance.json"

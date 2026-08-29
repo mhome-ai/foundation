@@ -2,13 +2,25 @@ use conversation_api::ConversationSurface;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-pub const NORMALIZED_INBOUND_SCHEMA_VERSION: u16 = 3;
+pub const NORMALIZED_INBOUND_SCHEMA_VERSION: u16 = 4;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ConversationAudience {
     Personal,
     Shared,
+}
+
+/// Whether a provider could determine that a message explicitly targets the bot.
+///
+/// Shared-conversation policy drops `Unaddressed` messages. `Unknown` remains
+/// admissible for providers that cannot expose an equivalent signal.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum MessageAttention {
+    Addressed,
+    Unaddressed,
+    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -223,6 +235,7 @@ pub enum NormalizedInboundContent {
     Message {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         provider_message_id: Option<String>,
+        attention: MessageAttention,
         parts: Vec<InboundMessagePart>,
     },
     ActionSelected {
@@ -285,6 +298,7 @@ fn validate_content(content: &NormalizedInboundContent) -> Result<(), MessagingM
     match content {
         NormalizedInboundContent::Message {
             provider_message_id,
+            attention: _,
             parts,
         } => {
             if parts.is_empty() {
@@ -409,6 +423,7 @@ mod tests {
             actor: ExternalActor::new("telegram", "bot-b", "user", None).unwrap(),
             content: NormalizedInboundContent::Message {
                 provider_message_id: None,
+                attention: MessageAttention::Unknown,
                 parts: vec![InboundMessagePart::Text {
                     text: "hello".to_string(),
                 }],
@@ -447,6 +462,7 @@ mod tests {
             actor: ExternalActor::new("telegram", "bot", "user", None).unwrap(),
             content: NormalizedInboundContent::Message {
                 provider_message_id: None,
+                attention: MessageAttention::Unknown,
                 parts: vec![InboundMessagePart::Text {
                     text: " message with spacing ".to_string(),
                 }],
