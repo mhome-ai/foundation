@@ -1,0 +1,6 @@
+{
+  "manifest": "mhome.artifact.v1",
+  "contractVersion": "0.2.0",
+  "uriPrefix": "meow-artifact://v1/",
+  "kinds": ["image", "audio", "file"]
+}

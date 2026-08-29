@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "valid": [
+    {
+      "name": "image",
+      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "kind": "image",
+      "mimeType": "image/png",
+      "sizeBytes": 12,
+      "width": 2,
+      "height": 3
+    },
+    {
+      "name": "audio",
+      "uri": "meow-artifact://v1/tenant/scope/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/eyJrIjoiYSIsIm0iOiJhdWRpby9vZ2ciLCJzIjoyMCwiZCI6MTUwMH0",
+      "kind": "audio",
+      "mimeType": "audio/ogg",
+      "sizeBytes": 20,
+      "durationMillis": 1500
+    },
+    {
+      "name": "file",
+      "uri": "meow-artifact://v1/tenant/scope/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+      "kind": "file",
+      "mimeType": "application/pdf",
+      "sizeBytes": 30
+    }
+  ],
+  "invalid": [
+    {
+      "name": "video-kind",
+      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoidiIsIm0iOiJ2aWRlby9tcDQiLCJzIjoxMH0"
+    },
+    {
+      "name": "file-with-video-mime",
+      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ2aWRlby9tcDQiLCJzIjoxMH0"
+    },
+    {
+      "name": "image-with-duration",
+      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMCwidyI6MSwiaCI6MSwiZCI6MX0"
+    },
+    {
+      "name": "uppercase-digest",
+      "uri": "meow-artifact://v1/tenant/scope/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MX0"
+    },
+    {
+      "name": "javascript-unsafe-size",
+      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6OTAwNzE5OTI1NDc0MDk5Mn0"
+    },
+    {
+      "name": "oversized-image-dimension",
+      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMCwidyI6MjE0NzQ4MzY0OCwiaCI6MX0"
+    },
+    {
+      "name": "padded-base64url",
+      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MX0="
+    },
+    {
+      "name": "leading-whitespace",
+      "uri": " meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MX0"
+    },
+    {
+      "name": "reordered-metadata",
+      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJtIjoidGV4dC9wbGFpbiIsImsiOiJmIiwicyI6MX0"
+    },
+    {
+      "name": "duplicate-metadata-field",
+      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MSwicyI6MX0"
+    }
+  ]
+}

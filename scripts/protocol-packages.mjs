@@ -1,4 +1,16 @@
 export const PROTOCOL_PACKAGES = Object.freeze({
+  artifact: Object.freeze({
+    crateDir: "crates/artifact",
+    npmName: "@mhome/artifact-protocol",
+    protocol: "mhome.artifact",
+    manifest: "manifest/artifact.v1.json",
+    schemas: Object.freeze({
+      artifactMetadata: "schema/artifact-metadata.v1.schema.json",
+    }),
+    fixtures: Object.freeze({
+      artifactReference: "fixtures/artifact-reference.conformance.json",
+    }),
+  }),
   conversation: Object.freeze({
     crateDir: "crates/conversation-api",
     npmName: "@mhome/conversation-protocol",

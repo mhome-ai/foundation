@@ -3,10 +3,15 @@
 use std::fmt;
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Prefix of the version 1 artifact URI format.
 pub const ARTIFACT_URL_PREFIX: &str = "meow-artifact://v1/";
+const MAX_URI_LENGTH: usize = 2_048;
+const MAX_SEGMENT_LENGTH: usize = 256;
+const MAX_MIME_LENGTH: usize = 255;
+const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+const MAX_DIMENSION: u32 = i32::MAX as u32;
 
 /// Logical media kind encoded in an artifact reference.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -26,7 +31,7 @@ impl ArtifactKind {
         }
     }
 
-    fn from_code(value: &str) -> Result<Self, ArtifactReferenceError> {
+    pub fn from_code(value: &str) -> Result<Self, ArtifactReferenceError> {
         match value {
             "i" => Ok(Self::Image),
             "a" => Ok(Self::Audio),
@@ -37,82 +42,209 @@ impl ArtifactKind {
 }
 
 /// Immutable metadata encoded into an artifact URI.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArtifactMetadata {
-    pub k: String,
-    pub m: String,
-    pub s: u64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub w: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub h: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub d: Option<u64>,
+    kind: ArtifactKind,
+    mime_type: String,
+    size_bytes: u64,
+    width: Option<u32>,
+    height: Option<u32>,
+    duration_millis: Option<u64>,
 }
 
 impl ArtifactMetadata {
-    pub fn image(mime_type: impl Into<String>, size_bytes: usize, width: u32, height: u32) -> Self {
-        Self {
-            k: ArtifactKind::Image.code().to_string(),
-            m: mime_type.into(),
-            s: size_bytes as u64,
-            w: Some(width),
-            h: Some(height),
-            d: None,
-        }
+    pub fn image(
+        mime_type: impl Into<String>,
+        size_bytes: usize,
+        width: u32,
+        height: u32,
+    ) -> Result<Self, ArtifactReferenceError> {
+        Self::build(
+            ArtifactKind::Image,
+            mime_type,
+            size_bytes,
+            Some(width),
+            Some(height),
+            None,
+        )
     }
 
     pub fn audio(
         mime_type: impl Into<String>,
         size_bytes: usize,
         duration_millis: Option<u64>,
-    ) -> Self {
-        Self {
-            k: ArtifactKind::Audio.code().to_string(),
-            m: mime_type.into(),
-            s: size_bytes as u64,
-            w: None,
-            h: None,
-            d: duration_millis,
-        }
+    ) -> Result<Self, ArtifactReferenceError> {
+        Self::build(
+            ArtifactKind::Audio,
+            mime_type,
+            size_bytes,
+            None,
+            None,
+            duration_millis,
+        )
     }
 
-    pub fn kind(&self) -> Result<ArtifactKind, ArtifactReferenceError> {
-        ArtifactKind::from_code(&self.k)
+    pub fn file(
+        mime_type: impl Into<String>,
+        size_bytes: usize,
+    ) -> Result<Self, ArtifactReferenceError> {
+        Self::build(ArtifactKind::File, mime_type, size_bytes, None, None, None)
+    }
+
+    fn build(
+        kind: ArtifactKind,
+        mime_type: impl Into<String>,
+        size_bytes: usize,
+        width: Option<u32>,
+        height: Option<u32>,
+        duration_millis: Option<u64>,
+    ) -> Result<Self, ArtifactReferenceError> {
+        let metadata = Self {
+            kind,
+            mime_type: mime_type.into(),
+            size_bytes: size_bytes as u64,
+            width,
+            height,
+            duration_millis,
+        };
+        metadata.validate()?;
+        Ok(metadata)
+    }
+
+    #[must_use]
+    pub const fn kind(&self) -> ArtifactKind {
+        self.kind
+    }
+
+    #[must_use]
+    pub fn mime_type(&self) -> &str {
+        &self.mime_type
+    }
+
+    #[must_use]
+    pub const fn size_bytes(&self) -> u64 {
+        self.size_bytes
+    }
+
+    #[must_use]
+    pub const fn width(&self) -> Option<u32> {
+        self.width
+    }
+
+    #[must_use]
+    pub const fn height(&self) -> Option<u32> {
+        self.height
+    }
+
+    #[must_use]
+    pub const fn duration_millis(&self) -> Option<u64> {
+        self.duration_millis
     }
 
     fn validate(&self) -> Result<(), ArtifactReferenceError> {
-        if self.m.trim().is_empty() || self.s == 0 {
-            return Err(invalid("artifact metadata is incomplete"));
+        validate_mime_type(&self.mime_type)?;
+        if self.size_bytes == 0 || self.size_bytes > MAX_SAFE_INTEGER {
+            return Err(invalid("artifact size is invalid"));
         }
-        match self.kind()? {
-            ArtifactKind::Image if !self.m.starts_with("image/") => {
-                Err(invalid("image artifact MIME type is invalid"))
+        match self.kind {
+            ArtifactKind::Image => {
+                if !self.mime_type.starts_with("image/") {
+                    return Err(invalid("image artifact MIME type is invalid"));
+                }
+                if self
+                    .width
+                    .is_none_or(|value| value == 0 || value > MAX_DIMENSION)
+                    || self
+                        .height
+                        .is_none_or(|value| value == 0 || value > MAX_DIMENSION)
+                    || self.duration_millis.is_some()
+                {
+                    return Err(invalid("image artifact metadata is invalid"));
+                }
             }
-            ArtifactKind::Image
-                if self.w.is_none_or(|value| value == 0)
-                    || self.h.is_none_or(|value| value == 0) =>
-            {
-                Err(invalid("image artifact dimensions are missing"))
+            ArtifactKind::Audio => {
+                if !self.mime_type.starts_with("audio/") {
+                    return Err(invalid("audio artifact MIME type is invalid"));
+                }
+                if self.width.is_some()
+                    || self.height.is_some()
+                    || self
+                        .duration_millis
+                        .is_some_and(|value| value == 0 || value > MAX_SAFE_INTEGER)
+                {
+                    return Err(invalid("audio artifact metadata is invalid"));
+                }
             }
-            ArtifactKind::Audio if !self.m.starts_with("audio/") => {
-                Err(invalid("audio artifact MIME type is invalid"))
+            ArtifactKind::File => {
+                if self.mime_type.starts_with("video/") {
+                    return Err(invalid("video artifacts are not supported"));
+                }
+                if self.width.is_some() || self.height.is_some() || self.duration_millis.is_some() {
+                    return Err(invalid("file artifact metadata is invalid"));
+                }
             }
-            ArtifactKind::Audio | ArtifactKind::File if self.w.is_some() || self.h.is_some() => {
-                Err(invalid("non-image artifact cannot have image dimensions"))
-            }
-            _ => Ok(()),
         }
+        Ok(())
     }
 }
 
-/// Authenticated, content-addressed artifact identity.
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawArtifactMetadata {
+    k: String,
+    m: String,
+    s: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    w: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    h: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    d: Option<u64>,
+}
+
+impl Serialize for ArtifactMetadata {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        RawArtifactMetadata {
+            k: self.kind.code().to_string(),
+            m: self.mime_type.clone(),
+            s: self.size_bytes,
+            w: self.width,
+            h: self.height,
+            d: self.duration_millis,
+        }
+        .serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for ArtifactMetadata {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let raw = RawArtifactMetadata::deserialize(deserializer)?;
+        let metadata = Self {
+            kind: ArtifactKind::from_code(&raw.k).map_err(serde::de::Error::custom)?,
+            mime_type: raw.m,
+            size_bytes: raw.s,
+            width: raw.w,
+            height: raw.h,
+            duration_millis: raw.d,
+        };
+        metadata.validate().map_err(serde::de::Error::custom)?;
+        Ok(metadata)
+    }
+}
+
+/// Canonical, scope-owned, content-addressed artifact identity.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArtifactReference {
-    pub tenant_id: String,
-    pub scope_id: String,
-    pub sha256: String,
-    pub metadata: ArtifactMetadata,
+    tenant_id: String,
+    scope_id: String,
+    sha256: String,
+    metadata: ArtifactMetadata,
 }
 
 impl ArtifactReference {
@@ -133,8 +265,10 @@ impl ArtifactReference {
     }
 
     pub fn parse(value: &str) -> Result<Self, ArtifactReferenceError> {
+        if value.len() > MAX_URI_LENGTH {
+            return Err(invalid("artifact URI is too long"));
+        }
         let path = value
-            .trim()
             .strip_prefix(ARTIFACT_URL_PREFIX)
             .ok_or_else(|| invalid("unsupported artifact URI"))?;
         let segments = path.split('/').collect::<Vec<_>>();
@@ -147,8 +281,12 @@ impl ArtifactReference {
             .decode(segments[3])
             .map_err(|_| invalid("artifact metadata is not valid base64url"))?;
         let metadata: ArtifactMetadata = serde_json::from_slice(&metadata_bytes)
-            .map_err(|_| invalid("artifact metadata is not valid JSON"))?;
-        Self::new(segments[0], segments[1], segments[2], metadata)
+            .map_err(|_| invalid("artifact metadata is invalid"))?;
+        let reference = Self::new(segments[0], segments[1], segments[2], metadata)?;
+        if reference.uri()? != value {
+            return Err(invalid("artifact URI is not canonical"));
+        }
+        Ok(reference)
     }
 
     pub fn uri(&self) -> Result<String, ArtifactReferenceError> {
@@ -164,28 +302,38 @@ impl ArtifactReference {
         ))
     }
 
+    #[must_use]
+    pub fn tenant_id(&self) -> &str {
+        &self.tenant_id
+    }
+
+    #[must_use]
+    pub fn scope_id(&self) -> &str {
+        &self.scope_id
+    }
+
+    #[must_use]
+    pub fn sha256(&self) -> &str {
+        &self.sha256
+    }
+
+    #[must_use]
+    pub const fn metadata(&self) -> &ArtifactMetadata {
+        &self.metadata
+    }
+
     pub fn ensure_scope(
         &self,
         tenant_id: &str,
         scope_id: &str,
     ) -> Result<(), ArtifactReferenceError> {
         if self.tenant_id != tenant_id || self.scope_id != scope_id {
-            return Err(scope_mismatch(
+            return Err(ArtifactReferenceError::new(
+                ArtifactReferenceErrorKind::ScopeMismatch,
                 "artifact does not belong to the current scope",
             ));
         }
         Ok(())
-    }
-
-    pub fn relative_object_path(&self) -> Result<String, ArtifactReferenceError> {
-        self.validate()?;
-        Ok(format!(
-            "v1/{}/{}/sha256/{}/{}",
-            self.tenant_id,
-            self.scope_id,
-            &self.sha256[..2],
-            self.sha256
-        ))
     }
 
     fn validate(&self) -> Result<(), ArtifactReferenceError> {
@@ -205,6 +353,7 @@ impl ArtifactReference {
 
 fn validate_segment(value: &str, name: &str) -> Result<(), ArtifactReferenceError> {
     if value.is_empty()
+        || value.len() > MAX_SEGMENT_LENGTH
         || value == "."
         || value == ".."
         || !value
@@ -216,14 +365,61 @@ fn validate_segment(value: &str, name: &str) -> Result<(), ArtifactReferenceErro
     Ok(())
 }
 
+fn validate_mime_type(value: &str) -> Result<(), ArtifactReferenceError> {
+    if value.is_empty()
+        || value.len() > MAX_MIME_LENGTH
+        || value != value.trim()
+        || value.bytes().any(|byte| byte.is_ascii_uppercase())
+    {
+        return Err(invalid("artifact MIME type is invalid"));
+    }
+    let Some((media_type, subtype)) = value.split_once('/') else {
+        return Err(invalid("artifact MIME type is invalid"));
+    };
+    if media_type.is_empty()
+        || subtype.is_empty()
+        || subtype.contains('/')
+        || !value.bytes().all(|byte| {
+            byte.is_ascii_lowercase()
+                || byte.is_ascii_digit()
+                || matches!(
+                    byte,
+                    b'!' | b'#' | b'$' | b'&' | b'^' | b'_' | b'.' | b'+' | b'-' | b'/'
+                )
+        })
+    {
+        return Err(invalid("artifact MIME type is invalid"));
+    }
+    Ok(())
+}
+
+/// Stable category for reference validation failures.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ArtifactReferenceErrorKind {
+    InvalidReference,
+    ScopeMismatch,
+}
+
 /// Validation error returned for malformed or cross-scope references.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArtifactReferenceError {
+    kind: ArtifactReferenceErrorKind,
     message: String,
-    scope_mismatch: bool,
 }
 
 impl ArtifactReferenceError {
+    fn new(kind: ArtifactReferenceErrorKind, message: impl Into<String>) -> Self {
+        Self {
+            kind,
+            message: message.into(),
+        }
+    }
+
+    #[must_use]
+    pub const fn kind(&self) -> ArtifactReferenceErrorKind {
+        self.kind
+    }
+
     #[must_use]
     pub fn message(&self) -> &str {
         &self.message
@@ -231,7 +427,7 @@ impl ArtifactReferenceError {
 
     #[must_use]
     pub const fn is_scope_mismatch(&self) -> bool {
-        self.scope_mismatch
+        matches!(self.kind, ArtifactReferenceErrorKind::ScopeMismatch)
     }
 }
 
@@ -244,17 +440,7 @@ impl fmt::Display for ArtifactReferenceError {
 impl std::error::Error for ArtifactReferenceError {}
 
 fn invalid(message: impl Into<String>) -> ArtifactReferenceError {
-    ArtifactReferenceError {
-        message: message.into(),
-        scope_mismatch: false,
-    }
-}
-
-fn scope_mismatch(message: impl Into<String>) -> ArtifactReferenceError {
-    ArtifactReferenceError {
-        message: message.into(),
-        scope_mismatch: true,
-    }
+    ArtifactReferenceError::new(ArtifactReferenceErrorKind::InvalidReference, message)
 }
 
 #[cfg(test)]
@@ -267,7 +453,7 @@ mod tests {
             "tenant",
             "scope",
             "a".repeat(64),
-            ArtifactMetadata::image("image/jpeg", 100, 10, 10),
+            ArtifactMetadata::image("image/jpeg", 100, 10, 10).unwrap(),
         )
         .unwrap();
         assert_eq!(
@@ -281,30 +467,27 @@ mod tests {
             ArtifactReference::parse(&reference.uri().unwrap()).unwrap(),
             reference
         );
-        assert_eq!(
-            reference.relative_object_path().unwrap(),
-            format!("v1/tenant/scope/sha256/aa/{}", "a".repeat(64))
-        );
     }
 
     #[test]
-    fn rejects_cross_scope_and_path_like_segments() {
+    fn rejects_cross_scope_and_invalid_metadata() {
         let reference = ArtifactReference::new(
             "tenant",
             "scope",
             "a".repeat(64),
-            ArtifactMetadata::audio("audio/mpeg", 100, Some(1_000)),
+            ArtifactMetadata::audio("audio/mpeg", 100, Some(1_000)).unwrap(),
         )
         .unwrap();
 
-        let error = reference.ensure_scope("tenant", "other").unwrap_err();
-        assert!(error.is_scope_mismatch());
-        assert!(ArtifactReference::new(
-            "..",
-            "scope",
-            "a".repeat(64),
-            ArtifactMetadata::audio("audio/mpeg", 100, None),
-        )
-        .is_err());
+        assert_eq!(
+            reference
+                .ensure_scope("tenant", "other")
+                .unwrap_err()
+                .kind(),
+            ArtifactReferenceErrorKind::ScopeMismatch
+        );
+        assert!(ArtifactMetadata::audio("image/png", 100, None).is_err());
+        assert!(ArtifactMetadata::file("video/mp4", 100).is_err());
+        assert!(ArtifactMetadata::file("Application/PDF", 100).is_err());
     }
 }

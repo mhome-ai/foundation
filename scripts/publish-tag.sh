@@ -11,6 +11,8 @@ case "${tag}" in
     package="mhome-artifact-api"
     manifest="crates/artifact/Cargo.toml"
     version="${tag#mhome-artifact-api-v}"
+    protocol="artifact"
+    npm_package="@mhome/artifact-protocol"
     ;;
   mhome-machine-identity-v*)
     package="mhome-machine-identity"

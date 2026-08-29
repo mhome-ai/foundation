@@ -33,7 +33,7 @@ jobs:
       - name: Verify protocol npm packages
         run: |
           npm run test:protocol-packages
-          for protocol in conversation messaging plugin; do
+          for protocol in artifact conversation messaging plugin; do
             staging="$(mktemp -d)/package"
             node scripts/stage-protocol-package.mjs "${protocol}" "${staging}"
             npm pack "${staging}" --dry-run
