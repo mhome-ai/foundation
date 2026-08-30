@@ -6,7 +6,8 @@ use crate::{
 };
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 9;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 10;
+pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExternalCoreRequest {
@@ -38,6 +39,9 @@ pub enum ExternalCoreMethod {
     RegisterNodeConnection,
     CleanupWsState,
     UpdateCallbackBase,
+    PutArtifact,
+    OpenArtifact,
+    AuthorizeArtifactRead,
     DeviceIdentity,
     CommissionFingerprint,
     CommissionPublicKeyBase64,
@@ -164,6 +168,66 @@ pub enum ExternalCoreEventKind {
     HostRuntimeRequest,
     ServiceAppFacadeRequest,
     ScopeOwnedDataPurgeRequested,
+    ArtifactDeliveryProjectionRequested,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ExternalArtifactRequestContext {
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub actor_user_id: String,
+    pub client_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ExternalPutArtifactRequest {
+    pub context: ExternalArtifactRequestContext,
+    pub artifact: artifact_api::PutArtifactRequest,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ExternalOpenArtifactRequest {
+    pub context: ExternalArtifactRequestContext,
+    pub uri: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ExternalAuthorizeArtifactReadRequest {
+    pub grant: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ExternalArtifactReadDescriptor {
+    pub path: String,
+    pub kind: artifact_api::ArtifactKind,
+    pub mime_type: String,
+    pub size_bytes: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub width: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub height: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duration_millis: Option<u64>,
+    pub sha256: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArtifactDeliveryProjectionRequest {
+    pub grant: String,
+    pub expires_at_unix_ms: u64,
+    pub client_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArtifactDeliveryProjectionResponse {
+    pub url: String,
 }
 
 /// An App Facade request delegated by an externally hosted Core to the
@@ -287,7 +351,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn external_events_use_the_v9_wire_shape() {
+    fn external_events_use_the_v10_wire_shape() {
         let event = ExternalCoreEvent {
             event_id: "event-1".to_string(),
             kind: ExternalCoreEventKind::ScopeOwnedDataPurgeRequested,
@@ -300,7 +364,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 9);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 10);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");
@@ -325,5 +389,33 @@ mod tests {
         assert_eq!(value["payload"]["target"], "/app/messaging/provider/list");
         assert_eq!(value["payload"]["userId"], "user-1");
         assert!(value["payload"].get("clientId").is_none());
+    }
+
+    #[test]
+    fn artifact_host_contract_uses_canonical_wire_types() {
+        let descriptor = ExternalArtifactReadDescriptor {
+            path: "/runtime/artifacts/blob".to_string(),
+            kind: artifact_api::ArtifactKind::Audio,
+            mime_type: "audio/ogg".to_string(),
+            size_bytes: 42,
+            width: None,
+            height: None,
+            duration_millis: Some(1_500),
+            sha256: "a".repeat(64),
+        };
+        let value = serde_json::to_value(descriptor).unwrap();
+        assert_eq!(value["kind"], "AUDIO");
+        assert_eq!(value["mimeType"], "audio/ogg");
+        assert_eq!(value["durationMillis"], 1_500);
+        assert!(value.get("width").is_none());
+
+        let request = ArtifactDeliveryProjectionRequest {
+            grant: "payload.signature".to_string(),
+            expires_at_unix_ms: 123,
+            client_id: "L:client".to_string(),
+        };
+        let value = serde_json::to_value(request).unwrap();
+        assert_eq!(value["expiresAtUnixMs"], 123);
+        assert_eq!(value["clientId"], "L:client");
     }
 }
