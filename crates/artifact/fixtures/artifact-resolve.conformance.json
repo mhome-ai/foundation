@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "valid": [
+    {
+      "name": "request",
+      "value": {
+        "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      }
+    },
+    {
+      "name": "data-url-response",
+      "value": {
+        "uri": "meow-artifact://v1/tenant/scope/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "kind": "FILE",
+        "mimeType": "application/pdf",
+        "sizeBytes": 30,
+        "delivery": {
+          "type": "DATA_URL",
+          "dataUrl": "data:application/pdf;base64,eA=="
+        }
+      }
+    },
+    {
+      "name": "signed-url-response",
+      "value": {
+        "uri": "meow-artifact://v1/tenant/scope/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/eyJrIjoiYSIsIm0iOiJhdWRpby9vZ2ciLCJzIjoyMCwiZCI6MTUwMH0",
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 20,
+        "durationMillis": 1500,
+        "delivery": {
+          "type": "SIGNED_URL",
+          "url": "https://example.test/artifact",
+          "expiresAtUnixMs": 1900000000000
+        }
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "unknown-request-field",
+      "value": {
+        "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "scopeId": "scope"
+      }
+    },
+    {
+      "name": "ambiguous-delivery",
+      "value": {
+        "uri": "meow-artifact://v1/tenant/scope/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "kind": "FILE",
+        "mimeType": "application/pdf",
+        "sizeBytes": 30,
+        "delivery": {
+          "type": "DATA_URL",
+          "dataUrl": "data:application/pdf;base64,eA==",
+          "url": "https://example.test/artifact"
+        }
+      }
+    },
+    {
+      "name": "signed-url-without-expiry",
+      "value": {
+        "uri": "meow-artifact://v1/tenant/scope/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "kind": "FILE",
+        "mimeType": "application/pdf",
+        "sizeBytes": 30,
+        "delivery": {
+          "type": "SIGNED_URL",
+          "url": "https://example.test/artifact"
+        }
+      }
+    }
+  ]
+}

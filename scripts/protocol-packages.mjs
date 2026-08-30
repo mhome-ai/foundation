@@ -6,9 +6,11 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     manifest: "manifest/artifact.v1.json",
     schemas: Object.freeze({
       artifactMetadata: "schema/artifact-metadata.v1.schema.json",
+      artifactResolve: "schema/artifact-resolve.v1.schema.json",
     }),
     fixtures: Object.freeze({
       artifactReference: "fixtures/artifact-reference.conformance.json",
+      artifactResolve: "fixtures/artifact-resolve.conformance.json",
     }),
   }),
   conversation: Object.freeze({

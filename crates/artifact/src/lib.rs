@@ -5,6 +5,12 @@ use std::fmt;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+mod resolve;
+
+pub use resolve::{
+    ArtifactDelivery, ResolveArtifactRequest, ResolveArtifactResponse, ResolveArtifactResponseError,
+};
+
 /// Prefix of the version 1 artifact URI format.
 pub const ARTIFACT_URL_PREFIX: &str = "meow-artifact://v1/";
 const MAX_URI_LENGTH: usize = 2_048;
@@ -14,7 +20,8 @@ const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 const MAX_DIMENSION: u32 = i32::MAX as u32;
 
 /// Logical media kind encoded in an artifact reference.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ArtifactKind {
     Image,
     Audio,

@@ -1,4 +1,6 @@
-use artifact_api::{ArtifactKind, ArtifactReference};
+use artifact_api::{
+    ArtifactKind, ArtifactReference, ResolveArtifactRequest, ResolveArtifactResponse,
+};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::Deserialize;
 use serde_json::Value;
@@ -28,6 +30,20 @@ struct ValidCase {
 struct InvalidCase {
     name: String,
     uri: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ResolveFixture {
+    schema_version: u16,
+    valid: Vec<ResolveCase>,
+    invalid: Vec<ResolveCase>,
+}
+
+#[derive(Deserialize)]
+struct ResolveCase {
+    name: String,
+    value: Value,
 }
 
 #[test]
@@ -79,6 +95,48 @@ fn reference_fixture_matches_rust_contract_and_schema() {
         assert!(
             ArtifactReference::parse(&case.uri).is_err(),
             "{} must be rejected",
+            case.name
+        );
+    }
+}
+
+#[test]
+fn resolve_fixture_matches_rust_contract_and_schema() {
+    let fixture: ResolveFixture = serde_json::from_str(include_str!(
+        "../fixtures/artifact-resolve.conformance.json"
+    ))
+    .unwrap();
+    assert_eq!(fixture.schema_version, 1);
+
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-resolve.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+
+    for case in fixture.valid {
+        assert!(
+            validator.is_valid(&case.value),
+            "{} must match the resolve schema",
+            case.name
+        );
+        if case.value.get("delivery").is_some() {
+            let response: ResolveArtifactResponse = serde_json::from_value(case.value)
+                .unwrap_or_else(|error| panic!("{} response must parse: {error}", case.name));
+            response
+                .validate()
+                .unwrap_or_else(|error| panic!("{} response must validate: {error}", case.name));
+        } else {
+            let request: ResolveArtifactRequest = serde_json::from_value(case.value)
+                .unwrap_or_else(|error| panic!("{} request must parse: {error}", case.name));
+            request
+                .reference()
+                .unwrap_or_else(|error| panic!("{} request URI must parse: {error}", case.name));
+        }
+    }
+
+    for case in fixture.invalid {
+        assert!(
+            !validator.is_valid(&case.value),
+            "{} must be rejected by the resolve schema",
             case.name
         );
     }
