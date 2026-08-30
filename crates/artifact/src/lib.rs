@@ -28,6 +28,7 @@ const MAX_DIMENSION: u32 = i32::MAX as u32;
 pub enum ArtifactKind {
     Image,
     Audio,
+    Video,
     File,
 }
 
@@ -37,6 +38,7 @@ impl ArtifactKind {
         match self {
             Self::Image => "i",
             Self::Audio => "a",
+            Self::Video => "v",
             Self::File => "f",
         }
     }
@@ -45,6 +47,7 @@ impl ArtifactKind {
         match value {
             "i" => Ok(Self::Image),
             "a" => Ok(Self::Audio),
+            "v" => Ok(Self::Video),
             "f" => Ok(Self::File),
             _ => Err(invalid("unsupported artifact kind")),
         }
@@ -99,6 +102,23 @@ impl ArtifactMetadata {
         size_bytes: usize,
     ) -> Result<Self, ArtifactReferenceError> {
         Self::build(ArtifactKind::File, mime_type, size_bytes, None, None, None)
+    }
+
+    pub fn video(
+        mime_type: impl Into<String>,
+        size_bytes: usize,
+        width: u32,
+        height: u32,
+        duration_millis: Option<u64>,
+    ) -> Result<Self, ArtifactReferenceError> {
+        Self::build(
+            ArtifactKind::Video,
+            mime_type,
+            size_bytes,
+            Some(width),
+            Some(height),
+            duration_millis,
+        )
     }
 
     fn build(
@@ -183,6 +203,21 @@ impl ArtifactMetadata {
                         .is_some_and(|value| value == 0 || value > MAX_SAFE_INTEGER)
                 {
                     return Err(invalid("audio artifact metadata is invalid"));
+                }
+            }
+            ArtifactKind::Video => {
+                if !self.mime_type.starts_with("video/")
+                    || self
+                        .width
+                        .is_none_or(|value| value == 0 || value > MAX_DIMENSION)
+                    || self
+                        .height
+                        .is_none_or(|value| value == 0 || value > MAX_DIMENSION)
+                    || self
+                        .duration_millis
+                        .is_some_and(|value| value == 0 || value > MAX_SAFE_INTEGER)
+                {
+                    return Err(invalid("video artifact metadata is invalid"));
                 }
             }
             ArtifactKind::File => {
@@ -498,6 +533,7 @@ mod tests {
         );
         assert!(ArtifactMetadata::audio("image/png", 100, None).is_err());
         assert!(ArtifactMetadata::file("video/mp4", 100).is_err());
+        assert!(ArtifactMetadata::video("video/mp4", 100, 1920, 1080, Some(1_000)).is_ok());
         assert!(ArtifactMetadata::file("Application/PDF", 100).is_err());
     }
 }

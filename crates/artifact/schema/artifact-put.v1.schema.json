@@ -13,7 +13,7 @@
       "required": ["uri", "kind", "mimeType", "sizeBytes"],
       "properties": {
         "uri": { "type": "string", "pattern": "^meow-artifact://v1/", "maxLength": 2048 },
-        "kind": { "enum": ["IMAGE", "AUDIO", "FILE"] },
+        "kind": { "enum": ["IMAGE", "AUDIO", "VIDEO", "FILE"] },
         "mimeType": { "type": "string", "minLength": 3, "maxLength": 255 },
         "sizeBytes": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
         "width": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
@@ -26,7 +26,7 @@
       "additionalProperties": false,
       "required": ["kind", "mimeType", "dataBase64"],
       "properties": {
-        "kind": { "enum": ["IMAGE", "AUDIO", "FILE"] },
+        "kind": { "enum": ["IMAGE", "AUDIO", "VIDEO", "FILE"] },
         "mimeType": { "type": "string", "minLength": 3, "maxLength": 255 },
         "dataBase64": { "type": "string", "minLength": 4, "maxLength": 70000000, "pattern": "^[A-Za-z0-9+/]+={0,2}$" },
         "durationMillis": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }

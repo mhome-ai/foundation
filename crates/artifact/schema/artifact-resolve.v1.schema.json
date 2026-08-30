@@ -21,7 +21,7 @@
       "required": ["uri", "kind", "mimeType", "sizeBytes", "delivery"],
       "properties": {
         "uri": { "type": "string", "pattern": "^meow-artifact://v1/", "maxLength": 2048 },
-        "kind": { "enum": ["IMAGE", "AUDIO", "FILE"] },
+        "kind": { "enum": ["IMAGE", "AUDIO", "VIDEO", "FILE"] },
         "mimeType": { "type": "string", "minLength": 3, "maxLength": 255 },
         "sizeBytes": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
         "width": { "type": "integer", "minimum": 1, "maximum": 2147483647 },

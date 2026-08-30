@@ -6,6 +6,10 @@
       "value": { "kind": "AUDIO", "mimeType": "audio/ogg", "dataBase64": "eA==", "durationMillis": 1200 }
     },
     {
+      "name": "video-request",
+      "value": { "kind": "VIDEO", "mimeType": "video/mp4", "dataBase64": "eA==", "durationMillis": 2000 }
+    },
+    {
       "name": "file-response",
       "value": {
         "uri": "meow-artifact://v1/tenant/scope/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",

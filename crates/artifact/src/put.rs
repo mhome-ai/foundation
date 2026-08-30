@@ -27,13 +27,20 @@ impl PutArtifactRequest {
             ArtifactKind::Audio if !self.mime_type.starts_with("audio/") => {
                 return Err(invalid("artifact put audio MIME type is invalid"));
             }
+            ArtifactKind::Video if !self.mime_type.starts_with("video/") => {
+                return Err(invalid("artifact put video MIME type is invalid"));
+            }
             ArtifactKind::File if self.mime_type.starts_with("video/") => {
                 return Err(invalid("video artifacts are not supported"));
             }
             _ => {}
         }
-        if self.kind != ArtifactKind::Audio && self.duration_millis.is_some() {
-            return Err(invalid("artifact put duration is only valid for audio"));
+        if !matches!(self.kind, ArtifactKind::Audio | ArtifactKind::Video)
+            && self.duration_millis.is_some()
+        {
+            return Err(invalid(
+                "artifact put duration is only valid for audio or video",
+            ));
         }
         if self.duration_millis == Some(0) {
             return Err(invalid("artifact put duration is invalid"));

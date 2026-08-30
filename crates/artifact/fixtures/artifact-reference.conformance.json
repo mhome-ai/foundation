@@ -19,6 +19,16 @@
       "durationMillis": 1500
     },
     {
+      "name": "video",
+      "uri": "meow-artifact://v1/tenant/scope/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd/eyJrIjoidiIsIm0iOiJ2aWRlby9tcDQiLCJzIjo0MCwidyI6MTkyMCwiaCI6MTA4MCwiZCI6MjAwMH0",
+      "kind": "video",
+      "mimeType": "video/mp4",
+      "sizeBytes": 40,
+      "width": 1920,
+      "height": 1080,
+      "durationMillis": 2000
+    },
+    {
       "name": "file",
       "uri": "meow-artifact://v1/tenant/scope/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
       "kind": "file",
@@ -27,10 +37,6 @@
     }
   ],
   "invalid": [
-    {
-      "name": "video-kind",
-      "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoidiIsIm0iOiJ2aWRlby9tcDQiLCJzIjoxMH0"
-    },
     {
       "name": "file-with-video-mime",
       "uri": "meow-artifact://v1/tenant/scope/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ2aWRlby9tcDQiLCJzIjoxMH0"

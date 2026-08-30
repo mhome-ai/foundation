@@ -74,6 +74,7 @@ fn reference_fixture_matches_rust_contract_and_schema() {
         let kind = match metadata.kind() {
             ArtifactKind::Image => "image",
             ArtifactKind::Audio => "audio",
+            ArtifactKind::Video => "video",
             ArtifactKind::File => "file",
         };
         assert_eq!(kind, case.kind, "{} kind", case.name);

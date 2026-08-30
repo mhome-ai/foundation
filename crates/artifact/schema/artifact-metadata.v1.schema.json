@@ -18,6 +18,19 @@
     {
       "type": "object",
       "additionalProperties": false,
+      "required": ["k", "m", "s", "w", "h"],
+      "properties": {
+        "k": { "const": "v" },
+        "m": { "type": "string", "pattern": "^video/[a-z0-9!#$&^_.+-]+$", "maxLength": 255 },
+        "s": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "w": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "h": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "d": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
       "required": ["k", "m", "s"],
       "properties": {
         "k": { "const": "a" },
