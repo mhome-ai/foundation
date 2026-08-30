@@ -5,7 +5,10 @@ use std::fmt;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+mod put;
 mod resolve;
+
+pub use put::{PutArtifactRequest, PutArtifactResponse, PutArtifactValidationError};
 
 pub use resolve::{
     ArtifactDelivery, ResolveArtifactRequest, ResolveArtifactResponse, ResolveArtifactResponseError,

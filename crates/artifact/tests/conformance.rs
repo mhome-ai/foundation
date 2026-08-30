@@ -1,5 +1,6 @@
 use artifact_api::{
-    ArtifactKind, ArtifactReference, ResolveArtifactRequest, ResolveArtifactResponse,
+    ArtifactKind, ArtifactReference, PutArtifactRequest, PutArtifactResponse,
+    ResolveArtifactRequest, ResolveArtifactResponse,
 };
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::Deserialize;
@@ -44,6 +45,14 @@ struct ResolveFixture {
 struct ResolveCase {
     name: String,
     value: Value,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PutFixture {
+    schema_version: u16,
+    valid: Vec<ResolveCase>,
+    invalid: Vec<ResolveCase>,
 }
 
 #[test]
@@ -139,5 +148,30 @@ fn resolve_fixture_matches_rust_contract_and_schema() {
             "{} must be rejected by the resolve schema",
             case.name
         );
+    }
+}
+
+#[test]
+fn put_fixture_matches_rust_contract_and_schema() {
+    let fixture: PutFixture =
+        serde_json::from_str(include_str!("../fixtures/artifact-put.conformance.json")).unwrap();
+    assert_eq!(fixture.schema_version, 1);
+
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-put.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+
+    for case in fixture.valid {
+        assert!(validator.is_valid(&case.value), "{} must match", case.name);
+        if case.value.get("uri").is_some() {
+            let response: PutArtifactResponse = serde_json::from_value(case.value).unwrap();
+            response.validate().unwrap();
+        } else {
+            let request: PutArtifactRequest = serde_json::from_value(case.value).unwrap();
+            request.decode().unwrap();
+        }
+    }
+    for case in fixture.invalid {
+        assert!(!validator.is_valid(&case.value), "{} must fail", case.name);
     }
 }

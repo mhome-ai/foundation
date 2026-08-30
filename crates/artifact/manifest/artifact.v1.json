@@ -1,11 +1,16 @@
 {
   "manifest": "mhome.artifact.v1",
-  "contractVersion": "0.3.0",
+  "contractVersion": "0.4.0",
   "uriPrefix": "meow-artifact://v1/",
   "kinds": ["image", "audio", "file"],
   "resolve": {
     "target": "/artifact/resolve",
     "schema": "schema/artifact-resolve.v1.schema.json",
+    "schemaVersion": 1
+  },
+  "put": {
+    "target": "/artifact/put",
+    "schema": "schema/artifact-put.v1.schema.json",
     "schemaVersion": 1
   }
 }

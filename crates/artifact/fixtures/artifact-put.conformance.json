@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "valid": [
+    {
+      "name": "audio-request",
+      "value": { "kind": "AUDIO", "mimeType": "audio/ogg", "dataBase64": "eA==", "durationMillis": 1200 }
+    },
+    {
+      "name": "file-response",
+      "value": {
+        "uri": "meow-artifact://v1/tenant/scope/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "kind": "FILE",
+        "mimeType": "application/pdf",
+        "sizeBytes": 30
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "unknown-field",
+      "value": { "kind": "FILE", "mimeType": "text/plain", "dataBase64": "eA==", "path": "/tmp/x" }
+    }
+  ]
+}
