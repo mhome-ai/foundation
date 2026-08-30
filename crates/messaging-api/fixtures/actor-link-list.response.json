@@ -1,1 +1,1 @@
-{"target":"/messaging/actor/link/list","direction":"response","body":{"links":[{"linkId":"link_a","provider":"telegram","placement":"local","accountId":"bot_a","externalUserId":"user_42","displayName":"Alice","createdAtMs":1720000000000,"updatedAtMs":1720000000000}]}}
+{"target":"/app/messaging/actor/link/list","direction":"response","body":{"links":[{"linkId":"link_a","provider":"telegram","placement":"local","accountId":"bot_a","externalUserId":"user_42","displayName":"Alice","createdAtMs":1720000000000,"updatedAtMs":1720000000000}]}}

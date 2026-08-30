@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/provider-account/update",
+  "target": "/app/messaging/provider-account/update",
   "direction": "request",
   "body": {
     "provider": "telegram",

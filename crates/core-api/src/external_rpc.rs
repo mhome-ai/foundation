@@ -6,7 +6,7 @@ use crate::{
 };
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 8;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 9;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExternalCoreRequest {
@@ -162,7 +162,22 @@ pub enum ExternalCoreEventKind {
     MdnsRecordsChanged,
     ServiceEffects,
     HostRuntimeRequest,
+    ServiceAppFacadeRequest,
     ScopeOwnedDataPurgeRequested,
+}
+
+/// An App Facade request delegated by an externally hosted Core to the
+/// application service that owns the target's business logic.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExternalServiceAppFacadeRequest {
+    pub target: String,
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub user_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub client_id: Option<String>,
+    pub payload: Value,
 }
 
 /// A platform capability request emitted by an externally hosted Core.
@@ -272,7 +287,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn scope_owned_data_purge_event_uses_the_v8_wire_shape() {
+    fn external_events_use_the_v9_wire_shape() {
         let event = ExternalCoreEvent {
             event_id: "event-1".to_string(),
             kind: ExternalCoreEventKind::ScopeOwnedDataPurgeRequested,
@@ -285,10 +300,30 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 8);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 9);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");
         assert_eq!(value["expectsResponse"], true);
+
+        let facade = ExternalCoreEvent {
+            event_id: "event-2".to_string(),
+            kind: ExternalCoreEventKind::ServiceAppFacadeRequest,
+            payload: serde_json::to_value(ExternalServiceAppFacadeRequest {
+                target: "/app/messaging/provider/list".to_string(),
+                tenant_id: "tenant-1".to_string(),
+                scope_id: "scope-1".to_string(),
+                user_id: "user-1".to_string(),
+                client_id: None,
+                payload: serde_json::json!({"placement": "local"}),
+            })
+            .unwrap(),
+            expects_response: true,
+        };
+        let value = serde_json::to_value(facade).unwrap();
+        assert_eq!(value["kind"], "serviceAppFacadeRequest");
+        assert_eq!(value["payload"]["target"], "/app/messaging/provider/list");
+        assert_eq!(value["payload"]["userId"], "user-1");
+        assert!(value["payload"].get("clientId").is_none());
     }
 }

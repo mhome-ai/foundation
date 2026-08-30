@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/shared-account-grant/delete",
+  "target": "/app/messaging/shared-account-grant/delete",
   "direction": "response",
   "body": { "success": true }
 }

@@ -1,1 +1,1 @@
-{"target":"/messaging/surface/bind-code/create","direction":"request","body":{"provider":"feishu","placement":"local","surfaceId":"cs1:mg:feishu:Y2xpX2E:Y2hhdF9h","scopeId":"scope_a"}}
+{"target":"/app/messaging/surface/bind-code/create","direction":"request","body":{"provider":"feishu","placement":"local","surfaceId":"cs1:mg:feishu:Y2xpX2E:Y2hhdF9h","scopeId":"scope_a"}}

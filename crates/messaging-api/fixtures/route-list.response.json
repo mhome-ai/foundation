@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/route/list",
+  "target": "/app/messaging/route/list",
   "direction": "response",
   "body": {
     "routes": [

@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/shared-account-grant/delete",
+  "target": "/app/messaging/shared-account-grant/delete",
   "direction": "request",
   "body": { "provider": "telegram", "placement": "local", "accountId": "123456" }
 }

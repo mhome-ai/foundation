@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/provider-account/test",
+  "target": "/app/messaging/provider-account/test",
   "direction": "request",
   "body": { "provider": "telegram", "placement": "local", "data": { "botToken": "secret" } }
 }

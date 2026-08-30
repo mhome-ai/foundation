@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/provider-account/delete",
+  "target": "/app/messaging/provider-account/delete",
   "direction": "response",
   "body": { "success": true }
 }

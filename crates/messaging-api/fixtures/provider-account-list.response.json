@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/provider-account/list",
+  "target": "/app/messaging/provider-account/list",
   "direction": "response",
   "body": {
     "accounts": [

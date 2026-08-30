@@ -1,1 +1,1 @@
-{"target":"/messaging/surface/dismiss","direction":"response","body":{"success":true}}
+{"target":"/app/messaging/surface/dismiss","direction":"response","body":{"success":true}}

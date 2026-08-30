@@ -1,1 +1,1 @@
-{"target":"/messaging/actor/link/list","direction":"request","body":{"provider":"telegram","placement":"local","accountId":"bot_a"}}
+{"target":"/app/messaging/actor/link/list","direction":"request","body":{"provider":"telegram","placement":"local","accountId":"bot_a"}}

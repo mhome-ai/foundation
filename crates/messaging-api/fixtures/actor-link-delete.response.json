@@ -1,1 +1,1 @@
-{"target":"/messaging/actor/link/delete","direction":"response","body":{"success":true}}
+{"target":"/app/messaging/actor/link/delete","direction":"response","body":{"success":true}}

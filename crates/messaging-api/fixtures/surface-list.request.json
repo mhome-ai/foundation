@@ -1,1 +1,1 @@
-{"target":"/messaging/surface/list","direction":"request","body":{"provider":"feishu","placement":"local","state":"pending"}}
+{"target":"/app/messaging/surface/list","direction":"request","body":{"provider":"feishu","placement":"local","state":"pending"}}

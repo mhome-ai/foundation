@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/setup/status",
+  "target": "/app/messaging/setup/status",
   "direction": "response",
   "body": {
     "setup": {

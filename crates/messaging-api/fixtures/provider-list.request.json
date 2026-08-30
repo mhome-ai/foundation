@@ -1,5 +1,5 @@
 {
-  "target": "/messaging/provider/list",
+  "target": "/app/messaging/provider/list",
   "direction": "request",
   "body": {
     "placement": "cloud",

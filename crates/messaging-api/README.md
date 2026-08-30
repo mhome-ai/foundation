@@ -12,7 +12,7 @@ Conformance frames contain `target`, `direction`, and `body`. `direction` is par
 artifact used by tests and generators; the surrounding MWS transport continues to carry request and
 response correlation.
 
-`control` models the MWS management API. `model` defines the canonical provider-independent address,
+`control` models the `/app/messaging/**` App Facade API. `model` defines the canonical provider-independent address,
 external actor, and inbound content semantics implemented independently by local Rust and cloud
 Java runtimes. Neither module contains provider SDKs, transport callbacks, runtime lifecycle,
 persistence, or Agent integration.
@@ -31,7 +31,7 @@ actions, and providers with unknown attention continue through the normal pipeli
 Interactive delivery is modeled as an `ActionSet` of user-facing labels and opaque tokens. An
 inbound selection contains only `ActionSelected { token }`; approval decisions, dialog values, and
 provider callback payloads stay in runtime-owned route stores. Setup claims and account lifecycle
-are framework application ports rather than chat content, so they are intentionally not part of
+are App Facade operations rather than chat content, so they are intentionally not part of
 this public normalized data plane.
 
 Shared-conversation discovery, group binding challenges, and self-service actor links are common
