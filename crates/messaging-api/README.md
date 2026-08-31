@@ -66,6 +66,8 @@ declares whether a provider can receive backend-initiated notification and dialo
 Route `enabled` controls inbound chat handling only; route `projections.notification` and
 `projections.dialog` are explicit user choices for proactive system delivery on that route. Common
 runtimes must reject enabling a projection that the selected provider metadata does not support.
+Notification projection levels are fixed to `alert`, `notify`, and `chat`; dialog delivery is
+controlled separately by `projections.dialog`.
 
 Actor links are provider-account-scoped identities. One exact external identity maps to at most one
 mHome principal, while a principal may own any number of external identities across or within

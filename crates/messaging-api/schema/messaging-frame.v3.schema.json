@@ -52,6 +52,13 @@
         "provider_unconfigured"
       ]
     },
+    "notificationProjectionLevel": {
+      "enum": [
+        "alert",
+        "notify",
+        "chat"
+      ]
+    },
     "projectionCapability": {
       "type": "object",
       "additionalProperties": false,
@@ -98,7 +105,7 @@
           "type": "array",
           "uniqueItems": true,
           "items": {
-            "$ref": "#/$defs/id"
+            "$ref": "#/$defs/notificationProjectionLevel"
           }
         }
       }
@@ -142,7 +149,7 @@
           "type": "array",
           "uniqueItems": true,
           "items": {
-            "$ref": "#/$defs/id"
+            "$ref": "#/$defs/notificationProjectionLevel"
           }
         }
       }

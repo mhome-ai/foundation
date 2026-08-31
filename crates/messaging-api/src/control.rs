@@ -79,7 +79,15 @@ pub struct RouteProjectionSettings {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct NotificationProjectionSetting {
     pub enabled: bool,
-    pub levels: Vec<String>,
+    pub levels: Vec<NotificationProjectionLevel>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum NotificationProjectionLevel {
+    Alert,
+    Notify,
+    Chat,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -103,7 +111,7 @@ pub struct NotificationProjectionSettingUpdate {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub enabled: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub levels: Option<Vec<String>>,
+    pub levels: Option<Vec<NotificationProjectionLevel>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -11,7 +11,7 @@
     "projections": {
       "notification": {
         "enabled": true,
-        "levels": ["ALERT", "NOTIFY"]
+        "levels": ["alert", "notify"]
       },
       "dialog": {
         "enabled": true

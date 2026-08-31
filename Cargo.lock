@@ -718,7 +718,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-messaging-api"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "jsonschema",
  "mhome-conversation-api",
