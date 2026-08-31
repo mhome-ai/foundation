@@ -14,6 +14,10 @@
         "inboundCapabilities": ["text", "audio", "action"],
         "outboundCapabilities": ["text", "markdown", "action"],
         "deliveryMode": "unrestricted",
+        "projections": {
+          "notification": { "supported": true },
+          "dialog": { "supported": true }
+        },
         "managementOperations": [
           "provider_account.list",
           "provider_account.status",

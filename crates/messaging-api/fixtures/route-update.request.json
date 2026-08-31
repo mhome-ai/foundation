@@ -7,6 +7,15 @@
     "placement": "cloud",
     "routeId": "route-1",
     "scopeId": "scope-1",
-    "enabled": false
+    "enabled": false,
+    "projections": {
+      "notification": {
+        "enabled": true,
+        "levels": ["ALERT", "NOTIFY"]
+      },
+      "dialog": {
+        "enabled": true
+      }
+    }
   }
 }

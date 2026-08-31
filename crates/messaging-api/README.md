@@ -61,6 +61,12 @@ Setup is provider-extensible but has a common lifecycle. A completed setup may r
 created provider `accountId` and the initial personal `routeId`; providers that only configure an
 account omit `routeId` until the first inbound conversation creates the route.
 
+Projection capabilities and settings are part of the common management contract. Provider metadata
+declares whether a provider can receive backend-initiated notification and dialog projections.
+Route `enabled` controls inbound chat handling only; route `projections.notification` and
+`projections.dialog` are explicit user choices for proactive system delivery on that route. Common
+runtimes must reject enabling a projection that the selected provider metadata does not support.
+
 Actor links are provider-account-scoped identities. One exact external identity maps to at most one
 mHome principal, while a principal may own any number of external identities across or within
 provider accounts. Actor-link management therefore targets an account, never a conversation

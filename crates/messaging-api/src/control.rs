@@ -39,8 +39,78 @@ pub struct ProviderMetadata {
     pub inbound_capabilities: Vec<ContentCapability>,
     pub outbound_capabilities: Vec<ContentCapability>,
     pub delivery_mode: DeliveryMode,
+    pub projections: ProjectionCapabilities,
     pub management_operations: Vec<ManagementOperation>,
     pub provider_data: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProjectionCapabilities {
+    pub notification: ProjectionCapability,
+    pub dialog: ProjectionCapability,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProjectionCapability {
+    pub supported: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<ProjectionUnsupportedReason>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ProjectionUnsupportedReason {
+    NoProactiveDelivery,
+    NoInteractiveActions,
+    SessionWindowOnly,
+    ProviderUnconfigured,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RouteProjectionSettings {
+    pub notification: NotificationProjectionSetting,
+    pub dialog: DialogProjectionSetting,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NotificationProjectionSetting {
+    pub enabled: bool,
+    pub levels: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DialogProjectionSetting {
+    pub enabled: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RouteProjectionSettingsUpdate {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notification: Option<NotificationProjectionSettingUpdate>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dialog: Option<DialogProjectionSettingUpdate>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NotificationProjectionSettingUpdate {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub levels: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DialogProjectionSettingUpdate {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -281,6 +351,8 @@ pub enum RouteUpdateRequest {
         scope_id: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         enabled: Option<bool>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        projections: Option<RouteProjectionSettingsUpdate>,
     },
     Shared {
         provider: String,
@@ -288,6 +360,8 @@ pub enum RouteUpdateRequest {
         route_id: String,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         enabled: Option<bool>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        projections: Option<RouteProjectionSettingsUpdate>,
     },
 }
 
@@ -312,6 +386,7 @@ pub enum MessagingRoute {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         display_name: Option<String>,
         enabled: bool,
+        projections: RouteProjectionSettings,
         provider_data: Value,
     },
     Shared {
@@ -326,6 +401,7 @@ pub enum MessagingRoute {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         display_name: Option<String>,
         enabled: bool,
+        projections: RouteProjectionSettings,
         provider_data: Value,
     },
 }

@@ -16,6 +16,15 @@
         "scopeId": "scope-1",
         "displayName": "Telegram",
         "enabled": true,
+        "projections": {
+          "notification": {
+            "enabled": true,
+            "levels": ["ALERT", "NOTIFY"]
+          },
+          "dialog": {
+            "enabled": true
+          }
+        },
         "providerData": {}
       },
       {
@@ -30,6 +39,15 @@
         "boundByUserId": "mhome-user-1",
         "displayName": "Project room",
         "enabled": true,
+        "projections": {
+          "notification": {
+            "enabled": false,
+            "levels": []
+          },
+          "dialog": {
+            "enabled": false
+          }
+        },
         "providerData": {}
       }
     ]

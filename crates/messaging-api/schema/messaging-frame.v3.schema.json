@@ -44,6 +44,130 @@
         "session_window"
       ]
     },
+    "projectionUnsupportedReason": {
+      "enum": [
+        "no_proactive_delivery",
+        "no_interactive_actions",
+        "session_window_only",
+        "provider_unconfigured"
+      ]
+    },
+    "projectionCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supported"
+      ],
+      "properties": {
+        "supported": {
+          "type": "boolean"
+        },
+        "reason": {
+          "$ref": "#/$defs/projectionUnsupportedReason"
+        }
+      }
+    },
+    "projectionCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "notification",
+        "dialog"
+      ],
+      "properties": {
+        "notification": {
+          "$ref": "#/$defs/projectionCapability"
+        },
+        "dialog": {
+          "$ref": "#/$defs/projectionCapability"
+        }
+      }
+    },
+    "notificationProjectionSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "levels"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "levels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        }
+      }
+    },
+    "dialogProjectionSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "routeProjectionSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "notification",
+        "dialog"
+      ],
+      "properties": {
+        "notification": {
+          "$ref": "#/$defs/notificationProjectionSetting"
+        },
+        "dialog": {
+          "$ref": "#/$defs/dialogProjectionSetting"
+        }
+      }
+    },
+    "notificationProjectionUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "levels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        }
+      }
+    },
+    "dialogProjectionUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "routeProjectionSettingsUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "notification": {
+          "$ref": "#/$defs/notificationProjectionUpdate"
+        },
+        "dialog": {
+          "$ref": "#/$defs/dialogProjectionUpdate"
+        }
+      }
+    },
     "managementOperation": {
       "enum": [
         "provider_account.list",
@@ -109,6 +233,7 @@
         "inboundCapabilities",
         "outboundCapabilities",
         "deliveryMode",
+        "projections",
         "managementOperations",
         "providerData"
       ],
@@ -157,6 +282,9 @@
         },
         "deliveryMode": {
           "$ref": "#/$defs/deliveryMode"
+        },
+        "projections": {
+          "$ref": "#/$defs/projectionCapabilities"
         },
         "managementOperations": {
           "type": "array",
@@ -299,6 +427,7 @@
             "userId",
             "scopeId",
             "enabled",
+            "projections",
             "providerData"
           ],
           "properties": {
@@ -332,6 +461,9 @@
             "enabled": {
               "type": "boolean"
             },
+            "projections": {
+              "$ref": "#/$defs/routeProjectionSettings"
+            },
             "providerData": {
               "$ref": "#/$defs/extension"
             },
@@ -357,6 +489,7 @@
             "scopeId",
             "boundByUserId",
             "enabled",
+            "projections",
             "providerData"
           ],
           "properties": {
@@ -389,6 +522,9 @@
             },
             "enabled": {
               "type": "boolean"
+            },
+            "projections": {
+              "$ref": "#/$defs/routeProjectionSettings"
             },
             "providerData": {
               "$ref": "#/$defs/extension"
@@ -785,6 +921,9 @@
             },
             "enabled": {
               "type": "boolean"
+            },
+            "projections": {
+              "$ref": "#/$defs/routeProjectionSettingsUpdate"
             }
           }
         },
@@ -812,6 +951,9 @@
             },
             "enabled": {
               "type": "boolean"
+            },
+            "projections": {
+              "$ref": "#/$defs/routeProjectionSettingsUpdate"
             }
           }
         }
