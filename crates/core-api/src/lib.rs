@@ -964,6 +964,31 @@ pub struct ScopeMembership {
     pub user_id: String,
 }
 
+/// A service-owned AppClient materialized from an authoritative external model.
+/// This boundary intentionally carries no acting user: authorization belongs to
+/// the service that owns the source model, while Core validates the projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ServiceAppClientProjection {
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub app_client_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub user_id: Option<String>,
+    pub source: String,
+    pub device_type: String,
+    #[serde(default)]
+    pub scope_owned: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ServiceAppClientProjectionKey {
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub app_client_id: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ServiceCoreInput {
     ClientAuth {
@@ -1001,6 +1026,14 @@ pub enum ServiceCoreInput {
     /// Lists authoritative scope memberships for a trusted headless principal.
     ScopeMembershipList {
         request: ScopeMembershipListRequest,
+    },
+    /// Idempotently materializes a trusted service-owned AppClient.
+    AppClientProjectionPut {
+        projection: ServiceAppClientProjection,
+    },
+    /// Idempotently removes a trusted service-owned AppClient.
+    AppClientProjectionDelete {
+        key: ServiceAppClientProjectionKey,
     },
     NodeAuth {
         request: NodeAuthRequest,
@@ -1061,6 +1094,9 @@ pub enum ServiceCoreResponse {
     },
     ScopeMembershipList {
         memberships: Vec<ScopeMembership>,
+    },
+    AppClientProjection {
+        applied: bool,
     },
     NodeAuth(NodeAuthResponse),
     HubConnectionProof(HubConnectionProofResponse),
