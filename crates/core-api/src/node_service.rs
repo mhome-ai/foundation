@@ -125,6 +125,16 @@ mod tests {
     fn canonical_schema_declares_every_wire_field_and_policy() {
         let schema: Value = serde_json::from_str(NODE_SERVICE_PROTOCOL_V1_SCHEMA).unwrap();
         assert_eq!(
+            schema["$defs"]["emptyRequest"]["additionalProperties"],
+            false
+        );
+        assert_eq!(schema["$defs"]["describe"]["additionalProperties"], true);
+        assert_eq!(
+            schema["$defs"]["readinessReason"]["additionalProperties"],
+            true
+        );
+        assert_eq!(schema["$defs"]["readiness"]["additionalProperties"], true);
+        assert_eq!(
             schema["$defs"]["describe"]["properties"]["schemaVersion"]["const"],
             NODE_DESCRIBE_SCHEMA_VERSION
         );

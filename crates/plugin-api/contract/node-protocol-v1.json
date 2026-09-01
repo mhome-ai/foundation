@@ -70,8 +70,8 @@
     ]
   },
   "backendStatus": {
-    "nodeContract": "baycat.node.status.v1",
-    "contract": "baycat.backend.status.v1",
+    "nodeContract": "mhome.node.status.v1",
+    "contract": "mhome.backend.status.v1",
     "queryTarget": "/backend/status",
     "changedTarget": "/backend/status/changed",
     "resourceEnvelopeFields": [
