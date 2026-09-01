@@ -53,8 +53,8 @@ impl SectionCommandRequest {
 #[serde(rename_all = "camelCase")]
 pub struct ChangedEvent {
     pub version: String,
-    pub plugin_id: String,
-    pub plugin_type: String,
+    pub node_id: String,
+    pub node_type: String,
     pub event_seq: u64,
     pub section: String,
     pub revision: u64,
@@ -68,14 +68,14 @@ mod tests {
     fn changed_event_accepts_additive_fields_without_internal_identity() {
         let event = serde_json::from_value::<ChangedEvent>(serde_json::json!({
             "version": "v1",
-            "pluginId": "camera-1",
-            "pluginType": "camera",
+            "nodeId": "camera-1",
+            "nodeType": "camera",
             "eventSeq": 7,
             "section": "recognition",
             "revision": 3,
             "futureField": true
         }))
         .unwrap();
-        assert_eq!(event.plugin_id, "camera-1");
+        assert_eq!(event.node_id, "camera-1");
     }
 }

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub const VERSION: &str = crate::V1;
-pub const PLUGIN_TYPE: &str = "llm";
+pub const NODE_TYPE: &str = "llm";
 pub const RUNTIME_TARGET_PREFIX: &str = "/llm/app/";
 pub const RUNTIME_STATUS: &str = "runtime/status";
 pub const RUNTIME_RETRY: &str = "runtime/retry";

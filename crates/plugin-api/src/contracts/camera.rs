@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub const VERSION: &str = crate::settings::VERSION;
-pub const PLUGIN_TYPE: &str = "camera";
+pub const NODE_TYPE: &str = "camera";
 pub const SETTINGS_STATUS: &str = crate::settings::STATUS;
 pub const SETTINGS_UPDATE: &str = crate::settings::UPDATE;
 pub const SETTINGS_REVERT: &str = crate::settings::REVERT;

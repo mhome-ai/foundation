@@ -695,7 +695,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
  "mhome-artifact-api",
  "serde",
@@ -737,7 +737,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-plugin-api"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "serde",
  "serde_json",

@@ -1,8 +1,8 @@
 # mhome-plugin-api
 
-Typed, transport-neutral wire contracts for controlling mHome Plugins.
+Typed, transport-neutral wire contracts for the mHome Plugin App Facade.
 
-The crate owns the common control/runtime envelopes, the reusable settings protocol, and the
+The crate owns the common Node-facing/runtime envelopes, the reusable settings protocol, and the
 public request contracts for built-in Plugin types. It deliberately contains no transport,
 dispatch, authorization, persistence, runtime lifecycle, or Plugin implementation logic.
 
@@ -20,5 +20,5 @@ adapters. Consumers vendor the exact manifest as a pinned build dependency and v
 generated constants or serialized wire shapes in tests. During pre-release development, v1 is
 replaced in lockstep across all consumers; after the protocol is released, incompatible changes
 require a new manifest version. The backend-status entries describe the common transport envelope
-consumed alongside Plugin control, but ownership of its Rust runtime model remains in Baycat
+consumed alongside the Plugin App Facade, but ownership of its Rust runtime model remains in Baycat
 `service-api`.

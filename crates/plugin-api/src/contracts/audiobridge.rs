@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 pub const VERSION: &str = crate::V1;
-pub const PLUGIN_TYPE: &str = "audiobridge";
+pub const NODE_TYPE: &str = "audiobridge";
 pub const RUNTIME_TARGET_PREFIX: &str = "/audiobridge/app/";
-pub const MANAGEMENT_SNAPSHOT: &str = "management/snapshot";
-pub const MANAGEMENT_REFRESH: &str = "management/refresh";
+pub const DEVICE_SNAPSHOT: &str = "device/snapshot";
+pub const DEVICE_REFRESH: &str = "device/refresh";
 pub const DEVICE_ADOPT: &str = "device/adopt";
 pub const DEVICE_UNPAIR: &str = "device/unpair";
 pub const DEVICE_TEST: &str = "device/test";
@@ -38,7 +38,7 @@ pub struct AudioBridgeCandidate {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ManagementSnapshot {
+pub struct DeviceSnapshot {
     #[serde(default)]
     pub devices: Vec<AudioBridgeDevice>,
     #[serde(default)]
@@ -70,12 +70,12 @@ mod tests {
     }
 
     #[test]
-    fn management_snapshot_is_the_direct_response_payload() {
-        let value = serde_json::to_value(ManagementSnapshot {
+    fn device_snapshot_is_the_direct_response_payload() {
+        let value = serde_json::to_value(DeviceSnapshot {
             devices: Vec::new(),
             candidates: Vec::new(),
         })
-        .expect("serialize management snapshot");
+        .expect("serialize device snapshot");
         assert!(value.get("devices").is_some());
         assert!(value.get("candidates").is_some());
         assert!(value.get("snapshot").is_none());

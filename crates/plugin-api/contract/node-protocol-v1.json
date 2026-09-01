@@ -2,14 +2,14 @@
   "manifest": "mhome.node.protocol.v1",
   "pluginApi": {
     "version": "v1",
-    "controlTargetPrefix": "/app/plugin/control",
-    "controlRequestFields": ["pluginId", "version", "payload"],
-    "controlResponseFields": ["pluginId", "pluginType", "version", "data"],
+    "appTargetPrefix": "/app/plugin",
+    "nodeRequestFields": ["nodeId", "version", "payload"],
+    "nodeResponseFields": ["nodeId", "nodeType", "version", "data"],
     "settingsChangedTarget": "/plugin/settings/changed",
     "settingsChangedEventFields": [
       "version",
-      "pluginId",
-      "pluginType",
+      "nodeId",
+      "nodeType",
       "eventSeq",
       "section",
       "revision"
@@ -50,8 +50,8 @@
     "version": "v1",
     "runtimeTargetPrefix": "/audiobridge/app/",
     "routes": {
-      "managementSnapshot": "management/snapshot",
-      "managementRefresh": "management/refresh",
+      "deviceSnapshot": "device/snapshot",
+      "deviceRefresh": "device/refresh",
       "deviceAdopt": "device/adopt",
       "deviceUnpair": "device/unpair",
       "deviceTest": "device/test"

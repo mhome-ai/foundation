@@ -1,8 +1,10 @@
 #![allow(clippy::derivable_impls, clippy::should_implement_trait)]
 
 mod external_rpc;
+mod node_service;
 
 pub use external_rpc::*;
+pub use node_service::*;
 
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -508,8 +510,6 @@ pub struct NodeAuthRequest {
     pub node_type: String,
     #[serde(default)]
     pub node_id: String,
-    #[serde(default)]
-    pub instance_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub scope_id: Option<String>,
     pub host_id: String,
@@ -1047,7 +1047,7 @@ pub enum ServiceCoreInput {
         tenant_id: String,
         scope_id: String,
         node_type: String,
-        instance_id: String,
+        node_id: String,
     },
     BackendStatusChanged {
         tenant_id: String,

@@ -4,25 +4,25 @@ pub mod contracts;
 pub mod settings;
 
 pub const V1: &str = "v1";
-pub const CONTROL_TARGET_PREFIX: &str = "/app/plugin/control";
-pub const CONTROL_TARGET_PREFIX_WITH_SLASH: &str = "/app/plugin/control/";
+pub const APP_TARGET_PREFIX: &str = "/app/plugin";
+pub const APP_TARGET_PREFIX_WITH_SLASH: &str = "/app/plugin/";
 /// Canonical, language-neutral v1 wire manifest. Non-Rust consumers vendor
 /// this immutable release artifact and validate their adapters at build time.
 pub const NODE_PROTOCOL_V1_MANIFEST: &str = include_str!("../contract/node-protocol-v1.json");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PluginControlRequest<T> {
-    pub plugin_id: String,
+pub struct PluginNodeRequest<T> {
+    pub node_id: String,
     pub version: String,
     pub payload: T,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PluginControlResponse<T> {
-    pub plugin_id: String,
-    pub plugin_type: String,
+pub struct PluginNodeResponse<T> {
+    pub node_id: String,
+    pub node_type: String,
     pub version: String,
     pub data: T,
 }
@@ -79,36 +79,33 @@ mod tests {
         let manifest: serde_json::Value =
             serde_json::from_str(NODE_PROTOCOL_V1_MANIFEST).expect("valid protocol manifest");
         assert_eq!(manifest["pluginApi"]["version"], V1);
-        assert_eq!(
-            manifest["pluginApi"]["controlTargetPrefix"],
-            CONTROL_TARGET_PREFIX
-        );
+        assert_eq!(manifest["pluginApi"]["appTargetPrefix"], APP_TARGET_PREFIX);
         assert_eq!(
             manifest["pluginApi"]["settingsChangedTarget"],
             settings::CHANGED_TARGET
         );
 
-        let request = serde_json::to_value(PluginControlRequest {
-            plugin_id: "camera-1".to_string(),
+        let request = serde_json::to_value(PluginNodeRequest {
+            node_id: "camera-1".to_string(),
             version: V1.to_string(),
             payload: serde_json::json!({}),
         })
         .expect("serialize request");
-        assert_manifest_fields(&request, &manifest["pluginApi"]["controlRequestFields"]);
+        assert_manifest_fields(&request, &manifest["pluginApi"]["nodeRequestFields"]);
 
-        let response = serde_json::to_value(PluginControlResponse {
-            plugin_id: "camera-1".to_string(),
-            plugin_type: "camera".to_string(),
+        let response = serde_json::to_value(PluginNodeResponse {
+            node_id: "camera-1".to_string(),
+            node_type: "camera".to_string(),
             version: V1.to_string(),
             data: serde_json::json!({}),
         })
         .expect("serialize response");
-        assert_manifest_fields(&response, &manifest["pluginApi"]["controlResponseFields"]);
+        assert_manifest_fields(&response, &manifest["pluginApi"]["nodeResponseFields"]);
 
         let changed = serde_json::to_value(settings::ChangedEvent {
             version: V1.to_string(),
-            plugin_id: "camera-1".to_string(),
-            plugin_type: "camera".to_string(),
+            node_id: "camera-1".to_string(),
+            node_type: "camera".to_string(),
             event_seq: 1,
             section: "recognition".to_string(),
             revision: 1,
@@ -155,8 +152,8 @@ mod tests {
             contracts::audiobridge::RUNTIME_TARGET_PREFIX
         );
         assert_eq!(
-            manifest["audioBridge"]["routes"]["managementSnapshot"],
-            contracts::audiobridge::MANAGEMENT_SNAPSHOT
+            manifest["audioBridge"]["routes"]["deviceSnapshot"],
+            contracts::audiobridge::DEVICE_SNAPSHOT
         );
         assert_eq!(
             manifest["audioBridge"]["routes"]["deviceAdopt"],
@@ -213,24 +210,24 @@ mod tests {
     }
 
     #[test]
-    fn request_envelope_is_strict_and_uses_public_plugin_names() {
-        let value = serde_json::to_value(PluginControlRequest {
-            plugin_id: "camera-1".to_string(),
+    fn request_envelope_is_strict_and_uses_node_identity() {
+        let value = serde_json::to_value(PluginNodeRequest {
+            node_id: "camera-1".to_string(),
             version: contracts::camera::VERSION.to_string(),
             payload: contracts::camera::SettingsStatusRequest::default(),
         })
         .unwrap();
-        assert_eq!(value["pluginId"], "camera-1");
+        assert_eq!(value["nodeId"], "camera-1");
         assert_eq!(value["version"], "v1");
-        assert!(value.get("nodeId").is_none());
+        assert!(value.get("pluginId").is_none());
 
         let invalid = serde_json::from_value::<
-            PluginControlRequest<contracts::camera::SettingsStatusRequest>,
+            PluginNodeRequest<contracts::camera::SettingsStatusRequest>,
         >(serde_json::json!({
-            "pluginId": "camera-1",
+            "nodeId": "camera-1",
             "version": "v1",
             "payload": {},
-            "nodeId": "internal"
+            "pluginId": "legacy"
         }));
         assert!(invalid.is_err());
     }
@@ -238,9 +235,9 @@ mod tests {
     #[test]
     fn response_envelope_accepts_additive_fields() {
         let response =
-            serde_json::from_value::<PluginControlResponse<serde_json::Value>>(serde_json::json!({
-                "pluginId": "llm-1",
-                "pluginType": "llm",
+            serde_json::from_value::<PluginNodeResponse<serde_json::Value>>(serde_json::json!({
+                "nodeId": "llm-1",
+                "nodeType": "llm",
                 "version": "v1",
                 "data": {},
                 "futureField": true

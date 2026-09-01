@@ -79,7 +79,7 @@ pub struct RegisterNodeConnectionRequest {
     pub ws_id: String,
     pub session_id: String,
     pub node_type: String,
-    pub instance_id: String,
+    pub node_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub host_name: Option<String>,
     pub tenant_id: String,

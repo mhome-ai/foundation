@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.dev/contracts/node-service-protocol-v1.json",
+  "title": "Node Service Protocol V1",
+  "$defs": {
+    "emptyRequest": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "describe": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "nodeType",
+        "serviceId",
+        "serviceVersion",
+        "instancePolicy",
+        "routes",
+        "capabilities",
+        "details"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "mhome.node.describe.v1" },
+        "nodeType": { "type": "string", "minLength": 1 },
+        "serviceId": { "type": "string", "minLength": 1 },
+        "serviceVersion": { "type": "string", "minLength": 1 },
+        "instancePolicy": {
+          "enum": ["multiple", "singleton", "shared"]
+        },
+        "routes": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^/" },
+          "uniqueItems": true
+        },
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "details": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "readinessReason": {
+      "type": "object",
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "retryable": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "readiness": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "nodeType",
+        "serviceId",
+        "serviceVersion",
+        "processGeneration",
+        "state",
+        "ready",
+        "revision",
+        "updatedAtMs",
+        "reason",
+        "details"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "mhome.node.readiness.v1" },
+        "nodeType": { "type": "string", "minLength": 1 },
+        "serviceId": { "type": "string", "minLength": 1 },
+        "serviceVersion": { "type": "string", "minLength": 1 },
+        "processGeneration": { "type": "string", "minLength": 1 },
+        "state": {
+          "enum": [
+            "starting",
+            "ready",
+            "degraded",
+            "failed",
+            "stopping",
+            "stopped"
+          ]
+        },
+        "ready": { "type": "boolean" },
+        "revision": { "type": "integer", "minimum": 0 },
+        "updatedAtMs": { "type": "integer" },
+        "reason": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/readinessReason" }
+          ]
+        },
+        "details": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": ["describeRequest", "readinessRequest", "describe", "readiness"],
+  "properties": {
+    "describeRequest": { "$ref": "#/$defs/emptyRequest" },
+    "readinessRequest": { "$ref": "#/$defs/emptyRequest" },
+    "describe": { "$ref": "#/$defs/describe" },
+    "readiness": { "$ref": "#/$defs/readiness" }
+  },
+  "additionalProperties": false
+}
