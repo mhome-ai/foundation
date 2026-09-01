@@ -46,6 +46,33 @@
       "detail"
     ]
   },
+  "audioBridge": {
+    "version": "v1",
+    "runtimeTargetPrefix": "/audiobridge/app/",
+    "routes": {
+      "managementSnapshot": "management/snapshot",
+      "endpointsRefresh": "endpoints/refresh",
+      "deviceAdopt": "device/adopt",
+      "deviceUnadopt": "device/unadopt",
+      "deviceTest": "device/test"
+    },
+    "deviceRequestFields": ["deviceId"],
+    "deviceFields": [
+      "deviceId",
+      "reportedName",
+      "transport",
+      "adopted",
+      "online",
+      "outputRouteReady"
+    ],
+    "candidateFields": [
+      "candidateId",
+      "reportedName",
+      "transport",
+      "adoptable",
+      "unavailableReason"
+    ]
+  },
   "backendStatus": {
     "nodeContract": "baycat.node.status.v1",
     "contract": "baycat.backend.status.v1",

@@ -150,6 +150,22 @@ mod tests {
             manifest["llm"]["modelImportUploadHeaders"]["chunkSha256"],
             contracts::llm::MODEL_IMPORT_CHUNK_SHA256_HEADER
         );
+        assert_eq!(
+            manifest["audioBridge"]["runtimeTargetPrefix"],
+            contracts::audiobridge::RUNTIME_TARGET_PREFIX
+        );
+        assert_eq!(
+            manifest["audioBridge"]["routes"]["managementSnapshot"],
+            contracts::audiobridge::MANAGEMENT_SNAPSHOT
+        );
+        assert_eq!(
+            manifest["audioBridge"]["routes"]["deviceAdopt"],
+            contracts::audiobridge::DEVICE_ADOPT
+        );
+        assert_eq!(
+            manifest["audioBridge"]["routes"]["deviceUnadopt"],
+            contracts::audiobridge::DEVICE_UNADOPT
+        );
         let import = serde_json::to_value(contracts::llm::ModelImportStartRequest {
             display_name: "Local model".to_string(),
             file_name: "model.gguf".to_string(),
