@@ -163,8 +163,8 @@ mod tests {
             contracts::audiobridge::DEVICE_ADOPT
         );
         assert_eq!(
-            manifest["audioBridge"]["routes"]["deviceUnadopt"],
-            contracts::audiobridge::DEVICE_UNADOPT
+            manifest["audioBridge"]["routes"]["deviceUnpair"],
+            contracts::audiobridge::DEVICE_UNPAIR
         );
         let import = serde_json::to_value(contracts::llm::ModelImportStartRequest {
             display_name: "Local model".to_string(),
