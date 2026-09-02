@@ -2,9 +2,11 @@
 
 mod external_rpc;
 mod node_service;
+mod storage;
 
 pub use external_rpc::*;
 pub use node_service::*;
+pub use storage::*;
 
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
