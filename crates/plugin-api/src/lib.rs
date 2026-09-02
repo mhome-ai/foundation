@@ -156,8 +156,8 @@ mod tests {
             contracts::audiobridge::DEVICE_SNAPSHOT
         );
         assert_eq!(
-            manifest["audioBridge"]["routes"]["deviceAdopt"],
-            contracts::audiobridge::DEVICE_ADOPT
+            manifest["audioBridge"]["routes"]["devicePair"],
+            contracts::audiobridge::DEVICE_PAIR
         );
         assert_eq!(
             manifest["audioBridge"]["routes"]["deviceUnpair"],

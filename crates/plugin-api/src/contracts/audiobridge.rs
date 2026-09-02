@@ -5,7 +5,7 @@ pub const NODE_TYPE: &str = "audiobridge";
 pub const RUNTIME_TARGET_PREFIX: &str = "/audiobridge/app/";
 pub const DEVICE_SNAPSHOT: &str = "device/snapshot";
 pub const DEVICE_REFRESH: &str = "device/refresh";
-pub const DEVICE_ADOPT: &str = "device/adopt";
+pub const DEVICE_PAIR: &str = "device/pair";
 pub const DEVICE_UNPAIR: &str = "device/unpair";
 pub const DEVICE_TEST: &str = "device/test";
 
@@ -47,7 +47,7 @@ pub struct DeviceSnapshot {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AdoptionResponse {
+pub struct PairingResponse {
     pub changed: bool,
     pub device: AudioBridgeDevice,
 }

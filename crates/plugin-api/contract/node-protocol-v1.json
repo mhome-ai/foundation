@@ -52,7 +52,7 @@
     "routes": {
       "deviceSnapshot": "device/snapshot",
       "deviceRefresh": "device/refresh",
-      "deviceAdopt": "device/adopt",
+      "devicePair": "device/pair",
       "deviceUnpair": "device/unpair",
       "deviceTest": "device/test"
     },
