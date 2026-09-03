@@ -66,6 +66,11 @@ if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
   exit 2
 fi
 
+if [[ "${package}" == "mhome-core-api" && ! "${version}" =~ ^1\. ]]; then
+  echo "mhome-core-api releases must stay on major version 1: ${version}" >&2
+  exit 2
+fi
+
 manifest_version="$(sed -n 's/^version = "\([^"]*\)"$/\1/p' "${manifest}" | head -n 1)"
 if [[ "${manifest_version}" != "${version}" ]]; then
   echo "tag version ${version} does not match ${package} manifest ${manifest_version}" >&2

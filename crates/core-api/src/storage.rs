@@ -105,13 +105,6 @@ pub struct StorageSessionRequest {
     pub ttl_seconds: Option<u64>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StorageNamespacePolicy {
-    pub max_bytes: u64,
-    pub overflow_strategy: StorageOverflowStrategy,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageNamespace {
@@ -130,15 +123,6 @@ pub struct StorageNamespace {
     pub updated_at_ms: u64,
 }
 
-impl StorageNamespace {
-    pub const fn policy(&self) -> StorageNamespacePolicy {
-        StorageNamespacePolicy {
-            max_bytes: self.max_bytes,
-            overflow_strategy: self.overflow_strategy,
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageNamespaceList {
@@ -155,13 +139,6 @@ pub struct StorageSession {
     pub access_token: String,
     pub expires_at_ms: u64,
     pub permissions: Vec<StoragePermission>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StorageAvailability {
-    pub available: bool,
-    pub protocol_version: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -294,7 +271,7 @@ mod tests {
             "futureField": true
         }))
         .unwrap();
-        assert_eq!(namespace.policy().max_bytes, 1024);
+        assert_eq!(namespace.max_bytes, 1024);
 
         let stats: StorageRepositoryStats = serde_json::from_value(json!({
             "repositoryId": "repository-1",
