@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-pub const TARGET_PREFIX: &str = "/app/plugin/";
+pub const TARGET_PREFIX: &str = "/app/plugin";
+pub const EXTENSION_VERSION: &str = "v1";
 pub const INSTALLED_LIST_TARGET: &str = "/app/plugin/installed/list";
 pub const DETAIL_GET_TARGET: &str = "/app/plugin/detail/get";
 pub const CANDIDATE_LIST_TARGET: &str = "/app/plugin/candidate/list";

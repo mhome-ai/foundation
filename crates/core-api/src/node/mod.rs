@@ -4,6 +4,7 @@ pub mod contracts;
 pub mod settings;
 
 pub const V1: &str = "v1";
+pub const STATUS_CONTRACT: &str = "mhome.node.status.v1";
 pub const PROTOCOL_V1_MANIFEST: &str = include_str!("../../contract/node-runtime-protocol-v1.json");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

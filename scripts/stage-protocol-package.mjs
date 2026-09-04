@@ -51,6 +51,7 @@ export function stageProtocolPackage(name, outputDir) {
 
   const paths = new Set([
     config.manifest,
+    ...(config.additionalFiles || []),
     ...Object.values(config.schemas),
     ...Object.values(config.fixtures),
     "README.md",

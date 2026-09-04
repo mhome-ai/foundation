@@ -7,6 +7,7 @@
     },
     "node": {
       "settingsChangedTarget": "/node/settings/changed",
+      "statusContract": "mhome.node.status.v1",
       "runtimeVersion": "v1"
     },
     "messaging": {

@@ -7,7 +7,8 @@
       "targets": "manifest/targets.v1.json"
     },
     "plugin": {
-      "targetPrefix": "/app/plugin/",
+      "extensionVersion": "v1",
+      "targetPrefix": "/app/plugin",
       "exactRequestTargets": [
         "/app/plugin/installed/list",
         "/app/plugin/detail/get",
@@ -29,4 +30,3 @@
     }
   }
 }
-

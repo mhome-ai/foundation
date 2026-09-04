@@ -942,7 +942,7 @@ pub enum ServiceCoreInput {
         node_type: String,
         node_id: String,
     },
-    BackendStatusChanged {
+    RuntimeStatusChanged {
         tenant_id: String,
         scope_id: String,
         target: String,
