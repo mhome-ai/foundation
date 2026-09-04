@@ -89,7 +89,7 @@ if [[ -n "${protocol}" ]]; then
     echo "failed to build ${npm_package} ${version}" >&2
     exit 1
   fi
-  npm publish "${protocol_tarball}" --dry-run --access public >/dev/null
+  npm publish "${protocol_tarball}" --dry-run --access public --tag latest >/dev/null
 fi
 
 if [[ "${publish}" != "--publish" ]]; then
@@ -103,8 +103,17 @@ fi
 
 crate_url="https://crates.io/api/v1/crates/${package}/${version}"
 is_published() {
-  cargo info "${package}@${version}" --registry crates-io >/dev/null 2>&1 \
-    || curl --fail --silent --show-error --location "${crate_url}" >/dev/null 2>&1
+  # `cargo info` may resolve the package from this workspace and report success
+  # even when the exact version has not reached crates.io. Query the registry
+  # API directly so an unpublished local version cannot be mistaken for a
+  # completed immutable upload.
+  curl \
+    --fail \
+    --silent \
+    --show-error \
+    --location \
+    --user-agent "mhome-foundation-release/1.0" \
+    "${crate_url}" >/dev/null 2>&1
 }
 
 if is_published; then
@@ -133,6 +142,8 @@ if [[ -n "${npm_package}" ]]; then
   if npm view "${npm_package}@${version}" version >/dev/null 2>&1; then
     echo "${npm_package} ${version} is already published"
   else
-    npm publish "${protocol_tarball}" --access public --provenance
+    # Always make the current canonical release the default, including when a
+    # previously published erroneous version has a numerically higher semver.
+    npm publish "${protocol_tarball}" --access public --provenance --tag latest
   fi
 fi
