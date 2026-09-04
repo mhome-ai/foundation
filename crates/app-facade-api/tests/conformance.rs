@@ -329,6 +329,64 @@ fn invalid_frames_are_rejected() {
 }
 
 #[test]
+fn facade_call_credentials_are_mode_specific() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/facade-call.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+
+    for call in [
+        serde_json::json!({"control": {"mode": "direct"}, "input": {}}),
+        serde_json::json!({"control": {"mode": "prepare"}, "input": {}}),
+        serde_json::json!({
+            "control": {
+                "mode": "commit",
+                "preparedActionId": "action-1",
+                "approvalToken": "token-1"
+            },
+            "input": {}
+        }),
+        serde_json::json!({
+            "control": {"mode": "reject", "preparedActionId": "action-1"},
+            "input": {}
+        }),
+    ] {
+        assert!(validator.is_valid(&call), "valid call was rejected: {call}");
+    }
+
+    for call in [
+        serde_json::json!({
+            "control": {"mode": "direct", "preparedActionId": "action-1"},
+            "input": {}
+        }),
+        serde_json::json!({
+            "control": {"mode": "prepare", "approvalToken": "token-1"},
+            "input": {}
+        }),
+        serde_json::json!({
+            "control": {"mode": "commit", "preparedActionId": "action-1"},
+            "input": {}
+        }),
+        serde_json::json!({
+            "control": {
+                "mode": "reject",
+                "preparedActionId": "action-1",
+                "approvalToken": "token-1"
+            },
+            "input": {}
+        }),
+        serde_json::json!({
+            "control": {"mode": "reject", "preparedActionId": "  "},
+            "input": {}
+        }),
+    ] {
+        assert!(
+            !validator.is_valid(&call),
+            "invalid call unexpectedly passed: {call}"
+        );
+    }
+}
+
+#[test]
 fn target_manifest_matches_rust_inventory() {
     let manifest: Value =
         serde_json::from_str(include_str!("../manifest/targets.v1.json")).unwrap();

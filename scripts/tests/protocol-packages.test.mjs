@@ -30,6 +30,7 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
       assert.deepEqual(staged.packageJson.exports["./protocol.json"], "./protocol.json");
       assert.ok(fs.existsSync(path.join(staged.stagingRoot, config.manifest)));
       for (const artifact of [
+        ...(config.additionalFiles || []),
         ...Object.values(config.schemas),
         ...Object.values(config.fixtures),
       ]) {

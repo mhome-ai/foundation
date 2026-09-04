@@ -39,14 +39,24 @@ impl FacadeControl {
                 }
             }
             ActionMode::Commit => {
-                if self.prepared_action_id.as_deref().is_none_or(str::is_empty)
-                    || self.approval_token.as_deref().is_none_or(str::is_empty)
+                if self
+                    .prepared_action_id
+                    .as_deref()
+                    .is_none_or(|value| value.trim().is_empty())
+                    || self
+                        .approval_token
+                        .as_deref()
+                        .is_none_or(|value| value.trim().is_empty())
                 {
                     return Err("commit control requires preparedActionId and approvalToken");
                 }
             }
             ActionMode::Reject => {
-                if self.prepared_action_id.as_deref().is_none_or(str::is_empty) {
+                if self
+                    .prepared_action_id
+                    .as_deref()
+                    .is_none_or(|value| value.trim().is_empty())
+                {
                     return Err("reject control requires preparedActionId");
                 }
                 if self.approval_token.is_some() {
@@ -107,5 +117,12 @@ mod tests {
             ..FacadeControl::default()
         };
         assert!(invalid.validate().is_err());
+
+        let whitespace = FacadeControl {
+            mode: ActionMode::Reject,
+            prepared_action_id: Some(" \t".into()),
+            ..FacadeControl::default()
+        };
+        assert!(whitespace.validate().is_err());
     }
 }

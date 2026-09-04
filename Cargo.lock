@@ -678,7 +678,7 @@ name = "mhome-app-facade-api"
 version = "1.0.0"
 dependencies = [
  "jsonschema",
- "mhome-core-api",
+ "mhome-conversation-api",
  "serde",
  "serde_json",
 ]

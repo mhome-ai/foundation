@@ -6,11 +6,10 @@ on:
       - "mhome-artifact-api-v*"
       - "mhome-machine-identity-v*"
       - "mhome-core-api-v*"
-      - "mhome-plugin-api-v*"
+      - "mhome-app-facade-api-v*"
       - "mhome-playground-models-v*"
       - "mhome-runtime-paths-v*"
       - "mhome-conversation-api-v*"
-      - "mhome-messaging-api-v*"
 
 permissions:
   contents: read

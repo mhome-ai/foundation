@@ -12,22 +12,35 @@
       "required": ["mode"],
       "properties": {
         "mode": { "enum": ["direct", "prepare", "commit", "reject"] },
-        "preparedActionId": { "type": "string", "minLength": 1 },
-        "approvalToken": { "type": "string", "minLength": 1 },
+        "preparedActionId": { "type": "string", "minLength": 1, "pattern": ".*\\S.*" },
+        "approvalToken": { "type": "string", "minLength": 1, "pattern": ".*\\S.*" },
         "responseFormat": { "enum": ["json", "text"] }
       },
       "allOf": [
+        {
+          "if": { "properties": { "mode": { "enum": ["direct", "prepare"] } } },
+          "then": {
+            "not": {
+              "anyOf": [
+                { "required": ["preparedActionId"] },
+                { "required": ["approvalToken"] }
+              ]
+            }
+          }
+        },
         {
           "if": { "properties": { "mode": { "const": "commit" } } },
           "then": { "required": ["preparedActionId", "approvalToken"] }
         },
         {
           "if": { "properties": { "mode": { "const": "reject" } } },
-          "then": { "required": ["preparedActionId"] }
+          "then": {
+            "required": ["preparedActionId"],
+            "not": { "required": ["approvalToken"] }
+          }
         }
       ]
     },
     "input": true
   }
 }
-

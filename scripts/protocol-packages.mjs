@@ -47,6 +47,10 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     npmName: "@mhome/core-protocol",
     protocol: "mhome.core",
     manifest: "manifest/core.v1.json",
+    additionalFiles: Object.freeze([
+      "contract/node-runtime-protocol-v1.json",
+      "contract/node-service-protocol-v1.json",
+    ]),
     schemas: Object.freeze({
       normalizedInbound: "schema/normalized-inbound.v4.schema.json",
       messagingCommands: "schema/messaging-commands.v1.schema.json",
