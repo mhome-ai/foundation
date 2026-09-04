@@ -50,13 +50,14 @@
             "required": true,
             "repeat": false,
             "label": "Password",
-            "readOnly": false
+            "readOnly": false,
+            "hasValue": false
           }
         ]
       }
     },
     "values": {},
-    "requiredValues": ["$password"],
+    "resolutions": [],
     "readyToComplete": false
   },
   "completeResponse": {

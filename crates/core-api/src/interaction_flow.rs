@@ -15,6 +15,15 @@ pub const MAX_STEPS: usize = 64;
 pub const MAX_RESOLVERS: usize = 128;
 pub const MAX_FIELDS_PER_STEP: usize = 64;
 pub const MAX_PRESENTATION_BYTES: usize = 64 * 1024;
+pub const MAX_VALUE_REF_PATH: usize = 32;
+pub const MAX_HANDLER_ARGS: usize = 128;
+pub const MAX_OPTIONS: usize = 1024;
+pub const MAX_TITLE_CHARS: usize = 1024;
+pub const MAX_DESCRIPTION_CHARS: usize = 16 * 1024;
+pub const MAX_CONTENT_CHARS: usize = 64 * 1024;
+pub const MAX_LABEL_CHARS: usize = 1024;
+pub const MAX_UNAVAILABLE_TEXT_CHARS: usize = 4096;
+pub const MAX_MIN_ROWS: u32 = 100;
 
 pub fn definition_target(node_type: &str) -> String {
     format!("/{node_type}/interaction-flow/definition")
@@ -22,6 +31,10 @@ pub fn definition_target(node_type: &str) -> String {
 
 pub fn execute_target(node_type: &str) -> String {
     format!("/{node_type}/interaction-flow/execute")
+}
+
+pub fn close_target(node_type: &str) -> String {
+    format!("/{node_type}/interaction-flow/close")
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -48,6 +61,10 @@ pub enum FlowArgument {
 #[serde(rename_all = "camelCase")]
 pub enum FlowRenderer {
     TypedForm,
+    /// Trusted MeowCore-only compatibility renderer used by the Custom
+    /// Connect adapter. It is deliberately not part of the serialized Node
+    /// protocol.
+    #[serde(skip)]
     CustomConnectMdx,
 }
 
@@ -252,6 +269,7 @@ impl InteractionFlowDefinition {
         }
 
         let mut inputs = HashSet::new();
+        let mut input_shapes = HashMap::new();
         for (step_key, step) in &self.steps {
             require_identifier("step id", step_key)?;
             if step.id != *step_key {
@@ -277,6 +295,16 @@ impl InteractionFlowDefinition {
                     }
                     inputs.insert(field.var.as_str());
                     validate_field_shape(field)?;
+                    if let Some((value_type, repeat)) = input_shapes.get(&field.var) {
+                        if *value_type != field.value_type || *repeat != field.repeat {
+                            return Err(FlowValidationError::new(format!(
+                                "interaction-flow input changes value type or cardinality across steps: {}",
+                                field.var
+                            )));
+                        }
+                    } else {
+                        input_shapes.insert(field.var.clone(), (field.value_type, field.repeat));
+                    }
                 }
             }
         }
@@ -377,6 +405,23 @@ impl InteractionFlowStep {
 }
 
 fn validate_presentation(presentation: &FlowPresentation) -> Result<(), FlowValidationError> {
+    if presentation
+        .title
+        .as_ref()
+        .is_some_and(|value| value.chars().count() > MAX_TITLE_CHARS)
+        || presentation
+            .description
+            .as_ref()
+            .is_some_and(|value| value.chars().count() > MAX_DESCRIPTION_CHARS)
+        || presentation
+            .content
+            .as_ref()
+            .is_some_and(|value| value.chars().count() > MAX_CONTENT_CHARS)
+    {
+        return Err(FlowValidationError::new(
+            "interaction-flow presentation field is too large",
+        ));
+    }
     let total = presentation.title.as_deref().unwrap_or_default().len()
         + presentation
             .description
@@ -400,6 +445,27 @@ fn validate_presentation(presentation: &FlowPresentation) -> Result<(), FlowVali
 }
 
 fn validate_field_shape(field: &FlowFormField) -> Result<(), FlowValidationError> {
+    if field
+        .label
+        .as_ref()
+        .is_some_and(|value| value.chars().count() > MAX_LABEL_CHARS)
+        || field
+            .option_unavailable_text
+            .as_ref()
+            .is_some_and(|value| value.chars().count() > MAX_UNAVAILABLE_TEXT_CHARS)
+        || field
+            .min_rows
+            .is_some_and(|value| value == 0 || value > MAX_MIN_ROWS)
+        || field
+            .options
+            .as_ref()
+            .is_some_and(|options| options.len() > MAX_OPTIONS)
+    {
+        return Err(FlowValidationError::new(format!(
+            "interaction-flow field metadata is out of bounds: {}",
+            field.var
+        )));
+    }
     let compatible = matches!(
         (field.value_type, field.control),
         (FlowFieldValueType::String, FlowFieldControl::Text)
@@ -428,6 +494,14 @@ fn validate_field_shape(field: &FlowFormField) -> Result<(), FlowValidationError
     if field.default_value.is_some() && field.default_value_ref.is_some() {
         return Err(FlowValidationError::new(format!(
             "interaction-flow field has two default sources: {}",
+            field.var
+        )));
+    }
+    if matches!(field.control, FlowFieldControl::Password)
+        && (field.default_value.is_some() || field.default_value_ref.is_some() || field.read_only)
+    {
+        return Err(FlowValidationError::new(format!(
+            "interaction-flow password fields cannot have defaults or be read-only: {}",
             field.var
         )));
     }
@@ -549,6 +623,11 @@ fn validate_handler(
     known: &impl Fn(&str) -> bool,
 ) -> Result<(), FlowValidationError> {
     require_identifier("handler operation", &handler.operation)?;
+    if handler.args.len() > MAX_HANDLER_ARGS {
+        return Err(FlowValidationError::new(
+            "interaction-flow handler argument count is out of bounds",
+        ));
+    }
     for argument in &handler.args {
         if let FlowArgument::Ref { value_ref } = argument {
             validate_ref(value_ref, known)?;
@@ -562,7 +641,10 @@ fn validate_ref(
     known: &impl Fn(&str) -> bool,
 ) -> Result<(), FlowValidationError> {
     require_variable("value reference", &value_ref.root)?;
-    if !known(&value_ref.root) || value_ref.path.iter().any(|part| !is_identifier(part)) {
+    if !known(&value_ref.root)
+        || value_ref.path.len() > MAX_VALUE_REF_PATH
+        || value_ref.path.iter().any(|part| !is_identifier(part))
+    {
         return Err(FlowValidationError::new(format!(
             "unknown or invalid interaction-flow value reference: {}",
             value_ref.root
@@ -699,9 +781,33 @@ pub struct FlowExecuteRequest {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
 pub struct FlowExecuteResponse {
     pub data: Value,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum FlowCloseReason {
+    Completed,
+    Cancelled,
+    Expired,
+    StartFailed,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FlowCloseRequest {
+    pub flow_id: String,
+    pub source_session_id: String,
+    pub operation_id: String,
+    pub reason: FlowCloseReason,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FlowCloseResponse {
+    pub closed: bool,
 }
 
 #[cfg(test)]
@@ -823,6 +929,7 @@ mod tests {
             "/camera/interaction-flow/definition"
         );
         assert_eq!(execute_target("camera"), "/camera/interaction-flow/execute");
+        assert_eq!(close_target("camera"), "/camera/interaction-flow/close");
         let request = serde_json::from_value::<FlowExecuteRequest>(json!({
             "flowId": "provider.connect",
             "sourceSessionId": "source-1",
@@ -833,6 +940,66 @@ mod tests {
             "nodeId": "untrusted"
         }));
         assert!(request.is_err());
+    }
+
+    #[test]
+    fn node_renderer_is_typed_form_only_on_the_wire() {
+        let mut definition = definition();
+        let step = definition.steps.get_mut("credentials").unwrap();
+        let FlowStepContent::Form { presentation, .. } = &mut step.content else {
+            unreachable!();
+        };
+        presentation.renderer = FlowRenderer::CustomConnectMdx;
+        assert!(serde_json::to_value(definition).is_err());
+    }
+
+    #[test]
+    fn input_shape_is_stable_across_steps_and_passwords_are_user_owned() {
+        let mut invalid_definition = definition();
+        invalid_definition.steps.insert(
+            "second".into(),
+            InteractionFlowStep {
+                id: "second".into(),
+                content: FlowStepContent::Form {
+                    presentation: FlowPresentation {
+                        renderer: FlowRenderer::TypedForm,
+                        title: None,
+                        description: None,
+                        content: None,
+                    },
+                    form: FlowForm {
+                        fields: vec![FlowFormField {
+                            var: "$host".into(),
+                            value_type: FlowFieldValueType::Boolean,
+                            control: FlowFieldControl::Boolean,
+                            required: true,
+                            repeat: false,
+                            label: None,
+                            default_value: None,
+                            default_value_ref: None,
+                            options: None,
+                            options_ref: None,
+                            option_unavailable_text: None,
+                            read_only: false,
+                            min_rows: None,
+                        }],
+                    },
+                    render_refs: Vec::new(),
+                },
+                transition: FlowTransition::Finish,
+            },
+        );
+        assert!(invalid_definition.validate().is_err());
+
+        let mut definition = definition();
+        let step = definition.steps.get_mut("credentials").unwrap();
+        let FlowStepContent::Form { form, .. } = &mut step.content else {
+            unreachable!();
+        };
+        let field = form.fields.first_mut().unwrap();
+        field.control = FlowFieldControl::Password;
+        field.default_value = Some(json!("not-allowed"));
+        assert!(definition.validate().is_err());
     }
 
     #[test]

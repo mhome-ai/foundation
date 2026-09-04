@@ -68,5 +68,14 @@
   },
   "executeResponse": {
     "data": { "providerConnectionId": "provider-1" }
+  },
+  "closeRequest": {
+    "flowId": "provider.connect",
+    "sourceSessionId": "source-session-1",
+    "operationId": "close-1",
+    "reason": "completed"
+  },
+  "closeResponse": {
+    "closed": true
   }
 }

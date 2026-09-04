@@ -89,7 +89,6 @@ pub struct InteractionFlowCancelRequest {
 #[serde(rename_all = "camelCase")]
 pub enum FlowRendererView {
     TypedForm,
-    CustomConnectMdx,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -132,14 +131,22 @@ pub struct FlowFormFieldView {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub default_value: Option<Value>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub options: Option<Vec<Value>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub option_unavailable_text: Option<String>,
     pub read_only: bool,
+    pub has_value: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub min_rows: Option<u32>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FlowResolutionView {
+    pub var: String,
+    pub available: bool,
+    #[serde(default)]
+    pub depends_on: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -186,8 +193,7 @@ pub struct InteractionFlowView {
     pub content: FlowStepViewContent,
     #[serde(default)]
     pub values: HashMap<String, Value>,
-    #[serde(default)]
-    pub required_values: Vec<String>,
+    pub resolutions: Vec<FlowResolutionView>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub back_step_id: Option<String>,
     pub ready_to_complete: bool,
@@ -244,7 +250,7 @@ mod tests {
                 form: FlowFormView::default(),
             },
             values: HashMap::new(),
-            required_values: Vec::new(),
+            resolutions: Vec::new(),
             back_step_id: None,
             ready_to_complete: true,
         };

@@ -4,15 +4,23 @@
   "title": "MeowCore Interaction Flow Node protocol v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["definitionRequest", "definitionResponse", "executeRequest", "executeResponse"],
+  "required": ["definitionRequest", "definitionResponse", "executeRequest", "executeResponse", "closeRequest", "closeResponse"],
   "properties": {
     "definitionRequest": { "$ref": "#/$defs/definitionRequest" },
     "definitionResponse": { "$ref": "#/$defs/definitionResponse" },
     "executeRequest": { "$ref": "#/$defs/executeRequest" },
-    "executeResponse": { "$ref": "#/$defs/executeResponse" }
+    "executeResponse": { "$ref": "#/$defs/executeResponse" },
+    "closeRequest": { "$ref": "#/$defs/closeRequest" },
+    "closeResponse": { "$ref": "#/$defs/closeResponse" }
   },
   "$defs": {
     "nonEmpty": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.\\/-]+$"
+    },
     "variable": { "type": "string", "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]{0,126}$" },
     "valueRef": {
       "type": "object",
@@ -51,7 +59,7 @@
       "additionalProperties": false,
       "required": ["operation"],
       "properties": {
-        "operation": { "$ref": "#/$defs/nonEmpty" },
+        "operation": { "$ref": "#/$defs/identifier" },
         "args": { "type": "array", "items": { "$ref": "#/$defs/argument" }, "maxItems": 128 }
       }
     },
@@ -60,7 +68,7 @@
       "additionalProperties": false,
       "required": ["renderer"],
       "properties": {
-        "renderer": { "enum": ["typedForm", "customConnectMdx"] },
+        "renderer": { "const": "typedForm" },
         "title": { "type": "string", "maxLength": 1024 },
         "description": { "type": "string", "maxLength": 16384 },
         "content": { "type": "string", "maxLength": 65536 }
@@ -84,7 +92,27 @@
         "optionUnavailableText": { "type": "string", "maxLength": 4096 },
         "readOnly": { "type": "boolean" },
         "minRows": { "type": "integer", "minimum": 1, "maximum": 100 }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "control": { "const": "password" } },
+            "required": ["control"]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                { "required": ["defaultValue"] },
+                { "required": ["defaultValueRef"] },
+                {
+                  "properties": { "readOnly": { "const": true } },
+                  "required": ["readOnly"]
+                }
+              ]
+            }
+          }
+        }
+      ]
     },
     "form": {
       "type": "object",
@@ -126,7 +154,7 @@
           "type": "object",
           "additionalProperties": false,
           "required": ["type", "stepId"],
-          "properties": { "type": { "const": "step" }, "stepId": { "$ref": "#/$defs/nonEmpty" } }
+          "properties": { "type": { "const": "step" }, "stepId": { "$ref": "#/$defs/identifier" } }
         },
         {
           "type": "object",
@@ -147,7 +175,7 @@
       "additionalProperties": false,
       "required": ["id", "content", "transition"],
       "properties": {
-        "id": { "$ref": "#/$defs/nonEmpty" },
+        "id": { "$ref": "#/$defs/identifier" },
         "content": { "$ref": "#/$defs/stepContent" },
         "transition": { "$ref": "#/$defs/transition" }
       }
@@ -167,8 +195,8 @@
       "required": ["protocolVersion", "flowId", "startStepId", "steps"],
       "properties": {
         "protocolVersion": { "const": 1 },
-        "flowId": { "$ref": "#/$defs/nonEmpty" },
-        "startStepId": { "$ref": "#/$defs/nonEmpty" },
+        "flowId": { "$ref": "#/$defs/identifier" },
+        "startStepId": { "$ref": "#/$defs/identifier" },
         "steps": {
           "type": "object",
           "minProperties": 1,
@@ -196,7 +224,7 @@
       "additionalProperties": false,
       "required": ["flowId"],
       "properties": {
-        "flowId": { "$ref": "#/$defs/nonEmpty" },
+        "flowId": { "$ref": "#/$defs/identifier" },
         "subjectId": { "$ref": "#/$defs/nonEmpty" }
       }
     },
@@ -215,7 +243,7 @@
       "additionalProperties": false,
       "required": ["flowId", "sourceSessionId", "definitionRevision", "operation", "operationId"],
       "properties": {
-        "flowId": { "$ref": "#/$defs/nonEmpty" },
+        "flowId": { "$ref": "#/$defs/identifier" },
         "sourceSessionId": { "$ref": "#/$defs/nonEmpty" },
         "definitionRevision": { "$ref": "#/$defs/nonEmpty" },
         "operation": { "$ref": "#/$defs/nonEmpty" },
@@ -228,6 +256,23 @@
       "additionalProperties": true,
       "required": ["data"],
       "properties": { "data": true }
+    },
+    "closeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flowId", "sourceSessionId", "operationId", "reason"],
+      "properties": {
+        "flowId": { "$ref": "#/$defs/identifier" },
+        "sourceSessionId": { "$ref": "#/$defs/nonEmpty" },
+        "operationId": { "$ref": "#/$defs/nonEmpty" },
+        "reason": { "enum": ["completed", "cancelled", "expired", "startFailed"] }
+      }
+    },
+    "closeResponse": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["closed"],
+      "properties": { "closed": { "type": "boolean" } }
     }
   }
 }

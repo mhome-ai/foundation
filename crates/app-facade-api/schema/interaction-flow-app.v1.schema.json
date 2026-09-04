@@ -83,7 +83,7 @@
       "additionalProperties": false,
       "required": ["renderer"],
       "properties": {
-        "renderer": { "enum": ["typedForm", "customConnectMdx"] },
+        "renderer": { "const": "typedForm" },
         "title": { "type": "string" },
         "description": { "type": "string" },
         "content": { "type": "string" }
@@ -92,7 +92,7 @@
     "field": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["var", "valueType", "control", "required", "repeat", "readOnly"],
+      "required": ["var", "valueType", "control", "required", "repeat", "readOnly", "hasValue"],
       "properties": {
         "var": { "$ref": "#/$defs/nonEmpty" },
         "valueType": { "enum": ["string", "boolean"] },
@@ -100,11 +100,25 @@
         "required": { "type": "boolean" },
         "repeat": { "type": "boolean" },
         "label": { "type": "string" },
-        "defaultValue": true,
         "options": { "type": "array" },
         "optionUnavailableText": { "type": "string" },
         "readOnly": { "type": "boolean" },
+        "hasValue": { "type": "boolean" },
         "minRows": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["var", "available", "dependsOn"],
+      "properties": {
+        "var": { "$ref": "#/$defs/nonEmpty" },
+        "available": { "type": "boolean" },
+        "dependsOn": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmpty" },
+          "uniqueItems": true
+        }
       }
     },
     "content": {
@@ -141,14 +155,14 @@
     "view": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["sessionId", "revision", "stepId", "content", "readyToComplete"],
+      "required": ["sessionId", "revision", "stepId", "content", "resolutions", "readyToComplete"],
       "properties": {
         "sessionId": { "$ref": "#/$defs/nonEmpty" },
         "revision": { "type": "integer", "minimum": 0 },
         "stepId": { "$ref": "#/$defs/nonEmpty" },
         "content": { "$ref": "#/$defs/content" },
         "values": { "type": "object" },
-        "requiredValues": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } },
+        "resolutions": { "type": "array", "items": { "$ref": "#/$defs/resolution" } },
         "backStepId": { "$ref": "#/$defs/nonEmpty" },
         "readyToComplete": { "type": "boolean" }
       }

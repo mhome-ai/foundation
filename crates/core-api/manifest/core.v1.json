@@ -11,7 +11,8 @@
       "runtimeVersion": "v1",
       "interactionFlowSchema": "schema/interaction-flow-node.v1.schema.json",
       "interactionFlowDefinitionTarget": "/{nodeType}/interaction-flow/definition",
-      "interactionFlowExecuteTarget": "/{nodeType}/interaction-flow/execute"
+      "interactionFlowExecuteTarget": "/{nodeType}/interaction-flow/execute",
+      "interactionFlowCloseTarget": "/{nodeType}/interaction-flow/close"
     },
     "messaging": {
       "normalizedInboundSchema": "schema/normalized-inbound.v4.schema.json",
