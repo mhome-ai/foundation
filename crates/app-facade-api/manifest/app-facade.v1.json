@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.1.1",
+  "contractVersion": "1.1.2",
   "callSchema": "schema/facade-call.v1.schema.json",
   "domains": {
     "messaging": {
@@ -27,6 +27,18 @@
       "requestTargets": ["/app/runtime/status/list"],
       "eventTargets": ["/app/runtime/status/changed"],
       "authority": "host"
+    },
+    "interactionFlow": {
+      "schema": "schema/interaction-flow-app.v1.schema.json",
+      "requestTargets": [
+        "/app/interaction-flow/start",
+        "/app/interaction-flow/resolve",
+        "/app/interaction-flow/next",
+        "/app/interaction-flow/back",
+        "/app/interaction-flow/complete",
+        "/app/interaction-flow/cancel"
+      ],
+      "sessionPersistence": "memory"
     }
   }
 }

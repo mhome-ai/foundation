@@ -36,10 +36,12 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     schemas: Object.freeze({
       call: "schema/facade-call.v1.schema.json",
       frame: "schema/messaging-frame.v3.schema.json",
+      interactionFlow: "schema/interaction-flow-app.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",
       invalid: "fixtures/invalid",
+      interactionFlow: "fixtures/interaction-flow.conformance.json",
     }),
   }),
   core: Object.freeze({
@@ -54,10 +56,12 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     schemas: Object.freeze({
       normalizedInbound: "schema/normalized-inbound.v4.schema.json",
       messagingCommands: "schema/messaging-commands.v1.schema.json",
+      interactionFlowNode: "schema/interaction-flow-node.v1.schema.json",
     }),
     fixtures: Object.freeze({
       normalizedInbound: "fixtures/normalized-inbound.conformance.json",
       messagingCommands: "fixtures/messaging-commands.conformance.json",
+      interactionFlowNode: "fixtures/interaction-flow-node.conformance.json",
     }),
   }),
 });

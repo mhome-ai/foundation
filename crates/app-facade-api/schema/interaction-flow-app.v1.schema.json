@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mhome:app-facade:interaction-flow:v1",
+  "title": "MeowLink Interaction Flow App protocol v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["startRequest", "resolveRequest", "transitionRequest", "completeRequest", "cancelRequest", "view", "completeResponse", "cancelResponse"],
+  "properties": {
+    "startRequest": { "$ref": "#/$defs/startRequest" },
+    "resolveRequest": { "$ref": "#/$defs/resolveRequest" },
+    "transitionRequest": { "$ref": "#/$defs/transitionRequest" },
+    "completeRequest": { "$ref": "#/$defs/completeRequest" },
+    "cancelRequest": { "$ref": "#/$defs/cancelRequest" },
+    "view": { "$ref": "#/$defs/view" },
+    "completeResponse": { "$ref": "#/$defs/completeResponse" },
+    "cancelResponse": { "$ref": "#/$defs/cancelResponse" }
+  },
+  "$defs": {
+    "nonEmpty": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "nodeType", "nodeId", "flowId"],
+      "properties": {
+        "kind": { "const": "plugin" },
+        "nodeType": { "$ref": "#/$defs/nonEmpty" },
+        "nodeId": { "$ref": "#/$defs/nonEmpty" },
+        "flowId": { "$ref": "#/$defs/nonEmpty" },
+        "subjectId": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "startRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source"],
+      "properties": { "source": { "$ref": "#/$defs/source" } }
+    },
+    "resolveRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessionId", "commandId", "expectedRevision", "vars"],
+      "properties": {
+        "sessionId": { "$ref": "#/$defs/nonEmpty" },
+        "commandId": { "$ref": "#/$defs/nonEmpty" },
+        "expectedRevision": { "type": "integer", "minimum": 0 },
+        "input": { "type": "object" },
+        "vars": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" }, "maxItems": 128 },
+        "force": { "type": "boolean" }
+      }
+    },
+    "transitionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessionId", "commandId", "expectedRevision"],
+      "properties": {
+        "sessionId": { "$ref": "#/$defs/nonEmpty" },
+        "commandId": { "$ref": "#/$defs/nonEmpty" },
+        "expectedRevision": { "type": "integer", "minimum": 0 },
+        "input": { "type": "object" }
+      }
+    },
+    "completeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessionId", "commandId", "expectedRevision"],
+      "properties": {
+        "sessionId": { "$ref": "#/$defs/nonEmpty" },
+        "commandId": { "$ref": "#/$defs/nonEmpty" },
+        "expectedRevision": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "cancelRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessionId", "commandId"],
+      "properties": {
+        "sessionId": { "$ref": "#/$defs/nonEmpty" },
+        "commandId": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer"],
+      "properties": {
+        "renderer": { "enum": ["typedForm", "customConnectMdx"] },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "content": { "type": "string" }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["var", "valueType", "control", "required", "repeat", "readOnly"],
+      "properties": {
+        "var": { "$ref": "#/$defs/nonEmpty" },
+        "valueType": { "enum": ["string", "boolean"] },
+        "control": { "enum": ["text", "password", "longText", "select", "boolean"] },
+        "required": { "type": "boolean" },
+        "repeat": { "type": "boolean" },
+        "label": { "type": "string" },
+        "defaultValue": true,
+        "options": { "type": "array" },
+        "optionUnavailableText": { "type": "string" },
+        "readOnly": { "type": "boolean" },
+        "minRows": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "content": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "presentation", "form"],
+          "properties": {
+            "type": { "const": "form" },
+            "presentation": { "$ref": "#/$defs/presentation" },
+            "form": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["fields"],
+              "properties": { "fields": { "type": "array", "items": { "$ref": "#/$defs/field" } } }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "presentation", "authorizationUrl", "completionMode"],
+          "properties": {
+            "type": { "const": "externalAuth" },
+            "presentation": { "$ref": "#/$defs/presentation" },
+            "authorizationUrl": { "type": "string", "format": "uri" },
+            "completionMode": { "enum": ["callback", "poll"] },
+            "pollAfterMs": { "type": "integer", "minimum": 250, "maximum": 60000 }
+          }
+        }
+      ]
+    },
+    "view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessionId", "revision", "stepId", "content", "readyToComplete"],
+      "properties": {
+        "sessionId": { "$ref": "#/$defs/nonEmpty" },
+        "revision": { "type": "integer", "minimum": 0 },
+        "stepId": { "$ref": "#/$defs/nonEmpty" },
+        "content": { "$ref": "#/$defs/content" },
+        "values": { "type": "object" },
+        "requiredValues": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } },
+        "backStepId": { "$ref": "#/$defs/nonEmpty" },
+        "readyToComplete": { "type": "boolean" }
+      }
+    },
+    "completeResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completed"],
+      "properties": { "completed": { "type": "boolean" }, "result": true }
+    },
+    "cancelResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cancelled"],
+      "properties": { "cancelled": { "type": "boolean" } }
+    }
+  }
+}

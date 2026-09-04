@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.1.1",
+  "contractVersion": "1.1.2",
   "protocols": {
     "llm": {
       "completeTarget": "/llm/complete"
@@ -8,7 +8,10 @@
     "node": {
       "settingsChangedTarget": "/node/settings/changed",
       "statusContract": "mhome.node.status.v1",
-      "runtimeVersion": "v1"
+      "runtimeVersion": "v1",
+      "interactionFlowSchema": "schema/interaction-flow-node.v1.schema.json",
+      "interactionFlowDefinitionTarget": "/{nodeType}/interaction-flow/definition",
+      "interactionFlowExecuteTarget": "/{nodeType}/interaction-flow/execute"
     },
     "messaging": {
       "normalizedInboundSchema": "schema/normalized-inbound.v4.schema.json",

@@ -1,6 +1,7 @@
 #![allow(clippy::derivable_impls, clippy::should_implement_trait)]
 
 mod external_rpc;
+pub mod interaction_flow;
 pub mod llm;
 pub mod messaging;
 pub mod node;

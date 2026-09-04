@@ -9,3 +9,6 @@ owns public targets, request/response/event schemas, and stable operation
 identity. Core-to-Node routes and provider runtime models belong to
 `mhome-core-api` instead.
 
+`interaction_flow` exposes only the materialized current-step view and session
+commands. Handler operations, the complete step graph, and Node routing
+identity remain internal to MeowCore.

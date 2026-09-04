@@ -1,0 +1,67 @@
+{
+  "startRequest": {
+    "source": {
+      "kind": "plugin",
+      "nodeType": "camera",
+      "nodeId": "camera-1",
+      "flowId": "provider.connect",
+      "subjectId": "onvif"
+    }
+  },
+  "resolveRequest": {
+    "sessionId": "session-1",
+    "commandId": "command-1",
+    "expectedRevision": 1,
+    "input": { "$host": "192.0.2.1" },
+    "vars": ["$cameras"],
+    "force": false
+  },
+  "transitionRequest": {
+    "sessionId": "session-1",
+    "commandId": "command-2",
+    "expectedRevision": 2,
+    "input": { "$camera": "camera-1" }
+  },
+  "completeRequest": {
+    "sessionId": "session-1",
+    "commandId": "command-3",
+    "expectedRevision": 3
+  },
+  "cancelRequest": {
+    "sessionId": "session-1",
+    "commandId": "command-4"
+  },
+  "view": {
+    "sessionId": "session-1",
+    "revision": 1,
+    "stepId": "credentials",
+    "content": {
+      "type": "form",
+      "presentation": {
+        "renderer": "typedForm",
+        "title": "Connect camera provider"
+      },
+      "form": {
+        "fields": [
+          {
+            "var": "$password",
+            "valueType": "string",
+            "control": "password",
+            "required": true,
+            "repeat": false,
+            "label": "Password",
+            "readOnly": false
+          }
+        ]
+      }
+    },
+    "values": {},
+    "requiredValues": ["$password"],
+    "readyToComplete": false
+  },
+  "completeResponse": {
+    "completed": true,
+    "result": { "providerConnectionId": "provider-1" }
+  },
+  "cancelResponse": { "cancelled": true }
+}

@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mhome:core-api:interaction-flow-node:v1",
+  "title": "MeowCore Interaction Flow Node protocol v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["definitionRequest", "definitionResponse", "executeRequest", "executeResponse"],
+  "properties": {
+    "definitionRequest": { "$ref": "#/$defs/definitionRequest" },
+    "definitionResponse": { "$ref": "#/$defs/definitionResponse" },
+    "executeRequest": { "$ref": "#/$defs/executeRequest" },
+    "executeResponse": { "$ref": "#/$defs/executeResponse" }
+  },
+  "$defs": {
+    "nonEmpty": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "variable": { "type": "string", "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]{0,126}$" },
+    "valueRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root"],
+      "properties": {
+        "root": { "$ref": "#/$defs/variable" },
+        "path": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,127}$" },
+          "maxItems": 32
+        }
+      }
+    },
+    "argument": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "value"],
+          "properties": { "type": { "const": "value" }, "value": true }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "valueRef"],
+          "properties": {
+            "type": { "const": "ref" },
+            "valueRef": { "$ref": "#/$defs/valueRef" }
+          }
+        }
+      ]
+    },
+    "handler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation"],
+      "properties": {
+        "operation": { "$ref": "#/$defs/nonEmpty" },
+        "args": { "type": "array", "items": { "$ref": "#/$defs/argument" }, "maxItems": 128 }
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer"],
+      "properties": {
+        "renderer": { "enum": ["typedForm", "customConnectMdx"] },
+        "title": { "type": "string", "maxLength": 1024 },
+        "description": { "type": "string", "maxLength": 16384 },
+        "content": { "type": "string", "maxLength": 65536 }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["var", "valueType", "control"],
+      "properties": {
+        "var": { "$ref": "#/$defs/variable" },
+        "valueType": { "enum": ["string", "boolean"] },
+        "control": { "enum": ["text", "password", "longText", "select", "boolean"] },
+        "required": { "type": "boolean" },
+        "repeat": { "type": "boolean" },
+        "label": { "type": "string", "maxLength": 1024 },
+        "defaultValue": true,
+        "defaultValueRef": { "$ref": "#/$defs/valueRef" },
+        "options": { "type": "array", "maxItems": 1024 },
+        "optionsRef": { "$ref": "#/$defs/valueRef" },
+        "optionUnavailableText": { "type": "string", "maxLength": 4096 },
+        "readOnly": { "type": "boolean" },
+        "minRows": { "type": "integer", "minimum": 1, "maximum": 100 }
+      }
+    },
+    "form": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fields": { "type": "array", "items": { "$ref": "#/$defs/field" }, "maxItems": 64 }
+      }
+    },
+    "stepContent": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "presentation", "form"],
+          "properties": {
+            "type": { "const": "form" },
+            "presentation": { "$ref": "#/$defs/presentation" },
+            "form": { "$ref": "#/$defs/form" },
+            "renderRefs": { "type": "array", "items": { "$ref": "#/$defs/valueRef" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "presentation", "authorizationUrlRef", "completionMode"],
+          "properties": {
+            "type": { "const": "externalAuth" },
+            "presentation": { "$ref": "#/$defs/presentation" },
+            "authorizationUrlRef": { "$ref": "#/$defs/valueRef" },
+            "completionMode": { "enum": ["callback", "poll"] },
+            "pollAfterMs": { "type": "integer", "minimum": 250, "maximum": 60000 }
+          }
+        }
+      ]
+    },
+    "transition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "stepId"],
+          "properties": { "type": { "const": "step" }, "stepId": { "$ref": "#/$defs/nonEmpty" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "valueRef"],
+          "properties": { "type": { "const": "dynamic" }, "valueRef": { "$ref": "#/$defs/valueRef" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "finish" } }
+        }
+      ]
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "content", "transition"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmpty" },
+        "content": { "$ref": "#/$defs/stepContent" },
+        "transition": { "$ref": "#/$defs/transition" }
+      }
+    },
+    "resolver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outputVar", "handler"],
+      "properties": {
+        "outputVar": { "$ref": "#/$defs/variable" },
+        "handler": { "$ref": "#/$defs/handler" }
+      }
+    },
+    "definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocolVersion", "flowId", "startStepId", "steps"],
+      "properties": {
+        "protocolVersion": { "const": 1 },
+        "flowId": { "$ref": "#/$defs/nonEmpty" },
+        "startStepId": { "$ref": "#/$defs/nonEmpty" },
+        "steps": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 64,
+          "additionalProperties": { "$ref": "#/$defs/step" }
+        },
+        "resolvers": {
+          "type": "object",
+          "maxProperties": 128,
+          "additionalProperties": { "$ref": "#/$defs/resolver" }
+        },
+        "lifecycle": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "complete": { "$ref": "#/$defs/handler" },
+            "cancel": { "$ref": "#/$defs/handler" },
+            "expire": { "$ref": "#/$defs/handler" }
+          }
+        }
+      }
+    },
+    "definitionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flowId"],
+      "properties": {
+        "flowId": { "$ref": "#/$defs/nonEmpty" },
+        "subjectId": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "definitionResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["definitionRevision", "sourceSessionId", "definition"],
+      "properties": {
+        "definitionRevision": { "$ref": "#/$defs/nonEmpty" },
+        "sourceSessionId": { "$ref": "#/$defs/nonEmpty" },
+        "definition": { "$ref": "#/$defs/definition" }
+      }
+    },
+    "executeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flowId", "sourceSessionId", "definitionRevision", "operation", "operationId"],
+      "properties": {
+        "flowId": { "$ref": "#/$defs/nonEmpty" },
+        "sourceSessionId": { "$ref": "#/$defs/nonEmpty" },
+        "definitionRevision": { "$ref": "#/$defs/nonEmpty" },
+        "operation": { "$ref": "#/$defs/nonEmpty" },
+        "operationId": { "$ref": "#/$defs/nonEmpty" },
+        "args": { "type": "array", "maxItems": 128 }
+      }
+    },
+    "executeResponse": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["data"],
+      "properties": { "data": true }
+    }
+  }
+}

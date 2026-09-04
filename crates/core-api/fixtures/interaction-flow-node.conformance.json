@@ -1,0 +1,72 @@
+{
+  "definitionRequest": {
+    "flowId": "provider.connect",
+    "subjectId": "onvif"
+  },
+  "definitionResponse": {
+    "definitionRevision": "sha256:demo",
+    "sourceSessionId": "source-session-1",
+    "definition": {
+      "protocolVersion": 1,
+      "flowId": "provider.connect",
+      "startStepId": "credentials",
+      "steps": {
+        "credentials": {
+          "id": "credentials",
+          "content": {
+            "type": "form",
+            "presentation": {
+              "renderer": "typedForm",
+              "title": "Connect camera provider"
+            },
+            "form": {
+              "fields": [
+                {
+                  "var": "$host",
+                  "valueType": "string",
+                  "control": "text",
+                  "required": true,
+                  "repeat": false,
+                  "label": "Host",
+                  "readOnly": false
+                },
+                {
+                  "var": "$password",
+                  "valueType": "string",
+                  "control": "password",
+                  "required": true,
+                  "repeat": false,
+                  "label": "Password",
+                  "readOnly": false
+                }
+              ]
+            },
+            "renderRefs": []
+          },
+          "transition": { "type": "finish" }
+        }
+      },
+      "resolvers": {},
+      "lifecycle": {
+        "complete": {
+          "operation": "provider.save",
+          "args": [
+            { "type": "ref", "valueRef": { "root": "$host" } },
+            { "type": "ref", "valueRef": { "root": "$password" } }
+          ]
+        }
+      }
+    }
+  },
+  "executeRequest": {
+    "flowId": "provider.connect",
+    "sourceSessionId": "source-session-1",
+    "definitionRevision": "sha256:demo",
+    "operation": "provider.save",
+    "operationId": "operation-1",
+    "args": ["192.0.2.1", "secret"]
+  },
+  "executeResponse": {
+    "data": { "providerConnectionId": "provider-1" }
+  }
+}
