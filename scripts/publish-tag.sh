@@ -23,6 +23,8 @@ case "${tag}" in
     package="mhome-core-api"
     manifest="crates/core-api/Cargo.toml"
     version="${tag#mhome-core-api-v}"
+    protocol="core"
+    npm_package="@mhome/core-protocol"
     ;;
   mhome-conversation-api-v*)
     package="mhome-conversation-api"
@@ -31,24 +33,17 @@ case "${tag}" in
     protocol="conversation"
     npm_package="@mhome/conversation-protocol"
     ;;
-  mhome-messaging-api-v*)
-    package="mhome-messaging-api"
-    manifest="crates/messaging-api/Cargo.toml"
-    version="${tag#mhome-messaging-api-v}"
-    protocol="messaging"
-    npm_package="@mhome/messaging-protocol"
+  mhome-app-facade-api-v*)
+    package="mhome-app-facade-api"
+    manifest="crates/app-facade-api/Cargo.toml"
+    version="${tag#mhome-app-facade-api-v}"
+    protocol="appFacade"
+    npm_package="@mhome/app-facade-protocol"
     ;;
   mhome-playground-models-v*)
     package="mhome-playground-models"
     manifest="crates/playground-models/Cargo.toml"
     version="${tag#mhome-playground-models-v}"
-    ;;
-  mhome-plugin-api-v*)
-    package="mhome-plugin-api"
-    manifest="crates/plugin-api/Cargo.toml"
-    version="${tag#mhome-plugin-api-v}"
-    protocol="plugin"
-    npm_package="@mhome/plugin-protocol"
     ;;
   mhome-runtime-paths-v*)
     package="mhome-runtime-paths"
@@ -66,8 +61,8 @@ if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
   exit 2
 fi
 
-if [[ "${package}" == "mhome-core-api" && ! "${version}" =~ ^1\. ]]; then
-  echo "mhome-core-api releases must stay on major version 1: ${version}" >&2
+if [[ ( "${package}" == "mhome-core-api" || "${package}" == "mhome-app-facade-api" ) && ! "${version}" =~ ^1\. ]]; then
+  echo "${package} releases must stay on major version 1: ${version}" >&2
   exit 2
 fi
 

@@ -1,0 +1,20 @@
+{
+  "manifest": "mhome.node.runtime.v1",
+  "version": "v1",
+  "runtimeEnvelope": {
+    "requestFields": ["version", "payload"],
+    "responseFields": ["version", "data"]
+  },
+  "settings": {
+    "changedTarget": "/node/settings/changed",
+    "routes": ["settings/status", "settings/update", "settings/revert", "settings/retry"]
+  },
+  "llm": {
+    "runtimeTargetPrefix": "/llm/app/",
+    "completeTarget": "/llm/complete",
+    "modelImportUploadPathPrefix": "/llm/model/import/upload"
+  },
+  "audioBridge": {
+    "runtimeTargetPrefix": "/audiobridge/app/"
+  }
+}

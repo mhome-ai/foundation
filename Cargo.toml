@@ -2,12 +2,11 @@
 resolver = "2"
 members = [
   "crates/artifact",
+  "crates/app-facade-api",
   "crates/conversation-api",
-  "crates/messaging-api",
   "crates/machine-identity",
   "crates/core-api",
   "crates/playground-models",
-  "crates/plugin-api",
   "crates/runtime-paths",
 ]
 

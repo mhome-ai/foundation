@@ -1,0 +1,20 @@
+{
+  "manifest": "mhome.core.v1",
+  "contractVersion": "1.4.0",
+  "protocols": {
+    "llm": {
+      "completeTarget": "/llm/complete"
+    },
+    "node": {
+      "settingsChangedTarget": "/node/settings/changed",
+      "runtimeVersion": "v1"
+    },
+    "messaging": {
+      "normalizedInboundSchema": "schema/normalized-inbound.v4.schema.json",
+      "commandsSchema": "schema/messaging-commands.v1.schema.json"
+    },
+    "storage": {
+      "version": "storage.v2"
+    }
+  }
+}

@@ -50,7 +50,7 @@ test("refuses to overwrite a non-empty staging directory", () => {
   try {
     fs.writeFileSync(path.join(tempRoot, "keep.txt"), "do not overwrite\n");
     assert.throws(
-      () => stageProtocolPackage("messaging", tempRoot),
+      () => stageProtocolPackage("appFacade", tempRoot),
       /Refusing to overwrite non-empty staging directory/
     );
     assert.equal(

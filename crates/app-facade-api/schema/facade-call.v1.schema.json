@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/facade-call.v1.schema.json",
+  "title": "App Facade call",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["control", "input"],
+  "properties": {
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["direct", "prepare", "commit", "reject"] },
+        "preparedActionId": { "type": "string", "minLength": 1 },
+        "approvalToken": { "type": "string", "minLength": 1 },
+        "responseFormat": { "enum": ["json", "text"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "mode": { "const": "commit" } } },
+          "then": { "required": ["preparedActionId", "approvalToken"] }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "reject" } } },
+          "then": { "required": ["preparedActionId"] }
+        }
+      ]
+    },
+    "input": true
+  }
+}
+

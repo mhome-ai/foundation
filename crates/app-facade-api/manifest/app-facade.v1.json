@@ -1,0 +1,32 @@
+{
+  "manifest": "mhome.app-facade.v1",
+  "contractVersion": "1.0.0",
+  "callSchema": "schema/facade-call.v1.schema.json",
+  "domains": {
+    "messaging": {
+      "targets": "manifest/targets.v1.json"
+    },
+    "plugin": {
+      "targetPrefix": "/app/plugin/",
+      "exactRequestTargets": [
+        "/app/plugin/installed/list",
+        "/app/plugin/detail/get",
+        "/app/plugin/candidate/list",
+        "/app/plugin/add/start",
+        "/app/plugin/add/status",
+        "/app/plugin/add/cancel",
+        "/app/plugin/remove",
+        "/app/plugin/profile/update"
+      ],
+      "eventTargets": ["/app/plugin/settings/changed"],
+      "extensionFamily": "/app/plugin/{nodeType}/{route...}",
+      "extensionPriority": "after_exact"
+    },
+    "runtime": {
+      "requestTargets": ["/app/runtime/status/list"],
+      "eventTargets": ["/app/runtime/status/changed"],
+      "authority": "host"
+    }
+  }
+}
+

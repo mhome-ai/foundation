@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mhome:core-api:messaging:normalized-inbound:v4",
+  "title": "mHome normalized messaging inbound v4",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "eventId", "address", "actor", "content"],
+  "properties": {
+    "schemaVersion": { "const": 4 },
+    "eventId": { "$ref": "#/$defs/id" },
+    "address": { "$ref": "#/$defs/address" },
+    "actor": { "$ref": "#/$defs/actor" },
+    "content": { "$ref": "#/$defs/content" },
+    "conversationDisplayName": { "$ref": "#/$defs/id" },
+    "occurredAtMs": { "type": "integer", "minimum": 0 }
+  },
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "pattern": "^\\S(?:.*\\S)?$" },
+    "text": { "type": "string", "minLength": 1 },
+    "providerId": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "address": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "accountId", "conversationId", "audience"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "accountId": { "$ref": "#/$defs/id" },
+        "conversationId": { "$ref": "#/$defs/id" },
+        "laneId": { "$ref": "#/$defs/id" },
+        "audience": { "enum": ["personal", "shared"] }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "accountId", "externalUserId"],
+      "properties": {
+        "provider": { "$ref": "#/$defs/providerId" },
+        "accountId": { "$ref": "#/$defs/id" },
+        "externalUserId": { "$ref": "#/$defs/id" },
+        "displayName": { "$ref": "#/$defs/id" }
+      }
+    },
+    "media": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["handle", "kind"],
+      "properties": {
+        "handle": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["image", "audio", "video", "file"] },
+        "mimeType": { "$ref": "#/$defs/id" },
+        "sizeBytes": { "type": "integer", "minimum": 1 },
+        "fileName": { "$ref": "#/$defs/id" },
+        "durationMs": { "type": "integer", "minimum": 1 },
+        "widthPx": { "type": "integer", "minimum": 1 },
+        "heightPx": { "type": "integer", "minimum": 1 },
+        "caption": { "$ref": "#/$defs/id" },
+        "transcript": { "$ref": "#/$defs/id" }
+      },
+      "dependentRequired": {
+        "widthPx": ["heightPx"],
+        "heightPx": ["widthPx"]
+      }
+    },
+    "part": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "text"],
+          "properties": {
+            "type": { "const": "text" },
+            "text": { "$ref": "#/$defs/text" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "reference"],
+          "properties": {
+            "type": { "const": "media" },
+            "reference": { "$ref": "#/$defs/media" }
+          }
+        }
+      ]
+    },
+    "content": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "attention", "parts"],
+          "properties": {
+            "type": { "const": "message" },
+            "providerMessageId": { "$ref": "#/$defs/id" },
+            "attention": { "enum": ["addressed", "unaddressed", "unknown"] },
+            "parts": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": { "$ref": "#/$defs/part" }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "token"],
+          "properties": {
+            "type": { "const": "action_selected" },
+            "token": { "$ref": "#/$defs/id" }
+          }
+        }
+      ]
+    }
+  }
+}

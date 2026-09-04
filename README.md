@@ -5,12 +5,11 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 ## Crates
 
 - `mhome-artifact-api`: storage-independent, scoped artifact references.
+- `mhome-app-facade-api`: the canonical public `/app/*` request, response, and event protocol.
 - `mhome-conversation-api`: transport-neutral DTOs for the client-facing conversation protocol.
-- `mhome-messaging-api`: transport-neutral DTOs for messaging provider management.
 - `mhome-machine-identity`: persistent local machine identity derivation and host naming.
 - `mhome-core-api`: shared core wire types and service contracts.
 - `mhome-playground-models`: deterministic playground device models and projections.
-- `mhome-plugin-api`: transport-neutral envelopes, settings primitives, and typed built-in Plugin contracts.
 - `mhome-runtime-paths`: process-safe runtime paths, endpoint names, and daemon ownership checks.
 
 Foundation crates may depend on third-party crates or lower-level crates in this workspace. They
@@ -31,7 +30,7 @@ Crates are versioned independently. A tag named `<package>-v<version>` publishes
 for example `mhome-runtime-paths-v0.1.0`. The tag version must equal that package's manifest version.
 Publication is immutable and restricted to the allowlist in `scripts/publish-tag.sh`.
 
-The artifact, conversation, messaging, and Plugin protocol crates also publish matching, data-only npm
+The artifact, conversation, App Facade, and Core protocol crates also publish matching, data-only npm
 packages for JavaScript consumers' build-time conformance checks. Each npm package contains the
 crate's manifest, JSON Schemas, and fixtures without an executable or browser entry point. Its
 version is identical to the Cargo crate version and is published publicly with provenance from the
@@ -39,14 +38,14 @@ same release tag:
 
 - `@mhome/artifact-protocol`
 - `@mhome/conversation-protocol`
-- `@mhome/messaging-protocol`
-- `@mhome/plugin-protocol`
+- `@mhome/app-facade-protocol`
+- `@mhome/core-protocol`
 
 Run `npm run test:protocol-packages` to verify package staging. To inspect a tarball locally:
 
 ```bash
 staging="$(mktemp -d)/package"
-node scripts/stage-protocol-package.mjs messaging "${staging}"
+node scripts/stage-protocol-package.mjs appFacade "${staging}"
 npm pack "${staging}"
 ```
 

@@ -27,30 +27,33 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       valid: "fixtures",
     }),
   }),
-  messaging: Object.freeze({
-    crateDir: "crates/messaging-api",
-    npmName: "@mhome/messaging-protocol",
-    protocol: "mhome.messaging",
-    manifest: "manifest/targets.v1.json",
+  appFacade: Object.freeze({
+    crateDir: "crates/app-facade-api",
+    npmName: "@mhome/app-facade-protocol",
+    protocol: "mhome.app-facade",
+    manifest: "manifest/app-facade.v1.json",
     schemas: Object.freeze({
+      call: "schema/facade-call.v1.schema.json",
       frame: "schema/messaging-frame.v3.schema.json",
-      normalizedInbound: "schema/normalized-inbound.v4.schema.json",
-      messagingCommands: "schema/messaging-commands.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",
       invalid: "fixtures/invalid",
+    }),
+  }),
+  core: Object.freeze({
+    crateDir: "crates/core-api",
+    npmName: "@mhome/core-protocol",
+    protocol: "mhome.core",
+    manifest: "manifest/core.v1.json",
+    schemas: Object.freeze({
+      normalizedInbound: "schema/normalized-inbound.v4.schema.json",
+      messagingCommands: "schema/messaging-commands.v1.schema.json",
+    }),
+    fixtures: Object.freeze({
       normalizedInbound: "fixtures/normalized-inbound.conformance.json",
       messagingCommands: "fixtures/messaging-commands.conformance.json",
     }),
-  }),
-  plugin: Object.freeze({
-    crateDir: "crates/plugin-api",
-    npmName: "@mhome/plugin-protocol",
-    protocol: "mhome.plugin",
-    manifest: "contract/node-protocol-v1.json",
-    schemas: Object.freeze({}),
-    fixtures: Object.freeze({}),
   }),
 });
 

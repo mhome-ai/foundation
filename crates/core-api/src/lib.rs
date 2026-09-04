@@ -1,6 +1,9 @@
 #![allow(clippy::derivable_impls, clippy::should_implement_trait)]
 
 mod external_rpc;
+pub mod llm;
+pub mod messaging;
+pub mod node;
 mod node_service;
 mod storage;
 
@@ -821,118 +824,6 @@ pub struct AuthenticatedSession {
     pub scope_id: String,
     pub user_id: String,
     pub is_test: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct Image {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub url: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub base64: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mime_type: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub created_at: Option<i64>,
-}
-
-impl Image {
-    pub fn from_base64(base64: impl Into<String>, mime_type: impl Into<String>) -> Self {
-        Self {
-            base64: Some(base64.into()),
-            mime_type: Some(mime_type.into()),
-            ..Self::default()
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct ChatToolCallFunction {
-    pub name: String,
-    pub arguments: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct ChatToolCall {
-    pub id: String,
-    #[serde(rename = "type")]
-    pub call_type: String,
-    pub function: ChatToolCallFunction,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct ChatMessage {
-    pub role: String,
-    pub content: String,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub images: Vec<Image>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub tool_calls: Vec<ChatToolCall>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub tool_call_id: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct LlmGenerationOptions {
-    #[serde(default)]
-    pub temperature: Option<f32>,
-    #[serde(default)]
-    pub max_tokens: Option<u32>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct LlmCompleteRequest {
-    #[serde(default)]
-    pub use_case: Option<String>,
-    #[serde(default)]
-    pub mode: Option<String>,
-    pub messages: Vec<ChatMessage>,
-    #[serde(default)]
-    pub tools: Option<serde_json::Value>,
-    #[serde(default)]
-    pub provider: Option<serde_json::Value>,
-    #[serde(default)]
-    pub response_format: Option<serde_json::Value>,
-    #[serde(default)]
-    pub options: LlmGenerationOptions,
-    #[serde(default)]
-    pub temperature: Option<f32>,
-    #[serde(default)]
-    pub max_tokens: Option<u32>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct LlmRouteInfo {
-    pub provider: String,
-    pub model: String,
-    #[serde(default)]
-    pub mode: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct LlmCompleteResponse {
-    pub content: String,
-    #[serde(default)]
-    pub tool_calls: Vec<ProviderToolCall>,
-    #[serde(default)]
-    pub route: Option<LlmRouteInfo>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ProviderToolCall {
-    pub id: String,
-    pub name: String,
-    pub arguments_json: String,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

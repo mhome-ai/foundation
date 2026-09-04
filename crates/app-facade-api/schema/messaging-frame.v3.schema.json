@@ -1,0 +1,2683 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mhome:app-facade-api:messaging:frame:v3",
+  "title": "mHome messaging management API conformance frame v3",
+  "$ref": "#/$defs/frame",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "providerId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "placement": {
+      "enum": [
+        "local",
+        "cloud"
+      ]
+    },
+    "extension": {
+      "type": "object"
+    },
+    "audience": {
+      "enum": [
+        "personal",
+        "shared"
+      ]
+    },
+    "contentCapability": {
+      "enum": [
+        "text",
+        "markdown",
+        "image",
+        "audio",
+        "video",
+        "file",
+        "action"
+      ]
+    },
+    "deliveryMode": {
+      "enum": [
+        "unrestricted",
+        "session_window"
+      ]
+    },
+    "projectionUnsupportedReason": {
+      "enum": [
+        "no_proactive_delivery",
+        "no_interactive_actions",
+        "session_window_only",
+        "provider_unconfigured"
+      ]
+    },
+    "notificationProjectionLevel": {
+      "enum": [
+        "alert",
+        "notify",
+        "chat"
+      ]
+    },
+    "projectionCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supported"
+      ],
+      "properties": {
+        "supported": {
+          "type": "boolean"
+        },
+        "reason": {
+          "$ref": "#/$defs/projectionUnsupportedReason"
+        }
+      }
+    },
+    "projectionCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "notification",
+        "dialog"
+      ],
+      "properties": {
+        "notification": {
+          "$ref": "#/$defs/projectionCapability"
+        },
+        "dialog": {
+          "$ref": "#/$defs/projectionCapability"
+        }
+      }
+    },
+    "notificationProjectionSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "levels"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "levels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/notificationProjectionLevel"
+          }
+        }
+      }
+    },
+    "dialogProjectionSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "routeProjectionSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "notification",
+        "dialog"
+      ],
+      "properties": {
+        "notification": {
+          "$ref": "#/$defs/notificationProjectionSetting"
+        },
+        "dialog": {
+          "$ref": "#/$defs/dialogProjectionSetting"
+        }
+      }
+    },
+    "notificationProjectionUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "levels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/notificationProjectionLevel"
+          }
+        }
+      }
+    },
+    "dialogProjectionUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "routeProjectionSettingsUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "notification": {
+          "$ref": "#/$defs/notificationProjectionUpdate"
+        },
+        "dialog": {
+          "$ref": "#/$defs/dialogProjectionUpdate"
+        }
+      }
+    },
+    "managementOperation": {
+      "enum": [
+        "provider_account.list",
+        "provider_account.update",
+        "provider_account.delete",
+        "provider_account.test",
+        "provider_account.status",
+        "shared_account_grant.create",
+        "shared_account_grant.delete",
+        "shared_account_grant.list",
+        "route.list",
+        "route.update",
+        "route.delete",
+        "setup.options",
+        "setup.start",
+        "setup.status",
+        "surface.list",
+        "surface.dismiss",
+        "surface.bind_code.create",
+        "actor.link_code.create",
+        "actor.link_claim.status",
+        "actor.link_claim.confirm",
+        "actor.link.list",
+        "actor.link.delete"
+      ]
+    },
+    "frontendProvider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "deprecated",
+        "supportedPlacements"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "supportedPlacements": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/placement"
+          }
+        }
+      }
+    },
+    "providerMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "displayName",
+        "placement",
+        "deprecated",
+        "available",
+        "setupFlow",
+        "audiences",
+        "inboundCapabilities",
+        "outboundCapabilities",
+        "deliveryMode",
+        "projections",
+        "managementOperations",
+        "providerData"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "displayName": {
+          "$ref": "#/$defs/id"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "disabledReason": {
+          "$ref": "#/$defs/id"
+        },
+        "setupFlow": {
+          "$ref": "#/$defs/id"
+        },
+        "audiences": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/audience"
+          }
+        },
+        "inboundCapabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/contentCapability"
+          }
+        },
+        "outboundCapabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/contentCapability"
+          }
+        },
+        "deliveryMode": {
+          "$ref": "#/$defs/deliveryMode"
+        },
+        "projections": {
+          "$ref": "#/$defs/projectionCapabilities"
+        },
+        "managementOperations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/managementOperation"
+          }
+        },
+        "providerData": {
+          "$ref": "#/$defs/extension"
+        }
+      }
+    },
+    "providerAccountOwnership": {
+      "enum": [
+        "system",
+        "user"
+      ]
+    },
+    "providerAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "accountId",
+        "ownership",
+        "enabled",
+        "status",
+        "providerData"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "ownership": {
+          "$ref": "#/$defs/providerAccountOwnership"
+        },
+        "displayName": {
+          "$ref": "#/$defs/id"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/id"
+        },
+        "statusMessage": {
+          "$ref": "#/$defs/id"
+        },
+        "providerData": {
+          "$ref": "#/$defs/extension"
+        }
+      }
+    },
+    "providerStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "enabled",
+        "providerData"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "providerData": {
+          "$ref": "#/$defs/extension"
+        }
+      }
+    },
+    "sharedAccountGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "accountId",
+        "tenantId",
+        "scopeId",
+        "grantedByUserId",
+        "createdAtMs",
+        "updatedAtMs"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "tenantId": {
+          "$ref": "#/$defs/id"
+        },
+        "scopeId": {
+          "$ref": "#/$defs/id"
+        },
+        "grantedByUserId": {
+          "$ref": "#/$defs/id"
+        },
+        "createdAtMs": {
+          "type": "integer"
+        },
+        "updatedAtMs": {
+          "type": "integer"
+        }
+      }
+    },
+    "messagingRoute": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "provider",
+            "placement",
+            "routeId",
+            "accountId",
+            "conversationId",
+            "externalActorId",
+            "tenantId",
+            "userId",
+            "scopeId",
+            "enabled",
+            "projections",
+            "providerData"
+          ],
+          "properties": {
+            "audience": {
+              "const": "personal"
+            },
+            "provider": {
+              "$ref": "#/$defs/providerId"
+            },
+            "placement": {
+              "$ref": "#/$defs/placement"
+            },
+            "routeId": {
+              "$ref": "#/$defs/id"
+            },
+            "accountId": {
+              "$ref": "#/$defs/id"
+            },
+            "conversationId": {
+              "$ref": "#/$defs/id"
+            },
+            "tenantId": {
+              "$ref": "#/$defs/id"
+            },
+            "scopeId": {
+              "$ref": "#/$defs/id"
+            },
+            "displayName": {
+              "$ref": "#/$defs/id"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "projections": {
+              "$ref": "#/$defs/routeProjectionSettings"
+            },
+            "providerData": {
+              "$ref": "#/$defs/extension"
+            },
+            "externalActorId": {
+              "$ref": "#/$defs/id"
+            },
+            "userId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "provider",
+            "placement",
+            "routeId",
+            "accountId",
+            "conversationId",
+            "tenantId",
+            "scopeId",
+            "boundByUserId",
+            "enabled",
+            "projections",
+            "providerData"
+          ],
+          "properties": {
+            "audience": {
+              "const": "shared"
+            },
+            "provider": {
+              "$ref": "#/$defs/providerId"
+            },
+            "placement": {
+              "$ref": "#/$defs/placement"
+            },
+            "routeId": {
+              "$ref": "#/$defs/id"
+            },
+            "accountId": {
+              "$ref": "#/$defs/id"
+            },
+            "conversationId": {
+              "$ref": "#/$defs/id"
+            },
+            "tenantId": {
+              "$ref": "#/$defs/id"
+            },
+            "scopeId": {
+              "$ref": "#/$defs/id"
+            },
+            "displayName": {
+              "$ref": "#/$defs/id"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "projections": {
+              "$ref": "#/$defs/routeProjectionSettings"
+            },
+            "providerData": {
+              "$ref": "#/$defs/extension"
+            },
+            "boundByUserId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
+    },
+    "setupAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/id"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "setupState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "providerData"
+      ],
+      "properties": {
+        "setupId": {
+          "$ref": "#/$defs/id"
+        },
+        "status": {
+          "$ref": "#/$defs/id"
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "action": {
+          "$ref": "#/$defs/setupAction"
+        },
+        "providerData": {
+          "$ref": "#/$defs/extension"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "routeId": {
+          "$ref": "#/$defs/id"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "surfaceState": {
+      "enum": [
+        "pending",
+        "bound",
+        "dismissed"
+      ]
+    },
+    "messagingSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "accountId",
+        "surfaceId",
+        "state",
+        "firstSeenAtMs",
+        "lastSeenAtMs"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "displayName": {
+          "$ref": "#/$defs/id"
+        },
+        "state": {
+          "$ref": "#/$defs/surfaceState"
+        },
+        "scopeId": {
+          "$ref": "#/$defs/id"
+        },
+        "firstSeenAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lastSeenAtMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "challengeCode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "command",
+        "expiresAtMs"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/id"
+        },
+        "command": {
+          "$ref": "#/$defs/id"
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "actorLinkView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "linkId",
+        "provider",
+        "placement",
+        "accountId",
+        "externalUserId",
+        "createdAtMs",
+        "updatedAtMs"
+      ],
+      "properties": {
+        "linkId": {
+          "$ref": "#/$defs/id"
+        },
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "externalUserId": {
+          "$ref": "#/$defs/id"
+        },
+        "displayName": {
+          "$ref": "#/$defs/id"
+        },
+        "createdAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "updatedAtMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mutationBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "success"
+      ],
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "providerListBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "placement",
+        "frontendProviders"
+      ],
+      "properties": {
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "frontendProviders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/frontendProvider"
+          }
+        }
+      }
+    },
+    "providerPlacementBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        }
+      }
+    },
+    "providerAccountUpdateBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "accountId",
+        "data"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "data": {
+          "$ref": "#/$defs/extension"
+        }
+      }
+    },
+    "providerAccountBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "accountId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "providerAccountTestBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "data"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "data": {
+          "$ref": "#/$defs/extension"
+        }
+      }
+    },
+    "sharedAccountGrantBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "accountId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "sharedAccountGrantListBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "routeListBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "audience": {
+          "$ref": "#/$defs/audience"
+        }
+      }
+    },
+    "routeBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "routeId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "routeId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "routeUpdateBody": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "provider",
+            "placement",
+            "routeId"
+          ],
+          "properties": {
+            "audience": {
+              "const": "personal"
+            },
+            "provider": {
+              "$ref": "#/$defs/providerId"
+            },
+            "placement": {
+              "$ref": "#/$defs/placement"
+            },
+            "routeId": {
+              "$ref": "#/$defs/id"
+            },
+            "scopeId": {
+              "$ref": "#/$defs/id"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "projections": {
+              "$ref": "#/$defs/routeProjectionSettingsUpdate"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "provider",
+            "placement",
+            "routeId"
+          ],
+          "properties": {
+            "audience": {
+              "const": "shared"
+            },
+            "provider": {
+              "$ref": "#/$defs/providerId"
+            },
+            "placement": {
+              "$ref": "#/$defs/placement"
+            },
+            "routeId": {
+              "$ref": "#/$defs/id"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "projections": {
+              "$ref": "#/$defs/routeProjectionSettingsUpdate"
+            }
+          }
+        }
+      ]
+    },
+    "setupStartBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "data"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "data": {
+          "$ref": "#/$defs/extension"
+        }
+      }
+    },
+    "setupStatusBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "setupId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "setupId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "surfaceListBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "state": {
+          "$ref": "#/$defs/surfaceState"
+        }
+      }
+    },
+    "surfaceBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "surfaceId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "surfaceBindCodeBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "surfaceId",
+        "scopeId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/id"
+        },
+        "scopeId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "actorLinkCodeBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "accountId",
+        "target"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "target": {
+          "$ref": "#/$defs/actorLinkTarget"
+        }
+      }
+    },
+    "actorLinkListBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "actorLinkDeleteBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "linkId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "linkId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "providerListRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider/list"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/providerListBody"
+        }
+      }
+    },
+    "providerListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider/list"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "providers"
+          ],
+          "properties": {
+            "providers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/providerMetadata"
+              }
+            }
+          }
+        }
+      }
+    },
+    "providerAccountListRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/list"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/providerPlacementBody"
+        }
+      }
+    },
+    "providerAccountListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/list"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "accounts"
+          ],
+          "properties": {
+            "accounts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/providerAccount"
+              }
+            }
+          }
+        }
+      }
+    },
+    "providerAccountUpdateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/update"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/providerAccountUpdateBody"
+        }
+      }
+    },
+    "providerAccountUpdateResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/update"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "account"
+          ],
+          "properties": {
+            "account": {
+              "$ref": "#/$defs/providerAccount"
+            }
+          }
+        }
+      }
+    },
+    "providerAccountDeleteRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/delete"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/providerAccountBody"
+        }
+      }
+    },
+    "providerAccountDeleteResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/delete"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/mutationBody"
+        }
+      }
+    },
+    "providerAccountTestRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/test"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/providerAccountTestBody"
+        }
+      }
+    },
+    "providerAccountTestResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/test"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result"
+          ],
+          "properties": {
+            "result": {
+              "$ref": "#/$defs/extension"
+            }
+          }
+        }
+      }
+    },
+    "providerAccountStatusRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/status"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/providerPlacementBody"
+        }
+      }
+    },
+    "providerAccountStatusResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/provider-account/status"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/providerStatus"
+            }
+          }
+        }
+      }
+    },
+    "sharedAccountGrantCreateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/shared-account-grant/create"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/sharedAccountGrantBody"
+        }
+      }
+    },
+    "sharedAccountGrantCreateResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/shared-account-grant/create"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/mutationBody"
+        }
+      }
+    },
+    "sharedAccountGrantDeleteRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/shared-account-grant/delete"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/sharedAccountGrantBody"
+        }
+      }
+    },
+    "sharedAccountGrantDeleteResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/shared-account-grant/delete"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/mutationBody"
+        }
+      }
+    },
+    "sharedAccountGrantListRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/shared-account-grant/list"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/sharedAccountGrantListBody"
+        }
+      }
+    },
+    "sharedAccountGrantListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/shared-account-grant/list"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "grants"
+          ],
+          "properties": {
+            "grants": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/sharedAccountGrant"
+              }
+            }
+          }
+        }
+      }
+    },
+    "routeListRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/route/list"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/routeListBody"
+        }
+      }
+    },
+    "routeListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/route/list"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routes"
+          ],
+          "properties": {
+            "routes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/messagingRoute"
+              }
+            }
+          }
+        }
+      }
+    },
+    "routeUpdateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/route/update"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/routeUpdateBody"
+        }
+      }
+    },
+    "routeUpdateResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/route/update"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "route"
+          ],
+          "properties": {
+            "route": {
+              "$ref": "#/$defs/messagingRoute"
+            }
+          }
+        }
+      }
+    },
+    "routeDeleteRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/route/delete"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/routeBody"
+        }
+      }
+    },
+    "routeDeleteResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/route/delete"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/mutationBody"
+        }
+      }
+    },
+    "setupOptionsRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/options"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/providerPlacementBody"
+        }
+      }
+    },
+    "setupOptionsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/options"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "options"
+          ],
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/extension"
+            }
+          }
+        }
+      }
+    },
+    "setupStartRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/start"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/setupStartBody"
+        }
+      }
+    },
+    "setupStartResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/start"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "setup"
+          ],
+          "properties": {
+            "setup": {
+              "$ref": "#/$defs/setupState"
+            }
+          }
+        }
+      }
+    },
+    "setupStatusRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/status"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/setupStatusBody"
+        }
+      }
+    },
+    "setupStatusResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/status"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "setup"
+          ],
+          "properties": {
+            "setup": {
+              "$ref": "#/$defs/setupState"
+            }
+          }
+        }
+      }
+    },
+    "surfaceListRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/surface/list"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/surfaceListBody"
+        }
+      }
+    },
+    "surfaceListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/surface/list"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "surfaces"
+          ],
+          "properties": {
+            "surfaces": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/messagingSurface"
+              }
+            }
+          }
+        }
+      }
+    },
+    "surfaceDismissRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/surface/dismiss"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/surfaceBody"
+        }
+      }
+    },
+    "surfaceDismissResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/surface/dismiss"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/mutationBody"
+        }
+      }
+    },
+    "surfaceBindCodeCreateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/surface/bind-code/create"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/surfaceBindCodeBody"
+        }
+      }
+    },
+    "surfaceBindCodeCreateResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/surface/bind-code/create"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "challenge"
+          ],
+          "properties": {
+            "challenge": {
+              "$ref": "#/$defs/challengeCode"
+            }
+          }
+        }
+      }
+    },
+    "actorLinkCodeCreateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link-code/create"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkCodeBody"
+        }
+      }
+    },
+    "actorLinkCodeCreateResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link-code/create"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "challenge"
+          ],
+          "properties": {
+            "challenge": {
+              "$ref": "#/$defs/actorLinkChallenge"
+            }
+          }
+        }
+      }
+    },
+    "actorLinkListRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link/list"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkListBody"
+        }
+      }
+    },
+    "actorLinkListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link/list"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "links"
+          ],
+          "properties": {
+            "links": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/actorLinkView"
+              }
+            }
+          }
+        }
+      }
+    },
+    "actorLinkDeleteRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link/delete"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkDeleteBody"
+        }
+      }
+    },
+    "actorLinkDeleteResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link/delete"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/mutationBody"
+        }
+      }
+    },
+    "requestFrame": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/providerListRequest"
+        },
+        {
+          "$ref": "#/$defs/providerAccountListRequest"
+        },
+        {
+          "$ref": "#/$defs/providerAccountUpdateRequest"
+        },
+        {
+          "$ref": "#/$defs/providerAccountDeleteRequest"
+        },
+        {
+          "$ref": "#/$defs/providerAccountTestRequest"
+        },
+        {
+          "$ref": "#/$defs/providerAccountStatusRequest"
+        },
+        {
+          "$ref": "#/$defs/sharedAccountGrantCreateRequest"
+        },
+        {
+          "$ref": "#/$defs/sharedAccountGrantDeleteRequest"
+        },
+        {
+          "$ref": "#/$defs/sharedAccountGrantListRequest"
+        },
+        {
+          "$ref": "#/$defs/routeListRequest"
+        },
+        {
+          "$ref": "#/$defs/routeUpdateRequest"
+        },
+        {
+          "$ref": "#/$defs/routeDeleteRequest"
+        },
+        {
+          "$ref": "#/$defs/setupOptionsRequest"
+        },
+        {
+          "$ref": "#/$defs/setupStartRequest"
+        },
+        {
+          "$ref": "#/$defs/setupStatusRequest"
+        },
+        {
+          "$ref": "#/$defs/surfaceListRequest"
+        },
+        {
+          "$ref": "#/$defs/surfaceDismissRequest"
+        },
+        {
+          "$ref": "#/$defs/surfaceBindCodeCreateRequest"
+        },
+        {
+          "$ref": "#/$defs/actorLinkCodeCreateRequest"
+        },
+        {
+          "$ref": "#/$defs/actorLinkClaimStatusRequest"
+        },
+        {
+          "$ref": "#/$defs/actorLinkClaimConfirmRequest"
+        },
+        {
+          "$ref": "#/$defs/actorLinkListRequest"
+        },
+        {
+          "$ref": "#/$defs/actorLinkDeleteRequest"
+        }
+      ]
+    },
+    "responseFrame": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/providerListResponse"
+        },
+        {
+          "$ref": "#/$defs/providerAccountListResponse"
+        },
+        {
+          "$ref": "#/$defs/providerAccountUpdateResponse"
+        },
+        {
+          "$ref": "#/$defs/providerAccountDeleteResponse"
+        },
+        {
+          "$ref": "#/$defs/providerAccountTestResponse"
+        },
+        {
+          "$ref": "#/$defs/providerAccountStatusResponse"
+        },
+        {
+          "$ref": "#/$defs/sharedAccountGrantCreateResponse"
+        },
+        {
+          "$ref": "#/$defs/sharedAccountGrantDeleteResponse"
+        },
+        {
+          "$ref": "#/$defs/sharedAccountGrantListResponse"
+        },
+        {
+          "$ref": "#/$defs/routeListResponse"
+        },
+        {
+          "$ref": "#/$defs/routeUpdateResponse"
+        },
+        {
+          "$ref": "#/$defs/routeDeleteResponse"
+        },
+        {
+          "$ref": "#/$defs/setupOptionsResponse"
+        },
+        {
+          "$ref": "#/$defs/setupStartResponse"
+        },
+        {
+          "$ref": "#/$defs/setupStatusResponse"
+        },
+        {
+          "$ref": "#/$defs/surfaceListResponse"
+        },
+        {
+          "$ref": "#/$defs/surfaceDismissResponse"
+        },
+        {
+          "$ref": "#/$defs/surfaceBindCodeCreateResponse"
+        },
+        {
+          "$ref": "#/$defs/actorLinkCodeCreateResponse"
+        },
+        {
+          "$ref": "#/$defs/actorLinkClaimStatusResponse"
+        },
+        {
+          "$ref": "#/$defs/actorLinkClaimConfirmResponse"
+        },
+        {
+          "$ref": "#/$defs/actorLinkClaimEventResponse"
+        },
+        {
+          "$ref": "#/$defs/actorLinkListResponse"
+        },
+        {
+          "$ref": "#/$defs/actorLinkDeleteResponse"
+        }
+      ]
+    },
+    "frame": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/requestFrame"
+        },
+        {
+          "$ref": "#/$defs/responseFrame"
+        }
+      ]
+    },
+    "actorLinkTarget": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience"
+          ],
+          "properties": {
+            "audience": {
+              "const": "personal"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "audience",
+            "surfaceId"
+          ],
+          "properties": {
+            "audience": {
+              "const": "shared"
+            },
+            "surfaceId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
+    },
+    "messagingAddress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "accountId",
+        "conversationId",
+        "audience"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "conversationId": {
+          "$ref": "#/$defs/id"
+        },
+        "laneId": {
+          "$ref": "#/$defs/id"
+        },
+        "audience": {
+          "$ref": "#/$defs/audience"
+        }
+      }
+    },
+    "externalActor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "accountId",
+        "externalUserId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "externalUserId": {
+          "$ref": "#/$defs/id"
+        },
+        "displayName": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "actorLinkCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor",
+        "address",
+        "eventId"
+      ],
+      "properties": {
+        "actor": {
+          "$ref": "#/$defs/externalActor"
+        },
+        "address": {
+          "$ref": "#/$defs/messagingAddress"
+        },
+        "eventId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "actorLinkClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challengeId",
+        "provider",
+        "placement",
+        "accountId",
+        "target",
+        "expiresAtMs",
+        "lifecycle"
+      ],
+      "properties": {
+        "challengeId": {
+          "$ref": "#/$defs/id"
+        },
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "target": {
+          "$ref": "#/$defs/actorLinkTarget"
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/actorLinkClaimLifecycle"
+        }
+      }
+    },
+    "actorLinkChallenge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challengeId",
+        "code",
+        "command",
+        "target",
+        "expiresAtMs"
+      ],
+      "properties": {
+        "challengeId": {
+          "$ref": "#/$defs/id"
+        },
+        "code": {
+          "$ref": "#/$defs/id"
+        },
+        "command": {
+          "$ref": "#/$defs/id"
+        },
+        "target": {
+          "$ref": "#/$defs/actorLinkTarget"
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "actorLinkClaimBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "challengeId"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "challengeId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "actorLinkClaimResponseBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim"
+      ],
+      "properties": {
+        "claim": {
+          "$ref": "#/$defs/actorLinkClaim"
+        }
+      }
+    },
+    "actorLinkClaimStatusRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link-claim/status"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimBody"
+        }
+      }
+    },
+    "actorLinkClaimStatusResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link-claim/status"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimResponseBody"
+        }
+      }
+    },
+    "actorLinkClaimConfirmRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link-claim/confirm"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimBody"
+        }
+      }
+    },
+    "actorLinkClaimConfirmResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link-claim/confirm"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimResponseBody"
+        }
+      }
+    },
+    "actorLinkClaimEventResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/actor/link-claim/changed"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/actorLinkClaimResponseBody"
+        }
+      }
+    },
+    "actorLinkClaimLifecycle": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "issued"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "superseded"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "expired"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "candidate"
+          ],
+          "properties": {
+            "state": {
+              "const": "awaiting_confirmation"
+            },
+            "candidate": {
+              "$ref": "#/$defs/actorLinkCandidate"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "candidate"
+          ],
+          "properties": {
+            "state": {
+              "const": "confirming"
+            },
+            "candidate": {
+              "$ref": "#/$defs/actorLinkCandidate"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "candidate",
+            "linkId"
+          ],
+          "properties": {
+            "state": {
+              "const": "completed"
+            },
+            "candidate": {
+              "$ref": "#/$defs/actorLinkCandidate"
+            },
+            "linkId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
