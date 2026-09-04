@@ -2,9 +2,6 @@
 mod control;
 #[path = "targets.rs"]
 mod targets;
-#[path = "messaging_values.rs"]
-mod values;
-
 pub use control::*;
+pub use core_api::messaging::{ConversationAudience, ExternalActor, MessagingAddress};
 pub use targets::*;
-pub use values::*;

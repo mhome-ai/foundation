@@ -14,6 +14,7 @@ include = ["src/**", "tests/**", "schema/**", "fixtures/**", "manifest/**", "Car
 name = "app_facade_api"
 
 [dependencies]
+core-api = { package = "mhome-core-api", version = "=1.4.0", path = "../core-api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
