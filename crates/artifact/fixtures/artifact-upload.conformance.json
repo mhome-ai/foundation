@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "valid": [
+    {
+      "name": "audio-upload-request",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 10800000,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 3600000
+      }
+    },
+    {
+      "name": "upload-response",
+      "value": {
+        "uploadId": "upload-1",
+        "url": "http://127.0.0.1:3210/artifact/v1/upload/signed-grant",
+        "headers": {
+          "content-type": "audio/ogg",
+          "content-length": "10800000",
+          "x-meow-content-sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "expiresAtUnixMs": 1700000000000
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "uppercase-hash",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 42,
+        "sha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      }
+    },
+    {
+      "name": "non-http-upload-url",
+      "value": {
+        "uploadId": "upload-1",
+        "url": "file:///tmp/upload",
+        "headers": {},
+        "expiresAtUnixMs": 1700000000000
+      }
+    }
+  ]
+}

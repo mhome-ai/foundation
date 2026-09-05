@@ -1,6 +1,6 @@
 [package]
 name = "mhome-core-api"
-version = "1.1.2"
+version = "1.2.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -14,7 +14,7 @@ include = ["src/**", "contract/**", "manifest/**", "schema/**", "fixtures/**", "
 name = "core_api"
 
 [dependencies]
-artifact-api = { package = "mhome-artifact-api", version = "=1.1.1", path = "../artifact" }
+artifact-api = { package = "mhome-artifact-api", version = "=1.2.0", path = "../artifact" }
 conversation-api = { package = "mhome-conversation-api", version = "=1.1.1", path = "../conversation-api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

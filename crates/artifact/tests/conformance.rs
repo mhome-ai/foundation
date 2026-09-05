@@ -1,6 +1,6 @@
 use artifact_api::{
-    ArtifactKind, ArtifactReference, PutArtifactRequest, PutArtifactResponse,
-    ResolveArtifactRequest, ResolveArtifactResponse,
+    ArtifactKind, ArtifactReference, PrepareArtifactUploadRequest, PrepareArtifactUploadResponse,
+    PutArtifactRequest, PutArtifactResponse, ResolveArtifactRequest, ResolveArtifactResponse,
 };
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::Deserialize;
@@ -54,6 +54,8 @@ struct PutFixture {
     valid: Vec<ResolveCase>,
     invalid: Vec<ResolveCase>,
 }
+
+type UploadFixture = PutFixture;
 
 #[test]
 fn reference_fixture_matches_rust_contract_and_schema() {
@@ -170,6 +172,32 @@ fn put_fixture_matches_rust_contract_and_schema() {
         } else {
             let request: PutArtifactRequest = serde_json::from_value(case.value).unwrap();
             request.decode().unwrap();
+        }
+    }
+    for case in fixture.invalid {
+        assert!(!validator.is_valid(&case.value), "{} must fail", case.name);
+    }
+}
+
+#[test]
+fn upload_fixture_matches_rust_contract_and_schema() {
+    let fixture: UploadFixture =
+        serde_json::from_str(include_str!("../fixtures/artifact-upload.conformance.json")).unwrap();
+    assert_eq!(fixture.schema_version, 1);
+
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-upload.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+
+    for case in fixture.valid {
+        assert!(validator.is_valid(&case.value), "{} must match", case.name);
+        if case.value.get("uploadId").is_some() {
+            let response: PrepareArtifactUploadResponse =
+                serde_json::from_value(case.value).unwrap();
+            response.validate().unwrap();
+        } else {
+            let request: PrepareArtifactUploadRequest = serde_json::from_value(case.value).unwrap();
+            request.validate().unwrap();
         }
     }
     for case in fixture.invalid {

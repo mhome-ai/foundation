@@ -19,12 +19,30 @@ pub struct DeviceRequest {
     pub device_id: String,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum AudioEndpointDirection {
+    Input,
+    Output,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum MicrophonePermission {
+    NotDetermined,
+    Granted,
+    Denied,
+    Restricted,
+    Unavailable,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct AudioBridgeDevice {
     pub device_id: String,
     pub display_name: String,
     pub transport: String,
+    pub direction: AudioEndpointDirection,
     pub online: bool,
 }
 
@@ -34,11 +52,13 @@ pub struct AudioBridgeCandidate {
     pub device_id: String,
     pub display_name: String,
     pub transport: String,
+    pub direction: AudioEndpointDirection,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceSnapshot {
+    pub microphone_permission: MicrophonePermission,
     #[serde(default)]
     pub devices: Vec<AudioBridgeDevice>,
     #[serde(default)]
@@ -62,6 +82,7 @@ mod tests {
             device_id: "device-1".to_string(),
             display_name: "Living Room Speaker".to_string(),
             transport: "bluetooth".to_string(),
+            direction: AudioEndpointDirection::Output,
             online: true,
         })
         .expect("serialize device");
@@ -72,6 +93,7 @@ mod tests {
     #[test]
     fn device_snapshot_is_the_direct_response_payload() {
         let value = serde_json::to_value(DeviceSnapshot {
+            microphone_permission: MicrophonePermission::NotDetermined,
             devices: Vec::new(),
             candidates: Vec::new(),
         })

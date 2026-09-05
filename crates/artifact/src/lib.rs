@@ -7,11 +7,16 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 mod put;
 mod resolve;
+mod upload;
 
 pub use put::{PutArtifactRequest, PutArtifactResponse, PutArtifactValidationError};
 
 pub use resolve::{
     ArtifactDelivery, ResolveArtifactRequest, ResolveArtifactResponse, ResolveArtifactResponseError,
+};
+pub use upload::{
+    PrepareArtifactUploadRequest, PrepareArtifactUploadResponse,
+    PrepareArtifactUploadValidationError,
 };
 
 /// Prefix of the version 1 artifact URI format.

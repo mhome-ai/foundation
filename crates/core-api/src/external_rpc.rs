@@ -6,8 +6,9 @@ use crate::{
 };
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 10;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 11;
 pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
+pub const ARTIFACT_UPLOAD_PATH_PREFIX: &str = "/artifact/v1/upload/";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExternalCoreRequest {
@@ -42,6 +43,8 @@ pub enum ExternalCoreMethod {
     PutArtifact,
     OpenArtifact,
     AuthorizeArtifactRead,
+    AuthorizeArtifactUpload,
+    CommitArtifactUpload,
     DeviceIdentity,
     CommissionFingerprint,
     CommissionPublicKeyBase64,
@@ -169,6 +172,7 @@ pub enum ExternalCoreEventKind {
     ServiceAppFacadeRequest,
     ScopeOwnedDataPurgeRequested,
     ArtifactDeliveryProjectionRequested,
+    ArtifactUploadProjectionRequested,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -200,6 +204,18 @@ pub struct ExternalAuthorizeArtifactReadRequest {
     pub grant: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ExternalAuthorizeArtifactUploadRequest {
+    pub grant: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ExternalCommitArtifactUploadRequest {
+    pub grant: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExternalArtifactReadDescriptor {
@@ -216,6 +232,20 @@ pub struct ExternalArtifactReadDescriptor {
     pub sha256: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ExternalArtifactUploadDescriptor {
+    pub upload_id: String,
+    pub path: String,
+    pub kind: artifact_api::ArtifactKind,
+    pub mime_type: String,
+    pub size_bytes: u64,
+    pub sha256: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duration_millis: Option<u64>,
+    pub expires_at_unix_ms: u64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArtifactDeliveryProjectionRequest {
@@ -227,6 +257,20 @@ pub struct ArtifactDeliveryProjectionRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArtifactDeliveryProjectionResponse {
+    pub url: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArtifactUploadProjectionRequest {
+    pub grant: String,
+    pub expires_at_unix_ms: u64,
+    pub client_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArtifactUploadProjectionResponse {
     pub url: String,
 }
 
@@ -351,7 +395,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn external_events_use_the_v10_wire_shape() {
+    fn external_events_use_the_v11_wire_shape() {
         let event = ExternalCoreEvent {
             event_id: "event-1".to_string(),
             kind: ExternalCoreEventKind::ScopeOwnedDataPurgeRequested,
@@ -364,7 +408,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 10);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 11);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");

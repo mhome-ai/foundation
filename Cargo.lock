@@ -685,7 +685,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-artifact-api"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "base64",
  "jsonschema",
@@ -705,7 +705,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.1.2"
+version = "1.2.0"
 dependencies = [
  "jsonschema",
  "mhome-artifact-api",
