@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.3.1",
+  "contractVersion": "1.4.1",
   "protocols": {
     "llm": {
       "completeTarget": "/llm/complete"
@@ -32,6 +32,26 @@
         "providerAdd": "provider.add",
         "providerEdit": "provider.edit"
       }
+    },
+    "audioBridgePlugin": {
+      "version": "v1",
+      "nodeType": "audiobridge",
+      "appTargetPrefix": "/app/plugin/audiobridge/",
+      "runtimeTargetPrefix": "/audiobridge/app/",
+      "routes": {
+        "deviceSnapshot": "device/snapshot",
+        "deviceRefresh": "device/refresh",
+        "devicePair": "device/pair",
+        "deviceUnpair": "device/unpair",
+        "deviceTest": "device/test",
+        "deviceListenSet": "device/listen",
+        "smartSpeakerSnapshot": "smart-speaker/snapshot",
+        "smartSpeakerCreate": "smart-speaker/create",
+        "smartSpeakerUpdate": "smart-speaker/update",
+        "smartSpeakerRemove": "smart-speaker/remove"
+      },
+      "agentAudioSubmitTarget": "/app/agent/audio/submit",
+      "agentReplyTarget": "/audiobridge/agent/reply"
     },
     "messaging": {
       "normalizedInboundSchema": "schema/normalized-inbound.v4.schema.json",
