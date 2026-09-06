@@ -17,6 +17,7 @@
   "llm": {
     "runtimeTargetPrefix": "/llm/app/",
     "completeTarget": "/llm/complete",
+    "ttsSynthesizeTarget": "/llm/tts",
     "modelImportUploadPathPrefix": "/llm/model/import/upload"
   },
   "audioBridge": {

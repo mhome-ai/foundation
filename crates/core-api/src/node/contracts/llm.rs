@@ -17,6 +17,7 @@ pub const MODEL_IMPORT_UPLOAD_PATH_PREFIX: &str = "/llm/model/import/upload";
 pub const MODEL_IMPORT_OFFSET_HEADER: &str = "x-upload-offset";
 pub const MODEL_IMPORT_CHUNK_SHA256_HEADER: &str = "x-chunk-sha256";
 pub const MODEL_DELETE: &str = "model/delete";
+pub const TTS_SYNTHESIZE_TARGET: &str = "/llm/tts";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -141,6 +142,49 @@ pub struct ModelImportChunkResponse {
     pub detail: Option<String>,
 }
 
+/// Provider-neutral speech synthesis request sent directly to an LLM Node.
+///
+/// `instructions`, `voice`, and `format` are optional preferences. A backend
+/// may ignore a preference it cannot implement; `text` is the only semantic
+/// input every TTS backend must support. `mode` deliberately does not cross
+/// this boundary because it is a MeowCore routing concern.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct TtsSynthesizeRequest {
+    pub text: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instructions: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub voice: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub format: Option<String>,
+}
+
+/// Speech synthesis response returned directly by an LLM Node.
+///
+/// Version 1 transports short audio inline as base64. The effective model,
+/// voice, format, and MIME type are returned so callers need not infer which
+/// optional request preferences a backend applied.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct TtsSynthesizeResponse {
+    pub ok: bool,
+    pub model: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audio_base64: Option<String>,
+    pub mime_type: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub voice: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub format: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -170,5 +214,25 @@ mod tests {
         assert!(ModelImportState::Cancelled.is_terminal());
         assert!(ModelImportState::Error.is_terminal());
         assert!(!ModelImportState::Uploading.is_terminal());
+    }
+
+    #[test]
+    fn tts_contract_keeps_routing_mode_out_and_instructions_optional() {
+        let request = TtsSynthesizeRequest {
+            text: "Hello".to_string(),
+            model: Some("kokoro:v1.0-en".to_string()),
+            instructions: Some("Speak warmly".to_string()),
+            voice: None,
+            format: Some("wav".to_string()),
+        };
+        let value = serde_json::to_value(&request).expect("serialize TTS request");
+        assert_eq!(value["instructions"], "Speak warmly");
+        assert!(value.get("mode").is_none());
+
+        let minimal: TtsSynthesizeRequest =
+            serde_json::from_value(serde_json::json!({"text": "Hello"}))
+                .expect("deserialize minimal TTS request");
+        assert_eq!(minimal.text, "Hello");
+        assert!(minimal.instructions.is_none());
     }
 }

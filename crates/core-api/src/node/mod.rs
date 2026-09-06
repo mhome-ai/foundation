@@ -73,5 +73,9 @@ mod tests {
             manifest["llm"]["completeTarget"],
             crate::llm::COMPLETE_TARGET
         );
+        assert_eq!(
+            manifest["llm"]["ttsSynthesizeTarget"],
+            contracts::llm::TTS_SYNTHESIZE_TARGET
+        );
     }
 }
