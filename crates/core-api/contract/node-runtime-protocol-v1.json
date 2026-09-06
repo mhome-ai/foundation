@@ -5,6 +5,11 @@
     "requestFields": ["version", "payload"],
     "responseFields": ["version", "data"]
   },
+  "status": {
+    "contract": "mhome.node.status.v1",
+    "queryTarget": "/status",
+    "changedTarget": "/status/changed"
+  },
   "settings": {
     "changedTarget": "/node/settings/changed",
     "routes": ["settings/status", "settings/update", "settings/revert", "settings/retry"]

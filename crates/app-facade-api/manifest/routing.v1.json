@@ -25,11 +25,8 @@
     "hubPrefixes": [
       "/app/plugin/",
       "/app/interaction-flow/",
-      "/app/object-storage/"
-    ],
-    "hostTargets": [
-      "/app/runtime/status/list",
-      "/app/runtime/status/changed"
+      "/app/object-storage/",
+      "/app/runtime/"
     ],
     "requestPlacementPrefixes": [
       "/app/messaging/"

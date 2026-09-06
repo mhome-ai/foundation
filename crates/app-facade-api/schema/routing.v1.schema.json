@@ -39,7 +39,6 @@
         "cloudTargets",
         "scopeModeTargets",
         "hubPrefixes",
-        "hostTargets",
         "requestPlacementPrefixes",
         "cloudRelayTargets"
       ],
@@ -48,7 +47,6 @@
         "cloudTargets": { "$ref": "#/$defs/targetList" },
         "scopeModeTargets": { "$ref": "#/$defs/targetList" },
         "hubPrefixes": { "$ref": "#/$defs/targetList" },
-        "hostTargets": { "$ref": "#/$defs/targetList" },
         "requestPlacementPrefixes": { "$ref": "#/$defs/targetList" },
         "cloudRelayTargets": { "$ref": "#/$defs/targetList" }
       }

@@ -23,11 +23,7 @@ const HUB_PREFIXES: &[&str] = &[
     "/app/plugin/",
     "/app/interaction-flow/",
     "/app/object-storage/",
-];
-
-const HOST_TARGETS: &[&str] = &[
-    "/app/runtime/status/list",
-    "/app/runtime/status/changed",
+    "/app/runtime/",
 ];
 
 const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[

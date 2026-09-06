@@ -9,9 +9,6 @@ pub const STATUS_CHANGED_TARGET: &str = "/app/runtime/status/changed";
 pub enum StatusResourceType {
     NodeInstance,
     NodeRuntime,
-    ManagedService,
-    HubConnection,
-    ScopeConnection,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -44,4 +41,23 @@ pub struct StatusListResponse {
     #[serde(default)]
     pub resources: Vec<StatusPayload>,
     pub observed_at_ms: i64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn public_runtime_resources_are_only_hub_normalized_node_state() {
+        assert_eq!(
+            serde_json::to_value(StatusResourceType::NodeInstance).unwrap(),
+            "nodeInstance"
+        );
+        assert_eq!(
+            serde_json::to_value(StatusResourceType::NodeRuntime).unwrap(),
+            "nodeRuntime"
+        );
+        assert!(serde_json::from_str::<StatusResourceType>("\"hubConnection\"").is_err());
+        assert!(serde_json::from_str::<StatusResourceType>("\"managedService\"").is_err());
+    }
 }

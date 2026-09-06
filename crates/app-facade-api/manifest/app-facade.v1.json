@@ -26,6 +26,8 @@
       "extensionPriority": "after_exact"
     },
     "runtime": {
+      "contract": "mhome.runtime.status.v1",
+      "resourceTypes": ["nodeInstance", "nodeRuntime"],
       "requestTargets": ["/app/runtime/status/list"],
       "eventTargets": ["/app/runtime/status/changed"]
     },

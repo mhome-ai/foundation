@@ -12,14 +12,12 @@ const RULE_FIELDS = Object.freeze([
   "cloudTargets",
   "scopeModeTargets",
   "hubPrefixes",
-  "hostTargets",
   "requestPlacementPrefixes",
   "cloudRelayTargets",
 ]);
 const EXACT_FIELDS = Object.freeze([
   "cloudTargets",
   "scopeModeTargets",
-  "hostTargets",
   "cloudRelayTargets",
 ]);
 const PREFIX_FIELDS = Object.freeze([
@@ -111,10 +109,6 @@ ${rules.scopeModeTargets.map((value) => `    ${rustString(value)},`).join("\n")}
 
 const HUB_PREFIXES: &[&str] = &[
 ${rules.hubPrefixes.map((value) => `    ${rustString(value)},`).join("\n")}
-];
-
-const HOST_TARGETS: &[&str] = &[
-${rules.hostTargets.map((value) => `    ${rustString(value)},`).join("\n")}
 ];
 
 const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[

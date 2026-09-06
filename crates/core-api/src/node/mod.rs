@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod contracts;
 pub mod settings;
+pub mod status;
 
 pub const V1: &str = "v1";
 pub const STATUS_CONTRACT: &str = "mhome.node.status.v1";
@@ -58,6 +59,12 @@ mod tests {
     fn manifest_matches_internal_targets() {
         let manifest: serde_json::Value = serde_json::from_str(PROTOCOL_V1_MANIFEST).unwrap();
         assert_eq!(manifest["version"], V1);
+        assert_eq!(manifest["status"]["contract"], STATUS_CONTRACT);
+        assert_eq!(manifest["status"]["queryTarget"], status::STATUS_TARGET);
+        assert_eq!(
+            manifest["status"]["changedTarget"],
+            status::STATUS_CHANGED_TARGET
+        );
         assert_eq!(
             manifest["settings"]["changedTarget"],
             settings::CHANGED_TARGET

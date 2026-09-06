@@ -13,9 +13,6 @@ pub enum ExecutionSelector {
     ScopeMode,
     /// Execute on the selected Space Hub, independent of Space mode.
     Hub,
-    /// Execute on the native Host that contains the selected Hub/Core and Nodes.
-    /// The Host and Hub may be reached through the same physical connection.
-    Host,
     /// Read `input.placement` from the canonical [`crate::FacadeCall`].
     RequestPlacement,
 }
@@ -50,10 +47,6 @@ const RELAYABLE_HUB: RoutePolicy = RoutePolicy {
     execution: ExecutionSelector::Hub,
     relay: RelayPolicy::CloudRelayAllowed,
 };
-const DIRECT_HOST: RoutePolicy = RoutePolicy {
-    execution: ExecutionSelector::Host,
-    relay: RelayPolicy::DirectOnly,
-};
 const REQUEST_PLACEMENT: RoutePolicy = RoutePolicy {
     execution: ExecutionSelector::RequestPlacement,
     relay: RelayPolicy::DirectOnly,
@@ -77,9 +70,6 @@ pub fn route_policy_for_target(target: &str) -> Option<RoutePolicy> {
     }
     if CLOUD_TARGETS.contains(&target) {
         return Some(DIRECT_CLOUD);
-    }
-    if HOST_TARGETS.contains(&target) {
-        return Some(DIRECT_HOST);
     }
     if CLOUD_RELAY_TARGETS.contains(&target) {
         return Some(RELAYABLE_HUB);
@@ -147,7 +137,7 @@ mod tests {
         );
         assert_eq!(
             route_policy_for_target("/app/runtime/status/list"),
-            Some(DIRECT_HOST)
+            Some(DIRECT_HUB)
         );
         assert_eq!(
             route_policy_for_target("/app/device/list"),
