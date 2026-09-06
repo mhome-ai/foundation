@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/app-facade-routing.v1.schema.json",
+  "title": "MeowLink App Facade routing contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest",
+    "contractVersion",
+    "targetPrefix",
+    "default",
+    "matching",
+    "placementJsonPointer",
+    "rules"
+  ],
+  "properties": {
+    "manifest": { "const": "mhome.app-facade.routing.v1" },
+    "contractVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "targetPrefix": { "const": "/app/" },
+    "default": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["execution", "relay"],
+      "properties": {
+        "execution": { "const": "scopeMode" },
+        "relay": { "const": "directOnly" }
+      }
+    },
+    "matching": { "const": "exactBeforePrefix" },
+    "placementJsonPointer": { "const": "/input/placement" },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cloudPrefixes",
+        "cloudTargets",
+        "scopeModeTargets",
+        "hubPrefixes",
+        "hostTargets",
+        "requestPlacementPrefixes",
+        "cloudRelayTargets"
+      ],
+      "properties": {
+        "cloudPrefixes": { "$ref": "#/$defs/targetList" },
+        "cloudTargets": { "$ref": "#/$defs/targetList" },
+        "scopeModeTargets": { "$ref": "#/$defs/targetList" },
+        "hubPrefixes": { "$ref": "#/$defs/targetList" },
+        "hostTargets": { "$ref": "#/$defs/targetList" },
+        "requestPlacementPrefixes": { "$ref": "#/$defs/targetList" },
+        "cloudRelayTargets": { "$ref": "#/$defs/targetList" }
+      }
+    }
+  },
+  "$defs": {
+    "targetList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^/app/"
+      }
+    }
+  }
+}

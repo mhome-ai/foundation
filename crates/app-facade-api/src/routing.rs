@@ -2,7 +2,8 @@
 //!
 //! This module describes where an App Facade operation is authoritative. It
 //! deliberately does not describe sockets, connection fallback, authentication,
-//! or Lion's legacy controller routing.
+//! or Lion's legacy controller routing. Route data is generated from
+//! `manifest/routing.v1.json`, the language-neutral source of truth.
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExecutionSelector {
@@ -12,7 +13,8 @@ pub enum ExecutionSelector {
     ScopeMode,
     /// Execute on the selected Space Hub, independent of Space mode.
     Hub,
-    /// Execute on the local application host/runtime.
+    /// Execute on the native Host that contains the selected Hub/Core and Nodes.
+    /// The Host and Hub may be reached through the same physical connection.
     Host,
     /// Read `input.placement` from the canonical [`crate::FacadeCall`].
     RequestPlacement,
@@ -57,31 +59,7 @@ const REQUEST_PLACEMENT: RoutePolicy = RoutePolicy {
     relay: RelayPolicy::DirectOnly,
 };
 
-/// Exact Cloud-owned operations outside the Cloud-owned `/app/scope/*` and
-/// `/app/inspire/*` domains.
-pub const CLOUD_TARGETS: &[&str] = &[
-    "/app/agent/context/get",
-    "/app/credit/record",
-    "/app/system/feedback/submit",
-    "/app/timeline/entity/latest/list",
-];
-
-/// Hub management operations for which Lion provides a transport relay.
-///
-/// Data-plane operations, setup mutations, and plugin extensions are
-/// intentionally absent: their credentials and endpoints must remain on the
-/// direct Hub path.
-pub const CLOUD_RELAY_TARGETS: &[&str] = &[
-    crate::plugin::CANDIDATE_LIST_TARGET,
-    crate::plugin::DETAIL_GET_TARGET,
-    crate::plugin::INSTALLED_LIST_TARGET,
-    "/app/object-storage/overview",
-    "/app/object-storage/folders/create",
-    "/app/object-storage/folders/get",
-    "/app/object-storage/folders/update",
-    "/app/object-storage/folders/list",
-    "/app/object-storage/settings/update",
-];
+include!("routing.generated.rs");
 
 /// Resolve routing metadata for a canonical App Facade target.
 ///
@@ -89,36 +67,37 @@ pub const CLOUD_RELAY_TARGETS: &[&str] = &[
 /// targets intentionally receive the normal Space-mode policy; protocol
 /// support remains the receiving facade's responsibility.
 pub fn route_policy_for_target(target: &str) -> Option<RoutePolicy> {
-    if !target.starts_with("/app/") {
+    if !target.starts_with(TARGET_PREFIX) {
         return None;
     }
 
     // Every exact exception is resolved before any domain prefix.
-    if target == "/app/scope/context/get" {
+    if SCOPE_MODE_TARGETS.contains(&target) {
         return Some(DIRECT_SCOPE);
     }
     if CLOUD_TARGETS.contains(&target) {
         return Some(DIRECT_CLOUD);
     }
-    if target == crate::runtime::STATUS_LIST_TARGET
-        || target == crate::runtime::STATUS_CHANGED_TARGET
-    {
+    if HOST_TARGETS.contains(&target) {
         return Some(DIRECT_HOST);
     }
     if CLOUD_RELAY_TARGETS.contains(&target) {
         return Some(RELAYABLE_HUB);
     }
 
-    if target.starts_with("/app/messaging/") {
+    if REQUEST_PLACEMENT_PREFIXES
+        .iter()
+        .any(|prefix| target.starts_with(prefix))
+    {
         return Some(REQUEST_PLACEMENT);
     }
-    if target.starts_with("/app/plugin/")
-        || target.starts_with("/app/interaction-flow/")
-        || target.starts_with("/app/object-storage/")
-    {
+    if HUB_PREFIXES.iter().any(|prefix| target.starts_with(prefix)) {
         return Some(DIRECT_HUB);
     }
-    if target.starts_with("/app/scope/") || target.starts_with("/app/inspire/") {
+    if CLOUD_PREFIXES
+        .iter()
+        .any(|prefix| target.starts_with(prefix))
+    {
         return Some(DIRECT_CLOUD);
     }
 

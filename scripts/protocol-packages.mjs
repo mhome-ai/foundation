@@ -42,6 +42,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       call: "schema/facade-call.v1.schema.json",
       frame: "schema/messaging-frame.v3.schema.json",
       interactionFlow: "schema/interaction-flow-app.v1.schema.json",
+      routing: "schema/routing.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",

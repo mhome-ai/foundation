@@ -426,6 +426,13 @@ fn routing_manifest_matches_rust_policy() {
 
     let manifest: Value =
         serde_json::from_str(include_str!("../manifest/routing.v1.json")).unwrap();
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/routing.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    assert!(
+        validator.is_valid(&manifest),
+        "routing manifest does not conform to its public schema"
+    );
     let rules = &manifest["rules"];
     let strings = |field: &str| {
         rules[field]

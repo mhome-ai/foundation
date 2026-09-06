@@ -23,12 +23,15 @@ the hidden graph.
 
 ## Routing contract
 
-`routing::route_policy_for_target` is the canonical client-side routing policy
-for the new `/app/*` facade. Ordinary operations follow the active Space mode.
-Only exceptional domains declare a fixed Cloud, Hub, Host, or request-placement
+`manifest/routing.v1.json` is the canonical client-side routing policy for the
+new `/app/*` facade. Ordinary operations follow the active Space mode. Only
+exceptional domains declare a fixed Cloud, Hub, Host, or request-placement
 executor. Relay permission is separate from execution authority so a client
 cannot silently turn every Hub request into a cloud-proxied request.
 
-The matching data is also published as `manifest/routing.v1.json` for non-Rust
-clients. Lion's legacy controller annotations and non-`/app/*` protocols are
-outside this contract.
+The checked-in Rust table is generated from that manifest, and non-Rust clients
+consume the same manifest from the npm protocol package. `Host` means the
+native Host component that contains and supervises a selected Hub/Core and its
+Nodes. Host-owned and Hub-owned operations may share one physical connection;
+the selector identifies the executor, not a socket. Lion's legacy controller
+annotations and non-`/app/*` protocols are outside this contract.

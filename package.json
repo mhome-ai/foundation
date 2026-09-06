@@ -2,7 +2,9 @@
   "name": "mhome-foundation-release-tools",
   "private": true,
   "scripts": {
+    "generate:app-facade-routing": "node scripts/generate-app-facade-routing.mjs --write",
     "stage:protocol": "node scripts/stage-protocol-package.mjs",
-    "test:protocol-packages": "node --test scripts/tests/*.test.mjs"
+    "test:protocol-packages": "node --test scripts/tests/*.test.mjs",
+    "verify:app-facade-routing": "node scripts/generate-app-facade-routing.mjs --check"
   }
 }

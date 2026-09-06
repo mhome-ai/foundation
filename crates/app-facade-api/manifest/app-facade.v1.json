@@ -3,6 +3,7 @@
   "contractVersion": "1.2.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
+  "routingSchema": "schema/routing.v1.schema.json",
   "domains": {
     "messaging": {
       "targets": "manifest/targets.v1.json"
@@ -26,8 +27,7 @@
     },
     "runtime": {
       "requestTargets": ["/app/runtime/status/list"],
-      "eventTargets": ["/app/runtime/status/changed"],
-      "authority": "host"
+      "eventTargets": ["/app/runtime/status/changed"]
     },
     "interactionFlow": {
       "schema": "schema/interaction-flow-app.v1.schema.json",
