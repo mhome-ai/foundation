@@ -943,11 +943,12 @@ pub enum ServiceCoreInput {
         node_type: String,
         node_id: String,
     },
-    RuntimeStatusChanged {
-        tenant_id: String,
-        scope_id: String,
-        target: String,
-        payload: String,
+    /// Reports status from an already authenticated Node transport. Core uses
+    /// `connection_key` to bind the untrusted payload to the authoritative
+    /// Node session before accepting it into the Hub-owned status projection.
+    NodeStatusObserved {
+        connection_key: String,
+        status: node::status::StatusPayload,
     },
     ClientResponse {
         message: MwsMessage,

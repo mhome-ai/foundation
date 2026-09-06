@@ -32,6 +32,17 @@ pub struct StatusPayload {
     pub snapshot: Option<serde_json::Value>,
 }
 
+/// Optional filters for the Hub-owned runtime status projection. An empty
+/// request lists every Node instance and logical Node runtime in the scope.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct StatusListRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_type: Option<StatusResourceType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource_id: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct StatusListResponse {
@@ -59,5 +70,12 @@ mod tests {
         );
         assert!(serde_json::from_str::<StatusResourceType>("\"hubConnection\"").is_err());
         assert!(serde_json::from_str::<StatusResourceType>("\"managedService\"").is_err());
+    }
+
+    #[test]
+    fn empty_status_list_request_has_no_filters() {
+        let request: StatusListRequest = serde_json::from_str("{}").unwrap();
+        assert_eq!(request, StatusListRequest::default());
+        assert_eq!(serde_json::to_string(&request).unwrap(), "{}");
     }
 }
