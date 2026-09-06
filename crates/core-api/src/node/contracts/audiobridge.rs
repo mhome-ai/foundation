@@ -21,9 +21,9 @@ pub struct DeviceRequest {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
-pub enum AudioEndpointDirection {
-    Input,
-    Output,
+pub enum AudioDeviceFeature {
+    Speaker,
+    Microphone,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -42,7 +42,7 @@ pub struct AudioBridgeDevice {
     pub device_id: String,
     pub display_name: String,
     pub transport: String,
-    pub direction: AudioEndpointDirection,
+    pub features: Vec<AudioDeviceFeature>,
     pub online: bool,
 }
 
@@ -52,7 +52,7 @@ pub struct AudioBridgeCandidate {
     pub device_id: String,
     pub display_name: String,
     pub transport: String,
-    pub direction: AudioEndpointDirection,
+    pub features: Vec<AudioDeviceFeature>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -82,12 +82,16 @@ mod tests {
             device_id: "device-1".to_string(),
             display_name: "Living Room Speaker".to_string(),
             transport: "bluetooth".to_string(),
-            direction: AudioEndpointDirection::Output,
+            features: vec![AudioDeviceFeature::Speaker, AudioDeviceFeature::Microphone],
             online: true,
         })
         .expect("serialize device");
         assert!(value.get("platformKey").is_none());
         assert!(value.get("endpointId").is_none());
+        assert_eq!(
+            value["features"],
+            serde_json::json!(["speaker", "microphone"])
+        );
     }
 
     #[test]
