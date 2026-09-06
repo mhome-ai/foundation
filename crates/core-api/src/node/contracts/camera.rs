@@ -10,6 +10,18 @@ pub const PROVIDER_REFRESH: &str = "provider/refresh";
 pub const PROVIDER_REMOVE: &str = "provider/remove";
 pub const WATCH_STATUS: &str = "watch/status";
 pub const WATCH_SET: &str = "watch/set";
+pub const APP_DEVICE_LIST_TARGET: &str = "/app/plugin/camera/device/list";
+pub const APP_MANAGEMENT_SNAPSHOT_TARGET: &str = "/app/plugin/camera/management/snapshot";
+pub const APP_PROVIDER_REFRESH_TARGET: &str = "/app/plugin/camera/provider/refresh";
+pub const APP_PROVIDER_REMOVE_TARGET: &str = "/app/plugin/camera/provider/remove";
+pub const APP_WATCH_STATUS_TARGET: &str = "/app/plugin/camera/watch/status";
+pub const APP_WATCH_SET_TARGET: &str = "/app/plugin/camera/watch/set";
+pub const RUNTIME_DEVICE_LIST_TARGET: &str = "/camera/app/device/list";
+pub const RUNTIME_MANAGEMENT_SNAPSHOT_TARGET: &str = "/camera/app/management/snapshot";
+pub const RUNTIME_PROVIDER_REFRESH_TARGET: &str = "/camera/app/provider/refresh";
+pub const RUNTIME_PROVIDER_REMOVE_TARGET: &str = "/camera/app/provider/remove";
+pub const RUNTIME_WATCH_STATUS_TARGET: &str = "/camera/app/watch/status";
+pub const RUNTIME_WATCH_SET_TARGET: &str = "/camera/app/watch/set";
 pub const PROVIDER_ADD_FLOW: &str = "provider.add";
 pub const PROVIDER_EDIT_FLOW: &str = "provider.edit";
 pub const SETTINGS_STATUS: &str = crate::node::settings::STATUS;
@@ -165,6 +177,54 @@ mod tests {
         assert_eq!(camera["routes"]["watchSet"], WATCH_SET);
         assert_eq!(camera["flows"]["providerAdd"], PROVIDER_ADD_FLOW);
         assert_eq!(camera["flows"]["providerEdit"], PROVIDER_EDIT_FLOW);
+        assert_eq!(
+            APP_DEVICE_LIST_TARGET,
+            format!("{APP_TARGET_PREFIX}{DEVICE_LIST}")
+        );
+        assert_eq!(
+            APP_MANAGEMENT_SNAPSHOT_TARGET,
+            format!("{APP_TARGET_PREFIX}{MANAGEMENT_SNAPSHOT}")
+        );
+        assert_eq!(
+            APP_PROVIDER_REFRESH_TARGET,
+            format!("{APP_TARGET_PREFIX}{PROVIDER_REFRESH}")
+        );
+        assert_eq!(
+            APP_PROVIDER_REMOVE_TARGET,
+            format!("{APP_TARGET_PREFIX}{PROVIDER_REMOVE}")
+        );
+        assert_eq!(
+            APP_WATCH_STATUS_TARGET,
+            format!("{APP_TARGET_PREFIX}{WATCH_STATUS}")
+        );
+        assert_eq!(
+            APP_WATCH_SET_TARGET,
+            format!("{APP_TARGET_PREFIX}{WATCH_SET}")
+        );
+        assert_eq!(
+            RUNTIME_DEVICE_LIST_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{DEVICE_LIST}")
+        );
+        assert_eq!(
+            RUNTIME_MANAGEMENT_SNAPSHOT_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{MANAGEMENT_SNAPSHOT}")
+        );
+        assert_eq!(
+            RUNTIME_PROVIDER_REFRESH_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{PROVIDER_REFRESH}")
+        );
+        assert_eq!(
+            RUNTIME_PROVIDER_REMOVE_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{PROVIDER_REMOVE}")
+        );
+        assert_eq!(
+            RUNTIME_WATCH_STATUS_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{WATCH_STATUS}")
+        );
+        assert_eq!(
+            RUNTIME_WATCH_SET_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{WATCH_SET}")
+        );
     }
 
     #[test]
