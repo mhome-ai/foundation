@@ -4,27 +4,17 @@
   "title": "Camera Plugin management values",
   "oneOf": [
     { "$ref": "#/$defs/emptyRequest" },
-    { "$ref": "#/$defs/providerProfileIdRequest" },
-    { "$ref": "#/$defs/watchStatusRequest" },
+    { "$ref": "#/$defs/deviceIdRequest" },
     { "$ref": "#/$defs/watchSetRequest" },
     { "$ref": "#/$defs/managementSnapshot" },
     { "$ref": "#/$defs/deviceListResponse" },
-    { "$ref": "#/$defs/providerMutationResponse" },
+    { "$ref": "#/$defs/deviceMutationResponse" },
     { "$ref": "#/$defs/watchControlResponse" },
     { "$ref": "#/$defs/errorResponse" }
   ],
   "$defs": {
-    "emptyRequest": {
-      "type": "object",
-      "additionalProperties": false
-    },
-    "providerProfileIdRequest": {
-      "type": "object",
-      "required": ["profileId"],
-      "properties": { "profileId": { "type": "string", "minLength": 1 } },
-      "additionalProperties": false
-    },
-    "watchStatusRequest": {
+    "emptyRequest": { "type": "object", "additionalProperties": false },
+    "deviceIdRequest": {
       "type": "object",
       "required": ["deviceId"],
       "properties": { "deviceId": { "type": "string", "minLength": 1 } },
@@ -50,36 +40,20 @@
       },
       "additionalProperties": false
     },
-    "providerProfile": {
-      "type": "object",
-      "required": ["id", "providerType", "displayName", "health", "cameraCount", "createdAt", "updatedAt"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "providerType": { "type": "string", "minLength": 1 },
-        "displayName": { "type": "string", "minLength": 1 },
-        "health": { "enum": ["applying", "ready", "degraded", "error"] },
-        "lastError": { "type": "string" },
-        "cameraCount": { "type": "integer", "minimum": 0 },
-        "createdAt": { "type": "string", "minLength": 1 },
-        "updatedAt": { "type": "string", "minLength": 1 },
-        "lastRefreshedAt": { "type": "string", "minLength": 1 }
-      },
-      "additionalProperties": false
-    },
     "cameraDevice": {
       "type": "object",
-      "required": ["id", "providerProfileId", "providerNativeId", "name", "capabilities"],
+      "required": ["id", "name", "capabilities", "health"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
-        "providerProfileId": { "type": "string", "minLength": 1 },
-        "providerNativeId": { "type": "string", "minLength": 1 },
         "name": { "type": "string", "minLength": 1 },
         "manufacturerName": { "type": "string", "minLength": 1 },
         "capabilities": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 },
           "uniqueItems": true
-        }
+        },
+        "health": { "enum": ["applying", "ready", "degraded", "error"] },
+        "lastError": { "type": "string", "minLength": 1 }
       },
       "additionalProperties": false
     },
@@ -107,10 +81,9 @@
     },
     "managementSnapshot": {
       "type": "object",
-      "required": ["providers", "profiles", "devices", "onlineStates", "watchStates"],
+      "required": ["providers", "devices", "onlineStates", "watchStates"],
       "properties": {
         "providers": { "type": "array", "items": { "$ref": "#/$defs/providerCatalogItem" } },
-        "profiles": { "type": "array", "items": { "$ref": "#/$defs/providerProfile" } },
         "devices": { "type": "array", "items": { "$ref": "#/$defs/cameraDevice" } },
         "onlineStates": { "type": "array", "items": { "$ref": "#/$defs/onlineStateObservation" } },
         "watchStates": { "type": "array", "items": { "$ref": "#/$defs/watchControlResponse" } }
@@ -126,11 +99,10 @@
       },
       "additionalProperties": false
     },
-    "providerMutationResponse": {
+    "deviceMutationResponse": {
       "type": "object",
-      "required": ["profileId", "deviceIds", "changed"],
+      "required": ["deviceIds", "changed"],
       "properties": {
-        "profileId": { "type": "string", "minLength": 1 },
         "deviceIds": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 },

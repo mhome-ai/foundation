@@ -6,24 +6,20 @@ pub const APP_TARGET_PREFIX: &str = "/app/plugin/camera/";
 pub const RUNTIME_TARGET_PREFIX: &str = "/camera/app/";
 pub const DEVICE_LIST: &str = "device/list";
 pub const MANAGEMENT_SNAPSHOT: &str = "management/snapshot";
-pub const PROVIDER_REFRESH: &str = "provider/refresh";
-pub const PROVIDER_REMOVE: &str = "provider/remove";
+pub const DEVICE_REMOVE: &str = "device/remove";
 pub const WATCH_STATUS: &str = "watch/status";
 pub const WATCH_SET: &str = "watch/set";
 pub const APP_DEVICE_LIST_TARGET: &str = "/app/plugin/camera/device/list";
 pub const APP_MANAGEMENT_SNAPSHOT_TARGET: &str = "/app/plugin/camera/management/snapshot";
-pub const APP_PROVIDER_REFRESH_TARGET: &str = "/app/plugin/camera/provider/refresh";
-pub const APP_PROVIDER_REMOVE_TARGET: &str = "/app/plugin/camera/provider/remove";
+pub const APP_DEVICE_REMOVE_TARGET: &str = "/app/plugin/camera/device/remove";
 pub const APP_WATCH_STATUS_TARGET: &str = "/app/plugin/camera/watch/status";
 pub const APP_WATCH_SET_TARGET: &str = "/app/plugin/camera/watch/set";
 pub const RUNTIME_DEVICE_LIST_TARGET: &str = "/camera/app/device/list";
 pub const RUNTIME_MANAGEMENT_SNAPSHOT_TARGET: &str = "/camera/app/management/snapshot";
-pub const RUNTIME_PROVIDER_REFRESH_TARGET: &str = "/camera/app/provider/refresh";
-pub const RUNTIME_PROVIDER_REMOVE_TARGET: &str = "/camera/app/provider/remove";
+pub const RUNTIME_DEVICE_REMOVE_TARGET: &str = "/camera/app/device/remove";
 pub const RUNTIME_WATCH_STATUS_TARGET: &str = "/camera/app/watch/status";
 pub const RUNTIME_WATCH_SET_TARGET: &str = "/camera/app/watch/set";
-pub const PROVIDER_ADD_FLOW: &str = "provider.add";
-pub const PROVIDER_EDIT_FLOW: &str = "provider.edit";
+pub const DEVICE_ADD_FLOW: &str = "device.add";
 pub const SETTINGS_STATUS: &str = crate::node::settings::STATUS;
 pub const SETTINGS_UPDATE: &str = crate::node::settings::UPDATE;
 pub const SETTINGS_REVERT: &str = crate::node::settings::REVERT;
@@ -39,8 +35,8 @@ pub struct EmptyRequest {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ProviderProfileIdRequest {
-    pub profile_id: String,
+pub struct DeviceIdRequest {
+    pub device_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -58,7 +54,7 @@ pub struct WatchSetRequest {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
-pub enum ProviderProfileHealth {
+pub enum CameraDeviceHealth {
     Applying,
     Ready,
     Degraded,
@@ -76,30 +72,15 @@ pub struct ProviderCatalogItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ProviderProfileSummary {
-    pub id: String,
-    pub provider_type: String,
-    pub display_name: String,
-    pub health: ProviderProfileHealth,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_error: Option<String>,
-    pub camera_count: u64,
-    pub created_at: String,
-    pub updated_at: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub last_refreshed_at: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CameraDevice {
     pub id: String,
-    pub provider_profile_id: String,
-    pub provider_native_id: String,
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub manufacturer_name: Option<String>,
     pub capabilities: Vec<String>,
+    pub health: CameraDeviceHealth,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_error: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -127,7 +108,6 @@ pub struct WatchControlResponse {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ManagementSnapshot {
     pub providers: Vec<ProviderCatalogItem>,
-    pub profiles: Vec<ProviderProfileSummary>,
     pub devices: Vec<CameraDevice>,
     pub online_states: Vec<OnlineStateObservation>,
     pub watch_states: Vec<WatchControlResponse>,
@@ -142,8 +122,7 @@ pub struct DeviceListResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ProviderMutationResponse {
-    pub profile_id: String,
+pub struct DeviceMutationResponse {
     pub device_ids: Vec<String>,
     pub changed: bool,
 }
@@ -171,12 +150,10 @@ mod tests {
         assert_eq!(camera["runtimeTargetPrefix"], RUNTIME_TARGET_PREFIX);
         assert_eq!(camera["routes"]["deviceList"], DEVICE_LIST);
         assert_eq!(camera["routes"]["managementSnapshot"], MANAGEMENT_SNAPSHOT);
-        assert_eq!(camera["routes"]["providerRefresh"], PROVIDER_REFRESH);
-        assert_eq!(camera["routes"]["providerRemove"], PROVIDER_REMOVE);
+        assert_eq!(camera["routes"]["deviceRemove"], DEVICE_REMOVE);
         assert_eq!(camera["routes"]["watchStatus"], WATCH_STATUS);
         assert_eq!(camera["routes"]["watchSet"], WATCH_SET);
-        assert_eq!(camera["flows"]["providerAdd"], PROVIDER_ADD_FLOW);
-        assert_eq!(camera["flows"]["providerEdit"], PROVIDER_EDIT_FLOW);
+        assert_eq!(camera["flows"]["deviceAdd"], DEVICE_ADD_FLOW);
         assert_eq!(
             APP_DEVICE_LIST_TARGET,
             format!("{APP_TARGET_PREFIX}{DEVICE_LIST}")
@@ -186,12 +163,8 @@ mod tests {
             format!("{APP_TARGET_PREFIX}{MANAGEMENT_SNAPSHOT}")
         );
         assert_eq!(
-            APP_PROVIDER_REFRESH_TARGET,
-            format!("{APP_TARGET_PREFIX}{PROVIDER_REFRESH}")
-        );
-        assert_eq!(
-            APP_PROVIDER_REMOVE_TARGET,
-            format!("{APP_TARGET_PREFIX}{PROVIDER_REMOVE}")
+            APP_DEVICE_REMOVE_TARGET,
+            format!("{APP_TARGET_PREFIX}{DEVICE_REMOVE}")
         );
         assert_eq!(
             APP_WATCH_STATUS_TARGET,
@@ -210,12 +183,8 @@ mod tests {
             format!("{RUNTIME_TARGET_PREFIX}{MANAGEMENT_SNAPSHOT}")
         );
         assert_eq!(
-            RUNTIME_PROVIDER_REFRESH_TARGET,
-            format!("{RUNTIME_TARGET_PREFIX}{PROVIDER_REFRESH}")
-        );
-        assert_eq!(
-            RUNTIME_PROVIDER_REMOVE_TARGET,
-            format!("{RUNTIME_TARGET_PREFIX}{PROVIDER_REMOVE}")
+            RUNTIME_DEVICE_REMOVE_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{DEVICE_REMOVE}")
         );
         assert_eq!(
             RUNTIME_WATCH_STATUS_TARGET,

@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.4.1",
+  "contractVersion": "1.4.2",
   "protocols": {
     "llm": {
       "completeTarget": "/llm/complete"
@@ -23,14 +23,12 @@
       "routes": {
         "deviceList": "device/list",
         "managementSnapshot": "management/snapshot",
-        "providerRefresh": "provider/refresh",
-        "providerRemove": "provider/remove",
+        "deviceRemove": "device/remove",
         "watchStatus": "watch/status",
         "watchSet": "watch/set"
       },
       "flows": {
-        "providerAdd": "provider.add",
-        "providerEdit": "provider.edit"
+        "deviceAdd": "device.add"
       }
     },
     "audioBridgePlugin": {

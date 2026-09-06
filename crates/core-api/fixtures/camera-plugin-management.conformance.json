@@ -1,27 +1,25 @@
 {
   "valid": [
     { "name": "empty request", "value": {} },
-    { "name": "provider request", "value": { "profileId": "provider-1" } },
-    { "name": "watch status request", "value": { "deviceId": "camera-1" } },
+    { "name": "device request", "value": { "deviceId": "camera-1" } },
     { "name": "watch set request", "value": { "deviceId": "camera-1", "enabled": true } },
     {
       "name": "management snapshot",
       "value": {
         "providers": [{ "id": "onvif", "displayName": "ONVIF", "description": "ONVIF cameras", "supportsMultipleCameras": true }],
-        "profiles": [{ "id": "provider-1", "providerType": "onvif", "displayName": "Home", "health": "ready", "cameraCount": 1, "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z" }],
-        "devices": [{ "id": "camera-1", "providerProfileId": "provider-1", "providerNativeId": "front-door", "name": "Front Door", "capabilities": ["state.cameraMotion"] }],
+        "devices": [{ "id": "camera-1", "name": "Front Door", "capabilities": ["state.cameraMotion"], "health": "ready" }],
         "onlineStates": [{ "id": "camera-1", "state": "online", "observedAt": 1767225600, "source": "onvif" }],
         "watchStates": [{ "ok": true, "deviceId": "camera-1", "enabled": false }]
       }
     },
     { "name": "device list", "value": { "devices": [], "onlineStates": [] } },
-    { "name": "provider mutation", "value": { "profileId": "provider-1", "deviceIds": ["camera-1"], "changed": true } },
+    { "name": "device mutation", "value": { "deviceIds": ["camera-1"], "changed": true } },
     { "name": "watch response", "value": { "ok": true, "deviceId": "camera-1", "enabled": true } },
     { "name": "operation error", "value": { "ok": false, "reason": "CAMERA_OPERATION_FAILED", "detail": "failed" } }
   ],
   "invalid": [
     { "name": "watch mutation missing enabled", "value": { "deviceId": "camera-1", "unexpected": true } },
-    { "name": "unknown health", "value": { "providers": [], "profiles": [{ "id": "provider-1", "providerType": "onvif", "displayName": "Home", "health": "unknown", "cameraCount": 0, "createdAt": "now", "updatedAt": "now" }], "devices": [], "onlineStates": [], "watchStates": [] } },
-    { "name": "device leaks internal field", "value": { "devices": [{ "id": "camera-1", "providerProfileId": "provider-1", "providerNativeId": "front-door", "name": "Front Door", "capabilities": [], "supportsLocalAnalytics": true }], "onlineStates": [] } }
+    { "name": "unknown health", "value": { "providers": [], "devices": [{ "id": "camera-1", "name": "Front", "capabilities": [], "health": "unknown" }], "onlineStates": [], "watchStates": [] } },
+    { "name": "device leaks internal field", "value": { "devices": [{ "id": "camera-1", "name": "Front Door", "capabilities": [], "health": "ready", "sourceUid": "secret" }], "onlineStates": [] } }
   ]
 }
