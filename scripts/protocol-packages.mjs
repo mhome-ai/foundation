@@ -34,7 +34,10 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     npmName: "@mhome/app-facade-protocol",
     protocol: "mhome.app-facade",
     manifest: "manifest/app-facade.v1.json",
-    additionalFiles: Object.freeze(["manifest/targets.v1.json"]),
+    additionalFiles: Object.freeze([
+      "manifest/targets.v1.json",
+      "manifest/routing.v1.json",
+    ]),
     schemas: Object.freeze({
       call: "schema/facade-call.v1.schema.json",
       frame: "schema/messaging-frame.v3.schema.json",

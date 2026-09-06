@@ -10,6 +10,7 @@ pub mod interaction_flow;
 pub mod messaging;
 pub mod plugin;
 pub mod registry;
+pub mod routing;
 pub mod runtime;
 
 pub use call::{ActionMode, FacadeCall, FacadeControl, ResponseFormat};

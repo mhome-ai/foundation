@@ -12,6 +12,7 @@ use app_facade_api::messaging::{
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
+use std::collections::BTreeSet;
 
 const VALID_FIXTURES: &[(&str, &str)] = &[
     (
@@ -413,6 +414,136 @@ fn target_manifest_matches_rust_inventory() {
             app_facade_api::messaging::required_management_operation(target).is_some(),
             *target != app_facade_api::messaging::PROVIDER_LIST_TARGET,
             "management capability mapping for {target}"
+        );
+    }
+}
+
+#[test]
+fn routing_manifest_matches_rust_policy() {
+    use app_facade_api::routing::{
+        route_policy_for_target, ExecutionSelector, RelayPolicy, CLOUD_RELAY_TARGETS, CLOUD_TARGETS,
+    };
+
+    let manifest: Value =
+        serde_json::from_str(include_str!("../manifest/routing.v1.json")).unwrap();
+    let rules = &manifest["rules"];
+    let strings = |field: &str| {
+        rules[field]
+            .as_array()
+            .unwrap_or_else(|| panic!("routing rules.{field} must be an array"))
+            .iter()
+            .map(|value| value.as_str().unwrap().to_owned())
+            .collect::<BTreeSet<_>>()
+    };
+
+    assert_eq!(manifest["contractVersion"], env!("CARGO_PKG_VERSION"));
+    assert_eq!(manifest["targetPrefix"], "/app/");
+    assert_eq!(manifest["default"]["execution"], "scopeMode");
+    assert_eq!(manifest["default"]["relay"], "directOnly");
+    assert_eq!(manifest["matching"], "exactBeforePrefix");
+    assert_eq!(manifest["placementJsonPointer"], "/input/placement");
+
+    let expected_rule_groups = [
+        "cloudPrefixes",
+        "cloudTargets",
+        "scopeModeTargets",
+        "hubPrefixes",
+        "hostTargets",
+        "requestPlacementPrefixes",
+        "cloudRelayTargets",
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    assert_eq!(
+        rules
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>(),
+        expected_rule_groups
+    );
+
+    let exact_groups = [
+        "cloudTargets",
+        "scopeModeTargets",
+        "hostTargets",
+        "cloudRelayTargets",
+    ];
+    let mut exact_owners = std::collections::BTreeMap::new();
+    for field in exact_groups {
+        for target in strings(field) {
+            assert!(
+                exact_owners.insert(target.clone(), field).is_none(),
+                "exact route {target} belongs to more than one rule group"
+            );
+        }
+    }
+
+    let prefix_groups = ["cloudPrefixes", "hubPrefixes", "requestPlacementPrefixes"];
+    let prefixes = prefix_groups
+        .into_iter()
+        .flat_map(|field| {
+            strings(field)
+                .into_iter()
+                .map(move |prefix| (field, prefix))
+        })
+        .collect::<Vec<_>>();
+    for (index, (left_field, left)) in prefixes.iter().enumerate() {
+        for (right_field, right) in prefixes.iter().skip(index + 1) {
+            assert!(
+                !left.starts_with(right.as_str()) && !right.starts_with(left.as_str()),
+                "routing prefixes {left} ({left_field}) and {right} ({right_field}) overlap"
+            );
+        }
+    }
+    assert_eq!(
+        strings("cloudTargets"),
+        CLOUD_TARGETS
+            .iter()
+            .map(|target| (*target).to_owned())
+            .collect()
+    );
+    assert_eq!(
+        strings("cloudRelayTargets"),
+        CLOUD_RELAY_TARGETS
+            .iter()
+            .map(|target| (*target).to_owned())
+            .collect()
+    );
+
+    for target in strings("cloudTargets") {
+        let policy = route_policy_for_target(&target).unwrap();
+        assert_eq!(policy.execution, ExecutionSelector::Cloud, "{target}");
+        assert_eq!(policy.relay, RelayPolicy::DirectOnly, "{target}");
+    }
+    for target in strings("scopeModeTargets") {
+        let policy = route_policy_for_target(&target).unwrap();
+        assert_eq!(policy.execution, ExecutionSelector::ScopeMode, "{target}");
+    }
+    for target in strings("hostTargets") {
+        let policy = route_policy_for_target(&target).unwrap();
+        assert_eq!(policy.execution, ExecutionSelector::Host, "{target}");
+    }
+    for target in strings("cloudRelayTargets") {
+        let policy = route_policy_for_target(&target).unwrap();
+        assert_eq!(policy.execution, ExecutionSelector::Hub, "{target}");
+        assert_eq!(policy.relay, RelayPolicy::CloudRelayAllowed, "{target}");
+    }
+    for prefix in strings("cloudPrefixes") {
+        let policy = route_policy_for_target(&format!("{prefix}conformance-probe")).unwrap();
+        assert_eq!(policy.execution, ExecutionSelector::Cloud, "{prefix}");
+    }
+    for prefix in strings("hubPrefixes") {
+        let policy = route_policy_for_target(&format!("{prefix}conformance-probe")).unwrap();
+        assert_eq!(policy.execution, ExecutionSelector::Hub, "{prefix}");
+    }
+    for prefix in strings("requestPlacementPrefixes") {
+        let policy = route_policy_for_target(&format!("{prefix}conformance-probe")).unwrap();
+        assert_eq!(
+            policy.execution,
+            ExecutionSelector::RequestPlacement,
+            "{prefix}"
         );
     }
 }

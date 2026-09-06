@@ -1,7 +1,8 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.1.2",
+  "contractVersion": "1.2.0",
   "callSchema": "schema/facade-call.v1.schema.json",
+  "routing": "manifest/routing.v1.json",
   "domains": {
     "messaging": {
       "targets": "manifest/targets.v1.json"

@@ -20,3 +20,15 @@ recovering the secret. Each current-step resolver projection reports whether
 its complete referenced value is available and which visible inputs can make
 it stale, so clients can resolve it reactively without learning handlers or
 the hidden graph.
+
+## Routing contract
+
+`routing::route_policy_for_target` is the canonical client-side routing policy
+for the new `/app/*` facade. Ordinary operations follow the active Space mode.
+Only exceptional domains declare a fixed Cloud, Hub, Host, or request-placement
+executor. Relay permission is separate from execution authority so a client
+cannot silently turn every Hub request into a cloud-proxied request.
+
+The matching data is also published as `manifest/routing.v1.json` for non-Rust
+clients. Lion's legacy controller annotations and non-`/app/*` protocols are
+outside this contract.

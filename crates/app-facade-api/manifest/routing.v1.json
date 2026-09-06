@@ -1,0 +1,49 @@
+{
+  "manifest": "mhome.app-facade.routing.v1",
+  "contractVersion": "1.2.0",
+  "targetPrefix": "/app/",
+  "default": {
+    "execution": "scopeMode",
+    "relay": "directOnly"
+  },
+  "matching": "exactBeforePrefix",
+  "placementJsonPointer": "/input/placement",
+  "rules": {
+    "cloudPrefixes": [
+      "/app/scope/",
+      "/app/inspire/"
+    ],
+    "cloudTargets": [
+      "/app/agent/context/get",
+      "/app/credit/record",
+      "/app/system/feedback/submit",
+      "/app/timeline/entity/latest/list"
+    ],
+    "scopeModeTargets": [
+      "/app/scope/context/get"
+    ],
+    "hubPrefixes": [
+      "/app/plugin/",
+      "/app/interaction-flow/",
+      "/app/object-storage/"
+    ],
+    "hostTargets": [
+      "/app/runtime/status/list",
+      "/app/runtime/status/changed"
+    ],
+    "requestPlacementPrefixes": [
+      "/app/messaging/"
+    ],
+    "cloudRelayTargets": [
+      "/app/plugin/candidate/list",
+      "/app/plugin/detail/get",
+      "/app/plugin/installed/list",
+      "/app/object-storage/overview",
+      "/app/object-storage/folders/create",
+      "/app/object-storage/folders/get",
+      "/app/object-storage/folders/update",
+      "/app/object-storage/folders/list",
+      "/app/object-storage/settings/update"
+    ]
+  }
+}
