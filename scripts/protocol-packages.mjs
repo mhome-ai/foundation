@@ -37,12 +37,15 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     additionalFiles: Object.freeze([
       "manifest/targets.v1.json",
       "manifest/routing.v1.json",
+      "manifest/hub-targets.v1.json",
     ]),
     schemas: Object.freeze({
       call: "schema/facade-call.v1.schema.json",
       frame: "schema/messaging-frame.v3.schema.json",
       interactionFlow: "schema/interaction-flow-app.v1.schema.json",
       routing: "schema/routing.v1.schema.json",
+      hubState: "schema/hub-state.v1.schema.json",
+      localHubState: "schema/local-hub-state.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",

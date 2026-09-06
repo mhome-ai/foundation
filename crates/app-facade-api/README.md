@@ -3,6 +3,13 @@
 Canonical public protocol shared by MeowLink clients, MeowCore, the CLI,
 Agents, and cloud adapters.
 
+The package also carries the explicitly private `/local/*` native-daemon
+extension. `/app/*` is portable and may be routed according to the public
+routing manifest. `/local/*` is an exact allowlist for the current MeowLink
+native client process and must never be forwarded to cloud, Hub, or Host
+connections. Hub `/app/*` calls are direct-only `FacadeCall`s; Hub `/local/*`
+calls carry the domain input directly and never use the public envelope.
+
 Every `/app/*` request uses the strict `FacadeCall` envelope. Invocation
 metadata lives in `control`; the domain request lives in `input`. The crate
 owns public targets, request/response/event schemas, and stable operation

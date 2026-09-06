@@ -1,0 +1,15 @@
+{
+  "scopeId": "scope-1",
+  "configured": false,
+  "operation": {
+    "kind": "REMOVE",
+    "state": "RUNNING",
+    "phase": "CLEARING_LOCAL_DATA",
+    "startedAt": 1700000000000,
+    "hubId": "hub-old"
+  },
+  "revocation": {
+    "hubId": "hub-old",
+    "revocationId": "revoke-1"
+  }
+}

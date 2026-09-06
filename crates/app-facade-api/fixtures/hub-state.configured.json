@@ -1,0 +1,17 @@
+{
+  "scopeId": "scope-1",
+  "configured": true,
+  "hub": {
+    "id": "hub-1",
+    "name": "Home Hub",
+    "type": "local",
+    "hostId": "host-1",
+    "isTest": false,
+    "status": "ready",
+    "cloud": {
+      "connectionStatus": "connected",
+      "lastConnectedAt": 1700000000000,
+      "firmwareVersion": "1.0.0"
+    }
+  }
+}

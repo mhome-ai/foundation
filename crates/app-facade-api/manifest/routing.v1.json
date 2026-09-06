@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.3.0",
+  "contractVersion": "1.4.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",
@@ -16,6 +16,9 @@
     "cloudTargets": [
       "/app/agent/context/get",
       "/app/credit/record",
+      "/app/hub/cache/clear",
+      "/app/hub/get",
+      "/app/hub/remove",
       "/app/system/feedback/submit",
       "/app/timeline/entity/latest/list"
     ],

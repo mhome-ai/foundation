@@ -1,0 +1,20 @@
+{
+  "manifest": "mhome.hub.targets.v1",
+  "contractVersion": "1.0.0",
+  "appTargets": [
+    "/app/hub/get",
+    "/app/hub/remove",
+    "/app/hub/cache/clear"
+  ],
+  "localTargets": [
+    "/local/hub/get",
+    "/local/hub/candidates",
+    "/local/hub/add/start",
+    "/local/hub/add/confirm",
+    "/local/hub/add/status",
+    "/local/hub/add/cancel"
+  ],
+  "appInvocationModes": ["direct"],
+  "localPayload": "domainInput",
+  "localForwardable": false
+}

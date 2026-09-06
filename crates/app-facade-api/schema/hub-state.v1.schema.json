@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/hub-state.v1.schema.json",
+  "title": "Authoritative cloud Hub lifecycle state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scopeId", "configured"],
+  "properties": {
+    "scopeId": { "type": "string", "minLength": 1 },
+    "configured": { "type": "boolean" },
+    "hub": { "$ref": "#/$defs/hub" },
+    "operation": { "$ref": "#/$defs/operation" },
+    "revocation": { "$ref": "#/$defs/revocation" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "configured": { "const": true } }, "required": ["configured"] },
+      "then": { "required": ["hub"] },
+      "else": { "not": { "required": ["hub"] } }
+    }
+  ],
+  "$defs": {
+    "hub": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "hostId", "isTest", "status", "cloud"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "type": { "type": "string", "minLength": 1 },
+        "hostId": { "type": "string", "minLength": 1 },
+        "isTest": { "type": "boolean" },
+        "status": { "type": "string", "minLength": 1 },
+        "cloud": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "connectionStatus": { "type": "string" },
+            "lastConnectedAt": { "type": "integer" },
+            "firmwareVersion": { "type": "string" }
+          }
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "state", "phase", "startedAt"],
+      "properties": {
+        "kind": { "enum": ["SETUP", "REMOVE"] },
+        "state": { "enum": ["RUNNING", "FAILED"] },
+        "phase": {
+          "enum": [
+            "WAITING_FOR_HUB",
+            "PREPARING_DATA",
+            "SYNCING_DATA",
+            "BACKING_UP_DATA",
+            "FENCING_CLOUD",
+            "CLEARING_LOCAL_DATA",
+            "FINALIZING",
+            "CLEANING_UP"
+          ]
+        },
+        "startedAt": { "type": "integer" },
+        "expiresAt": { "type": "integer" },
+        "hostId": { "type": "string" },
+        "hubId": { "type": "string" },
+        "failure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reason"],
+          "properties": {
+            "reason": { "type": "string", "minLength": 1 },
+            "at": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "revocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hubId", "revocationId"],
+      "properties": {
+        "hubId": { "type": "string", "minLength": 1 },
+        "revocationId": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

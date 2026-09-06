@@ -1,3 +1,4 @@
+use app_facade_api::hub::{HubState, LocalHubState, APP_TARGETS, LOCAL_TARGETS};
 use app_facade_api::messaging::{
     ActorLinkChallengeResponse, ActorLinkClaimEvent, ActorLinkClaimRequest, ActorLinkClaimResponse,
     ActorLinkCodeCreateRequest, ActorLinkDeleteRequest, ActorLinkListRequest,
@@ -227,6 +228,59 @@ fn body<T: DeserializeOwned>(name: &str) -> T {
         .unwrap_or_else(|| panic!("missing fixture: {name}"));
     let frame: Value = serde_json::from_str(raw).unwrap();
     serde_json::from_value(frame["body"].clone()).unwrap()
+}
+
+#[test]
+fn hub_manifests_and_fixtures_match_the_shared_contract() {
+    let manifest: Value =
+        serde_json::from_str(include_str!("../manifest/hub-targets.v1.json")).unwrap();
+    let strings = |field: &str| {
+        manifest[field]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_str().unwrap())
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(strings("appTargets"), APP_TARGETS);
+    assert_eq!(strings("localTargets"), LOCAL_TARGETS);
+    assert_eq!(strings("appInvocationModes"), ["direct"]);
+    assert_eq!(manifest["localPayload"], "domainInput");
+    assert_eq!(manifest["localForwardable"], false);
+
+    let configured: HubState =
+        serde_json::from_str(include_str!("../fixtures/hub-state.configured.json")).unwrap();
+    configured.validate(None).unwrap();
+    let revoked: HubState =
+        serde_json::from_str(include_str!("../fixtures/hub-state.revoked.json")).unwrap();
+    revoked.validate(Some("hub-old")).unwrap();
+    let local: LocalHubState =
+        serde_json::from_str(include_str!("../fixtures/local-hub-state.configured.json")).unwrap();
+    local.validate(None).unwrap();
+
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/hub-state.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    for fixture in [
+        include_str!("../fixtures/hub-state.configured.json"),
+        include_str!("../fixtures/hub-state.revoked.json"),
+    ] {
+        let value: Value = serde_json::from_str(fixture).unwrap();
+        assert!(validator.is_valid(&value));
+    }
+
+    let local_schema: Value =
+        serde_json::from_str(include_str!("../schema/local-hub-state.v1.schema.json")).unwrap();
+    let local_validator = jsonschema::options()
+        .with_resource(
+            "https://schemas.mhome.ai/app-facade/hub-state.v1.schema.json",
+            jsonschema::Resource::from_contents(schema).unwrap(),
+        )
+        .build(&local_schema)
+        .unwrap();
+    let local_value: Value =
+        serde_json::from_str(include_str!("../fixtures/local-hub-state.configured.json")).unwrap();
+    assert!(local_validator.is_valid(&local_value));
 }
 
 #[test]

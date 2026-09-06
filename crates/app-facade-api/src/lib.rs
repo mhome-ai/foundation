@@ -6,6 +6,7 @@
 //! `control`.
 
 pub mod call;
+pub mod hub;
 pub mod interaction_flow;
 pub mod messaging;
 pub mod plugin;

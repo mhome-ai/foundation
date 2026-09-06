@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/local-hub-state.v1.schema.json",
+  "title": "Native-client composite Hub state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scopeId", "configured"],
+  "properties": {
+    "scopeId": { "type": "string", "minLength": 1 },
+    "configured": { "type": "boolean" },
+    "hub": { "$ref": "#/$defs/localHub" },
+    "operation": { "$ref": "hub-state.v1.schema.json#/$defs/operation" },
+    "revocation": { "$ref": "hub-state.v1.schema.json#/$defs/revocation" },
+    "pairing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessionId", "state", "phase", "startedAt", "expiresAt"],
+      "properties": {
+        "sessionId": { "type": "string", "minLength": 1 },
+        "state": { "type": "string", "minLength": 1 },
+        "phase": { "type": "string", "minLength": 1 },
+        "startedAt": { "type": "integer" },
+        "expiresAt": { "type": "integer" },
+        "hostId": { "type": "string" },
+        "hubId": { "type": "string" },
+        "failure": { "$ref": "hub-state.v1.schema.json#/$defs/operation/properties/failure" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "configured": { "const": true } }, "required": ["configured"] },
+      "then": { "required": ["hub"] },
+      "else": { "not": { "required": ["hub"] } }
+    }
+  ],
+  "$defs": {
+    "localHub": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "hostId", "isTest", "status", "cloud", "local"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "type": { "type": "string", "minLength": 1 },
+        "hostId": { "type": "string", "minLength": 1 },
+        "isTest": { "type": "boolean" },
+        "status": { "type": "string", "minLength": 1 },
+        "cloud": { "$ref": "hub-state.v1.schema.json#/$defs/hub/properties/cloud" },
+        "local": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["discovered", "connected"],
+          "properties": {
+            "discovered": { "type": "boolean" },
+            "connected": { "type": "boolean" },
+            "connectionStatus": { "type": "string" },
+            "hostName": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
