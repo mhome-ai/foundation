@@ -948,7 +948,7 @@ pub enum ServiceCoreInput {
     /// Node session before accepting it into the Hub-owned status projection.
     NodeStatusObserved {
         connection_key: String,
-        status: node::status::StatusPayload,
+        status: Box<node::status::StatusPayload>,
     },
     ClientResponse {
         message: MwsMessage,

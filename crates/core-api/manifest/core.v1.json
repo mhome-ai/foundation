@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.2.2",
+  "contractVersion": "1.3.0",
   "protocols": {
     "llm": {
       "completeTarget": "/llm/complete"
