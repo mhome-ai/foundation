@@ -63,11 +63,13 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       normalizedInbound: "schema/normalized-inbound.v4.schema.json",
       messagingCommands: "schema/messaging-commands.v1.schema.json",
       interactionFlowNode: "schema/interaction-flow-node.v1.schema.json",
+      cameraPluginManagement: "schema/camera-plugin-management.v1.schema.json",
     }),
     fixtures: Object.freeze({
       normalizedInbound: "fixtures/normalized-inbound.conformance.json",
       messagingCommands: "fixtures/messaging-commands.conformance.json",
       interactionFlowNode: "fixtures/interaction-flow-node.conformance.json",
+      cameraPluginManagement: "fixtures/camera-plugin-management.conformance.json",
     }),
   }),
 });

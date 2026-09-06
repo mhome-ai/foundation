@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/camera-plugin-management.v1.schema.json",
+  "title": "Camera Plugin management values",
+  "oneOf": [
+    { "$ref": "#/$defs/emptyRequest" },
+    { "$ref": "#/$defs/providerProfileIdRequest" },
+    { "$ref": "#/$defs/watchStatusRequest" },
+    { "$ref": "#/$defs/watchSetRequest" },
+    { "$ref": "#/$defs/managementSnapshot" },
+    { "$ref": "#/$defs/deviceListResponse" },
+    { "$ref": "#/$defs/providerMutationResponse" },
+    { "$ref": "#/$defs/watchControlResponse" },
+    { "$ref": "#/$defs/errorResponse" }
+  ],
+  "$defs": {
+    "emptyRequest": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "providerProfileIdRequest": {
+      "type": "object",
+      "required": ["profileId"],
+      "properties": { "profileId": { "type": "string", "minLength": 1 } },
+      "additionalProperties": false
+    },
+    "watchStatusRequest": {
+      "type": "object",
+      "required": ["deviceId"],
+      "properties": { "deviceId": { "type": "string", "minLength": 1 } },
+      "additionalProperties": false
+    },
+    "watchSetRequest": {
+      "type": "object",
+      "required": ["deviceId", "enabled"],
+      "properties": {
+        "deviceId": { "type": "string", "minLength": 1 },
+        "enabled": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "providerCatalogItem": {
+      "type": "object",
+      "required": ["id", "displayName", "description", "supportsMultipleCameras"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "displayName": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "supportsMultipleCameras": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "providerProfile": {
+      "type": "object",
+      "required": ["id", "providerType", "displayName", "health", "cameraCount", "createdAt", "updatedAt"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "providerType": { "type": "string", "minLength": 1 },
+        "displayName": { "type": "string", "minLength": 1 },
+        "health": { "enum": ["applying", "ready", "degraded", "error"] },
+        "lastError": { "type": "string" },
+        "cameraCount": { "type": "integer", "minimum": 0 },
+        "createdAt": { "type": "string", "minLength": 1 },
+        "updatedAt": { "type": "string", "minLength": 1 },
+        "lastRefreshedAt": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "cameraDevice": {
+      "type": "object",
+      "required": ["id", "providerProfileId", "providerNativeId", "name", "capabilities"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "providerProfileId": { "type": "string", "minLength": 1 },
+        "providerNativeId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "manufacturerName": { "type": "string", "minLength": 1 },
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "onlineStateObservation": {
+      "type": "object",
+      "required": ["id", "state"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "state": { "enum": ["online", "offline"] },
+        "observedAt": { "type": "integer" },
+        "source": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "watchControlResponse": {
+      "type": "object",
+      "required": ["ok", "deviceId", "enabled"],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "deviceId": { "type": "string", "minLength": 1 },
+        "enabled": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "managementSnapshot": {
+      "type": "object",
+      "required": ["providers", "profiles", "devices", "onlineStates", "watchStates"],
+      "properties": {
+        "providers": { "type": "array", "items": { "$ref": "#/$defs/providerCatalogItem" } },
+        "profiles": { "type": "array", "items": { "$ref": "#/$defs/providerProfile" } },
+        "devices": { "type": "array", "items": { "$ref": "#/$defs/cameraDevice" } },
+        "onlineStates": { "type": "array", "items": { "$ref": "#/$defs/onlineStateObservation" } },
+        "watchStates": { "type": "array", "items": { "$ref": "#/$defs/watchControlResponse" } }
+      },
+      "additionalProperties": false
+    },
+    "deviceListResponse": {
+      "type": "object",
+      "required": ["devices", "onlineStates"],
+      "properties": {
+        "devices": { "type": "array", "items": { "$ref": "#/$defs/cameraDevice" } },
+        "onlineStates": { "type": "array", "items": { "$ref": "#/$defs/onlineStateObservation" } }
+      },
+      "additionalProperties": false
+    },
+    "providerMutationResponse": {
+      "type": "object",
+      "required": ["profileId", "deviceIds", "changed"],
+      "properties": {
+        "profileId": { "type": "string", "minLength": 1 },
+        "deviceIds": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "changed": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "errorResponse": {
+      "type": "object",
+      "required": ["ok", "reason", "detail"],
+      "properties": {
+        "ok": { "const": false },
+        "reason": { "type": "string", "minLength": 1 },
+        "detail": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

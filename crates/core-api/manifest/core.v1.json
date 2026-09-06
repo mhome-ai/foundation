@@ -14,6 +14,25 @@
       "interactionFlowExecuteTarget": "/{nodeType}/interaction-flow/execute",
       "interactionFlowCloseTarget": "/{nodeType}/interaction-flow/close"
     },
+    "cameraPlugin": {
+      "version": "v1",
+      "nodeType": "camera",
+      "appTargetPrefix": "/app/plugin/camera/",
+      "runtimeTargetPrefix": "/camera/app/",
+      "managementSchema": "schema/camera-plugin-management.v1.schema.json",
+      "routes": {
+        "deviceList": "device/list",
+        "managementSnapshot": "management/snapshot",
+        "providerRefresh": "provider/refresh",
+        "providerRemove": "provider/remove",
+        "watchStatus": "watch/status",
+        "watchSet": "watch/set"
+      },
+      "flows": {
+        "providerAdd": "provider.add",
+        "providerEdit": "provider.edit"
+      }
+    },
     "messaging": {
       "normalizedInboundSchema": "schema/normalized-inbound.v4.schema.json",
       "commandsSchema": "schema/messaging-commands.v1.schema.json"
