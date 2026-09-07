@@ -19,6 +19,7 @@ pub const CLOUD_TARGETS: &[&str] = &[
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[
+    "/app/artifact/resolve",
     "/app/scope/context/get",
 ];
 

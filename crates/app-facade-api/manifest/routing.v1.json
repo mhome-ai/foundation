@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.6.0",
+  "contractVersion": "1.7.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",
@@ -23,6 +23,7 @@
       "/app/timeline/entity/latest/list"
     ],
     "scopeModeTargets": [
+      "/app/artifact/resolve",
       "/app/scope/context/get"
     ],
     "hubPrefixes": [

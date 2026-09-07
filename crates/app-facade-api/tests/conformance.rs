@@ -846,3 +846,22 @@ fn device_topology_is_registered_in_the_app_facade_manifest() {
     assert_eq!(domain["requestTargets"], serde_json::json!([GET_TARGET]));
     assert_eq!(domain["eventTargets"], serde_json::json!([CHANGED_TARGET]));
 }
+
+#[test]
+fn artifact_is_registered_as_a_scope_mode_app_facade_domain() {
+    use app_facade_api::artifact::{REQUEST_TARGETS, RESOLVE_TARGET};
+    use app_facade_api::routing::{route_policy_for_target, ExecutionSelector, RelayPolicy};
+
+    let manifest: Value =
+        serde_json::from_str(include_str!("../manifest/app-facade.v1.json")).unwrap();
+    let domain = &manifest["domains"]["artifact"];
+    assert_eq!(domain["contract"], "mhome.artifact.v1");
+    assert_eq!(
+        domain["requestTargets"],
+        serde_json::to_value(REQUEST_TARGETS).unwrap()
+    );
+    assert_eq!(RESOLVE_TARGET, "/app/artifact/resolve");
+    let policy = route_policy_for_target(RESOLVE_TARGET).unwrap();
+    assert_eq!(policy.execution, ExecutionSelector::ScopeMode);
+    assert_eq!(policy.relay, RelayPolicy::DirectOnly);
+}

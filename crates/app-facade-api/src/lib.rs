@@ -5,6 +5,7 @@
 //! under `input`, while invocation and presentation controls live under
 //! `control`.
 
+pub mod artifact;
 pub mod call;
 pub mod device_topology;
 pub mod hub;

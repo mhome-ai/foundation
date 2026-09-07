@@ -1,6 +1,6 @@
 [package]
 name = "mhome-app-facade-api"
-version = "1.6.0"
+version = "1.7.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -14,6 +14,7 @@ include = ["src/**", "tests/**", "schema/**", "fixtures/**", "manifest/**", "Car
 name = "app_facade_api"
 
 [dependencies]
+artifact-api = { package = "mhome-artifact-api", version = "=1.2.0", path = "../artifact" }
 conversation-api = { package = "mhome-conversation-api", version = "=1.1.1", path = "../conversation-api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

@@ -42,6 +42,11 @@ a single parent, containment, or acyclicity. Durable relations remain present
 while unavailable, and partial snapshots preserve confirmed structure when one
 source cannot be observed.
 
+`artifact` exposes the MeowLink-facing `/app/artifact/resolve` operation. Its
+domain input and output reuse `mhome-artifact-api`; Node runtimes use the
+separate transport-neutral `/artifact/*` targets and never enter the App
+Facade.
+
 ## Routing contract
 
 `manifest/routing.v1.json` is the canonical client-side routing policy for the
