@@ -740,6 +740,96 @@ fn device_topology_snapshots_match_public_schema_and_graph_invariants() {
         let snapshot: DeviceTopologySnapshot = serde_json::from_value(value).unwrap();
         snapshot.validate().unwrap();
     }
+
+    let complete: Value =
+        serde_json::from_str(include_str!("../fixtures/device-topology.snapshot.json")).unwrap();
+    let relations = complete["edges"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|edge| edge["relation"].as_str().unwrap())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        relations,
+        BTreeSet::from([
+            "integration-provider",
+            "plugin-provider",
+            "plugin-connection",
+            "provider-connection",
+            "provider-device",
+            "connection-device",
+            "connection-source",
+            "source-device",
+        ])
+    );
+
+    let partial: Value =
+        serde_json::from_str(include_str!("../fixtures/device-topology.partial.json")).unwrap();
+    assert!(partial["entities"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|entity| entity["kind"] == "pluginInstance"));
+    for relation in ["plugin-provider", "plugin-connection"] {
+        let edge = partial["edges"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|edge| edge["relation"] == relation)
+            .unwrap();
+        assert_eq!(edge["durability"], "durable");
+        assert_eq!(edge["observation"]["state"], "disconnected");
+    }
+
+    let mut missing_device_integration = complete.clone();
+    missing_device_integration["entities"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|entity| entity["kind"] != "deviceIntegration");
+
+    let mut multiple_device_integrations = complete.clone();
+    let device_integration = multiple_device_integrations["entities"][0].clone();
+    multiple_device_integrations["entities"]
+        .as_array_mut()
+        .unwrap()
+        .push(device_integration);
+
+    let mut complete_with_issues = complete.clone();
+    complete_with_issues["issues"] = serde_json::json!([{
+        "code": "unexpectedPartialFailure",
+        "message": "A complete snapshot cannot carry partial failure details"
+    }]);
+
+    let mut partial_without_issues = complete;
+    partial_without_issues["completeness"] = serde_json::json!("partial");
+
+    let mut invalid_relation_basis: Value =
+        serde_json::from_str(include_str!("../fixtures/device-topology.snapshot.json")).unwrap();
+    invalid_relation_basis["edges"][0]["basis"] = serde_json::json!("twinSource");
+
+    let mut empty_provider_mode: Value =
+        serde_json::from_str(include_str!("../fixtures/device-topology.snapshot.json")).unwrap();
+    let provider = empty_provider_mode["entities"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|entity| entity["kind"] == "provider")
+        .unwrap();
+    provider["mode"] = serde_json::json!("");
+
+    for invalid in [
+        missing_device_integration,
+        multiple_device_integrations,
+        complete_with_issues,
+        partial_without_issues,
+        invalid_relation_basis,
+        empty_provider_mode,
+    ] {
+        assert!(
+            !validator.is_valid(&invalid),
+            "invalid Device Topology snapshot unexpectedly matched the public schema: {invalid}"
+        );
+    }
 }
 
 #[test]

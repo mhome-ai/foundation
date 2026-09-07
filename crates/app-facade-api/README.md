@@ -35,12 +35,12 @@ explicit observation state so clients can distinguish expected topology from
 the currently observed path.
 
 `device_topology` exposes the Scope-owned Device Integration relationship graph.
-Device root, Provider, Connection, Plugin Instance, source device, and Device
-identities are independent vertices joined by typed edges. Edge direction only
-describes relation semantics: the graph does not require a fixed layer order, a
-single parent, containment, or acyclicity. Durable relations remain present while
-unavailable, and partial snapshots preserve confirmed structure when one source
-cannot be observed.
+Device Integration, Provider, Connection, Plugin Instance, source device, and
+Device identities are independent vertices joined by typed edges. Edge direction
+only describes relation semantics: the graph does not require a fixed layer order,
+a single parent, containment, or acyclicity. Durable relations remain present
+while unavailable, and partial snapshots preserve confirmed structure when one
+source cannot be observed.
 
 ## Routing contract
 

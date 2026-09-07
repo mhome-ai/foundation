@@ -43,6 +43,9 @@ impl DeviceTopologySnapshot {
         if self.contract != CONTRACT {
             return Err(DeviceTopologyValidationError::InvalidContract);
         }
+        require_non_empty(&self.scope_id, "scopeId")?;
+        require_non_empty(&self.generation, "generation")?;
+        require_non_negative(self.observed_at_ms, "observedAtMs")?;
         if self.completeness == DeviceTopologyCompleteness::Complete && !self.issues.is_empty() {
             return Err(DeviceTopologyValidationError::CompleteWithIssues);
         }
@@ -51,26 +54,30 @@ impl DeviceTopologySnapshot {
         }
 
         let mut entities_by_id = HashMap::new();
-        let mut root_count = 0;
-        for entity in &self.entities {
+        let mut device_integration_count = 0;
+        for (index, entity) in self.entities.iter().enumerate() {
+            entity.validate_fields(index)?;
             let id = entity.id();
             if entities_by_id.insert(id, entity).is_some() {
                 return Err(DeviceTopologyValidationError::DuplicateEntityId(
                     id.to_string(),
                 ));
             }
-            if matches!(entity, DeviceTopologyEntity::Root { .. }) {
-                root_count += 1;
+            if matches!(entity, DeviceTopologyEntity::DeviceIntegration { .. }) {
+                device_integration_count += 1;
             }
         }
-        match root_count {
-            0 => return Err(DeviceTopologyValidationError::MissingRoot),
+        match device_integration_count {
+            0 => return Err(DeviceTopologyValidationError::MissingDeviceIntegration),
             1 => {}
-            _ => return Err(DeviceTopologyValidationError::MultipleRoots),
+            _ => return Err(DeviceTopologyValidationError::MultipleDeviceIntegrations),
         }
 
-        for issue in &self.issues {
+        for (index, issue) in self.issues.iter().enumerate() {
+            require_non_empty(&issue.code, format!("issues[{index}].code"))?;
+            require_non_empty(&issue.message, format!("issues[{index}].message"))?;
             if let Some(entity_id) = issue.entity_id.as_deref() {
+                require_non_empty(entity_id, format!("issues[{index}].entityId"))?;
                 if !entities_by_id.contains_key(entity_id) {
                     return Err(DeviceTopologyValidationError::DanglingIssueEntity(
                         entity_id.to_string(),
@@ -80,7 +87,11 @@ impl DeviceTopologySnapshot {
         }
 
         let mut edge_ids = HashSet::new();
-        for edge in &self.edges {
+        for (index, edge) in self.edges.iter().enumerate() {
+            require_non_empty(&edge.id, format!("edges[{index}].id"))?;
+            require_non_empty(&edge.source, format!("edges[{index}].source"))?;
+            require_non_empty(&edge.target, format!("edges[{index}].target"))?;
+            validate_observation(&edge.observation, format!("edges[{index}].observation"))?;
             if !edge_ids.insert(edge.id.as_str()) {
                 return Err(DeviceTopologyValidationError::DuplicateEdgeId(
                     edge.id.clone(),
@@ -107,6 +118,19 @@ impl DeviceTopologySnapshot {
                     relation: edge.relation,
                     source_kind: source.kind(),
                     target_kind: target.kind(),
+                });
+            }
+            if !edge.relation.accepts_basis(edge.basis) {
+                return Err(DeviceTopologyValidationError::InvalidRelationBasis {
+                    edge_id: edge.id.clone(),
+                    relation: edge.relation,
+                    basis: edge.basis,
+                });
+            }
+            if !edge.relation.accepts_identity(source, target) {
+                return Err(DeviceTopologyValidationError::InvalidRelationIdentity {
+                    edge_id: edge.id.clone(),
+                    relation: edge.relation,
                 });
             }
         }
@@ -138,7 +162,7 @@ pub struct DeviceTopologyIssue {
     deny_unknown_fields
 )]
 pub enum DeviceTopologyEntity {
-    Root {
+    DeviceIntegration {
         id: String,
         integration_id: String,
         display_name: String,
@@ -189,7 +213,7 @@ pub enum DeviceTopologyEntity {
 impl DeviceTopologyEntity {
     pub fn id(&self) -> &str {
         match self {
-            Self::Root { id, .. }
+            Self::DeviceIntegration { id, .. }
             | Self::Provider { id, .. }
             | Self::Connection { id, .. }
             | Self::PluginInstance { id, .. }
@@ -200,7 +224,7 @@ impl DeviceTopologyEntity {
 
     pub fn kind(&self) -> DeviceTopologyEntityKind {
         match self {
-            Self::Root { .. } => DeviceTopologyEntityKind::Root,
+            Self::DeviceIntegration { .. } => DeviceTopologyEntityKind::DeviceIntegration,
             Self::Provider { .. } => DeviceTopologyEntityKind::Provider,
             Self::Connection { .. } => DeviceTopologyEntityKind::Connection,
             Self::PluginInstance { .. } => DeviceTopologyEntityKind::PluginInstance,
@@ -208,12 +232,140 @@ impl DeviceTopologyEntity {
             Self::Device { .. } => DeviceTopologyEntityKind::Device,
         }
     }
+
+    fn validate_fields(&self, index: usize) -> Result<(), DeviceTopologyValidationError> {
+        let prefix = format!("entities[{index}]");
+        require_non_empty(self.id(), format!("{prefix}.id"))?;
+        match self {
+            Self::DeviceIntegration {
+                integration_id,
+                display_name,
+                ..
+            } => {
+                require_non_empty(integration_id, format!("{prefix}.integrationId"))?;
+                require_non_empty(display_name, format!("{prefix}.displayName"))?;
+            }
+            Self::Provider {
+                integration_id,
+                display_name,
+                mode,
+                ..
+            } => {
+                require_non_empty(integration_id, format!("{prefix}.integrationId"))?;
+                require_non_empty(display_name, format!("{prefix}.displayName"))?;
+                require_non_empty(mode, format!("{prefix}.mode"))?;
+            }
+            Self::Connection {
+                integration_id,
+                connection_id,
+                display_name,
+                runtime,
+                ..
+            } => {
+                require_non_empty(integration_id, format!("{prefix}.integrationId"))?;
+                require_non_empty(connection_id, format!("{prefix}.connectionId"))?;
+                require_non_empty(display_name, format!("{prefix}.displayName"))?;
+                validate_runtime(runtime, format!("{prefix}.runtime"))?;
+            }
+            Self::PluginInstance {
+                node_id,
+                node_type,
+                host_id,
+                service_instance_id,
+                display_name,
+                host_display_name,
+                runtime,
+                ..
+            } => {
+                require_non_empty(node_id, format!("{prefix}.nodeId"))?;
+                require_non_empty(node_type, format!("{prefix}.nodeType"))?;
+                require_non_empty(host_id, format!("{prefix}.hostId"))?;
+                require_non_empty(service_instance_id, format!("{prefix}.serviceInstanceId"))?;
+                require_non_empty(display_name, format!("{prefix}.displayName"))?;
+                if let Some(host_display_name) = host_display_name {
+                    require_non_empty(host_display_name, format!("{prefix}.hostDisplayName"))?;
+                }
+                validate_runtime(runtime, format!("{prefix}.runtime"))?;
+            }
+            Self::SourceDevice {
+                source_type,
+                source_id,
+                display_name,
+                runtime,
+                ..
+            } => {
+                require_non_empty(source_type, format!("{prefix}.sourceType"))?;
+                require_non_empty(source_id, format!("{prefix}.sourceId"))?;
+                require_non_empty(display_name, format!("{prefix}.displayName"))?;
+                validate_runtime(runtime, format!("{prefix}.runtime"))?;
+            }
+            Self::Device {
+                entity_id,
+                integration_id,
+                display_name,
+                runtime,
+                ..
+            } => {
+                require_non_empty(entity_id, format!("{prefix}.entityId"))?;
+                require_non_empty(integration_id, format!("{prefix}.integrationId"))?;
+                require_non_empty(display_name, format!("{prefix}.displayName"))?;
+                validate_runtime(runtime, format!("{prefix}.runtime"))?;
+            }
+        }
+        Ok(())
+    }
+}
+
+fn require_non_empty(
+    value: &str,
+    path: impl Into<String>,
+) -> Result<(), DeviceTopologyValidationError> {
+    if value.is_empty() {
+        return Err(DeviceTopologyValidationError::InvalidField {
+            path: path.into(),
+            requirement: "must not be empty",
+        });
+    }
+    Ok(())
+}
+
+fn require_non_negative(
+    value: i64,
+    path: impl Into<String>,
+) -> Result<(), DeviceTopologyValidationError> {
+    if value < 0 {
+        return Err(DeviceTopologyValidationError::InvalidField {
+            path: path.into(),
+            requirement: "must be non-negative",
+        });
+    }
+    Ok(())
+}
+
+fn validate_runtime(
+    runtime: &TopologyRuntime,
+    path: impl Into<String>,
+) -> Result<(), DeviceTopologyValidationError> {
+    if let Some(updated_at_ms) = runtime.updated_at_ms {
+        require_non_negative(updated_at_ms, format!("{}.updatedAtMs", path.into()))?;
+    }
+    Ok(())
+}
+
+fn validate_observation(
+    observation: &TopologyObservation,
+    path: impl Into<String>,
+) -> Result<(), DeviceTopologyValidationError> {
+    require_non_negative(
+        observation.observed_at_ms,
+        format!("{}.observedAtMs", path.into()),
+    )
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum DeviceTopologyEntityKind {
-    Root,
+    DeviceIntegration,
     Provider,
     Connection,
     PluginInstance,
@@ -244,7 +396,7 @@ pub struct DeviceTopologyEdge {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum DeviceTopologyRelation {
-    RootProvider,
+    IntegrationProvider,
     PluginProvider,
     PluginConnection,
     ProviderConnection,
@@ -259,8 +411,11 @@ impl DeviceTopologyRelation {
         use DeviceTopologyEntityKind as Kind;
         matches!(
             (self, source.kind(), target.kind()),
-            (Self::RootProvider, Kind::Root, Kind::Provider)
-                | (Self::PluginProvider, Kind::PluginInstance, Kind::Provider)
+            (
+                Self::IntegrationProvider,
+                Kind::DeviceIntegration,
+                Kind::Provider
+            ) | (Self::PluginProvider, Kind::PluginInstance, Kind::Provider)
                 | (
                     Self::PluginConnection,
                     Kind::PluginInstance,
@@ -272,6 +427,71 @@ impl DeviceTopologyRelation {
                 | (Self::ConnectionSource, Kind::Connection, Kind::SourceDevice)
                 | (Self::SourceDevice, Kind::SourceDevice, Kind::Device)
         )
+    }
+
+    fn accepts_basis(self, basis: DeviceTopologyRelationBasis) -> bool {
+        matches!(
+            (self, basis),
+            (
+                Self::IntegrationProvider,
+                DeviceTopologyRelationBasis::IntegrationInstall
+            ) | (
+                Self::PluginProvider | Self::PluginConnection,
+                DeviceTopologyRelationBasis::PluginBinding
+            ) | (
+                Self::ProviderConnection,
+                DeviceTopologyRelationBasis::ConnectionOwnership
+            ) | (
+                Self::ProviderDevice | Self::ConnectionDevice,
+                DeviceTopologyRelationBasis::TwinSource
+            ) | (
+                Self::ConnectionSource | Self::SourceDevice,
+                DeviceTopologyRelationBasis::SourceProjection
+            )
+        )
+    }
+
+    fn accepts_identity(
+        self,
+        source: &DeviceTopologyEntity,
+        target: &DeviceTopologyEntity,
+    ) -> bool {
+        match (self, source, target) {
+            (
+                Self::ProviderConnection,
+                DeviceTopologyEntity::Provider {
+                    integration_id: provider_integration,
+                    ..
+                },
+                DeviceTopologyEntity::Connection {
+                    integration_id: connection_integration,
+                    ..
+                },
+            ) => provider_integration == connection_integration,
+            (
+                Self::ProviderDevice,
+                DeviceTopologyEntity::Provider {
+                    integration_id: provider_integration,
+                    ..
+                },
+                DeviceTopologyEntity::Device {
+                    integration_id: device_integration,
+                    ..
+                },
+            ) => provider_integration == device_integration,
+            (
+                Self::ConnectionDevice,
+                DeviceTopologyEntity::Connection {
+                    integration_id: connection_integration,
+                    ..
+                },
+                DeviceTopologyEntity::Device {
+                    integration_id: device_integration,
+                    ..
+                },
+            ) => connection_integration == device_integration,
+            _ => true,
+        }
     }
 }
 
@@ -296,10 +516,14 @@ pub struct DeviceTopologyChanged {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeviceTopologyValidationError {
     InvalidContract,
+    InvalidField {
+        path: String,
+        requirement: &'static str,
+    },
     CompleteWithIssues,
     PartialWithoutIssues,
-    MissingRoot,
-    MultipleRoots,
+    MissingDeviceIntegration,
+    MultipleDeviceIntegrations,
     DanglingIssueEntity(String),
     DuplicateEntityId(String),
     DuplicateEdgeId(String),
@@ -314,21 +538,35 @@ pub enum DeviceTopologyValidationError {
         source_kind: DeviceTopologyEntityKind,
         target_kind: DeviceTopologyEntityKind,
     },
+    InvalidRelationBasis {
+        edge_id: String,
+        relation: DeviceTopologyRelation,
+        basis: DeviceTopologyRelationBasis,
+    },
+    InvalidRelationIdentity {
+        edge_id: String,
+        relation: DeviceTopologyRelation,
+    },
 }
 
 impl fmt::Display for DeviceTopologyValidationError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidContract => formatter.write_str("invalid Device Topology contract"),
+            Self::InvalidField { path, requirement } => {
+                write!(formatter, "invalid {path}: {requirement}")
+            }
             Self::CompleteWithIssues => {
                 formatter.write_str("a complete Device Topology snapshot cannot contain issues")
             }
             Self::PartialWithoutIssues => {
                 formatter.write_str("a partial Device Topology snapshot must explain its issues")
             }
-            Self::MissingRoot => formatter.write_str("Device Topology snapshot has no root"),
-            Self::MultipleRoots => {
-                formatter.write_str("Device Topology snapshot has more than one root")
+            Self::MissingDeviceIntegration => {
+                formatter.write_str("Device Topology snapshot has no Device Integration entity")
+            }
+            Self::MultipleDeviceIntegrations => {
+                formatter.write_str("Device Topology snapshot has more than one Device Integration entity")
             }
             Self::DanglingIssueEntity(id) => {
                 write!(formatter, "Device Topology issue references missing entity {id}")
@@ -347,6 +585,18 @@ impl fmt::Display for DeviceTopologyValidationError {
             } => write!(
                 formatter,
                 "edge {edge_id} has invalid endpoints for {relation:?}: {source_kind:?} -> {target_kind:?}"
+            ),
+            Self::InvalidRelationBasis {
+                edge_id,
+                relation,
+                basis,
+            } => write!(
+                formatter,
+                "edge {edge_id} has invalid basis {basis:?} for {relation:?}"
+            ),
+            Self::InvalidRelationIdentity { edge_id, relation } => write!(
+                formatter,
+                "edge {edge_id} connects inconsistent integration identities for {relation:?}"
             ),
         }
     }
@@ -381,8 +631,8 @@ mod tests {
     }
 
     fn graph() -> DeviceTopologySnapshot {
-        let root = DeviceTopologyEntity::Root {
-            id: "root:basic.device".to_string(),
+        let device_integration = DeviceTopologyEntity::DeviceIntegration {
+            id: "integration:basic.device".to_string(),
             integration_id: "basic.device".to_string(),
             display_name: "Devices".to_string(),
         };
@@ -420,10 +670,10 @@ mod tests {
         };
         let edges = vec![
             DeviceTopologyEdge {
-                id: "root-provider".to_string(),
-                source: entity_id(&root),
+                id: "integration-provider".to_string(),
+                source: entity_id(&device_integration),
                 target: entity_id(&provider),
-                relation: DeviceTopologyRelation::RootProvider,
+                relation: DeviceTopologyRelation::IntegrationProvider,
                 basis: DeviceTopologyRelationBasis::IntegrationInstall,
                 durability: TopologyDurability::Durable,
                 observation: observation(),
@@ -482,7 +732,7 @@ mod tests {
             observed_at_ms: 1,
             completeness: DeviceTopologyCompleteness::Complete,
             issues: Vec::new(),
-            entities: vec![root, provider, plugin, connection, device],
+            entities: vec![device_integration, provider, plugin, connection, device],
             edges,
         }
     }
@@ -536,7 +786,8 @@ mod tests {
         snapshot.edges.retain(|edge| {
             matches!(
                 edge.relation,
-                DeviceTopologyRelation::RootProvider | DeviceTopologyRelation::ProviderDevice
+                DeviceTopologyRelation::IntegrationProvider
+                    | DeviceTopologyRelation::ProviderDevice
             )
         });
         snapshot.validate().unwrap();
@@ -564,6 +815,94 @@ mod tests {
             invalid_relation.validate(),
             Err(DeviceTopologyValidationError::InvalidRelationEndpoints { .. })
         ));
+
+        let mut invalid_basis = graph();
+        invalid_basis.edges[0].basis = DeviceTopologyRelationBasis::TwinSource;
+        assert!(matches!(
+            invalid_basis.validate(),
+            Err(DeviceTopologyValidationError::InvalidRelationBasis { .. })
+        ));
+
+        let mut invalid_identity = graph();
+        let DeviceTopologyEntity::Connection { integration_id, .. } =
+            &mut invalid_identity.entities[3]
+        else {
+            panic!("fixture must contain the Connection entity");
+        };
+        *integration_id = "other.device".to_string();
+        assert!(matches!(
+            invalid_identity.validate(),
+            Err(DeviceTopologyValidationError::InvalidRelationIdentity { .. })
+        ));
+    }
+
+    #[test]
+    fn validation_matches_schema_field_constraints() {
+        let mut empty_scope = graph();
+        empty_scope.scope_id.clear();
+        assert_eq!(
+            empty_scope.validate(),
+            Err(DeviceTopologyValidationError::InvalidField {
+                path: "scopeId".to_string(),
+                requirement: "must not be empty",
+            })
+        );
+
+        let mut empty_display_name = graph();
+        let DeviceTopologyEntity::DeviceIntegration { display_name, .. } =
+            &mut empty_display_name.entities[0]
+        else {
+            panic!("fixture must begin with the Device Integration entity");
+        };
+        display_name.clear();
+        assert_eq!(
+            empty_display_name.validate(),
+            Err(DeviceTopologyValidationError::InvalidField {
+                path: "entities[0].displayName".to_string(),
+                requirement: "must not be empty",
+            })
+        );
+
+        let mut negative_runtime_time = graph();
+        let DeviceTopologyEntity::PluginInstance { runtime, .. } =
+            &mut negative_runtime_time.entities[2]
+        else {
+            panic!("fixture must contain the Plugin Instance entity");
+        };
+        runtime.updated_at_ms = Some(-1);
+        assert_eq!(
+            negative_runtime_time.validate(),
+            Err(DeviceTopologyValidationError::InvalidField {
+                path: "entities[2].runtime.updatedAtMs".to_string(),
+                requirement: "must be non-negative",
+            })
+        );
+
+        let mut negative_observation_time = graph();
+        negative_observation_time.edges[0]
+            .observation
+            .observed_at_ms = -1;
+        assert_eq!(
+            negative_observation_time.validate(),
+            Err(DeviceTopologyValidationError::InvalidField {
+                path: "edges[0].observation.observedAtMs".to_string(),
+                requirement: "must be non-negative",
+            })
+        );
+
+        let mut empty_provider_mode = graph();
+        let DeviceTopologyEntity::Provider { mode, .. } = &mut empty_provider_mode.entities[1]
+        else {
+            panic!("fixture must contain the Provider entity");
+        };
+        mode.clear();
+        assert_eq!(
+            empty_provider_mode.validate(),
+            Err(DeviceTopologyValidationError::InvalidField {
+                path: "entities[1].mode".to_string(),
+                requirement: "must not be empty",
+            })
+        );
     }
 
     #[test]
@@ -604,10 +943,23 @@ mod tests {
         .is_err());
 
         assert!(serde_json::from_value::<DeviceTopologyEntity>(json!({
-            "kind": "root",
-            "id": "root:basic.device",
+            "kind": "deviceIntegration",
+            "id": "integration:basic.device",
             "integrationId": "basic.device",
             "displayName": "Devices",
+            "unexpected": true
+        }))
+        .is_err());
+
+        assert!(serde_json::from_value::<DeviceTopologyGetRequest>(json!({
+            "unexpected": true
+        }))
+        .is_err());
+
+        assert!(serde_json::from_value::<DeviceTopologyChanged>(json!({
+            "scopeId": "space-1",
+            "generation": "generation-1",
+            "revision": 1,
             "unexpected": true
         }))
         .is_err());

@@ -8,8 +8,8 @@
   "issues": [],
   "entities": [
     {
-      "kind": "root",
-      "id": "root:basic.device",
+      "kind": "deviceIntegration",
+      "id": "integration:basic.device",
       "integrationId": "basic.device",
       "displayName": "Devices"
     },
@@ -73,10 +73,10 @@
   ],
   "edges": [
     {
-      "id": "edge:root-provider",
-      "source": "root:basic.device",
+      "id": "edge:integration-provider",
+      "source": "integration:basic.device",
       "target": "provider:mlinkMatter.device",
-      "relation": "root-provider",
+      "relation": "integration-provider",
       "basis": "integrationInstall",
       "durability": "durable",
       "observation": {
@@ -149,6 +149,18 @@
       "source": "provider:mlinkMatter.device",
       "target": "device:desk-light",
       "relation": "provider-device",
+      "basis": "twinSource",
+      "durability": "durable",
+      "observation": {
+        "state": "connected",
+        "observedAtMs": 1777777777000
+      }
+    },
+    {
+      "id": "edge:connection-device",
+      "source": "connection:mlinkMatter.device:matter-1",
+      "target": "device:desk-light",
+      "relation": "connection-device",
       "basis": "twinSource",
       "durability": "durable",
       "observation": {

@@ -29,13 +29,48 @@
     },
     "entities": {
       "type": "array",
-      "items": { "$ref": "#/$defs/entity" }
+      "items": { "$ref": "#/$defs/entity" },
+      "contains": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": { "const": "deviceIntegration" }
+        }
+      },
+      "minContains": 1,
+      "maxContains": 1
     },
     "edges": {
       "type": "array",
       "items": { "$ref": "#/$defs/edge" }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "completeness": { "const": "complete" }
+        }
+      },
+      "then": {
+        "properties": {
+          "issues": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "completeness": { "const": "partial" }
+        }
+      },
+      "then": {
+        "properties": {
+          "issues": { "minItems": 1 }
+        }
+      }
+    }
+  ],
   "$defs": {
     "runtime": {
       "type": "object",
@@ -75,7 +110,7 @@
           "required": ["id", "kind", "integrationId", "displayName"],
           "properties": {
             "id": { "type": "string", "minLength": 1 },
-            "kind": { "const": "root" },
+            "kind": { "const": "deviceIntegration" },
             "integrationId": { "type": "string", "minLength": 1 },
             "displayName": { "type": "string", "minLength": 1 }
           }
@@ -96,7 +131,7 @@
             "kind": { "const": "provider" },
             "integrationId": { "type": "string", "minLength": 1 },
             "displayName": { "type": "string", "minLength": 1 },
-            "mode": { "type": "string" },
+            "mode": { "type": "string", "minLength": 1 },
             "multiConnect": { "type": "boolean" }
           }
         },
@@ -209,7 +244,7 @@
         "target": { "type": "string", "minLength": 1 },
         "relation": {
           "enum": [
-            "root-provider",
+            "integration-provider",
             "plugin-provider",
             "plugin-connection",
             "provider-connection",
@@ -230,7 +265,45 @@
         },
         "durability": { "enum": ["durable", "ephemeral"] },
         "observation": { "$ref": "#/$defs/observation" }
-      }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "relation": { "const": "integration-provider" },
+            "basis": { "const": "integrationInstall" }
+          }
+        },
+        {
+          "properties": {
+            "relation": {
+              "enum": ["plugin-provider", "plugin-connection"]
+            },
+            "basis": { "const": "pluginBinding" }
+          }
+        },
+        {
+          "properties": {
+            "relation": { "const": "provider-connection" },
+            "basis": { "const": "connectionOwnership" }
+          }
+        },
+        {
+          "properties": {
+            "relation": {
+              "enum": ["provider-device", "connection-device"]
+            },
+            "basis": { "const": "twinSource" }
+          }
+        },
+        {
+          "properties": {
+            "relation": {
+              "enum": ["connection-source", "source-device"]
+            },
+            "basis": { "const": "sourceProjection" }
+          }
+        }
+      ]
     }
   }
 }
