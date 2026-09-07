@@ -603,8 +603,8 @@ fn routing_manifest_matches_rust_policy() {
 fn topology_snapshot_matches_public_schema() {
     use app_facade_api::topology::{
         TopologyDurability, TopologyEdge, TopologyEntity, TopologyObservation,
-        TopologyObservationState, TopologyRelation, TopologyRelationBasis, TopologySnapshot,
-        CONTRACT,
+        TopologyObservationState, TopologyRelation, TopologyRelationBasis, TopologyRouteKind,
+        TopologyRuntime, TopologyRuntimeState, TopologySnapshot, CONTRACT,
     };
 
     let snapshot = TopologySnapshot {
@@ -625,24 +625,89 @@ fn topology_snapshot_matches_public_schema() {
                 host_id: "machine".to_string(),
                 display_name: "Hub".to_string(),
             },
+            TopologyEntity::Node {
+                id: "node:camera".to_string(),
+                node_id: "camera".to_string(),
+                node_type: "camera".to_string(),
+                host_id: "machine".to_string(),
+                display_name: "Front Door Camera".to_string(),
+                binding_state: "active".to_string(),
+                runtime: TopologyRuntime {
+                    state: TopologyRuntimeState::Healthy,
+                    reason: None,
+                    updated_at_ms: Some(1),
+                },
+            },
+            TopologyEntity::Client {
+                id: "client:a:desktop".to_string(),
+                app_client_id: "a:desktop".to_string(),
+                cur_client_id: Some("L:socket".to_string()),
+                source: "desktop".to_string(),
+                device_type: "desktop".to_string(),
+                display_name: "Living Room Mac".to_string(),
+                is_current: true,
+                route_kind: Some(TopologyRouteKind::CloudBridgeShadow),
+                has_local_credential: true,
+            },
             TopologyEntity::Cloud {
                 id: "cloud:primary".to_string(),
                 display_name: "Cloud".to_string(),
             },
         ],
-        edges: vec![TopologyEdge {
-            id: "hub:h->cloud:primary".to_string(),
-            source: "hub:h".to_string(),
-            target: "cloud:primary".to_string(),
-            relation: TopologyRelation::HubCloud,
-            basis: TopologyRelationBasis::HubCommission,
-            durability: TopologyDurability::Durable,
-            observation: TopologyObservation {
-                state: TopologyObservationState::Disconnected,
-                observed_at_ms: 1,
-                reason: Some("offline".to_string()),
+        edges: vec![
+            TopologyEdge {
+                id: "hub:h->cloud:primary".to_string(),
+                source: "hub:h".to_string(),
+                target: "cloud:primary".to_string(),
+                relation: TopologyRelation::HubCloud,
+                basis: TopologyRelationBasis::HubCommission,
+                durability: TopologyDurability::Durable,
+                observation: TopologyObservation {
+                    state: TopologyObservationState::Disconnected,
+                    observed_at_ms: 1,
+                    reason: Some("offline".to_string()),
+                },
             },
-        }],
+            TopologyEdge {
+                id: "node:camera->hub:h".to_string(),
+                source: "node:camera".to_string(),
+                target: "hub:h".to_string(),
+                relation: TopologyRelation::NodeHub,
+                basis: TopologyRelationBasis::NodeBinding,
+                durability: TopologyDurability::Durable,
+                observation: TopologyObservation {
+                    state: TopologyObservationState::Connected,
+                    observed_at_ms: 1,
+                    reason: None,
+                },
+            },
+            TopologyEdge {
+                id: "client:a:desktop->hub:h".to_string(),
+                source: "client:a:desktop".to_string(),
+                target: "hub:h".to_string(),
+                relation: TopologyRelation::ClientHub,
+                basis: TopologyRelationBasis::LocalCredential,
+                durability: TopologyDurability::Durable,
+                observation: TopologyObservation {
+                    state: TopologyObservationState::Disconnected,
+                    observed_at_ms: 1,
+                    reason: Some("no local route".to_string()),
+                },
+            },
+            TopologyEdge {
+                id: "client:a:desktop->cloud:primary".to_string(),
+                source: "client:a:desktop".to_string(),
+                target: "cloud:primary".to_string(),
+                relation: TopologyRelation::ClientCloud,
+                basis: TopologyRelationBasis::LiveRoute,
+                durability: TopologyDurability::Ephemeral,
+                observation: TopologyObservation {
+                    state: TopologyObservationState::Connected,
+                    observed_at_ms: 1,
+                    reason: None,
+                },
+            },
+        ],
     };
     let schema: Value =
         serde_json::from_str(include_str!("../schema/topology.v1.schema.json")).unwrap();

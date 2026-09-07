@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://mhome.ai/schema/space-topology.v1.schema.json",
-  "title": "mHome Space Topology",
+  "title": "MeowLink Space Topology",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -9,7 +9,7 @@ pub const CHANGED_TARGET: &str = "/app/topology/changed";
 pub struct TopologyGetRequest {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TopologySnapshot {
     pub contract: String,
     pub scope_id: String,
@@ -26,7 +26,8 @@ pub struct TopologySnapshot {
 #[serde(
     tag = "kind",
     rename_all = "camelCase",
-    rename_all_fields = "camelCase"
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
 )]
 pub enum TopologyEntity {
     Host {
@@ -69,7 +70,7 @@ pub enum TopologyEntity {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TopologyRuntime {
     pub state: TopologyRuntimeState,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -95,7 +96,7 @@ pub enum TopologyRouteKind {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TopologyEdge {
     pub id: String,
     pub source: String,
@@ -132,7 +133,7 @@ pub enum TopologyDurability {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TopologyObservation {
     pub state: TopologyObservationState,
     pub observed_at_ms: i64,
@@ -149,7 +150,7 @@ pub enum TopologyObservationState {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TopologyChanged {
     pub scope_id: String,
     pub generation: String,
@@ -159,6 +160,7 @@ pub struct TopologyChanged {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
 
     #[test]
     fn topology_contract_uses_stable_wire_names() {
@@ -194,5 +196,62 @@ mod tests {
         assert_eq!(edge["relation"], "client-hub");
         assert_eq!(edge["basis"], "localCredential");
         assert_eq!(edge["observation"]["state"], "disconnected");
+    }
+
+    #[test]
+    fn topology_contract_rejects_unknown_fields_at_every_object_boundary() {
+        assert!(serde_json::from_value::<TopologySnapshot>(json!({
+            "contract": CONTRACT,
+            "scopeId": "space-1",
+            "generation": "generation-1",
+            "revision": 1,
+            "observedAtMs": 1,
+            "entities": [],
+            "edges": [],
+            "unexpected": true
+        }))
+        .is_err());
+
+        assert!(serde_json::from_value::<TopologyEntity>(json!({
+            "id": "host:machine",
+            "kind": "host",
+            "hostId": "machine",
+            "displayName": "Machine",
+            "unexpected": true
+        }))
+        .is_err());
+
+        assert!(serde_json::from_value::<TopologyRuntime>(json!({
+            "state": "healthy",
+            "unexpected": true
+        }))
+        .is_err());
+
+        assert!(serde_json::from_value::<TopologyEdge>(json!({
+            "id": "hub:h->cloud:primary",
+            "source": "hub:h",
+            "target": "cloud:primary",
+            "relation": "hub-cloud",
+            "basis": "hubCommission",
+            "durability": "durable",
+            "observation": { "state": "connected", "observedAtMs": 1 },
+            "unexpected": true
+        }))
+        .is_err());
+
+        assert!(serde_json::from_value::<TopologyObservation>(json!({
+            "state": "connected",
+            "observedAtMs": 1,
+            "unexpected": true
+        }))
+        .is_err());
+
+        assert!(serde_json::from_value::<TopologyChanged>(json!({
+            "scopeId": "space-1",
+            "generation": "generation-1",
+            "revision": 1,
+            "unexpected": true
+        }))
+        .is_err());
     }
 }
