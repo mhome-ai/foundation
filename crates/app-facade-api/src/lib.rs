@@ -12,6 +12,7 @@ pub mod messaging;
 pub mod plugin;
 pub mod routing;
 pub mod runtime;
+pub mod topology;
 
 pub use call::{ActionMode, FacadeCall, FacadeControl, ResponseFormat};
 

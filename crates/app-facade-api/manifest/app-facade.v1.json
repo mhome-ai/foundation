@@ -36,6 +36,12 @@
       "requestTargets": ["/app/runtime/status/list"],
       "eventTargets": ["/app/runtime/status/changed"]
     },
+    "topology": {
+      "contract": "mhome.space.topology.v1",
+      "schema": "schema/topology.v1.schema.json",
+      "requestTargets": ["/app/topology/get"],
+      "eventTargets": ["/app/topology/changed"]
+    },
     "interactionFlow": {
       "schema": "schema/interaction-flow-app.v1.schema.json",
       "requestTargets": [

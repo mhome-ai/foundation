@@ -116,6 +116,10 @@ mod tests {
             Some(RELAYABLE_HUB)
         );
         assert_eq!(
+            route_policy_for_target(crate::topology::GET_TARGET),
+            Some(RELAYABLE_HUB)
+        );
+        assert_eq!(
             route_policy_for_target(crate::plugin::ADD_START_TARGET),
             Some(DIRECT_HUB)
         );
@@ -137,6 +141,10 @@ mod tests {
         );
         assert_eq!(
             route_policy_for_target("/app/runtime/status/list"),
+            Some(DIRECT_HUB)
+        );
+        assert_eq!(
+            route_policy_for_target(crate::topology::CHANGED_TARGET),
             Some(DIRECT_HUB)
         );
         assert_eq!(

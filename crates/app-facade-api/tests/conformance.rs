@@ -598,3 +598,54 @@ fn routing_manifest_matches_rust_policy() {
         );
     }
 }
+
+#[test]
+fn topology_snapshot_matches_public_schema() {
+    use app_facade_api::topology::{
+        TopologyDurability, TopologyEdge, TopologyEntity, TopologyObservation,
+        TopologyObservationState, TopologyRelation, TopologyRelationBasis, TopologySnapshot,
+        CONTRACT,
+    };
+
+    let snapshot = TopologySnapshot {
+        contract: CONTRACT.to_string(),
+        scope_id: "space-1".to_string(),
+        generation: "generation-1".to_string(),
+        revision: 1,
+        observed_at_ms: 1,
+        entities: vec![
+            TopologyEntity::Host {
+                id: "host:machine".to_string(),
+                host_id: "machine".to_string(),
+                display_name: "Machine".to_string(),
+            },
+            TopologyEntity::Hub {
+                id: "hub:h".to_string(),
+                hub_id: "h".to_string(),
+                host_id: "machine".to_string(),
+                display_name: "Hub".to_string(),
+            },
+            TopologyEntity::Cloud {
+                id: "cloud:primary".to_string(),
+                display_name: "Cloud".to_string(),
+            },
+        ],
+        edges: vec![TopologyEdge {
+            id: "hub:h->cloud:primary".to_string(),
+            source: "hub:h".to_string(),
+            target: "cloud:primary".to_string(),
+            relation: TopologyRelation::HubCloud,
+            basis: TopologyRelationBasis::HubCommission,
+            durability: TopologyDurability::Durable,
+            observation: TopologyObservation {
+                state: TopologyObservationState::Disconnected,
+                observed_at_ms: 1,
+                reason: Some("offline".to_string()),
+            },
+        }],
+    };
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/topology.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    assert!(validator.is_valid(&serde_json::to_value(snapshot).unwrap()));
+}

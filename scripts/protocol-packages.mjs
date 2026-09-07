@@ -46,6 +46,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       routing: "schema/routing.v1.schema.json",
       hubState: "schema/hub-state.v1.schema.json",
       localHubState: "schema/local-hub-state.v1.schema.json",
+      topology: "schema/topology.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",

@@ -27,6 +27,7 @@ const HUB_PREFIXES: &[&str] = &[
     "/app/interaction-flow/",
     "/app/object-storage/",
     "/app/runtime/",
+    "/app/topology/",
 ];
 
 const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
@@ -44,4 +45,5 @@ pub const CLOUD_RELAY_TARGETS: &[&str] = &[
     "/app/object-storage/folders/update",
     "/app/object-storage/folders/list",
     "/app/object-storage/settings/update",
+    "/app/topology/get",
 ];

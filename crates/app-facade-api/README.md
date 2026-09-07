@@ -28,6 +28,12 @@ its complete referenced value is available and which visible inputs can make
 it stale, so clients can resolve it reactively without learning handlers or
 the hidden graph.
 
+`topology` exposes the Hub-owned Space network projection. Stable Host, Hub,
+Node, AppClient, and Cloud identities are separate from current transport
+sessions. Durable relations remain present while disconnected and carry an
+explicit observation state so clients can distinguish expected topology from
+the currently observed path.
+
 ## Routing contract
 
 `manifest/routing.v1.json` is the canonical client-side routing policy for the

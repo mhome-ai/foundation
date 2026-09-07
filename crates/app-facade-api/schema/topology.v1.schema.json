@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/space-topology.v1.schema.json",
+  "title": "mHome Space Topology",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "scopeId",
+    "generation",
+    "revision",
+    "observedAtMs",
+    "entities",
+    "edges"
+  ],
+  "properties": {
+    "contract": { "const": "mhome.space.topology.v1" },
+    "scopeId": { "type": "string", "minLength": 1 },
+    "generation": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 0 },
+    "observedAtMs": { "type": "integer", "minimum": 0 },
+    "entities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entity" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    }
+  },
+  "$defs": {
+    "baseEntity": {
+      "type": "object",
+      "required": ["id", "kind", "displayName"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string" },
+        "displayName": { "type": "string", "minLength": 1 }
+      }
+    },
+    "entity": {
+      "oneOf": [
+        {
+          "allOf": [
+            { "$ref": "#/$defs/baseEntity" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "kind", "hostId", "displayName"],
+              "properties": {
+                "id": { "type": "string" },
+                "kind": { "const": "host" },
+                "hostId": { "type": "string", "minLength": 1 },
+                "displayName": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "hubId", "hostId", "displayName"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "const": "hub" },
+            "hubId": { "type": "string", "minLength": 1 },
+            "hostId": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "nodeId",
+            "nodeType",
+            "hostId",
+            "displayName",
+            "bindingState",
+            "runtime"
+          ],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "const": "node" },
+            "nodeId": { "type": "string", "minLength": 1 },
+            "nodeType": { "type": "string", "minLength": 1 },
+            "hostId": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string", "minLength": 1 },
+            "bindingState": { "type": "string", "minLength": 1 },
+            "runtime": { "$ref": "#/$defs/runtime" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "appClientId",
+            "source",
+            "deviceType",
+            "displayName",
+            "isCurrent",
+            "hasLocalCredential"
+          ],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "const": "client" },
+            "appClientId": { "type": "string", "minLength": 1 },
+            "curClientId": { "type": "string", "minLength": 1 },
+            "source": { "type": "string" },
+            "deviceType": { "type": "string" },
+            "displayName": { "type": "string", "minLength": 1 },
+            "isCurrent": { "type": "boolean" },
+            "routeKind": {
+              "enum": ["localDirect", "cloudBridgeShadow"]
+            },
+            "hasLocalCredential": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "displayName"],
+          "properties": {
+            "id": { "const": "cloud:primary" },
+            "kind": { "const": "cloud" },
+            "displayName": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": { "enum": ["healthy", "degraded", "offline", "unknown"] },
+        "reason": { "type": "string" },
+        "updatedAtMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "target",
+        "relation",
+        "basis",
+        "durability",
+        "observation"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 },
+        "relation": {
+          "enum": ["hub-cloud", "node-hub", "client-hub", "client-cloud"]
+        },
+        "basis": {
+          "enum": ["hubCommission", "nodeBinding", "localCredential", "liveRoute"]
+        },
+        "durability": { "enum": ["durable", "ephemeral"] },
+        "observation": { "$ref": "#/$defs/observation" }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "observedAtMs"],
+      "properties": {
+        "state": { "enum": ["connected", "disconnected", "unknown"] },
+        "observedAtMs": { "type": "integer", "minimum": 0 },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

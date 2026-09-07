@@ -29,7 +29,8 @@
       "/app/plugin/",
       "/app/interaction-flow/",
       "/app/object-storage/",
-      "/app/runtime/"
+      "/app/runtime/",
+      "/app/topology/"
     ],
     "requestPlacementPrefixes": [
       "/app/messaging/"
@@ -43,7 +44,8 @@
       "/app/object-storage/folders/get",
       "/app/object-storage/folders/update",
       "/app/object-storage/folders/list",
-      "/app/object-storage/settings/update"
+      "/app/object-storage/settings/update",
+      "/app/topology/get"
     ]
   }
 }
