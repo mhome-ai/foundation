@@ -13,6 +13,7 @@ const SURFACE_VERSION: &str = "cs1";
 /// clients and provider payloads must not choose a surface directly.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ConversationSurface {
+    Node { node_type: String, node_id: String, endpoint_id: String },
     ClientPersonal {
         user_id: String,
     },
@@ -45,6 +46,9 @@ impl fmt::Display for SurfaceParseError {
 impl std::error::Error for SurfaceParseError {}
 
 impl ConversationSurface {
+    pub fn node(node_type: impl Into<String>, node_id: impl Into<String>, endpoint_id: impl Into<String>) -> Result<Self, SurfaceParseError> {
+        Ok(Self::Node { node_type: normalize_provider(node_type.into())?, node_id: required(node_id.into())?, endpoint_id: required(endpoint_id.into())? })
+    }
     pub fn client_personal(user_id: impl Into<String>) -> Result<Self, SurfaceParseError> {
         Ok(Self::ClientPersonal {
             user_id: required(user_id.into())?,
@@ -88,6 +92,7 @@ impl ConversationSurface {
     #[must_use]
     pub fn canonical_id(&self) -> String {
         match self {
+            Self::Node { node_type, node_id, endpoint_id } => format!("{SURFACE_VERSION}:n:{node_type}:{}:{}", encode(node_id), encode(endpoint_id)),
             Self::ClientPersonal { user_id } => {
                 format!("{SURFACE_VERSION}:cp:{}", encode(user_id))
             }
@@ -131,7 +136,7 @@ impl ConversationSurface {
 
     #[must_use]
     pub fn is_group(&self) -> bool {
-        !self.is_personal()
+        matches!(self, Self::ClientGroup { .. } | Self::MessagingGroup { .. })
     }
 
     #[must_use]
@@ -141,7 +146,7 @@ impl ConversationSurface {
 
     #[must_use]
     pub fn is_messaging(&self) -> bool {
-        !self.is_client()
+        matches!(self, Self::MessagingPersonal { .. } | Self::MessagingGroup { .. })
     }
 
     #[must_use]
@@ -210,6 +215,7 @@ impl FromStr for ConversationSurface {
             return Err(SurfaceParseError);
         }
         let surface = match parts.as_slice() {
+            [_, "n", node_type, node_id, endpoint_id] => Self::node(*node_type, decode(node_id)?, decode(endpoint_id)?),
             [_, "cp", user_id] => Self::client_personal(decode(user_id)?),
             [_, "cg", group_id] => Self::client_group(decode(group_id)?),
             [_, kind @ ("mp" | "mg"), provider, account_id, conversation_id] => messaging(
@@ -336,6 +342,7 @@ mod tests {
     #[test]
     fn all_surface_variants_round_trip_canonically() {
         let surfaces = [
+            ConversationSurface::node("audioBridge", "node:1", "speaker:1").unwrap(),
             ConversationSurface::client_personal("user:1").unwrap(),
             ConversationSurface::client_group("group:1").unwrap(),
             ConversationSurface::messaging_personal("Telegram", "bot:1", "chat:2", None).unwrap(),

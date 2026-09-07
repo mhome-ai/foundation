@@ -2,6 +2,10 @@
   "manifest": "mhome.core.v1",
   "contractVersion": "1.5.0",
   "protocols": {
+    "agentGateway": {
+      "submitTarget": "/agent/submit",
+      "replyTarget": "/{nodeType}/agent/reply"
+    },
     "llm": {
       "completeTarget": "/llm/complete"
     },
@@ -48,7 +52,6 @@
         "smartSpeakerUpdate": "smart-speaker/update",
         "smartSpeakerRemove": "smart-speaker/remove"
       },
-      "agentAudioSubmitTarget": "/app/agent/audio/submit",
       "agentReplyTarget": "/audiobridge/agent/reply"
     },
     "messaging": {

@@ -157,26 +157,7 @@ pub struct SmartSpeakerMutationResponse {
     pub smart_speaker: Option<SmartSpeaker>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AgentReplyRequest {
-    pub interaction_id: String,
-    pub smart_speaker_id: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub conversation_id: Option<String>,
-    pub audio: AgentAudioReference,
-    #[serde(default = "default_true")]
-    pub final_reply: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AgentAudioReference {
-    pub uri: String,
-    pub mime_type: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub duration_ms: Option<u64>,
-}
+pub use super::agent_gateway::ReplyRequest as AgentReplyRequest;
 
 const fn default_true() -> bool {
     true
@@ -226,8 +207,8 @@ mod tests {
         );
         assert_eq!(contract["agentReplyTarget"], AGENT_REPLY_TARGET);
         assert_eq!(
-            contract["agentAudioSubmitTarget"],
-            crate::node::contracts::agent_audio::SUBMIT_TARGET
+            manifest["protocols"]["agentGateway"]["submitTarget"],
+            crate::node::contracts::agent_gateway::SUBMIT_TARGET
         );
     }
 
