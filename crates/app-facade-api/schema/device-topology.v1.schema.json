@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/device-topology.v1.schema.json",
+  "title": "MeowLink Device Topology",
+  "description": "A Device Integration relationship graph. Edge direction is semantic and does not imply hierarchy, containment, single-parent ownership, or acyclicity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "scopeId",
+    "generation",
+    "revision",
+    "observedAtMs",
+    "completeness",
+    "issues",
+    "entities",
+    "edges"
+  ],
+  "properties": {
+    "contract": { "const": "mhome.device.topology.v1" },
+    "scopeId": { "type": "string", "minLength": 1 },
+    "generation": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 0 },
+    "observedAtMs": { "type": "integer", "minimum": 0 },
+    "completeness": { "enum": ["complete", "partial"] },
+    "issues": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/issue" }
+    },
+    "entities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entity" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    }
+  },
+  "$defs": {
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": { "enum": ["healthy", "degraded", "offline", "unknown"] },
+        "reason": { "type": "string" },
+        "updatedAtMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "observedAtMs"],
+      "properties": {
+        "state": { "enum": ["connected", "disconnected", "unknown"] },
+        "observedAtMs": { "type": "integer", "minimum": 0 },
+        "reason": { "type": "string" }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "entityId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "entity": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "integrationId", "displayName"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "const": "root" },
+            "integrationId": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "integrationId",
+            "displayName",
+            "mode",
+            "multiConnect"
+          ],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "const": "provider" },
+            "integrationId": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string", "minLength": 1 },
+            "mode": { "type": "string" },
+            "multiConnect": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "integrationId",
+            "connectionId",
+            "displayName",
+            "runtime"
+          ],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "const": "connection" },
+            "integrationId": { "type": "string", "minLength": 1 },
+            "connectionId": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string", "minLength": 1 },
+            "runtime": { "$ref": "#/$defs/runtime" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "nodeId",
+            "nodeType",
+            "hostId",
+            "serviceInstanceId",
+            "displayName",
+            "runtime"
+          ],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "const": "pluginInstance" },
+            "nodeId": { "type": "string", "minLength": 1 },
+            "nodeType": { "type": "string", "minLength": 1 },
+            "hostId": { "type": "string", "minLength": 1 },
+            "serviceInstanceId": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string", "minLength": 1 },
+            "hostDisplayName": { "type": "string", "minLength": 1 },
+            "runtime": { "$ref": "#/$defs/runtime" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "sourceType",
+            "sourceId",
+            "displayName",
+            "role",
+            "runtime"
+          ],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "const": "sourceDevice" },
+            "sourceType": { "type": "string", "minLength": 1 },
+            "sourceId": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string", "minLength": 1 },
+            "role": { "enum": ["bridge", "device", "unknown"] },
+            "runtime": { "$ref": "#/$defs/runtime" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "entityId",
+            "integrationId",
+            "displayName",
+            "enabled",
+            "runtime"
+          ],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "const": "device" },
+            "entityId": { "type": "string", "minLength": 1 },
+            "integrationId": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string", "minLength": 1 },
+            "enabled": { "type": "boolean" },
+            "runtime": { "$ref": "#/$defs/runtime" }
+          }
+        }
+      ]
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "target",
+        "relation",
+        "basis",
+        "durability",
+        "observation"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 },
+        "relation": {
+          "enum": [
+            "root-provider",
+            "plugin-provider",
+            "plugin-connection",
+            "provider-connection",
+            "provider-device",
+            "connection-device",
+            "connection-source",
+            "source-device"
+          ]
+        },
+        "basis": {
+          "enum": [
+            "integrationInstall",
+            "pluginBinding",
+            "connectionOwnership",
+            "twinSource",
+            "sourceProjection"
+          ]
+        },
+        "durability": { "enum": ["durable", "ephemeral"] },
+        "observation": { "$ref": "#/$defs/observation" }
+      }
+    }
+  }
+}

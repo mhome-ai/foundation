@@ -714,3 +714,45 @@ fn topology_snapshot_matches_public_schema() {
     let validator = jsonschema::validator_for(&schema).unwrap();
     assert!(validator.is_valid(&serde_json::to_value(snapshot).unwrap()));
 }
+
+#[test]
+fn device_topology_snapshots_match_public_schema_and_graph_invariants() {
+    use app_facade_api::device_topology::DeviceTopologySnapshot;
+
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/device-topology.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+
+    for fixture in [
+        include_str!("../fixtures/device-topology.snapshot.json"),
+        include_str!("../fixtures/device-topology.partial.json"),
+    ] {
+        let value: Value = serde_json::from_str(fixture).unwrap();
+        let errors = validator
+            .iter_errors(&value)
+            .map(|error| error.to_string())
+            .collect::<Vec<_>>();
+        assert!(
+            errors.is_empty(),
+            "Device Topology fixture failed: {errors:?}"
+        );
+
+        let snapshot: DeviceTopologySnapshot = serde_json::from_value(value).unwrap();
+        snapshot.validate().unwrap();
+    }
+}
+
+#[test]
+fn device_topology_is_registered_in_the_app_facade_manifest() {
+    use app_facade_api::device_topology::{CHANGED_TARGET, CONTRACT, GET_TARGET};
+
+    let manifest: Value =
+        serde_json::from_str(include_str!("../manifest/app-facade.v1.json")).unwrap();
+    assert_eq!(manifest["contractVersion"], env!("CARGO_PKG_VERSION"));
+
+    let domain = &manifest["domains"]["deviceTopology"];
+    assert_eq!(domain["contract"], CONTRACT);
+    assert_eq!(domain["schema"], "schema/device-topology.v1.schema.json");
+    assert_eq!(domain["requestTargets"], serde_json::json!([GET_TARGET]));
+    assert_eq!(domain["eventTargets"], serde_json::json!([CHANGED_TARGET]));
+}

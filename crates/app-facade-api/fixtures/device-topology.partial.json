@@ -1,0 +1,70 @@
+{
+  "contract": "mhome.device.topology.v1",
+  "scopeId": "space-1",
+  "generation": "generation-1",
+  "revision": 8,
+  "observedAtMs": 1777777778000,
+  "completeness": "partial",
+  "issues": [
+    {
+      "code": "matterUnavailable",
+      "message": "Matter device details are temporarily unavailable",
+      "entityId": "connection:mlinkMatter.device:matter-1"
+    }
+  ],
+  "entities": [
+    {
+      "kind": "root",
+      "id": "root:basic.device",
+      "integrationId": "basic.device",
+      "displayName": "Devices"
+    },
+    {
+      "kind": "provider",
+      "id": "provider:mlinkMatter.device",
+      "integrationId": "mlinkMatter.device",
+      "displayName": "Matter",
+      "mode": "local",
+      "multiConnect": false
+    },
+    {
+      "kind": "connection",
+      "id": "connection:mlinkMatter.device:matter-1",
+      "integrationId": "mlinkMatter.device",
+      "connectionId": "matter-1",
+      "displayName": "Living Room Mac",
+      "runtime": {
+        "state": "offline",
+        "reason": "Service unavailable",
+        "updatedAtMs": 1777777778000
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge:root-provider",
+      "source": "root:basic.device",
+      "target": "provider:mlinkMatter.device",
+      "relation": "root-provider",
+      "basis": "integrationInstall",
+      "durability": "durable",
+      "observation": {
+        "state": "connected",
+        "observedAtMs": 1777777778000
+      }
+    },
+    {
+      "id": "edge:provider-connection",
+      "source": "provider:mlinkMatter.device",
+      "target": "connection:mlinkMatter.device:matter-1",
+      "relation": "provider-connection",
+      "basis": "connectionOwnership",
+      "durability": "durable",
+      "observation": {
+        "state": "disconnected",
+        "observedAtMs": 1777777778000,
+        "reason": "Service unavailable"
+      }
+    }
+  ]
+}

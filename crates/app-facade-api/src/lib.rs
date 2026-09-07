@@ -6,6 +6,7 @@
 //! `control`.
 
 pub mod call;
+pub mod device_topology;
 pub mod hub;
 pub mod interaction_flow;
 pub mod messaging;

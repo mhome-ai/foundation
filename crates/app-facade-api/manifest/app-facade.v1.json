@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.5.1",
+  "contractVersion": "1.6.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -41,6 +41,12 @@
       "schema": "schema/topology.v1.schema.json",
       "requestTargets": ["/app/topology/get"],
       "eventTargets": ["/app/topology/changed"]
+    },
+    "deviceTopology": {
+      "contract": "mhome.device.topology.v1",
+      "schema": "schema/device-topology.v1.schema.json",
+      "requestTargets": ["/app/device/topology/get"],
+      "eventTargets": ["/app/device/topology/changed"]
     },
     "interactionFlow": {
       "schema": "schema/interaction-flow-app.v1.schema.json",

@@ -1,0 +1,160 @@
+{
+  "contract": "mhome.device.topology.v1",
+  "scopeId": "space-1",
+  "generation": "generation-1",
+  "revision": 7,
+  "observedAtMs": 1777777777000,
+  "completeness": "complete",
+  "issues": [],
+  "entities": [
+    {
+      "kind": "root",
+      "id": "root:basic.device",
+      "integrationId": "basic.device",
+      "displayName": "Devices"
+    },
+    {
+      "kind": "provider",
+      "id": "provider:mlinkMatter.device",
+      "integrationId": "mlinkMatter.device",
+      "displayName": "Matter",
+      "mode": "local",
+      "multiConnect": false
+    },
+    {
+      "kind": "connection",
+      "id": "connection:mlinkMatter.device:matter-1",
+      "integrationId": "mlinkMatter.device",
+      "connectionId": "matter-1",
+      "displayName": "Living Room Mac",
+      "runtime": {
+        "state": "healthy",
+        "updatedAtMs": 1777777777000
+      }
+    },
+    {
+      "kind": "pluginInstance",
+      "id": "plugin:matter-1",
+      "nodeId": "matter-1",
+      "nodeType": "matter",
+      "hostId": "host-1",
+      "serviceInstanceId": "service-1",
+      "displayName": "Matter Service",
+      "hostDisplayName": "Living Room Mac",
+      "runtime": {
+        "state": "healthy",
+        "updatedAtMs": 1777777777000
+      }
+    },
+    {
+      "kind": "sourceDevice",
+      "id": "source:matter:node-123",
+      "sourceType": "matter",
+      "sourceId": "node-123",
+      "displayName": "Aqara Matter Bridge",
+      "role": "bridge",
+      "runtime": {
+        "state": "healthy",
+        "updatedAtMs": 1777777777000
+      }
+    },
+    {
+      "kind": "device",
+      "id": "device:desk-light",
+      "entityId": "desk-light",
+      "integrationId": "mlinkMatter.device",
+      "displayName": "Desk Light",
+      "enabled": true,
+      "runtime": {
+        "state": "healthy",
+        "updatedAtMs": 1777777777000
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge:root-provider",
+      "source": "root:basic.device",
+      "target": "provider:mlinkMatter.device",
+      "relation": "root-provider",
+      "basis": "integrationInstall",
+      "durability": "durable",
+      "observation": {
+        "state": "connected",
+        "observedAtMs": 1777777777000
+      }
+    },
+    {
+      "id": "edge:plugin-provider",
+      "source": "plugin:matter-1",
+      "target": "provider:mlinkMatter.device",
+      "relation": "plugin-provider",
+      "basis": "pluginBinding",
+      "durability": "durable",
+      "observation": {
+        "state": "connected",
+        "observedAtMs": 1777777777000
+      }
+    },
+    {
+      "id": "edge:plugin-connection",
+      "source": "plugin:matter-1",
+      "target": "connection:mlinkMatter.device:matter-1",
+      "relation": "plugin-connection",
+      "basis": "pluginBinding",
+      "durability": "durable",
+      "observation": {
+        "state": "connected",
+        "observedAtMs": 1777777777000
+      }
+    },
+    {
+      "id": "edge:provider-connection",
+      "source": "provider:mlinkMatter.device",
+      "target": "connection:mlinkMatter.device:matter-1",
+      "relation": "provider-connection",
+      "basis": "connectionOwnership",
+      "durability": "durable",
+      "observation": {
+        "state": "connected",
+        "observedAtMs": 1777777777000
+      }
+    },
+    {
+      "id": "edge:connection-source",
+      "source": "connection:mlinkMatter.device:matter-1",
+      "target": "source:matter:node-123",
+      "relation": "connection-source",
+      "basis": "sourceProjection",
+      "durability": "durable",
+      "observation": {
+        "state": "connected",
+        "observedAtMs": 1777777777000
+      }
+    },
+    {
+      "id": "edge:source-device",
+      "source": "source:matter:node-123",
+      "target": "device:desk-light",
+      "relation": "source-device",
+      "basis": "sourceProjection",
+      "durability": "durable",
+      "observation": {
+        "state": "connected",
+        "observedAtMs": 1777777777000
+      }
+    },
+    {
+      "id": "edge:provider-device",
+      "source": "provider:mlinkMatter.device",
+      "target": "device:desk-light",
+      "relation": "provider-device",
+      "basis": "twinSource",
+      "durability": "durable",
+      "observation": {
+        "state": "connected",
+        "observedAtMs": 1777777777000
+      }
+    }
+  ]
+}
