@@ -26,11 +26,8 @@ pub struct DeviceTopologySnapshot {
     pub revision: u64,
     pub observed_at_ms: i64,
     pub completeness: DeviceTopologyCompleteness,
-    #[serde(default)]
     pub issues: Vec<DeviceTopologyIssue>,
-    #[serde(default)]
     pub entities: Vec<DeviceTopologyEntity>,
-    #[serde(default)]
     pub edges: Vec<DeviceTopologyEdge>,
 }
 

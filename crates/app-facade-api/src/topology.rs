@@ -16,9 +16,7 @@ pub struct TopologySnapshot {
     pub generation: String,
     pub revision: u64,
     pub observed_at_ms: i64,
-    #[serde(default)]
     pub entities: Vec<TopologyEntity>,
-    #[serde(default)]
     pub edges: Vec<TopologyEdge>,
 }
 
