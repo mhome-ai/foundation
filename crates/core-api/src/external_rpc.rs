@@ -6,7 +6,7 @@ use crate::{
 };
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 11;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 12;
 pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
 pub const ARTIFACT_UPLOAD_PATH_PREFIX: &str = "/artifact/v1/upload/";
 
@@ -169,10 +169,29 @@ pub enum ExternalCoreEventKind {
     MdnsRecordsChanged,
     ServiceEffects,
     HostRuntimeRequest,
+    MessagingDeliveryRequested,
     ServiceAppFacadeRequest,
     ScopeOwnedDataPurgeRequested,
     ArtifactDeliveryProjectionRequested,
     ArtifactUploadProjectionRequested,
+}
+
+/// Messaging-only Core -> Host request. A successful response means delivery was accepted by
+/// the provider implementation, not merely queued in the Core event pump or read by a user.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MessagingDeliveryRequest {
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub surface_id: String,
+    pub target: String,
+    pub payload: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MessagingDeliveryResponse {
+    pub delivered: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -395,7 +414,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn external_events_use_the_v11_wire_shape() {
+    fn messaging_delivery_is_a_closed_request_response_contract() {
+        let request = serde_json::json!({"tenantId":"t", "scopeId":"s", "surfaceId":"m",
+            "target":"/chat/event", "payload":"{}"});
+        let decoded: MessagingDeliveryRequest = serde_json::from_value(request.clone()).unwrap();
+        assert_eq!(serde_json::to_value(decoded).unwrap(), request);
+        let mut invalid = request;
+        invalid["unknown"] = serde_json::json!(true);
+        assert!(serde_json::from_value::<MessagingDeliveryRequest>(invalid).is_err());
+        assert!(
+            serde_json::from_value::<MessagingDeliveryResponse>(serde_json::json!({})).is_err()
+        );
+        assert_eq!(
+            serde_json::to_value(ExternalCoreEventKind::MessagingDeliveryRequested).unwrap(),
+            "messagingDeliveryRequested"
+        );
+    }
+
+    #[test]
+    fn external_events_use_the_v12_wire_shape() {
         let event = ExternalCoreEvent {
             event_id: "event-1".to_string(),
             kind: ExternalCoreEventKind::ScopeOwnedDataPurgeRequested,
@@ -408,7 +445,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 11);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 12);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");

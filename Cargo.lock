@@ -706,7 +706,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.4.2"
+version = "1.5.0"
 dependencies = [
  "jsonschema",
  "mhome-artifact-api",

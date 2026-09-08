@@ -1022,13 +1022,6 @@ pub enum ServiceCoreEffect {
     NodeDisconnect {
         connection_key: String,
     },
-    Surface {
-        tenant_id: String,
-        scope_id: String,
-        surface_id: String,
-        target: String,
-        payload: String,
-    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
