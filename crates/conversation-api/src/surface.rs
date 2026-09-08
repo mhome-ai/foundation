@@ -13,7 +13,12 @@ const SURFACE_VERSION: &str = "cs1";
 /// clients and provider payloads must not choose a surface directly.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ConversationSurface {
-    Node { node_type: String, node_id: String, endpoint_id: String, user_id: String },
+    Node {
+        node_type: String,
+        node_id: String,
+        endpoint_id: String,
+        user_id: String,
+    },
     ClientPersonal {
         user_id: String,
     },
@@ -46,8 +51,18 @@ impl fmt::Display for SurfaceParseError {
 impl std::error::Error for SurfaceParseError {}
 
 impl ConversationSurface {
-    pub fn node(node_type: impl Into<String>, node_id: impl Into<String>, endpoint_id: impl Into<String>, user_id: impl Into<String>) -> Result<Self, SurfaceParseError> {
-        Ok(Self::Node { node_type: normalize_provider(node_type.into())?, node_id: required(node_id.into())?, endpoint_id: required(endpoint_id.into())?, user_id: required(user_id.into())? })
+    pub fn node(
+        node_type: impl Into<String>,
+        node_id: impl Into<String>,
+        endpoint_id: impl Into<String>,
+        user_id: impl Into<String>,
+    ) -> Result<Self, SurfaceParseError> {
+        Ok(Self::Node {
+            node_type: normalize_provider(node_type.into())?,
+            node_id: required(node_id.into())?,
+            endpoint_id: required(endpoint_id.into())?,
+            user_id: required(user_id.into())?,
+        })
     }
     pub fn client_personal(user_id: impl Into<String>) -> Result<Self, SurfaceParseError> {
         Ok(Self::ClientPersonal {
@@ -92,7 +107,17 @@ impl ConversationSurface {
     #[must_use]
     pub fn canonical_id(&self) -> String {
         match self {
-            Self::Node { node_type, node_id, endpoint_id, user_id } => format!("{SURFACE_VERSION}:n:{node_type}:{}:{}:{}", encode(node_id), encode(endpoint_id), encode(user_id)),
+            Self::Node {
+                node_type,
+                node_id,
+                endpoint_id,
+                user_id,
+            } => format!(
+                "{SURFACE_VERSION}:n:{node_type}:{}:{}:{}",
+                encode(node_id),
+                encode(endpoint_id),
+                encode(user_id)
+            ),
             Self::ClientPersonal { user_id } => {
                 format!("{SURFACE_VERSION}:cp:{}", encode(user_id))
             }
@@ -146,7 +171,10 @@ impl ConversationSurface {
 
     #[must_use]
     pub fn is_messaging(&self) -> bool {
-        matches!(self, Self::MessagingPersonal { .. } | Self::MessagingGroup { .. })
+        matches!(
+            self,
+            Self::MessagingPersonal { .. } | Self::MessagingGroup { .. }
+        )
     }
 
     #[must_use]
@@ -215,7 +243,12 @@ impl FromStr for ConversationSurface {
             return Err(SurfaceParseError);
         }
         let surface = match parts.as_slice() {
-            [_, "n", node_type, node_id, endpoint_id, user_id] => Self::node(*node_type, decode(node_id)?, decode(endpoint_id)?, decode(user_id)?),
+            [_, "n", node_type, node_id, endpoint_id, user_id] => Self::node(
+                *node_type,
+                decode(node_id)?,
+                decode(endpoint_id)?,
+                decode(user_id)?,
+            ),
             [_, "cp", user_id] => Self::client_personal(decode(user_id)?),
             [_, "cg", group_id] => Self::client_group(decode(group_id)?),
             [_, kind @ ("mp" | "mg"), provider, account_id, conversation_id] => messaging(
@@ -346,7 +379,9 @@ mod tests {
         assert_ne!(alice.canonical_id(), bob.canonical_id());
         assert_eq!(alice.user_id(), Some("alice"));
         assert!(alice.is_personal());
-        assert!("cs1:n:audiobridge:bm9kZQ:c3BlYWtlcg".parse::<ConversationSurface>().is_err());
+        assert!("cs1:n:audiobridge:bm9kZQ:c3BlYWtlcg"
+            .parse::<ConversationSurface>()
+            .is_err());
         assert!(ConversationSurface::node("audioBridge", "node", "speaker", "").is_err());
     }
 

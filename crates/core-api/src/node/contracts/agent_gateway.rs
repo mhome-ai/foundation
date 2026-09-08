@@ -13,7 +13,12 @@ pub struct AudioReference {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(tag = "type", rename_all = "camelCase", rename_all_fields = "camelCase", deny_unknown_fields)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
 pub enum SessionSelection {
     New { operation_id: String },
     Existing { thread_id: String },
@@ -21,15 +26,26 @@ pub enum SessionSelection {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "camelCase", deny_unknown_fields)]
-pub enum Input { Text { text: String }, Audio { audio: AudioReference } }
+pub enum Input {
+    Text { text: String },
+    Audio { audio: AudioReference },
+}
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub enum OutputFormat { #[default] Text, Audio }
+pub enum OutputFormat {
+    #[default]
+    Text,
+    Audio,
+}
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub enum EventSelection { #[default] Final, Conversation }
+pub enum EventSelection {
+    #[default]
+    Final,
+    Conversation,
+}
 
 /// Optional live conversation events, in addition to the terminal reply. These are
 /// best-effort; the canonical event's versions support duplicate/stale detection.
@@ -71,7 +87,12 @@ pub struct SubmitResponse {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub enum ResultStatus { Completed, Failed, Cancelled, RequiresAction }
+pub enum ResultStatus {
+    Completed,
+    Failed,
+    Cancelled,
+    RequiresAction,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -107,23 +128,59 @@ mod tests {
 
     #[test]
     fn generic_input_defaults_to_final_text_and_has_no_spoofable_caller_identity() {
-        let value=serde_json::json!({"requestId":"r","endpointId":"speaker", "session":{"type":"new","operationId":"wake"},"input":{"type":"text","text":"hello"}});
-        let request:SubmitRequest=serde_json::from_value(value.clone()).unwrap();
-        assert_eq!(request.output,OutputOptions { format:OutputFormat::Text, events:EventSelection::Final });
-        let mut forged=value; forged["nodeId"]=serde_json::json!("other");
+        let value = serde_json::json!({"requestId":"r","endpointId":"speaker", "session":{"type":"new","operationId":"wake"},"input":{"type":"text","text":"hello"}});
+        let request: SubmitRequest = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(
+            request.output,
+            OutputOptions {
+                format: OutputFormat::Text,
+                events: EventSelection::Final
+            }
+        );
+        let mut forged = value;
+        forged["nodeId"] = serde_json::json!("other");
         assert!(serde_json::from_value::<SubmitRequest>(forged).is_err());
     }
 
     #[test]
     fn audio_follow_up_and_failure_without_audio_round_trip() {
-        let request=SubmitRequest { request_id:"r".into(),endpoint_id:"speaker".into(),
-          session:SessionSelection::Existing { thread_id:"thread".into() },
-          input:Input::Audio { audio:AudioReference { uri:"meow-artifact://recording".into(),mime_type:"audio/ogg".into(),duration_ms:Some(1000) } },
-          output:OutputOptions {format:OutputFormat::Audio,events:EventSelection::Final} };
-        let value=serde_json::to_value(&request).unwrap();
-        assert_eq!(value["session"]["threadId"],"thread");
-        assert_eq!(serde_json::from_value::<SubmitRequest>(value).unwrap(),request);
-        let reply=ReplyRequest {delivery_id:"d".into(),request_id:"r".into(),thread_id:"thread".into(),endpoint_id:"speaker".into(),status:ResultStatus::Failed,expires_at_unix_ms:1,text:None,audio:None};
-        assert_eq!(serde_json::from_value::<ReplyRequest>(serde_json::to_value(&reply).unwrap()).unwrap(),reply);
+        let request = SubmitRequest {
+            request_id: "r".into(),
+            endpoint_id: "speaker".into(),
+            session: SessionSelection::Existing {
+                thread_id: "thread".into(),
+            },
+            input: Input::Audio {
+                audio: AudioReference {
+                    uri: "meow-artifact://recording".into(),
+                    mime_type: "audio/ogg".into(),
+                    duration_ms: Some(1000),
+                },
+            },
+            output: OutputOptions {
+                format: OutputFormat::Audio,
+                events: EventSelection::Final,
+            },
+        };
+        let value = serde_json::to_value(&request).unwrap();
+        assert_eq!(value["session"]["threadId"], "thread");
+        assert_eq!(
+            serde_json::from_value::<SubmitRequest>(value).unwrap(),
+            request
+        );
+        let reply = ReplyRequest {
+            delivery_id: "d".into(),
+            request_id: "r".into(),
+            thread_id: "thread".into(),
+            endpoint_id: "speaker".into(),
+            status: ResultStatus::Failed,
+            expires_at_unix_ms: 1,
+            text: None,
+            audio: None,
+        };
+        assert_eq!(
+            serde_json::from_value::<ReplyRequest>(serde_json::to_value(&reply).unwrap()).unwrap(),
+            reply
+        );
     }
 }
