@@ -107,8 +107,23 @@ pub struct InteractionAnswerRequest {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ConversationAccessMode {
+    NoAccess,
     Interactive,
     FullAccess,
+}
+
+#[cfg(test)]
+mod access_mode_tests {
+    use super::ConversationAccessMode;
+
+    #[test]
+    fn no_access_is_a_distinct_canonical_wire_value() {
+        let mode: ConversationAccessMode = serde_json::from_str("\"no_access\"").unwrap();
+        assert_eq!(mode, ConversationAccessMode::NoAccess);
+        assert_eq!(serde_json::to_string(&mode).unwrap(), "\"no_access\"");
+        assert!(serde_json::from_str::<ConversationAccessMode>("\"deny\"").is_err());
+        assert!(serde_json::from_str::<ConversationAccessMode>("\"always_deny\"").is_err());
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

@@ -1773,7 +1773,8 @@
             "accessMode": {
               "enum": [
                 "interactive",
-                "full_access"
+                "full_access",
+                "no_access"
               ]
             },
             "agentModelMode": {
@@ -1838,7 +1839,8 @@
             "accessMode": {
               "enum": [
                 "interactive",
-                "full_access"
+                "full_access",
+                "no_access"
               ]
             },
             "agentModelMode": {
