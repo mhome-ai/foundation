@@ -1,12 +1,10 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::{
-    AuthRequest, AuthenticatedSession, ServiceCoreEffect, ServiceCoreInput, ServiceCoreOutput,
-};
+use crate::{AuthRequest, AuthenticatedSession, ServiceCoreInput, ServiceCoreOutput};
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 12;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 13;
 pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
 pub const ARTIFACT_UPLOAD_PATH_PREFIX: &str = "/artifact/v1/upload/";
 
@@ -167,9 +165,9 @@ pub struct ExternalCoreEvent {
 #[serde(rename_all = "camelCase")]
 pub enum ExternalCoreEventKind {
     MdnsRecordsChanged,
-    ServiceEffects,
+    DeliveryRequested,
+    ConnectionControlRequested,
     HostRuntimeRequest,
-    MessagingDeliveryRequested,
     ServiceAppFacadeRequest,
     ScopeOwnedDataPurgeRequested,
     ArtifactDeliveryProjectionRequested,
@@ -340,12 +338,6 @@ pub struct ScopeOwnedDataPurgeRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ExternalCoreServiceEffects {
-    pub effects: Vec<ServiceCoreEffect>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ExternalCoreEventCompletion {
     pub event_id: String,
     pub ok: bool,
@@ -426,8 +418,8 @@ mod tests {
             serde_json::from_value::<MessagingDeliveryResponse>(serde_json::json!({})).is_err()
         );
         assert_eq!(
-            serde_json::to_value(ExternalCoreEventKind::MessagingDeliveryRequested).unwrap(),
-            "messagingDeliveryRequested"
+            serde_json::to_value(ExternalCoreEventKind::DeliveryRequested).unwrap(),
+            "deliveryRequested"
         );
     }
 
@@ -445,7 +437,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 12);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 13);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");

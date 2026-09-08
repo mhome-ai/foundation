@@ -20,3 +20,15 @@ request is rejected.
 Storage separates backing-filesystem capacity from Storage-owned logical
 usage. Namespace is an internal protocol term; user-facing clients present it
 as a Folder.
+
+## Host delivery (core-api 1.7.0)
+
+Core resolves logical recipients; the Host executes a concrete App connection,
+Node connection or Messaging destination. Delivery responses distinguish queue or
+provider acceptance, definite failure and unknown completion. Acceptance is not
+a user-read receipt. Connection close has a separate typed control request.
+
+External protocol 13 replaces effect notifications with request/completion events.
+ServiceCoreOutput contains only its response and rejects the old effects field.
+There is no old-protocol compatibility path. Consumers must upgrade together;
+version 1.7.0 must be published before updating registry-backed consumer locks.

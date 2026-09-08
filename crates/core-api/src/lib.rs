@@ -1,5 +1,6 @@
 #![allow(clippy::derivable_impls, clippy::should_implement_trait)]
 
+mod delivery;
 mod external_rpc;
 pub mod interaction_flow;
 pub mod llm;
@@ -8,6 +9,7 @@ pub mod node;
 mod node_service;
 mod storage;
 
+pub use delivery::*;
 pub use external_rpc::*;
 pub use node_service::*;
 pub use storage::*;
@@ -1004,32 +1006,11 @@ pub enum ServiceCoreResponse {
     },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum ServiceCoreEffect {
-    Local {
-        client_id: String,
-        message: MwsMessage,
-    },
-    Bridge {
-        tenant_id: String,
-        scope_id: String,
-        message: MwsMessage,
-    },
-    Node {
-        connection_key: String,
-        message: MwsMessage,
-    },
-    NodeDisconnect {
-        connection_key: String,
-    },
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(deny_unknown_fields)]
 pub struct ServiceCoreOutput {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub response: Option<ServiceCoreResponse>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub effects: Vec<ServiceCoreEffect>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
