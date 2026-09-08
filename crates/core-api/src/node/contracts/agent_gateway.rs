@@ -31,6 +31,16 @@ pub enum OutputFormat { #[default] Text, Audio }
 #[serde(rename_all = "camelCase")]
 pub enum EventSelection { #[default] Final, Conversation }
 
+/// Optional live conversation events, in addition to the terminal reply. These are
+/// best-effort; the canonical event's versions support duplicate/stale detection.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ConversationEventRequest {
+    pub request_id: String,
+    pub endpoint_id: String,
+    pub event: serde_json::Value,
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct OutputOptions {
@@ -81,6 +91,19 @@ pub struct ReplyRequest {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn live_event_envelope_preserves_canonical_event_and_rejects_extra_identity() {
+        let value = serde_json::json!({
+            "requestId": "request", "endpointId": "endpoint",
+            "event": {"type": "messageDelta", "threadId": "thread", "version": 4}
+        });
+        let event: ConversationEventRequest = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(serde_json::to_value(event).unwrap(), value);
+        let mut forged = value;
+        forged["nodeId"] = serde_json::json!("other-node");
+        assert!(serde_json::from_value::<ConversationEventRequest>(forged).is_err());
+    }
 
     #[test]
     fn generic_input_defaults_to_final_text_and_has_no_spoofable_caller_identity() {
