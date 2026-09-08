@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::{AuthRequest, AuthenticatedSession, ServiceCoreInput, ServiceCoreOutput};
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 13;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 14;
 pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
 pub const ARTIFACT_UPLOAD_PATH_PREFIX: &str = "/artifact/v1/upload/";
 
@@ -189,7 +189,7 @@ pub struct MessagingDeliveryRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MessagingDeliveryResponse {
-    pub delivered: bool,
+    pub outcome: crate::DeliveryOutcome,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -424,7 +424,7 @@ mod tests {
     }
 
     #[test]
-    fn external_events_use_the_v12_wire_shape() {
+    fn external_events_use_the_v14_wire_shape() {
         let event = ExternalCoreEvent {
             event_id: "event-1".to_string(),
             kind: ExternalCoreEventKind::ScopeOwnedDataPurgeRequested,
@@ -437,7 +437,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 13);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 14);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");

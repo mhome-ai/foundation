@@ -54,9 +54,20 @@ pub enum HostDeliveryDestination {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "status", rename_all = "camelCase", deny_unknown_fields)]
 pub enum DeliveryOutcome {
-    Accepted { boundary: DeliveryAcceptance },
-    Failed { code: String, message: String },
-    Unknown { message: String },
+    Accepted {
+        boundary: DeliveryAcceptance,
+    },
+    /// Intentionally handled without a provider/network send. Not proof of delivery.
+    Skipped {
+        reason: String,
+    },
+    Failed {
+        code: String,
+        message: String,
+    },
+    Unknown {
+        message: String,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -71,6 +82,17 @@ pub enum DeliveryAcceptance {
 impl DeliveryOutcome {
     pub fn is_accepted(&self) -> bool {
         matches!(self, Self::Accepted { .. })
+    }
+
+    pub fn is_handled(&self) -> bool {
+        matches!(self, Self::Accepted { .. } | Self::Skipped { .. })
+    }
+
+    pub fn failed(code: impl Into<String>, message: impl Into<String>) -> Self {
+        Self::Failed {
+            code: code.into(),
+            message: message.into(),
+        }
     }
 
     pub fn connection(accepted: bool) -> Self {
@@ -117,6 +139,25 @@ mod tests {
             serde_json::from_value::<DeliveryOutcome>(serde_json::json!({"delivered": true}))
                 .is_err()
         );
+    }
+
+    #[test]
+    fn skipped_is_handled_but_never_accepted() {
+        let outcome = DeliveryOutcome::Skipped {
+            reason: "No provider message".into(),
+        };
+        assert!(outcome.is_handled());
+        assert!(!outcome.is_accepted());
+        let response = crate::MessagingDeliveryResponse {
+            outcome: outcome.clone(),
+        };
+        let json = serde_json::to_value(response).unwrap();
+        let decoded: crate::MessagingDeliveryResponse = serde_json::from_value(json).unwrap();
+        assert_eq!(decoded.outcome, outcome);
+        assert!(serde_json::from_value::<crate::MessagingDeliveryResponse>(
+            serde_json::json!({"delivered": true})
+        )
+        .is_err());
     }
 
     #[test]
