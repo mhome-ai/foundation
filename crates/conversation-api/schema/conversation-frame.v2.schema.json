@@ -10,7 +10,7 @@
     },
     "surfaceId": {
       "type": "string",
-      "pattern": "^cs1:(?:(?:cp|cg):[A-Za-z0-9_-]+|n:[a-z][a-z0-9_]*:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+|(?:mp|mg):[a-z][a-z0-9_]*:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+(?::[A-Za-z0-9_-]+)?)$"
+      "pattern": "^cs1:(?:(?:cp|cg):[A-Za-z0-9_-]+|n:[a-z][a-z0-9_]*:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+|(?:mp|mg):[a-z][a-z0-9_]*:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+(?::[A-Za-z0-9_-]+)?)$"
     },
     "time": {
       "type": "string",
