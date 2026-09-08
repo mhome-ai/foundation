@@ -402,92 +402,30 @@ pub enum DeviceTopologyRelation {
     SourceDevice,
 }
 
+include!("device_topology_rules.generated.rs");
+
 impl DeviceTopologyRelation {
     fn accepts(self, source: &DeviceTopologyEntity, target: &DeviceTopologyEntity) -> bool {
-        use DeviceTopologyEntityKind as Kind;
-        matches!(
-            (self, source.kind(), target.kind()),
-            (
-                Self::IntegrationProvider,
-                Kind::DeviceIntegration,
-                Kind::Provider
-            ) | (Self::PluginProvider, Kind::PluginInstance, Kind::Provider)
-                | (
-                    Self::PluginConnection,
-                    Kind::PluginInstance,
-                    Kind::Connection
-                )
-                | (Self::ProviderConnection, Kind::Provider, Kind::Connection)
-                | (Self::ProviderDevice, Kind::Provider, Kind::Device)
-                | (Self::ConnectionDevice, Kind::Connection, Kind::Device)
-                | (Self::ConnectionSource, Kind::Connection, Kind::SourceDevice)
-                | (Self::SourceDevice, Kind::SourceDevice, Kind::Device)
-        )
+        let (from, to, _, _) = self.rule();
+        source.kind() == from && target.kind() == to
     }
-
     fn accepts_basis(self, basis: DeviceTopologyRelationBasis) -> bool {
-        matches!(
-            (self, basis),
-            (
-                Self::IntegrationProvider,
-                DeviceTopologyRelationBasis::IntegrationInstall
-            ) | (
-                Self::PluginProvider | Self::PluginConnection,
-                DeviceTopologyRelationBasis::PluginBinding
-            ) | (
-                Self::ProviderConnection,
-                DeviceTopologyRelationBasis::ConnectionOwnership
-            ) | (
-                Self::ProviderDevice | Self::ConnectionDevice,
-                DeviceTopologyRelationBasis::TwinSource
-            ) | (
-                Self::ConnectionSource | Self::SourceDevice,
-                DeviceTopologyRelationBasis::SourceProjection
-            )
-        )
+        self.rule().2 == basis
     }
-
     fn accepts_identity(
         self,
         source: &DeviceTopologyEntity,
         target: &DeviceTopologyEntity,
     ) -> bool {
-        match (self, source, target) {
-            (
-                Self::ProviderConnection,
-                DeviceTopologyEntity::Provider {
-                    integration_id: provider_integration,
-                    ..
-                },
-                DeviceTopologyEntity::Connection {
-                    integration_id: connection_integration,
-                    ..
-                },
-            ) => provider_integration == connection_integration,
-            (
-                Self::ProviderDevice,
-                DeviceTopologyEntity::Provider {
-                    integration_id: provider_integration,
-                    ..
-                },
-                DeviceTopologyEntity::Device {
-                    integration_id: device_integration,
-                    ..
-                },
-            ) => provider_integration == device_integration,
-            (
-                Self::ConnectionDevice,
-                DeviceTopologyEntity::Connection {
-                    integration_id: connection_integration,
-                    ..
-                },
-                DeviceTopologyEntity::Device {
-                    integration_id: device_integration,
-                    ..
-                },
-            ) => connection_integration == device_integration,
-            _ => true,
+        fn integration(entity: &DeviceTopologyEntity) -> Option<&str> {
+            match entity {
+                DeviceTopologyEntity::Provider { integration_id, .. }
+                | DeviceTopologyEntity::Connection { integration_id, .. }
+                | DeviceTopologyEntity::Device { integration_id, .. } => Some(integration_id),
+                _ => None,
+            }
         }
+        !self.rule().3 || integration(source) == integration(target)
     }
 }
 
@@ -943,6 +881,5 @@ mod tests {
             "unexpected": true
         }))
         .is_err());
-
     }
 }

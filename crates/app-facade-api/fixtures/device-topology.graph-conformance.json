@@ -1,0 +1,3353 @@
+{
+  "base": {
+    "contract": "mhome.device.topology.v1",
+    "scopeId": "space-1",
+    "generation": "generation-1",
+    "revision": 7,
+    "observedAtMs": 1777777777000,
+    "completeness": "complete",
+    "issues": [],
+    "entities": [
+      {
+        "kind": "deviceIntegration",
+        "id": "integration:basic.device",
+        "integrationId": "basic.device",
+        "displayName": "Devices"
+      },
+      {
+        "kind": "provider",
+        "id": "provider:mlinkMatter.device",
+        "integrationId": "mlinkMatter.device",
+        "displayName": "Matter",
+        "mode": "local",
+        "multiConnect": false
+      },
+      {
+        "kind": "connection",
+        "id": "connection:mlinkMatter.device:matter-1",
+        "integrationId": "mlinkMatter.device",
+        "connectionId": "matter-1",
+        "displayName": "Living Room Mac",
+        "runtime": {
+          "state": "healthy",
+          "updatedAtMs": 1777777777000
+        }
+      },
+      {
+        "kind": "pluginInstance",
+        "id": "plugin:matter-1",
+        "nodeId": "matter-1",
+        "nodeType": "matter",
+        "hostId": "host-1",
+        "serviceInstanceId": "service-1",
+        "displayName": "Matter Service",
+        "hostDisplayName": "Living Room Mac",
+        "runtime": {
+          "state": "healthy",
+          "updatedAtMs": 1777777777000
+        }
+      },
+      {
+        "kind": "sourceDevice",
+        "id": "source:matter:node-123",
+        "sourceType": "matter",
+        "sourceId": "node-123",
+        "displayName": "Aqara Matter Bridge",
+        "role": "bridge",
+        "runtime": {
+          "state": "healthy",
+          "updatedAtMs": 1777777777000
+        }
+      },
+      {
+        "kind": "device",
+        "id": "device:desk-light",
+        "entityId": "desk-light",
+        "integrationId": "mlinkMatter.device",
+        "displayName": "Desk Light",
+        "enabled": true,
+        "runtime": {
+          "state": "healthy",
+          "updatedAtMs": 1777777777000
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge:integration-provider",
+        "source": "integration:basic.device",
+        "target": "provider:mlinkMatter.device",
+        "relation": "integration-provider",
+        "basis": "integrationInstall",
+        "durability": "durable",
+        "observation": {
+          "state": "connected",
+          "observedAtMs": 1777777777000
+        }
+      },
+      {
+        "id": "edge:plugin-provider",
+        "source": "plugin:matter-1",
+        "target": "provider:mlinkMatter.device",
+        "relation": "plugin-provider",
+        "basis": "pluginBinding",
+        "durability": "durable",
+        "observation": {
+          "state": "connected",
+          "observedAtMs": 1777777777000
+        }
+      },
+      {
+        "id": "edge:plugin-connection",
+        "source": "plugin:matter-1",
+        "target": "connection:mlinkMatter.device:matter-1",
+        "relation": "plugin-connection",
+        "basis": "pluginBinding",
+        "durability": "durable",
+        "observation": {
+          "state": "connected",
+          "observedAtMs": 1777777777000
+        }
+      },
+      {
+        "id": "edge:provider-connection",
+        "source": "provider:mlinkMatter.device",
+        "target": "connection:mlinkMatter.device:matter-1",
+        "relation": "provider-connection",
+        "basis": "connectionOwnership",
+        "durability": "durable",
+        "observation": {
+          "state": "connected",
+          "observedAtMs": 1777777777000
+        }
+      },
+      {
+        "id": "edge:connection-source",
+        "source": "connection:mlinkMatter.device:matter-1",
+        "target": "source:matter:node-123",
+        "relation": "connection-source",
+        "basis": "sourceProjection",
+        "durability": "durable",
+        "observation": {
+          "state": "connected",
+          "observedAtMs": 1777777777000
+        }
+      },
+      {
+        "id": "edge:source-device",
+        "source": "source:matter:node-123",
+        "target": "device:desk-light",
+        "relation": "source-device",
+        "basis": "sourceProjection",
+        "durability": "durable",
+        "observation": {
+          "state": "connected",
+          "observedAtMs": 1777777777000
+        }
+      },
+      {
+        "id": "edge:provider-device",
+        "source": "provider:mlinkMatter.device",
+        "target": "device:desk-light",
+        "relation": "provider-device",
+        "basis": "twinSource",
+        "durability": "durable",
+        "observation": {
+          "state": "connected",
+          "observedAtMs": 1777777777000
+        }
+      },
+      {
+        "id": "edge:connection-device",
+        "source": "connection:mlinkMatter.device:matter-1",
+        "target": "device:desk-light",
+        "relation": "connection-device",
+        "basis": "twinSource",
+        "durability": "durable",
+        "observation": {
+          "state": "connected",
+          "observedAtMs": 1777777777000
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "valid graph with multiple incoming edges",
+      "valid": true,
+      "mutations": []
+    },
+    {
+      "name": "missing /contract",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/contract"
+        }
+      ]
+    },
+    {
+      "name": "missing /scopeId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/scopeId"
+        }
+      ]
+    },
+    {
+      "name": "missing /generation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/generation"
+        }
+      ]
+    },
+    {
+      "name": "missing /revision",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/revision"
+        }
+      ]
+    },
+    {
+      "name": "missing /observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/observedAtMs"
+        }
+      ]
+    },
+    {
+      "name": "missing /completeness",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/completeness"
+        }
+      ]
+    },
+    {
+      "name": "missing /issues",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/issues"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges"
+        }
+      ]
+    },
+    {
+      "name": "empty /scopeId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/scopeId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /generation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/generation",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "negative /revision",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/revision",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "negative /observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/observedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown /completeness",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/completeness",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field ",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/0/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/0/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/0/kind",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/0/kind"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/0/integrationId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/0/integrationId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/0/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/0/displayName"
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/0/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/0/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/0/integrationId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/0/integrationId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/0/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/0/displayName",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/0",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/0/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/1/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/1/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/1/kind",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/1/kind"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/1/integrationId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/1/integrationId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/1/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/1/displayName"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/1/mode",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/1/mode"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/1/multiConnect",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/1/multiConnect"
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/1/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/1/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/1/integrationId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/1/integrationId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/1/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/1/displayName",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/1/mode",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/1/mode",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/1",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/1/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/2/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/2/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/2/kind",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/2/kind"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/2/integrationId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/2/integrationId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/2/connectionId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/2/connectionId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/2/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/2/displayName"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/2/runtime",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/2/runtime"
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/2/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/2/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/2/integrationId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/2/integrationId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/2/connectionId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/2/connectionId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/2/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/2/displayName",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/2",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/2/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/2/runtime/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/2/runtime/state"
+        }
+      ]
+    },
+    {
+      "name": "unknown /entities/2/runtime/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/2/runtime/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /entities/2/runtime/updatedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/2/runtime/updatedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/2/runtime",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/2/runtime/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/3/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/3/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/3/kind",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/3/kind"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/3/nodeId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/3/nodeId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/3/nodeType",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/3/nodeType"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/3/hostId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/3/hostId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/3/serviceInstanceId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/3/serviceInstanceId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/3/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/3/displayName"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/3/runtime",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/3/runtime"
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/3/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/3/nodeId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/nodeId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/3/nodeType",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/nodeType",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/3/hostId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/hostId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/3/serviceInstanceId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/serviceInstanceId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/3/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/displayName",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/3/hostDisplayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/hostDisplayName",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/3",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/3/runtime/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/3/runtime/state"
+        }
+      ]
+    },
+    {
+      "name": "unknown /entities/3/runtime/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/runtime/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /entities/3/runtime/updatedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/runtime/updatedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/3/runtime",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/3/runtime/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/4/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/4/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/4/kind",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/4/kind"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/4/sourceType",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/4/sourceType"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/4/sourceId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/4/sourceId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/4/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/4/displayName"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/4/role",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/4/role"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/4/runtime",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/4/runtime"
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/4/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/4/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/4/sourceType",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/4/sourceType",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/4/sourceId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/4/sourceId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/4/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/4/displayName",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown /entities/4/role",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/4/role",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/4",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/4/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/4/runtime/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/4/runtime/state"
+        }
+      ]
+    },
+    {
+      "name": "unknown /entities/4/runtime/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/4/runtime/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /entities/4/runtime/updatedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/4/runtime/updatedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/4/runtime",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/4/runtime/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/5/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/5/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/5/kind",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/5/kind"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/5/entityId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/5/entityId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/5/integrationId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/5/integrationId"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/5/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/5/displayName"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/5/enabled",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/5/enabled"
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/5/runtime",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/5/runtime"
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/5/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/5/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/5/entityId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/5/entityId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/5/integrationId",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/5/integrationId",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /entities/5/displayName",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/5/displayName",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/5",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/5/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /entities/5/runtime/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/entities/5/runtime/state"
+        }
+      ]
+    },
+    {
+      "name": "unknown /entities/5/runtime/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/5/runtime/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /entities/5/runtime/updatedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/5/runtime/updatedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /entities/5/runtime",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/5/runtime/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/0/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/0/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/0/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/0/source"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/0/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/0/target"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/0/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/0/relation"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/0/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/0/basis"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/0/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/0/durability"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/0/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/0/observation"
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/0/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/0/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/source",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/0/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/target",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/0/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/relation",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/0/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/basis",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/0/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/durability",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/0",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/0/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/0/observation/state"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/0/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/0/observation/observedAtMs"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/0/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/observation/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /edges/0/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/observation/observedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/0/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/observation/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "self edge 0",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/target",
+          "value": "integration:basic.device"
+        }
+      ]
+    },
+    {
+      "name": "dangling edge 0",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/target",
+          "value": "missing"
+        }
+      ]
+    },
+    {
+      "name": "wrong endpoint kind 0",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/target",
+          "value": "integration:basic.device"
+        }
+      ]
+    },
+    {
+      "name": "wrong basis 0",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/0/basis",
+          "value": "pluginBinding"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/1/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/1/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/1/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/1/source"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/1/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/1/target"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/1/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/1/relation"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/1/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/1/basis"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/1/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/1/durability"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/1/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/1/observation"
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/1/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/1/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/source",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/1/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/target",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/1/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/relation",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/1/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/basis",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/1/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/durability",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/1",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/1/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/1/observation/state"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/1/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/1/observation/observedAtMs"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/1/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/observation/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /edges/1/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/observation/observedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/1/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/observation/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "self edge 1",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/target",
+          "value": "plugin:matter-1"
+        }
+      ]
+    },
+    {
+      "name": "dangling edge 1",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/target",
+          "value": "missing"
+        }
+      ]
+    },
+    {
+      "name": "wrong endpoint kind 1",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/target",
+          "value": "integration:basic.device"
+        }
+      ]
+    },
+    {
+      "name": "wrong basis 1",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/1/basis",
+          "value": "integrationInstall"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/2/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/2/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/2/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/2/source"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/2/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/2/target"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/2/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/2/relation"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/2/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/2/basis"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/2/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/2/durability"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/2/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/2/observation"
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/2/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/2/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/source",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/2/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/target",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/2/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/relation",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/2/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/basis",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/2/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/durability",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/2",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/2/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/2/observation/state"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/2/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/2/observation/observedAtMs"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/2/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/observation/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /edges/2/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/observation/observedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/2/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/observation/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "self edge 2",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/target",
+          "value": "plugin:matter-1"
+        }
+      ]
+    },
+    {
+      "name": "dangling edge 2",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/target",
+          "value": "missing"
+        }
+      ]
+    },
+    {
+      "name": "wrong endpoint kind 2",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/target",
+          "value": "integration:basic.device"
+        }
+      ]
+    },
+    {
+      "name": "wrong basis 2",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/2/basis",
+          "value": "integrationInstall"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/3/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/3/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/3/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/3/source"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/3/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/3/target"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/3/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/3/relation"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/3/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/3/basis"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/3/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/3/durability"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/3/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/3/observation"
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/3/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/3/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/source",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/3/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/target",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/3/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/relation",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/3/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/basis",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/3/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/durability",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/3",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/3/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/3/observation/state"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/3/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/3/observation/observedAtMs"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/3/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/observation/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /edges/3/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/observation/observedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/3/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/observation/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "self edge 3",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/target",
+          "value": "provider:mlinkMatter.device"
+        }
+      ]
+    },
+    {
+      "name": "dangling edge 3",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/target",
+          "value": "missing"
+        }
+      ]
+    },
+    {
+      "name": "wrong endpoint kind 3",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/target",
+          "value": "integration:basic.device"
+        }
+      ]
+    },
+    {
+      "name": "wrong basis 3",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/3/basis",
+          "value": "integrationInstall"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/4/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/4/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/4/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/4/source"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/4/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/4/target"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/4/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/4/relation"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/4/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/4/basis"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/4/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/4/durability"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/4/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/4/observation"
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/4/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/4/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/source",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/4/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/target",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/4/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/relation",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/4/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/basis",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/4/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/durability",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/4",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/4/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/4/observation/state"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/4/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/4/observation/observedAtMs"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/4/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/observation/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /edges/4/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/observation/observedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/4/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/observation/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "self edge 4",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/target",
+          "value": "connection:mlinkMatter.device:matter-1"
+        }
+      ]
+    },
+    {
+      "name": "dangling edge 4",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/target",
+          "value": "missing"
+        }
+      ]
+    },
+    {
+      "name": "wrong endpoint kind 4",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/target",
+          "value": "integration:basic.device"
+        }
+      ]
+    },
+    {
+      "name": "wrong basis 4",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/4/basis",
+          "value": "integrationInstall"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/5/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/5/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/5/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/5/source"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/5/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/5/target"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/5/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/5/relation"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/5/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/5/basis"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/5/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/5/durability"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/5/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/5/observation"
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/5/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/5/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/source",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/5/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/target",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/5/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/relation",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/5/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/basis",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/5/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/durability",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/5",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/5/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/5/observation/state"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/5/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/5/observation/observedAtMs"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/5/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/observation/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /edges/5/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/observation/observedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/5/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/observation/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "self edge 5",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/target",
+          "value": "source:matter:node-123"
+        }
+      ]
+    },
+    {
+      "name": "dangling edge 5",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/target",
+          "value": "missing"
+        }
+      ]
+    },
+    {
+      "name": "wrong endpoint kind 5",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/target",
+          "value": "integration:basic.device"
+        }
+      ]
+    },
+    {
+      "name": "wrong basis 5",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/5/basis",
+          "value": "integrationInstall"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/6/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/6/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/6/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/6/source"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/6/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/6/target"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/6/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/6/relation"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/6/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/6/basis"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/6/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/6/durability"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/6/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/6/observation"
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/6/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/6/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/source",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/6/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/target",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/6/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/relation",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/6/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/basis",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/6/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/durability",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/6",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/6/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/6/observation/state"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/6/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/6/observation/observedAtMs"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/6/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/observation/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /edges/6/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/observation/observedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/6/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/observation/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "self edge 6",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/target",
+          "value": "provider:mlinkMatter.device"
+        }
+      ]
+    },
+    {
+      "name": "dangling edge 6",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/target",
+          "value": "missing"
+        }
+      ]
+    },
+    {
+      "name": "wrong endpoint kind 6",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/target",
+          "value": "integration:basic.device"
+        }
+      ]
+    },
+    {
+      "name": "wrong basis 6",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/6/basis",
+          "value": "integrationInstall"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/7/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/7/id"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/7/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/7/source"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/7/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/7/target"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/7/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/7/relation"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/7/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/7/basis"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/7/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/7/durability"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/7/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/7/observation"
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/7/id",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/id",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/7/source",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/source",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "empty /edges/7/target",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/target",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/7/relation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/relation",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/7/basis",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/basis",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/7/durability",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/durability",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/7",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/7/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/7/observation/state"
+        }
+      ]
+    },
+    {
+      "name": "missing /edges/7/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "remove",
+          "path": "/edges/7/observation/observedAtMs"
+        }
+      ]
+    },
+    {
+      "name": "unknown /edges/7/observation/state",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/observation/state",
+          "value": "invalid"
+        }
+      ]
+    },
+    {
+      "name": "negative /edges/7/observation/observedAtMs",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/observation/observedAtMs",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "unknown field /edges/7/observation",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/observation/unexpected",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "self edge 7",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/target",
+          "value": "connection:mlinkMatter.device:matter-1"
+        }
+      ]
+    },
+    {
+      "name": "dangling edge 7",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/target",
+          "value": "missing"
+        }
+      ]
+    },
+    {
+      "name": "wrong endpoint kind 7",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/target",
+          "value": "integration:basic.device"
+        }
+      ]
+    },
+    {
+      "name": "wrong basis 7",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/edges/7/basis",
+          "value": "integrationInstall"
+        }
+      ]
+    },
+    {
+      "name": "duplicate entity",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "append",
+          "path": "/entities",
+          "value": {
+            "kind": "provider",
+            "id": "provider:mlinkMatter.device",
+            "integrationId": "mlinkMatter.device",
+            "displayName": "Matter",
+            "mode": "local",
+            "multiConnect": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "multiple roots",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "append",
+          "path": "/entities",
+          "value": {
+            "kind": "deviceIntegration",
+            "id": "other-root",
+            "integrationId": "basic.device",
+            "displayName": "Devices"
+          }
+        }
+      ]
+    },
+    {
+      "name": "duplicate edge",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "append",
+          "path": "/edges",
+          "value": {
+            "id": "edge:integration-provider",
+            "source": "integration:basic.device",
+            "target": "provider:mlinkMatter.device",
+            "relation": "integration-provider",
+            "basis": "integrationInstall",
+            "durability": "durable",
+            "observation": {
+              "state": "connected",
+              "observedAtMs": 1777777777000
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "cross integration",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/1/integrationId",
+          "value": "other"
+        }
+      ]
+    },
+    {
+      "name": "partial without issues",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/completeness",
+          "value": "partial"
+        }
+      ]
+    },
+    {
+      "name": "complete with issues",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/issues",
+          "value": [
+            {
+              "code": "issue",
+              "message": "Unavailable"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dangling issue",
+      "valid": false,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/completeness",
+          "value": "partial"
+        },
+        {
+          "op": "set",
+          "path": "/issues",
+          "value": [
+            {
+              "code": "issue",
+              "message": "Unavailable",
+              "entityId": "missing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "valid partial view",
+      "valid": true,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/completeness",
+          "value": "partial"
+        },
+        {
+          "op": "set",
+          "path": "/issues",
+          "value": [
+            {
+              "code": "issue",
+              "message": "Unavailable",
+              "entityId": "provider:mlinkMatter.device"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unknown status is valid",
+      "valid": true,
+      "mutations": [
+        {
+          "op": "set",
+          "path": "/entities/2/runtime/state",
+          "value": "unknown"
+        }
+      ]
+    }
+  ]
+}

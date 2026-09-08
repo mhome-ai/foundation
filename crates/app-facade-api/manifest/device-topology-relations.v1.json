@@ -1,0 +1,10 @@
+{
+  "integration-provider": {"source":"deviceIntegration", "target":"provider", "basis":"integrationInstall", "sameIntegration":false},
+  "plugin-provider": {"source":"pluginInstance", "target":"provider", "basis":"pluginBinding", "sameIntegration":false},
+  "plugin-connection": {"source":"pluginInstance", "target":"connection", "basis":"pluginBinding", "sameIntegration":false},
+  "provider-connection": {"source":"provider", "target":"connection", "basis":"connectionOwnership", "sameIntegration":true},
+  "provider-device": {"source":"provider", "target":"device", "basis":"twinSource", "sameIntegration":true},
+  "connection-device": {"source":"connection", "target":"device", "basis":"twinSource", "sameIntegration":true},
+  "connection-source": {"source":"connection", "target":"sourceDevice", "basis":"sourceProjection", "sameIntegration":false},
+  "source-device": {"source":"sourceDevice", "target":"device", "basis":"sourceProjection", "sameIntegration":false}
+}
