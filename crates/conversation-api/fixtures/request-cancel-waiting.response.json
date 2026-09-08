@@ -1,0 +1,10 @@
+{
+  "target": "/chat/request/cancel",
+  "direction": "response",
+  "body": {
+    "requestId": "request-3",
+    "phase": "admission_waiting",
+    "outcome": "cancelled",
+    "admissionVersion": 8
+  }
+}

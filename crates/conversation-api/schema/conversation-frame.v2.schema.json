@@ -16,6 +16,77 @@
       "type": "string",
       "format": "date-time"
     },
+    "requestAdmission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "admissionVersion"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "waiting_handoff",
+            "bound",
+            "cancelled",
+            "failed"
+          ]
+        },
+        "admissionVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reason": {
+          "enum": [
+            "mode_handoff",
+            "waiting_for_prior_turn",
+            "accepted",
+            "cancelled",
+            "handoff_failed"
+          ]
+        },
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "queueVersion": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "requestAdmissionData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "waiting_handoff",
+            "bound",
+            "cancelled",
+            "failed"
+          ]
+        },
+        "reason": {
+          "enum": [
+            "mode_handoff",
+            "waiting_for_prior_turn",
+            "accepted",
+            "cancelled",
+            "handoff_failed"
+          ]
+        },
+        "threadId": {
+          "$ref": "#/$defs/id"
+        },
+        "queueVersion": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
     "previewValue": {
       "oneOf": [
         {
@@ -1331,6 +1402,39 @@
         }
       }
     },
+    "admissionEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "surfaceId",
+        "requestId",
+        "admissionVersion",
+        "occurredAt",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "admission.changed"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/surfaceId"
+        },
+        "requestId": {
+          "$ref": "#/$defs/id"
+        },
+        "admissionVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/time"
+        },
+        "data": {
+          "$ref": "#/$defs/requestAdmissionData"
+        }
+      }
+    },
     "debugEvent": {
       "type": "object",
       "additionalProperties": false,
@@ -1825,7 +1929,6 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "threadId",
             "requestId"
           ],
           "properties": {
@@ -1961,8 +2064,7 @@
           "additionalProperties": false,
           "required": [
             "requestId",
-            "disposition",
-            "queueVersion"
+            "disposition"
           ],
           "properties": {
             "requestId": {
@@ -1977,6 +2079,9 @@
             "queueVersion": {
               "type": "integer",
               "minimum": 0
+            },
+            "admission": {
+              "$ref": "#/$defs/requestAdmission"
             }
           }
         }
@@ -2002,10 +2107,7 @@
           "additionalProperties": false,
           "required": [
             "requestId",
-            "threadId",
-            "disposition",
-            "sessionDisposition",
-            "queueVersion"
+            "disposition"
           ],
           "properties": {
             "requestId": {
@@ -2031,6 +2133,9 @@
             "queueVersion": {
               "type": "integer",
               "minimum": 0
+            },
+            "admission": {
+              "$ref": "#/$defs/requestAdmission"
             }
           }
         }
@@ -2077,8 +2182,7 @@
           "required": [
             "requestId",
             "phase",
-            "outcome",
-            "queueVersion"
+            "outcome"
           ],
           "properties": {
             "requestId": {
@@ -2086,6 +2190,7 @@
             },
             "phase": {
               "enum": [
+                "admission_waiting",
                 "waiting",
                 "running"
               ]
@@ -2097,6 +2202,10 @@
               ]
             },
             "queueVersion": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "admissionVersion": {
               "type": "integer",
               "minimum": 0
             }
@@ -2165,6 +2274,9 @@
             },
             {
               "$ref": "#/$defs/sessionEvent"
+            },
+            {
+              "$ref": "#/$defs/admissionEvent"
             },
             {
               "$ref": "#/$defs/liveEvent"

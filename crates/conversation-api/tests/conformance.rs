@@ -3,12 +3,12 @@ use conversation_api::{
     InteractionAnswerDisposition, InteractionAnswerRequest, InteractionAnswerResponse,
     InteractionSubmitDisposition, InteractionSubmitRequest, InteractionSubmitResponse,
     MessageEnqueueDisposition, MessageEnqueueRequest, MessageEnqueueResponse, MessagePart,
-    QueueReorderRequest, RequestCancelOutcome, RequestCancelPhase, RequestCancelRequest,
-    RequestCancelResponse, SessionStartDisposition, SessionStartRequest, SessionStartResponse,
-    ThreadArchiveRequest, ThreadCatalog, ThreadCreateRequest, ThreadListRequest, ThreadLoadRequest,
-    ThreadLoadResponse, ThreadRotateRequest, TurnSessionDisposition, TurnSubmitDisposition,
-    TurnSubmitRequest, TurnSubmitResponse, CHAT_DEBUG_TARGET, CHAT_EVENT_TARGET,
-    MESSAGE_ENQUEUE_TARGET,
+    QueueReorderRequest, RequestAdmissionState, RequestCancelOutcome, RequestCancelPhase,
+    RequestCancelRequest, RequestCancelResponse, SessionStartDisposition, SessionStartRequest,
+    SessionStartResponse, ThreadArchiveRequest, ThreadCatalog, ThreadCreateRequest,
+    ThreadListRequest, ThreadLoadRequest, ThreadLoadResponse, ThreadRotateRequest,
+    TurnSessionDisposition, TurnSubmitDisposition, TurnSubmitRequest, TurnSubmitResponse,
+    CHAT_DEBUG_TARGET, CHAT_EVENT_TARGET, MESSAGE_ENQUEUE_TARGET,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -39,6 +39,10 @@ const FIXTURES: &[(&str, &str)] = &[
         include_str!("../fixtures/turn-submit.response.json"),
     ),
     (
+        "turn-submit-waiting.response.json",
+        include_str!("../fixtures/turn-submit-waiting.response.json"),
+    ),
+    (
         "session-start.request.json",
         include_str!("../fixtures/session-start.request.json"),
     ),
@@ -65,6 +69,10 @@ const FIXTURES: &[(&str, &str)] = &[
     (
         "interaction.event.json",
         include_str!("../fixtures/interaction.event.json"),
+    ),
+    (
+        "admission.event.json",
+        include_str!("../fixtures/admission.event.json"),
     ),
     (
         "live.event.json",
@@ -111,8 +119,16 @@ const FIXTURES: &[(&str, &str)] = &[
         include_str!("../fixtures/request-cancel.request.json"),
     ),
     (
+        "request-cancel-waiting.request.json",
+        include_str!("../fixtures/request-cancel-waiting.request.json"),
+    ),
+    (
         "request-cancel.response.json",
         include_str!("../fixtures/request-cancel.response.json"),
+    ),
+    (
+        "request-cancel-waiting.response.json",
+        include_str!("../fixtures/request-cancel-waiting.response.json"),
     ),
     (
         "session.event.json",
@@ -240,6 +256,8 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
     body::<ThreadLoadRequest>("thread-load.request.json");
     body::<QueueReorderRequest>("queue-reorder.request.json");
     body::<RequestCancelRequest>("request-cancel.request.json");
+    let waiting_cancel = body::<RequestCancelRequest>("request-cancel-waiting.request.json");
+    assert_eq!(waiting_cancel.thread_id, None);
     body::<InteractionSubmitRequest>("interaction.request.json");
     assert_eq!(
         fixture("enqueue.request.json")["target"],
@@ -274,7 +292,14 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
     assert_eq!(turn_response.disposition, TurnSubmitDisposition::Queued);
     assert_eq!(
         turn_response.session_disposition,
-        TurnSessionDisposition::RotatedIdleTimeout
+        Some(TurnSessionDisposition::RotatedIdleTimeout)
+    );
+    let waiting = body::<TurnSubmitResponse>("turn-submit-waiting.response.json");
+    assert_eq!(waiting.thread_id, None);
+    assert_eq!(waiting.queue_version, None);
+    assert_eq!(
+        waiting.admission.as_ref().map(|admission| admission.state),
+        Some(RequestAdmissionState::WaitingHandoff)
     );
     body::<SessionStartRequest>("session-start.request.json");
     let session_start = body::<SessionStartResponse>("session-start.response.json");
@@ -288,6 +313,13 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
     let cancel_response = body::<RequestCancelResponse>("request-cancel.response.json");
     assert_eq!(cancel_response.phase, RequestCancelPhase::Running);
     assert_eq!(cancel_response.outcome, RequestCancelOutcome::Cancelling);
+    let waiting_cancel_response =
+        body::<RequestCancelResponse>("request-cancel-waiting.response.json");
+    assert_eq!(
+        waiting_cancel_response.phase,
+        RequestCancelPhase::AdmissionWaiting
+    );
+    assert_eq!(waiting_cancel_response.queue_version, None);
     body::<ConversationQueue>("queue-reorder.response.json");
     let interaction = body::<InteractionSubmitResponse>("interaction.response.json");
     assert_eq!(
@@ -300,6 +332,7 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
 fn every_chat_event_deserializes_without_provider_knowledge() {
     for name in [
         "catalog.event.json",
+        "admission.event.json",
         "interaction.event.json",
         "live.event.json",
         "progress-thinking.event.json",

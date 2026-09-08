@@ -1,0 +1,13 @@
+{
+  "target": "/chat/turn/submit",
+  "direction": "response",
+  "body": {
+    "requestId": "request-3",
+    "disposition": "queued",
+    "admission": {
+      "state": "waiting_handoff",
+      "admissionVersion": 7,
+      "reason": "mode_handoff"
+    }
+  }
+}

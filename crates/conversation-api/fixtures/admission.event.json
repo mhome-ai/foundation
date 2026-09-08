@@ -1,0 +1,17 @@
+{
+  "target": "/chat/event",
+  "direction": "event",
+  "body": {
+    "type": "admission.changed",
+    "surfaceId": "cs1:cp:dXNlci0x",
+    "requestId": "request-3",
+    "admissionVersion": 8,
+    "occurredAt": "2026-08-22T03:00:00Z",
+    "data": {
+      "state": "bound",
+      "reason": "accepted",
+      "threadId": "thread-3",
+      "queueVersion": 1
+    }
+  }
+}

@@ -33,6 +33,11 @@ event_type!(
     "session.policy_changed"
 );
 event_type!(
+    AdmissionChangedEventType,
+    AdmissionChanged,
+    "admission.changed"
+);
+event_type!(
     AssistantPreviewEventType,
     AssistantPreview,
     "assistant.preview"
@@ -123,6 +128,30 @@ pub struct SessionPolicyChangedEvent {
 pub struct SessionPolicyChangedData {
     pub idle_timeout_minutes: u32,
     pub updated_at_ms: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AdmissionChangedEvent {
+    #[serde(rename = "type")]
+    pub event_type: AdmissionChangedEventType,
+    pub surface_id: ConversationSurface,
+    pub request_id: String,
+    pub admission_version: u64,
+    pub occurred_at: String,
+    pub data: AdmissionChangedData,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AdmissionChangedData {
+    pub state: crate::RequestAdmissionState,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<crate::RequestAdmissionReason>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thread_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub queue_version: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -302,6 +331,7 @@ pub enum ConversationEvent {
     CatalogChanged(CatalogChangedEvent),
     QueueChanged(QueueChangedEvent),
     SessionPolicyChanged(SessionPolicyChangedEvent),
+    AdmissionChanged(AdmissionChangedEvent),
     AssistantPreview(AssistantPreviewEvent),
     RunProgress(RunProgressEvent),
     RunSystemFailed(RunSystemFailedEvent),
@@ -314,6 +344,7 @@ impl ConversationEvent {
             Self::CatalogChanged(event) => &event.surface_id,
             Self::QueueChanged(event) => &event.surface_id,
             Self::SessionPolicyChanged(event) => &event.surface_id,
+            Self::AdmissionChanged(event) => &event.surface_id,
             Self::AssistantPreview(event) => &event.surface_id,
             Self::RunProgress(event) => &event.surface_id,
             Self::RunSystemFailed(event) => &event.surface_id,
@@ -326,6 +357,7 @@ impl ConversationEvent {
             Self::CatalogChanged(_) => "thread.catalog_changed",
             Self::QueueChanged(_) => "queue.changed",
             Self::SessionPolicyChanged(_) => "session.policy_changed",
+            Self::AdmissionChanged(_) => "admission.changed",
             Self::AssistantPreview(_) => "assistant.preview",
             Self::RunProgress(_) => "run.progress",
             Self::RunSystemFailed(_) => "run.system_failed",

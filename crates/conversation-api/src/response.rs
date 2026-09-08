@@ -38,7 +38,10 @@ pub struct ThreadLoadResponse {
 pub struct MessageEnqueueResponse {
     pub request_id: String,
     pub disposition: MessageEnqueueDisposition,
-    pub queue_version: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub queue_version: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub admission: Option<RequestAdmission>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -52,10 +55,15 @@ pub enum MessageEnqueueDisposition {
 #[serde(rename_all = "camelCase")]
 pub struct TurnSubmitResponse {
     pub request_id: String,
-    pub thread_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thread_id: Option<String>,
     pub disposition: TurnSubmitDisposition,
-    pub session_disposition: TurnSessionDisposition,
-    pub queue_version: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session_disposition: Option<TurnSessionDisposition>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub queue_version: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub admission: Option<RequestAdmission>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -126,12 +134,16 @@ pub struct RequestCancelResponse {
     pub request_id: String,
     pub phase: RequestCancelPhase,
     pub outcome: RequestCancelOutcome,
-    pub queue_version: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub queue_version: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub admission_version: Option<u64>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum RequestCancelPhase {
+    AdmissionWaiting,
     Waiting,
     Running,
 }
@@ -141,4 +153,36 @@ pub enum RequestCancelPhase {
 pub enum RequestCancelOutcome {
     Cancelled,
     Cancelling,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RequestAdmission {
+    pub state: RequestAdmissionState,
+    pub admission_version: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<RequestAdmissionReason>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thread_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub queue_version: Option<u64>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RequestAdmissionState {
+    WaitingHandoff,
+    Bound,
+    Cancelled,
+    Failed,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RequestAdmissionReason {
+    ModeHandoff,
+    WaitingForPriorTurn,
+    Accepted,
+    Cancelled,
+    HandoffFailed,
 }
