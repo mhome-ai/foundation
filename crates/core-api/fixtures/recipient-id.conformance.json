@@ -1,0 +1,9 @@
+{
+  "valid": [
+    {"id":"m:p:telegram:Ym90:Y2hhdA","surface":"cs1:mp:telegram:Ym90:Y2hhdA"},
+    {"id":"m:g:telegram:Ym90:Y2hhdA:dG9waWM","surface":"cs1:mg:telegram:Ym90:Y2hhdA:dG9waWM"},
+    {"id":"m:g:feishu:YWNjb3VudA:Y29udmVyc2F0aW9u","surface":"cs1:mg:feishu:YWNjb3VudA:Y29udmVyc2F0aW9u"},
+    {"id":"n:camera:bm9kZTox","nodeType":"camera","nodeId":"node:1"}
+  ],
+  "invalid": ["", "a:device", "p:provider", "L:socket", "C:peer:socket", "M:telegram:Ym90:Y2hhdA", "cs1:mp:telegram:Ym90:Y2hhdA", "m:x:telegram:Ym90:Y2hhdA", "m:p:telegram:Ym90=:Y2hhdA", "m:p:telegram::Y2hhdA", "m:p:telegram:Ym90:Y2hhdA:", "n:Camera:bm9kZQ", "n:camera:", "n:camera:bm9kZQ==", "n:camera:_w", "n:camera:IG5vZGU", "n:camera:bm9kZQ:extra"]
+}

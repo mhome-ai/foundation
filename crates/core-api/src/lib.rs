@@ -7,11 +7,13 @@ pub mod llm;
 pub mod messaging;
 pub mod node;
 mod node_service;
+mod recipient;
 mod storage;
 
 pub use delivery::*;
 pub use external_rpc::*;
 pub use node_service::*;
+pub use recipient::*;
 pub use storage::*;
 
 use serde::{Deserialize, Serialize};

@@ -63,6 +63,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     additionalFiles: Object.freeze([
       "contract/node-runtime-protocol-v1.json",
       "contract/node-service-protocol-v1.json",
+      "contract/recipient-id-v1.md",
     ]),
     schemas: Object.freeze({
       normalizedInbound: "schema/normalized-inbound.v4.schema.json",
@@ -75,6 +76,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       messagingCommands: "fixtures/messaging-commands.conformance.json",
       interactionFlowNode: "fixtures/interaction-flow-node.conformance.json",
       cameraPluginManagement: "fixtures/camera-plugin-management.conformance.json",
+      recipientId: "fixtures/recipient-id.conformance.json",
     }),
   }),
 });

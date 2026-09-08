@@ -21,6 +21,14 @@ Storage separates backing-filesystem capacity from Storage-owned logical
 usage. Namespace is an internal protocol term; user-facing clients present it
 as a Folder.
 
+## Stable recipients (core-api 1.8.0)
+
+`RecipientId` provides canonical Messaging (`m:p:` / `m:g:`) and Node (`n:`)
+addresses. See [the contract](contract/recipient-id-v1.md) and the packaged
+cross-language [conformance vectors](fixtures/recipient-id.conformance.json).
+This is additive; the external Host transport protocol remains version 14.
+Consumers must explicitly migrate their identities after this release is available.
+
 ## Host delivery (core-api 1.7.1)
 
 Core resolves logical recipients; the Host executes a concrete App connection,
