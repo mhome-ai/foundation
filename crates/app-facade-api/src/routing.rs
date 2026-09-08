@@ -152,10 +152,6 @@ mod tests {
             Some(DIRECT_SCOPE)
         );
         assert_eq!(
-            route_policy_for_target(crate::device_topology::CHANGED_TARGET),
-            Some(DIRECT_SCOPE)
-        );
-        assert_eq!(
             route_policy_for_target("/app/device/list"),
             Some(DIRECT_SCOPE)
         );

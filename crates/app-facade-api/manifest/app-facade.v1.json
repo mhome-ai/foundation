@@ -50,7 +50,7 @@
       "contract": "mhome.device.topology.v1",
       "schema": "schema/device-topology.v1.schema.json",
       "requestTargets": ["/app/device/topology/get"],
-      "eventTargets": ["/app/device/topology/changed"]
+      "eventTargets": []
     },
     "interactionFlow": {
       "schema": "schema/interaction-flow-app.v1.schema.json",

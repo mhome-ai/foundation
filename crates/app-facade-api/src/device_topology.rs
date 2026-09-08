@@ -11,7 +11,6 @@ use std::fmt;
 
 pub const CONTRACT: &str = "mhome.device.topology.v1";
 pub const GET_TARGET: &str = "/app/device/topology/get";
-pub const CHANGED_TARGET: &str = "/app/device/topology/changed";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -502,14 +501,6 @@ pub enum DeviceTopologyRelationBasis {
     SourceProjection,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct DeviceTopologyChanged {
-    pub scope_id: String,
-    pub generation: String,
-    pub revision: u64,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeviceTopologyValidationError {
     InvalidContract,
@@ -953,12 +944,5 @@ mod tests {
         }))
         .is_err());
 
-        assert!(serde_json::from_value::<DeviceTopologyChanged>(json!({
-            "scopeId": "space-1",
-            "generation": "generation-1",
-            "revision": 1,
-            "unexpected": true
-        }))
-        .is_err());
     }
 }

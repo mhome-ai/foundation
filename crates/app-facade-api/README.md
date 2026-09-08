@@ -42,6 +42,10 @@ a single parent, containment, or acyclicity. Durable relations remain present
 while unavailable, and partial snapshots preserve confirmed structure when one
 source cannot be observed.
 
+Device topology is read on page entry and explicit Refresh only. It has no
+changed event or subscription. Its generation and revision identify reads;
+revision is a process-local read sequence, not a domain-change counter.
+
 `artifact` exposes the MeowLink-facing `/app/artifact/resolve` operation. Its
 domain input and output reuse `mhome-artifact-api`; Node runtimes use the
 separate transport-neutral `/artifact/*` targets and never enter the App

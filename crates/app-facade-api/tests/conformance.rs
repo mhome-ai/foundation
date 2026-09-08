@@ -834,7 +834,7 @@ fn device_topology_snapshots_match_public_schema_and_graph_invariants() {
 
 #[test]
 fn device_topology_is_registered_in_the_app_facade_manifest() {
-    use app_facade_api::device_topology::{CHANGED_TARGET, CONTRACT, GET_TARGET};
+    use app_facade_api::device_topology::{CONTRACT, GET_TARGET};
 
     let manifest: Value =
         serde_json::from_str(include_str!("../manifest/app-facade.v1.json")).unwrap();
@@ -844,7 +844,7 @@ fn device_topology_is_registered_in_the_app_facade_manifest() {
     assert_eq!(domain["contract"], CONTRACT);
     assert_eq!(domain["schema"], "schema/device-topology.v1.schema.json");
     assert_eq!(domain["requestTargets"], serde_json::json!([GET_TARGET]));
-    assert_eq!(domain["eventTargets"], serde_json::json!([CHANGED_TARGET]));
+    assert_eq!(domain["eventTargets"], serde_json::json!([]));
 }
 
 #[test]
