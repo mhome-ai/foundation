@@ -59,6 +59,24 @@ pub struct AudioBridgeDevice {
     pub features: Vec<AudioDeviceFeature>,
     pub online: bool,
     pub listen_enabled: bool,
+    pub listen_runtime: ListenRuntimeStatus,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum ListenRuntimeState {
+    Disabled,
+    Starting,
+    Listening,
+    Failed,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ListenRuntimeStatus {
+    pub state: ListenRuntimeState,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -96,6 +114,7 @@ pub enum SmartSpeakerRuntimeState {
     OutputOffline,
     PermissionDenied,
     ModelError,
+    RuntimeError,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -221,13 +240,36 @@ mod tests {
             features: vec![AudioDeviceFeature::Speaker, AudioDeviceFeature::Microphone],
             online: true,
             listen_enabled: false,
+            listen_runtime: ListenRuntimeStatus {
+                state: ListenRuntimeState::Disabled,
+                reason: None,
+            },
         })
         .expect("serialize device");
         assert!(value.get("platformKey").is_none());
         assert!(value.get("endpointId").is_none());
+        assert_eq!(value["listenRuntime"]["state"], "disabled");
         assert_eq!(
             value["features"],
             serde_json::json!(["speaker", "microphone"])
+        );
+    }
+
+    #[test]
+    fn runtime_failures_are_not_model_or_device_failures() {
+        assert_eq!(
+            serde_json::to_value(SmartSpeakerRuntimeState::RuntimeError).unwrap(),
+            "runtimeError"
+        );
+        let status = ListenRuntimeStatus {
+            state: ListenRuntimeState::Failed,
+            reason: Some("input_stream_unavailable".into()),
+        };
+        let value = serde_json::to_value(&status).unwrap();
+        assert_eq!(value["state"], "failed");
+        assert_eq!(
+            serde_json::from_value::<ListenRuntimeStatus>(value).unwrap(),
+            status
         );
     }
 
