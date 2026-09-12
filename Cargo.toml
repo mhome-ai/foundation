@@ -6,7 +6,6 @@ members = [
   "crates/conversation-api",
   "crates/machine-identity",
   "crates/core-api",
-  "crates/webhook-api",
   "crates/playground-models",
   "crates/runtime-paths",
 ]
