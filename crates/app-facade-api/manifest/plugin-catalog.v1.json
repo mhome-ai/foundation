@@ -1,0 +1,47 @@
+{
+  "version": "1",
+  "plugins": [
+    {
+      "nodeType": "camera",
+      "displayName": "Camera",
+      "description": "View camera streams and snapshots.",
+      "componentId": "node-camera",
+      "bindingCardinality": "multiple"
+    },
+    {
+      "nodeType": "matter",
+      "displayName": "Matter",
+      "description": "Connect and manage Matter devices.",
+      "componentId": "node-matter",
+      "bindingCardinality": "single"
+    },
+    {
+      "nodeType": "llm",
+      "displayName": "Local AI",
+      "description": "Run language models on a capable device.",
+      "componentId": "node-llm",
+      "bindingCardinality": "single"
+    },
+    {
+      "nodeType": "storage",
+      "displayName": "Storage",
+      "description": "Store files and recordings on your device or NAS.",
+      "componentId": "node-storage",
+      "bindingCardinality": "single"
+    },
+    {
+      "nodeType": "audiobridge",
+      "displayName": "Audio bridge",
+      "description": "Connect local audio devices for playback and announcements.",
+      "componentId": "node-audiobridge",
+      "bindingCardinality": "multiple"
+    },
+    {
+      "nodeType": "mac",
+      "displayName": "Mac",
+      "description": "Use native capabilities of a Mac device.",
+      "componentId": "node-mac",
+      "bindingCardinality": "multiple"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 pub const TARGET_PREFIX: &str = "/app/plugin";
+pub const CATALOG_LIST_TARGET: &str = "/app/plugin/catalog/list";
+pub const SYSTEM_CATALOG_JSON: &str = include_str!("../manifest/plugin-catalog.v1.json");
 pub const EXTENSION_VERSION: &str = "v1";
 pub const INSTALLED_LIST_TARGET: &str = "/app/plugin/installed/list";
 pub const DETAIL_GET_TARGET: &str = "/app/plugin/detail/get";

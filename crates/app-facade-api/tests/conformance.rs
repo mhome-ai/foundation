@@ -865,3 +865,14 @@ fn artifact_is_registered_as_a_scope_mode_app_facade_domain() {
     assert_eq!(policy.execution, ExecutionSelector::ScopeMode);
     assert_eq!(policy.relay, RelayPolicy::DirectOnly);
 }
+
+#[test]
+fn plugin_catalog_is_valid_and_has_unique_types() {
+    let catalog: Value = serde_json::from_str(app_facade_api::plugin::SYSTEM_CATALOG_JSON).unwrap();
+    let schema: Value = serde_json::from_str(include_str!("../schema/plugin-catalog.v1.schema.json")).unwrap();
+    assert!(jsonschema::validator_for(&schema).unwrap().is_valid(&catalog));
+    let plugins = catalog["plugins"].as_array().unwrap();
+    assert!(!plugins.is_empty());
+    let types: BTreeSet<_> = plugins.iter().map(|plugin| plugin["nodeType"].as_str().unwrap()).collect();
+    assert_eq!(types.len(), plugins.len());
+}

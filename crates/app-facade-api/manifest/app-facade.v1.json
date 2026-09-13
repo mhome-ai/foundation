@@ -20,7 +20,10 @@
     "plugin": {
       "extensionVersion": "v1",
       "targetPrefix": "/app/plugin",
+      "catalog": "manifest/plugin-catalog.v1.json",
+      "catalogSchema": "schema/plugin-catalog.v1.schema.json",
       "exactRequestTargets": [
+        "/app/plugin/catalog/list",
         "/app/plugin/installed/list",
         "/app/plugin/detail/get",
         "/app/plugin/candidate/list",

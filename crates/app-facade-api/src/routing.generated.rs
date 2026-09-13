@@ -14,6 +14,7 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/hub/cache/clear",
     "/app/hub/get",
     "/app/hub/remove",
+    "/app/plugin/catalog/list",
     "/app/system/feedback/submit",
     "/app/timeline/entity/latest/list",
 ];
