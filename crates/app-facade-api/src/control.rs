@@ -546,7 +546,8 @@ pub struct SurfaceRequest {
 pub struct SurfaceBindCodeCreateRequest {
     pub provider: String,
     pub placement: Placement,
-    pub surface_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub surface_id: Option<String>,
     pub scope_id: String,
 }
 
@@ -555,7 +556,8 @@ pub struct SurfaceBindCodeCreateRequest {
 pub struct ActorLinkCodeCreateRequest {
     pub provider: String,
     pub placement: Placement,
-    pub account_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub account_id: Option<String>,
     pub target: ActorLinkTarget,
 }
 
@@ -568,12 +570,17 @@ pub struct ActorLinkCodeCreateRequest {
 )]
 pub enum ActorLinkTarget {
     Personal,
-    Shared { surface_id: String },
+    Shared {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        surface_id: Option<String>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChallengeCode {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub challenge_id: Option<String>,
     pub code: String,
     pub command: String,
     pub expires_at_ms: i64,
@@ -603,13 +610,24 @@ pub struct ActorLinkCandidate {
     pub event_id: String,
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum IdentityChallengeKind {
+    #[default]
+    Link,
+    Bind,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ActorLinkClaim {
+    #[serde(default)]
+    pub kind: IdentityChallengeKind,
     pub challenge_id: String,
     pub provider: String,
     pub placement: Placement,
-    pub account_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub account_id: Option<String>,
     pub target: ActorLinkTarget,
     pub expires_at_ms: i64,
     pub lifecycle: ActorLinkClaimLifecycle,
@@ -632,7 +650,8 @@ pub enum ActorLinkClaimLifecycle {
     },
     Completed {
         candidate: ActorLinkCandidate,
-        link_id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        link_id: Option<String>,
     },
     Superseded,
     Expired,

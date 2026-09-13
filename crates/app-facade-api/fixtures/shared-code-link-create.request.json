@@ -1,0 +1,11 @@
+{
+  "target": "/app/messaging/actor/link-code/create",
+  "direction": "request",
+  "body": {
+    "provider": "telegram",
+    "placement": "local",
+    "target": {
+      "audience": "shared"
+    }
+  }
+}

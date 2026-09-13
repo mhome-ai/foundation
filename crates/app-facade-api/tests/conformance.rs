@@ -17,6 +17,14 @@ use std::collections::BTreeSet;
 
 const VALID_FIXTURES: &[(&str, &str)] = &[
     (
+        "shared-code-link-create.request.json",
+        include_str!("../fixtures/shared-code-link-create.request.json"),
+    ),
+    (
+        "shared-code-bind-create.request.json",
+        include_str!("../fixtures/shared-code-bind-create.request.json"),
+    ),
+    (
         "provider-list.request.json",
         include_str!("../fixtures/provider-list.request.json"),
     ),

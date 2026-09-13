@@ -663,6 +663,9 @@
         "expiresAtMs": {
           "type": "integer",
           "minimum": 0
+        },
+        "challengeId": {
+          "$ref": "#/$defs/id"
         }
       }
     },
@@ -1054,7 +1057,6 @@
       "required": [
         "provider",
         "placement",
-        "surfaceId",
         "scopeId"
       ],
       "properties": {
@@ -1078,7 +1080,6 @@
       "required": [
         "provider",
         "placement",
-        "accountId",
         "target"
       ],
       "properties": {
@@ -2305,8 +2306,7 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "audience",
-            "surfaceId"
+            "audience"
           ],
           "properties": {
             "audience": {
@@ -2396,7 +2396,6 @@
         "challengeId",
         "provider",
         "placement",
-        "accountId",
         "target",
         "expiresAtMs",
         "lifecycle"
@@ -2423,6 +2422,12 @@
         },
         "lifecycle": {
           "$ref": "#/$defs/actorLinkClaimLifecycle"
+        },
+        "kind": {
+          "enum": [
+            "link",
+            "bind"
+          ]
         }
       }
     },
@@ -2662,8 +2667,7 @@
           "additionalProperties": false,
           "required": [
             "state",
-            "candidate",
-            "linkId"
+            "candidate"
           ],
           "properties": {
             "state": {

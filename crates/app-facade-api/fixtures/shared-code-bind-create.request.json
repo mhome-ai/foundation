@@ -1,0 +1,9 @@
+{
+  "target": "/app/messaging/surface/bind-code/create",
+  "direction": "request",
+  "body": {
+    "provider": "feishu",
+    "placement": "local",
+    "scopeId": "scope_a"
+  }
+}

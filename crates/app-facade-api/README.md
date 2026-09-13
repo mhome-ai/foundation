@@ -84,3 +84,7 @@ Core and Cloud embed generated copies. After editing the catalog, run
 from the Foundation root; omit `--write` to check conformance. Resource paths are
 `src/application/plugin-catalog.v1.json` (Core) and
 `src/main/resources/app/plugin-catalog.v1.json` (Cloud module-service).
+
+## Shared messaging codes (1.10)
+
+Code creation may omit bot/account and group/surface identifiers. The receiving authenticated provider determines the bot; shared candidates are confirmed in the App. The existing actor link claim status/confirm/event endpoints carry both kinds, distinguished by `kind` (`link` by default, or `bind`). Bind code responses include `challengeId`; completed bind claims omit `linkId`. Private link completes on receipt. A code is single-use within its provider and service deployment, never a cross-provider or cross-Hub credential.
