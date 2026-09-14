@@ -7,6 +7,8 @@ pub mod llm;
 pub mod messaging;
 pub mod node;
 mod node_service;
+mod node_commissioning;
+pub use node_commissioning::*;
 mod recipient;
 mod storage;
 

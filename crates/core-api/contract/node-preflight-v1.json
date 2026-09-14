@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Node preflight readiness v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "state",
+    "revision",
+    "commissionable",
+    "runtimeUsable",
+    "error",
+    "details"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "mhome.node.preflight.v1"
+    },
+    "state": {
+      "enum": [
+        "preparing",
+        "ready",
+        "failed"
+      ]
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "commissionable": {
+      "type": "boolean"
+    },
+    "runtimeUsable": {
+      "type": "boolean"
+    },
+    "error": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "code",
+            "detail",
+            "retryable"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "minLength": 1
+            },
+            "detail": {
+              "type": "string",
+              "minLength": 1
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "details": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "commissionable": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "runtimeUsable": {
+            "const": true
+          },
+          "state": {
+            "const": "ready"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "error": {
+            "type": "object"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "error": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}
