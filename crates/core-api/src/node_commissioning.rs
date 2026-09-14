@@ -64,8 +64,14 @@ pub struct NodePreflightReadiness {
     pub revision: u64,
     pub commissionable: bool,
     pub runtime_usable: bool,
+    #[serde(deserialize_with = "required_nullable_error")]
     pub error: Option<NodePreflightError>,
     pub details: Map<String, Value>,
+}
+fn required_nullable_error<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<NodePreflightError>, D::Error> {
+    Option::<NodePreflightError>::deserialize(deserializer)
 }
 impl NodePreflightReadiness {
     pub fn validate(&self) -> Result<(), &'static str> {
@@ -91,21 +97,32 @@ impl NodePreflightReadiness {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NodeCommissioningPrepareResponse {
+pub struct NodeCommissioningPrepareResponse<R = NodePreflightReadiness> {
     pub ok: bool,
     pub started: bool,
-    pub readiness: NodePreflightReadiness,
+    pub readiness: R,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NodeCommissioningStatusResponse {
+pub struct NodeCommissioningStatusResponse<R = NodePreflightReadiness> {
     pub ok: bool,
-    pub readiness: NodePreflightReadiness,
+    pub readiness: R,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn requires_nullable_error_field() {
+        let mut value = serde_json::json!({"schemaVersion":NODE_PREFLIGHT_SCHEMA_VERSION,"state":"ready",
+            "revision":1,"commissionable":true,"runtimeUsable":true,"details":{}});
+        assert!(serde_json::from_value::<NodePreflightReadiness>(value.clone()).is_err());
+        value["error"] = Value::Null;
+        assert!(serde_json::from_value::<NodePreflightReadiness>(value)
+            .unwrap()
+            .validate()
+            .is_ok());
+    }
     #[test]
     fn rejects_private_readiness_and_inconsistent_success() {
         assert!(serde_json::from_value::<NodePreflightReadiness>(
