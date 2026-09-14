@@ -1,4 +1,4 @@
-//! LAN Node commissioning. Cancellation is deliberately outside this contract.
+//! LAN Node commissioning: authenticated checks and durable identity acceptance.
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
@@ -33,8 +33,6 @@ pub struct NodeCommissioningErrorResponse {
 pub struct NodeCommissioningPrepareRequest {
     #[serde(flatten)]
     pub commissioning: NodeCommissioningAcceptRequest,
-    pub idempotency_key: String,
-    pub expected_revision: Option<u64>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -99,7 +97,6 @@ impl NodePreflightReadiness {
 #[serde(rename_all = "camelCase")]
 pub struct NodeCommissioningPrepareResponse<R = NodePreflightReadiness> {
     pub ok: bool,
-    pub started: bool,
     pub readiness: R,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
