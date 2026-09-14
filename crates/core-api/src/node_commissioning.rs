@@ -95,15 +95,15 @@ impl NodePreflightReadiness {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NodeCommissioningPrepareResponse<R = NodePreflightReadiness> {
+pub struct NodeCommissioningPrepareResponse {
     pub ok: bool,
-    pub readiness: R,
+    pub readiness: NodePreflightReadiness,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NodeCommissioningStatusResponse<R = NodePreflightReadiness> {
+pub struct NodeCommissioningStatusResponse {
     pub ok: bool,
-    pub readiness: R,
+    pub readiness: NodePreflightReadiness,
 }
 
 #[cfg(test)]
