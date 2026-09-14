@@ -5,7 +5,7 @@ Matter implementations adopt this contract. Other service preparation protocols 
 
 - Health uses ServiceStatusPayload, not the internal SDK state enum.
 - Challenge uses NodeChallengePayload camelCase JSON before signing. ES256 and Ed25519 are valid. The payload is distinct from snake_case JWT claims.
-- Repeating an identical live challenge may return fresh signature evidence for the same payload; it must not extend the original deadline. Different bindings sharing a nonce conflict. A reserved challenge cannot be replaced.
+- Repeating an identical live challenge must reuse its original signature evidence; it must not extend the original deadline. Different bindings sharing a nonce conflict. A reserved challenge cannot be replaced.
 - Prepare/status/accept authenticate token, Hub and local challenge binding. hubUrl is an address hint, never a trust root.
 - Prepare requires a nonblank idempotencyKey (at most 256 UTF-8 bytes) and optional nonnegative expectedRevision. Keys are scoped to the authenticated onboarding transaction. Replay of the current operation is resolved before revision comparison and returns started=false plus current readiness. A distinct key starts or joins a new preparation attempt after revision comparison. Replacing the key supersedes the old attempt: retry guarantees apply to the current attempt within the transaction window.
 - started means this request initiated shared backend preparation, not that a per-client task was allocated. A ready runtime or an already running preparation returns false. Preparation never reboots a machine or chip.

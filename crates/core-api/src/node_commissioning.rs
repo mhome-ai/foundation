@@ -14,6 +14,22 @@ pub struct NodeCommissioningAcceptRequest {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct NodeCommissioningAcceptResponse {
+    pub ok: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NodeCommissioningErrorResponse {
+    pub ok: bool,
+    pub reason: String,
+    pub error: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NodeCommissioningPrepareRequest {
     #[serde(flatten)]
     pub commissioning: NodeCommissioningAcceptRequest,
