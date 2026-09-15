@@ -88,3 +88,7 @@ from the Foundation root; omit `--write` to check conformance. Resource paths ar
 ## Shared messaging codes (1.10)
 
 Code creation may omit bot/account and group/surface identifiers. The receiving authenticated provider determines the bot; shared candidates are confirmed in the App. The existing actor link claim status/confirm/event endpoints carry both kinds, distinguished by `kind` (`link` by default, or `bind`). Bind code responses include `challengeId`; completed bind claims omit `linkId`. Private link completes on receipt. A code is single-use within its provider and service deployment, never a cross-provider or cross-Hub credential.
+
+## System inventory
+
+The system facade is executed by the local Space Hub, with Cloud relay allowed. All Space members may read it. The Hub reads its Host discovery snapshot and queries LAN Host info, service inventory and metrics. Host does not aggregate remote machines. Instances are derived exclusively from the authenticated tenant/Space commissioned records; disconnected does not mean unloaded. Client sessions use a separate endpoint. No remote Space lifecycle queries or graph coordinates are part of this contract. Legacy topology is deprecated; consumers migrate to system inventory.

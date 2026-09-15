@@ -19,3 +19,5 @@ pub mod topology;
 pub use call::{ActionMode, FacadeCall, FacadeControl, ResponseFormat};
 
 pub const PROTOCOL_VERSION: &str = "app-facade.v1";
+
+pub mod system;

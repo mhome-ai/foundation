@@ -1,13 +1,15 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.10.0",
+  "contractVersion": "1.10.1",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
   "domains": {
     "artifact": {
       "contract": "mhome.artifact.v1",
-      "requestTargets": ["/app/artifact/resolve"]
+      "requestTargets": [
+        "/app/artifact/resolve"
+      ]
     },
     "hub": {
       "targets": "manifest/hub-targets.v1.json",
@@ -33,26 +35,42 @@
         "/app/plugin/remove",
         "/app/plugin/profile/update"
       ],
-      "eventTargets": ["/app/plugin/settings/changed"],
+      "eventTargets": [
+        "/app/plugin/settings/changed"
+      ],
       "extensionFamily": "/app/plugin/{nodeType}/{route...}",
       "extensionPriority": "after_exact"
     },
     "runtime": {
       "contract": "mhome.runtime.status.v1",
-      "resourceTypes": ["nodeInstance", "nodeRuntime"],
-      "requestTargets": ["/app/runtime/status/list"],
-      "eventTargets": ["/app/runtime/status/changed"]
+      "resourceTypes": [
+        "nodeInstance",
+        "nodeRuntime"
+      ],
+      "requestTargets": [
+        "/app/runtime/status/list"
+      ],
+      "eventTargets": [
+        "/app/runtime/status/changed"
+      ]
     },
     "topology": {
       "contract": "mhome.space.topology.v1",
       "schema": "schema/topology.v1.schema.json",
-      "requestTargets": ["/app/topology/get"],
-      "eventTargets": ["/app/topology/changed"]
+      "requestTargets": [
+        "/app/topology/get"
+      ],
+      "eventTargets": [
+        "/app/topology/changed"
+      ],
+      "deprecated": true
     },
     "deviceTopology": {
       "contract": "mhome.device.topology.v1",
       "schema": "schema/device-topology.v1.schema.json",
-      "requestTargets": ["/app/device/topology/get"],
+      "requestTargets": [
+        "/app/device/topology/get"
+      ],
       "eventTargets": []
     },
     "interactionFlow": {
@@ -66,6 +84,15 @@
         "/app/interaction-flow/cancel"
       ],
       "sessionPersistence": "memory"
+    },
+    "system": {
+      "contract": "mhome.system.inventory.v1",
+      "schema": "schema/system-inventory.v1.schema.json",
+      "requestTargets": [
+        "/app/system/inventory/get",
+        "/app/system/clients/get",
+        "/app/system/host/metrics/get"
+      ]
     }
   }
 }

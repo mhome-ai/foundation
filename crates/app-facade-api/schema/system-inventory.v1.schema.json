@@ -1,0 +1,195 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "scopeId",
+    "observedAtMs",
+    "discoveryError",
+    "hosts",
+    "instances"
+  ],
+  "properties": {
+    "contract": {
+      "const": "mhome.system.inventory.v1"
+    },
+    "scopeId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observedAtMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "discoveryError": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hosts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "hostId",
+          "hostName",
+          "hostType",
+          "isHubHost",
+          "discovered",
+          "reachable",
+          "observedAtMs",
+          "info",
+          "infoError",
+          "services",
+          "servicesError"
+        ],
+        "properties": {
+          "hostId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "hostName": {
+            "type": "string"
+          },
+          "hostType": {
+            "type": "string"
+          },
+          "isHubHost": {
+            "type": "boolean"
+          },
+          "discovered": {
+            "type": "boolean"
+          },
+          "reachable": {
+            "type": "boolean"
+          },
+          "observedAtMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "info": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "infoError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "serviceId",
+                "version",
+                "kind",
+                "status"
+              ],
+              "properties": {
+                "serviceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "version": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "servicesError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "instances": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "hostId",
+          "serviceId",
+          "displayName",
+          "nodeType",
+          "hubId",
+          "commissioned",
+          "connected",
+          "health",
+          "healthObservedAtMs",
+          "cloudConnected"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "hub",
+              "node"
+            ]
+          },
+          "hostId": {
+            "type": "string"
+          },
+          "serviceId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "nodeType": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hubId": {
+            "type": "string"
+          },
+          "commissioned": {
+            "type": "boolean"
+          },
+          "connected": {
+            "type": "boolean"
+          },
+          "health": {
+            "type": "string"
+          },
+          "healthObservedAtMs": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "cloudConnected": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
