@@ -21,6 +21,13 @@ Storage separates backing-filesystem capacity from Storage-owned logical
 usage. Namespace is an internal protocol term; user-facing clients present it
 as a Folder.
 
+## Playground Provider (core-api 1.10.0)
+
+External protocol 15 removes the dedicated Playground webhook method and payload.
+Playground Provider delivers events through the standard subscription webhook,
+using `GeneralWebhookPayload`. Update the Core service shell and runtime together;
+mixed external protocol versions are not supported.
+
 ## Stable recipients (core-api 1.8.0)
 
 `RecipientId` provides canonical Messaging (`m:p:` / `m:g:`) and Node (`n:`)

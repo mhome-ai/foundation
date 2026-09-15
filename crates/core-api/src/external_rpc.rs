@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::{AuthRequest, AuthenticatedSession, ServiceCoreInput, ServiceCoreOutput};
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 14;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 15;
 pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
 pub const ARTIFACT_UPLOAD_PATH_PREFIX: &str = "/artifact/v1/upload/";
 
@@ -53,7 +53,6 @@ pub enum ExternalCoreMethod {
     PairingStartPayload,
     SetupStartPayload,
     GeneralWebhookPayload,
-    PlaygroundWebhookPayload,
     InvokeWasmPayload,
     Health,
 }
@@ -359,15 +358,6 @@ pub struct EndpointPayloadRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PlaygroundPayloadRequest {
-    pub tenant_id: String,
-    pub scope_id: String,
-    pub device_id: String,
-    pub capability_id: String,
-    pub payload: Value,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExternalCoreRuntimeMetadata {
     pub backend: String,
@@ -424,7 +414,7 @@ mod tests {
     }
 
     #[test]
-    fn external_events_use_the_v14_wire_shape() {
+    fn external_events_use_the_v15_wire_shape() {
         let event = ExternalCoreEvent {
             event_id: "event-1".to_string(),
             kind: ExternalCoreEventKind::ScopeOwnedDataPurgeRequested,
@@ -437,7 +427,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 14);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 15);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");
@@ -490,5 +480,17 @@ mod tests {
         let value = serde_json::to_value(request).unwrap();
         assert_eq!(value["expiresAtUnixMs"], 123);
         assert_eq!(value["clientId"], "L:client");
+    }
+
+    #[test]
+    fn playground_uses_only_the_general_webhook_contract() {
+        let general = serde_json::to_value(ExternalCoreMethod::GeneralWebhookPayload).unwrap();
+        assert_eq!(general, serde_json::json!("GeneralWebhookPayload"));
+        assert!(
+            serde_json::from_value::<ExternalCoreMethod>(serde_json::json!(
+                "PlaygroundWebhookPayload"
+            ))
+            .is_err()
+        );
     }
 }
