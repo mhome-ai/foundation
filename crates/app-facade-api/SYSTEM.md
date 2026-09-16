@@ -64,8 +64,7 @@ Device Topology remains a separate contract.
 
 ## Build and validation
 
-Protocol changes originate in Foundation. Core and Baycat carry checked-in source
-snapshots under `vendor/protocols`, resolved through root Cargo patches so all
-transitive users share one crate identity. Android and Messaging independent roots
-carry matching patches and lockfiles. Pallas carries a versioned protocol tarball.
-Registry publication is a separate release step and is not needed for local builds.
+Protocol changes originate in Foundation and are published to crates.io and npm.
+Core and Baycat resolve the published Rust packages, including independent Android
+and Messaging roots. Pallas resolves the matching published npm protocol package.
+Consumers do not carry copied protocol sources or local protocol tarballs.

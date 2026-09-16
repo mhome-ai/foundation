@@ -8,6 +8,7 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 - `mhome-app-facade-api`: the canonical public `/app/*` request, response, and event protocol.
 - `mhome-conversation-api`: transport-neutral DTOs for the client-facing conversation protocol.
 - `mhome-machine-identity`: persistent local machine identity derivation and host naming.
+- `mhome-host-api`: Host machine information, services and metrics wire contracts.
 - `mhome-core-api`: shared core wire types and service contracts.
 - `mhome-playground-models`: deterministic playground device models and projections.
 - `mhome-runtime-paths`: process-safe runtime paths, endpoint names, and daemon ownership checks.
