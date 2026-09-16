@@ -188,12 +188,10 @@ pub enum DeviceTopologyEntity {
         host_display_name: Option<String>,
         runtime: TopologyRuntime,
     },
-    SourceDevice {
+    MatterBridge {
         id: String,
-        source_type: String,
-        source_id: String,
+        node_id: String,
         display_name: String,
-        role: DeviceTopologySourceRole,
         runtime: TopologyRuntime,
     },
     Device {
@@ -213,7 +211,7 @@ impl DeviceTopologyEntity {
             | Self::Provider { id, .. }
             | Self::Connection { id, .. }
             | Self::PluginInstance { id, .. }
-            | Self::SourceDevice { id, .. }
+            | Self::MatterBridge { id, .. }
             | Self::Device { id, .. } => id,
         }
     }
@@ -224,7 +222,7 @@ impl DeviceTopologyEntity {
             Self::Provider { .. } => DeviceTopologyEntityKind::Provider,
             Self::Connection { .. } => DeviceTopologyEntityKind::Connection,
             Self::PluginInstance { .. } => DeviceTopologyEntityKind::PluginInstance,
-            Self::SourceDevice { .. } => DeviceTopologyEntityKind::SourceDevice,
+            Self::MatterBridge { .. } => DeviceTopologyEntityKind::MatterBridge,
             Self::Device { .. } => DeviceTopologyEntityKind::Device,
         }
     }
@@ -283,15 +281,13 @@ impl DeviceTopologyEntity {
                 }
                 validate_runtime(runtime, format!("{prefix}.runtime"))?;
             }
-            Self::SourceDevice {
-                source_type,
-                source_id,
+            Self::MatterBridge {
+                node_id,
                 display_name,
                 runtime,
                 ..
             } => {
-                require_non_empty(source_type, format!("{prefix}.sourceType"))?;
-                require_non_empty(source_id, format!("{prefix}.sourceId"))?;
+                require_non_empty(node_id, format!("{prefix}.nodeId"))?;
                 require_non_empty(display_name, format!("{prefix}.displayName"))?;
                 validate_runtime(runtime, format!("{prefix}.runtime"))?;
             }
@@ -365,16 +361,8 @@ pub enum DeviceTopologyEntityKind {
     Provider,
     Connection,
     PluginInstance,
-    SourceDevice,
+    MatterBridge,
     Device,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum DeviceTopologySourceRole {
-    Bridge,
-    Device,
-    Unknown,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -398,8 +386,8 @@ pub enum DeviceTopologyRelation {
     ProviderConnection,
     ProviderDevice,
     ConnectionDevice,
-    ConnectionSource,
-    SourceDevice,
+    ConnectionBridge,
+    BridgeDevice,
 }
 
 include!("device_topology_rules.generated.rs");

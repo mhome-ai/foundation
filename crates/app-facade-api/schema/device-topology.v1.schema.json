@@ -186,19 +186,15 @@
           "required": [
             "id",
             "kind",
-            "sourceType",
-            "sourceId",
+            "nodeId",
             "displayName",
-            "role",
             "runtime"
           ],
           "properties": {
             "id": { "type": "string", "minLength": 1 },
-            "kind": { "const": "sourceDevice" },
-            "sourceType": { "type": "string", "minLength": 1 },
-            "sourceId": { "type": "string", "minLength": 1 },
+            "kind": { "const": "matterBridge" },
+            "nodeId": { "type": "string", "minLength": 1 },
             "displayName": { "type": "string", "minLength": 1 },
-            "role": { "enum": ["bridge", "device", "unknown"] },
             "runtime": { "$ref": "#/$defs/runtime" }
           }
         },
@@ -250,8 +246,8 @@
             "provider-connection",
             "provider-device",
             "connection-device",
-            "connection-source",
-            "source-device"
+            "connection-bridge",
+            "bridge-device"
           ]
         },
         "basis": {
@@ -298,7 +294,7 @@
         {
           "properties": {
             "relation": {
-              "enum": ["connection-source", "source-device"]
+              "enum": ["connection-bridge", "bridge-device"]
             },
             "basis": { "const": "sourceProjection" }
           }

@@ -8,8 +8,8 @@ impl DeviceTopologyRelation {
             Self::ProviderConnection => (DeviceTopologyEntityKind::Provider, DeviceTopologyEntityKind::Connection, DeviceTopologyRelationBasis::ConnectionOwnership, true),
             Self::ProviderDevice => (DeviceTopologyEntityKind::Provider, DeviceTopologyEntityKind::Device, DeviceTopologyRelationBasis::TwinSource, true),
             Self::ConnectionDevice => (DeviceTopologyEntityKind::Connection, DeviceTopologyEntityKind::Device, DeviceTopologyRelationBasis::TwinSource, true),
-            Self::ConnectionSource => (DeviceTopologyEntityKind::Connection, DeviceTopologyEntityKind::SourceDevice, DeviceTopologyRelationBasis::SourceProjection, false),
-            Self::SourceDevice => (DeviceTopologyEntityKind::SourceDevice, DeviceTopologyEntityKind::Device, DeviceTopologyRelationBasis::SourceProjection, false),
+            Self::ConnectionBridge => (DeviceTopologyEntityKind::Connection, DeviceTopologyEntityKind::MatterBridge, DeviceTopologyRelationBasis::SourceProjection, false),
+            Self::BridgeDevice => (DeviceTopologyEntityKind::MatterBridge, DeviceTopologyEntityKind::Device, DeviceTopologyRelationBasis::SourceProjection, false),
         }
     }
 }

@@ -1,7 +1,7 @@
 //! Safe Camera provenance. Never carries source configuration or credentials.
 use serde::{Deserialize, Serialize};
 
-pub const CAMERA_TOPOLOGY_TARGET: &str = "/camera/device/topology/sources";
+pub const CAMERA_TOPOLOGY_TARGET: &str = "/camera/device/sources";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

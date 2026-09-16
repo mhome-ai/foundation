@@ -766,8 +766,8 @@ fn device_topology_snapshots_match_public_schema_and_graph_invariants() {
             "provider-connection",
             "provider-device",
             "connection-device",
-            "connection-source",
-            "source-device",
+            "connection-bridge",
+            "bridge-device",
         ])
     );
 

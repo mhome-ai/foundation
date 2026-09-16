@@ -48,12 +48,10 @@
         }
       },
       {
-        "kind": "sourceDevice",
+        "kind": "matterBridge",
         "id": "source:matter:node-123",
-        "sourceType": "matter",
-        "sourceId": "node-123",
+        "nodeId": "node-123",
         "displayName": "Aqara Matter Bridge",
-        "role": "bridge",
         "runtime": {
           "state": "healthy",
           "updatedAtMs": 1777777777000
@@ -122,10 +120,10 @@
         }
       },
       {
-        "id": "edge:connection-source",
+        "id": "edge:connection-bridge",
         "source": "connection:mlinkMatter.device:matter-1",
         "target": "source:matter:node-123",
-        "relation": "connection-source",
+        "relation": "connection-bridge",
         "basis": "sourceProjection",
         "durability": "durable",
         "observation": {
@@ -134,10 +132,10 @@
         }
       },
       {
-        "id": "edge:source-device",
+        "id": "edge:bridge-device",
         "source": "source:matter:node-123",
         "target": "device:desk-light",
-        "relation": "source-device",
+        "relation": "bridge-device",
         "basis": "sourceProjection",
         "durability": "durable",
         "observation": {
@@ -922,22 +920,12 @@
       ]
     },
     {
-      "name": "missing /entities/4/sourceType",
+      "name": "missing /entities/4/nodeId",
       "valid": false,
       "mutations": [
         {
           "op": "remove",
-          "path": "/entities/4/sourceType"
-        }
-      ]
-    },
-    {
-      "name": "missing /entities/4/sourceId",
-      "valid": false,
-      "mutations": [
-        {
-          "op": "remove",
-          "path": "/entities/4/sourceId"
+          "path": "/entities/4/nodeId"
         }
       ]
     },
@@ -948,16 +936,6 @@
         {
           "op": "remove",
           "path": "/entities/4/displayName"
-        }
-      ]
-    },
-    {
-      "name": "missing /entities/4/role",
-      "valid": false,
-      "mutations": [
-        {
-          "op": "remove",
-          "path": "/entities/4/role"
         }
       ]
     },
@@ -983,23 +961,12 @@
       ]
     },
     {
-      "name": "empty /entities/4/sourceType",
+      "name": "empty /entities/4/nodeId",
       "valid": false,
       "mutations": [
         {
           "op": "set",
-          "path": "/entities/4/sourceType",
-          "value": ""
-        }
-      ]
-    },
-    {
-      "name": "empty /entities/4/sourceId",
-      "valid": false,
-      "mutations": [
-        {
-          "op": "set",
-          "path": "/entities/4/sourceId",
+          "path": "/entities/4/nodeId",
           "value": ""
         }
       ]
@@ -1012,17 +979,6 @@
           "op": "set",
           "path": "/entities/4/displayName",
           "value": ""
-        }
-      ]
-    },
-    {
-      "name": "unknown /entities/4/role",
-      "valid": false,
-      "mutations": [
-        {
-          "op": "set",
-          "path": "/entities/4/role",
-          "value": "invalid"
         }
       ]
     },

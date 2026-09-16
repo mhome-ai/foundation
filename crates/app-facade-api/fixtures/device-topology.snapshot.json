@@ -47,12 +47,10 @@
       }
     },
     {
-      "kind": "sourceDevice",
+      "kind": "matterBridge",
       "id": "source:matter:node-123",
-      "sourceType": "matter",
-      "sourceId": "node-123",
+      "nodeId": "node-123",
       "displayName": "Aqara Matter Bridge",
-      "role": "bridge",
       "runtime": {
         "state": "healthy",
         "updatedAtMs": 1777777777000
@@ -121,10 +119,10 @@
       }
     },
     {
-      "id": "edge:connection-source",
+      "id": "edge:connection-bridge",
       "source": "connection:mlinkMatter.device:matter-1",
       "target": "source:matter:node-123",
-      "relation": "connection-source",
+      "relation": "connection-bridge",
       "basis": "sourceProjection",
       "durability": "durable",
       "observation": {
@@ -133,10 +131,10 @@
       }
     },
     {
-      "id": "edge:source-device",
+      "id": "edge:bridge-device",
       "source": "source:matter:node-123",
       "target": "device:desk-light",
-      "relation": "source-device",
+      "relation": "bridge-device",
       "basis": "sourceProjection",
       "durability": "durable",
       "observation": {
