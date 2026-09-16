@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 pub const CONTRACT: &str = "mhome.space.topology.v1";
-pub const GET_TARGET: &str = "/app/topology/get";
-pub const CHANGED_TARGET: &str = "/app/topology/changed";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

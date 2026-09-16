@@ -1,6 +1,6 @@
 [package]
 name = "mhome-app-facade-api"
-version = "1.10.1"
+version = "1.10.2"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -8,12 +8,13 @@ repository.workspace = true
 description = "Canonical public App Facade protocol for MeowLink clients"
 readme = "README.md"
 publish = ["crates-io"]
-include = ["src/**", "tests/**", "schema/**", "fixtures/**", "manifest/**", "Cargo.toml", "README.md", "LICENSE"]
+include = ["src/**", "tests/**", "schema/**", "fixtures/**", "manifest/**", "Cargo.toml", "README.md", "SYSTEM.md", "LICENSE"]
 
 [lib]
 name = "app_facade_api"
 
 [dependencies]
+host-api = { package = "mhome-host-api", version = "=0.1.0", path = "../host-api" }
 artifact-api = { package = "mhome-artifact-api", version = "=1.2.0", path = "../artifact" }
 conversation-api = { package = "mhome-conversation-api", version = "=1.2.0", path = "../conversation-api" }
 serde = { version = "1.0", features = ["derive"] }

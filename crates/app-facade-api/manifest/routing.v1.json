@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.10.1",
+  "contractVersion": "1.10.2",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",
@@ -32,7 +32,6 @@
       "/app/interaction-flow/",
       "/app/object-storage/",
       "/app/runtime/",
-      "/app/topology/",
       "/app/system/inventory/",
       "/app/system/clients/",
       "/app/system/host/"
@@ -50,10 +49,14 @@
       "/app/object-storage/folders/update",
       "/app/object-storage/folders/list",
       "/app/object-storage/settings/update",
-      "/app/topology/get",
       "/app/system/inventory/get",
       "/app/system/clients/get",
-      "/app/system/host/metrics/get"
+      "/app/system/host/metrics/get",
+      "/app/system/host/inspect",
+      "/app/system/host/plan",
+      "/app/system/host/start",
+      "/app/system/host/operation/get",
+      "/app/system/host/restart"
     ]
   }
 }

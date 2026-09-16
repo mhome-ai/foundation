@@ -1,0 +1,67 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "scopeId",
+    "observedAtMs",
+    "sessions"
+  ],
+  "properties": {
+    "contract": {
+      "const": "mhome.system.clients.v1"
+    },
+    "scopeId": {
+      "type": "string"
+    },
+    "observedAtMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "appClientId",
+          "sessionId",
+          "source",
+          "deviceType",
+          "isCurrent",
+          "routeKind"
+        ],
+        "properties": {
+          "appClientId": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "isCurrent": {
+            "type": "boolean"
+          },
+          "routeKind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "localDirect",
+                  "cloudBridgeShadow"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

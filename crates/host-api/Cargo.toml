@@ -1,0 +1,8 @@
+[package]
+name = "mhome-host-api"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Host machine observation wire contracts"
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }

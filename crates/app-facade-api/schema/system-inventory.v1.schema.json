@@ -14,17 +14,20 @@
       "const": "mhome.system.inventory.v1"
     },
     "scopeId": {
-      "type": "string",
-      "minLength": 1
+      "type": "string"
     },
     "observedAtMs": {
       "type": "integer",
       "minimum": 0
     },
     "discoveryError": {
-      "type": [
-        "string",
-        "null"
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
       ]
     },
     "hosts": {
@@ -37,18 +40,14 @@
           "hostName",
           "hostType",
           "isHubHost",
-          "discovered",
+          "source",
           "reachable",
-          "observedAtMs",
           "info",
-          "infoError",
-          "services",
-          "servicesError"
+          "services"
         ],
         "properties": {
           "hostId": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "hostName": {
             "type": "string"
@@ -59,61 +58,294 @@
           "isHubHost": {
             "type": "boolean"
           },
-          "discovered": {
-            "type": "boolean"
+          "source": {
+            "enum": [
+              "local",
+              "mdns",
+              "commissioned"
+            ]
           },
           "reachable": {
             "type": "boolean"
           },
-          "observedAtMs": {
-            "type": "integer",
-            "minimum": 0
-          },
           "info": {
-            "type": [
-              "object",
-              "null"
-            ]
-          },
-          "infoError": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "services": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "serviceId",
-                "version",
-                "kind",
-                "status"
-              ],
-              "properties": {
-                "serviceId": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "version": {
-                  "type": "string"
-                },
-                "kind": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                }
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "data",
+              "observedAtMs",
+              "lastAttemptAtMs",
+              "stale",
+              "errorCode"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "ok",
+                  "unavailable",
+                  "unsupported",
+                  "notQueried"
+                ]
+              },
+              "data": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "hostId",
+                      "hostName",
+                      "hostType",
+                      "os",
+                      "osVersion",
+                      "cpu",
+                      "memory",
+                      "disk",
+                      "gpus"
+                    ],
+                    "properties": {
+                      "hostId": {
+                        "type": "string"
+                      },
+                      "hostName": {
+                        "type": "string"
+                      },
+                      "hostType": {
+                        "type": "string"
+                      },
+                      "os": {
+                        "type": "string"
+                      },
+                      "osVersion": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "cpu": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "arch",
+                          "logicalCores",
+                          "model"
+                        ],
+                        "properties": {
+                          "arch": {
+                            "type": "string"
+                          },
+                          "logicalCores": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "model": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "memory": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "totalBytes"
+                        ],
+                        "properties": {
+                          "totalBytes": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        }
+                      },
+                      "disk": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "totalBytes"
+                            ],
+                            "properties": {
+                              "totalBytes": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "gpus": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "vendor",
+                            "name",
+                            "memoryBytes"
+                          ],
+                          "properties": {
+                            "vendor": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "memoryBytes": {
+                              "anyOf": [
+                                {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "observedAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastAttemptAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "errorCode": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             }
           },
-          "servicesError": {
-            "type": [
-              "string",
-              "null"
-            ]
+          "services": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "data",
+              "observedAtMs",
+              "lastAttemptAtMs",
+              "stale",
+              "errorCode"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "ok",
+                  "unavailable",
+                  "unsupported",
+                  "notQueried"
+                ]
+              },
+              "data": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "serviceId",
+                        "version",
+                        "kind",
+                        "status"
+                      ],
+                      "properties": {
+                        "serviceId": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "observedAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastAttemptAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "errorCode": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
           }
         }
       }
@@ -132,15 +364,14 @@
           "nodeType",
           "hubId",
           "commissioned",
-          "connected",
-          "health",
-          "healthObservedAtMs",
-          "cloudConnected"
+          "lifecycle",
+          "hubConnection",
+          "cloudConnection",
+          "health"
         ],
         "properties": {
           "id": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "kind": {
             "enum": [
@@ -158,9 +389,13 @@
             "type": "string"
           },
           "nodeType": {
-            "type": [
-              "string",
-              "null"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ]
           },
           "hubId": {
@@ -169,27 +404,114 @@
           "commissioned": {
             "type": "boolean"
           },
-          "connected": {
-            "type": "boolean"
+          "lifecycle": {
+            "anyOf": [
+              {
+                "enum": [
+                  "active",
+                  "inactive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hubConnection": {
+            "anyOf": [
+              {
+                "enum": [
+                  "connected",
+                  "disconnected"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cloudConnection": {
+            "anyOf": [
+              {
+                "enum": [
+                  "connected",
+                  "disconnected"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "health": {
-            "type": "string"
-          },
-          "healthObservedAtMs": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          },
-          "cloudConnected": {
-            "type": [
-              "boolean",
-              "null"
-            ]
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "data",
+              "observedAtMs",
+              "lastAttemptAtMs",
+              "stale",
+              "errorCode"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "ok",
+                  "unavailable",
+                  "unsupported",
+                  "notQueried"
+                ]
+              },
+              "data": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "observedAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastAttemptAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "errorCode": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
           }
         }
       }
     }
-  },
-  "$schema": "https://json-schema.org/draft/2020-12/schema"
+  }
 }

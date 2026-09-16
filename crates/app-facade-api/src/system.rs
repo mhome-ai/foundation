@@ -1,6 +1,6 @@
 //! Hub-vantage LAN inventory. Space instances come only from commissioned Core state.
+pub use host_api::{HostInfo, HostMetrics, Service};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 pub const INVENTORY_TARGET: &str = "/app/system/inventory/get";
 pub const CLIENTS_TARGET: &str = "/app/system/clients/get";
 pub const METRICS_TARGET: &str = "/app/system/host/metrics/get";
@@ -14,20 +14,58 @@ pub struct InventoryRequest {}
 pub struct MetricsRequest {
     pub host_id: String,
 }
+/// Query success and data freshness are independent; failed refreshes retain the last observation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Service {
-    pub service_id: String,
-    pub version: String,
-    pub kind: String,
-    pub status: String,
+#[serde(rename_all = "camelCase")]
+pub struct Observation<T> {
+    pub status: ObservationStatus,
+    pub data: Option<T>,
+    pub observed_at_ms: Option<i64>,
+    pub last_attempt_at_ms: Option<i64>,
+    pub stale: bool,
+    pub error_code: Option<String>,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ObservationStatus {
+    Ok,
+    Unavailable,
+    Unsupported,
+    NotQueried,
+}
+impl<T> Default for Observation<T> {
+    fn default() -> Self {
+        Self {
+            status: ObservationStatus::NotQueried,
+            data: None,
+            observed_at_ms: None,
+            last_attempt_at_ms: None,
+            stale: false,
+            error_code: None,
+        }
+    }
+}
+impl<T> Observation<T> {
+    pub fn success(&mut self, data: T, observed: i64, attempted: i64) {
+        self.status = ObservationStatus::Ok;
+        self.data = Some(data);
+        self.observed_at_ms = Some(observed);
+        self.last_attempt_at_ms = Some(attempted);
+        self.stale = false;
+        self.error_code = None;
+    }
+    pub fn failed(&mut self, status: ObservationStatus, code: &str, attempted: i64) {
+        self.status = status;
+        self.last_attempt_at_ms = Some(attempted);
+        self.stale = self.data.is_some();
+        self.error_code = Some(code.into());
+    }
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ServiceInventory {
+#[serde(rename_all = "camelCase")]
+pub struct Metrics {
     pub host_id: String,
-    pub observed_at_ms: i64,
-    pub services: Vec<Service>,
+    pub sample: Observation<HostMetrics>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,13 +74,10 @@ pub struct Host {
     pub host_name: String,
     pub host_type: String,
     pub is_hub_host: bool,
-    pub discovered: bool,
+    pub source: String,
     pub reachable: bool,
-    pub observed_at_ms: i64,
-    pub info: Option<Value>,
-    pub info_error: Option<String>,
-    pub services: Vec<Service>,
-    pub services_error: Option<String>,
+    pub info: Observation<HostInfo>,
+    pub services: Observation<Vec<Service>>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -55,10 +90,10 @@ pub struct Instance {
     pub node_type: Option<String>,
     pub hub_id: String,
     pub commissioned: bool,
-    pub connected: bool,
-    pub health: String,
-    pub health_observed_at_ms: Option<i64>,
-    pub cloud_connected: Option<bool>,
+    pub lifecycle: Option<String>,
+    pub hub_connection: Option<String>,
+    pub cloud_connection: Option<String>,
+    pub health: Observation<String>,
 }
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -87,4 +122,38 @@ pub struct Clients {
     pub scope_id: String,
     pub observed_at_ms: i64,
     pub sessions: Vec<ClientSession>,
+}
+
+/// Concrete facade inputs. No caller-supplied URL, path or arbitrary Host action.
+pub const INSPECT_TARGET: &str = "/app/system/host/inspect";
+pub const PLAN_TARGET: &str = "/app/system/host/plan";
+pub const START_TARGET: &str = "/app/system/host/start";
+pub const OPERATION_TARGET: &str = "/app/system/host/operation/get";
+pub const RESTART_TARGET: &str = "/app/system/host/restart";
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PlanRequest {
+    pub host_id: String,
+    pub components: Vec<String>,
+    #[serde(default)]
+    pub all: bool,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct StartRequest {
+    pub host_id: String,
+    pub plan_id: String,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct OperationRequest {
+    pub host_id: String,
+    pub operation_id: String,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RestartRequest {
+    pub host_id: String,
+    pub component: String,
+    pub operation_id: String,
 }

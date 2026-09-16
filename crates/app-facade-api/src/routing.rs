@@ -116,7 +116,7 @@ mod tests {
             Some(RELAYABLE_HUB)
         );
         assert_eq!(
-            route_policy_for_target(crate::topology::GET_TARGET),
+            route_policy_for_target(crate::system::INVENTORY_TARGET),
             Some(RELAYABLE_HUB)
         );
         assert_eq!(
@@ -144,8 +144,8 @@ mod tests {
             Some(DIRECT_HUB)
         );
         assert_eq!(
-            route_policy_for_target(crate::topology::CHANGED_TARGET),
-            Some(DIRECT_HUB)
+            route_policy_for_target(crate::system::RESTART_TARGET),
+            Some(RELAYABLE_HUB)
         );
         assert_eq!(
             route_policy_for_target(crate::device_topology::GET_TARGET),
