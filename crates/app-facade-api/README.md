@@ -62,7 +62,7 @@ cannot silently turn every Hub request into a cloud-proxied request.
 The checked-in Rust table is generated from that manifest, and non-Rust clients
 consume the same manifest from the npm protocol package. A native Host may
 supervise Hub and Node processes, but it is not a public App Facade executor;
-Host process management remains an implementation detail behind the selected
+Host process management is provided by the native Client, independent of the selected
 Hub. Lion's legacy controller annotations and non-`/app/*` protocols are
 outside this contract.
 
@@ -89,6 +89,9 @@ from the Foundation root; omit `--write` to check conformance. Resource paths ar
 
 Code creation may omit bot/account and group/surface identifiers. The receiving authenticated provider determines the bot; shared candidates are confirmed in the App. The existing actor link claim status/confirm/event endpoints carry both kinds, distinguished by `kind` (`link` by default, or `bind`). Bind code responses include `challengeId`; completed bind claims omit `linkId`. Private link completes on receipt. A code is single-use within its provider and service deployment, never a cross-provider or cross-Hub credential.
 
-## System inventory
+## Space runtime observations
 
-The system facade is executed by the local Space Hub, with Cloud relay allowed. All Space members may read it. The Hub reads its Host discovery snapshot and queries LAN Host info, service inventory and metrics. Host does not aggregate remote machines. Instances are derived exclusively from the authenticated tenant/Space commissioned records; disconnected does not mean unloaded. Client sessions use a separate endpoint. No remote Space lifecycle queries or graph coordinates are part of this contract. Legacy topology is deprecated; consumers migrate to system inventory.
+`/app/system/instances/get` reads Space instances; `/app/system/clients/get` reads
+client sessions. These remain Hub-owned with cloud relay and Space membership.
+Host management is owned by the native Client and defined in core-api; it is never
+an App Facade operation. See [SYSTEM.md](SYSTEM.md).

@@ -29,9 +29,8 @@ const HUB_PREFIXES: &[&str] = &[
     "/app/interaction-flow/",
     "/app/object-storage/",
     "/app/runtime/",
-    "/app/system/inventory/",
+    "/app/system/instances/",
     "/app/system/clients/",
-    "/app/system/host/",
 ];
 
 const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
@@ -49,13 +48,6 @@ pub const CLOUD_RELAY_TARGETS: &[&str] = &[
     "/app/object-storage/folders/update",
     "/app/object-storage/folders/list",
     "/app/object-storage/settings/update",
-    "/app/system/inventory/get",
+    "/app/system/instances/get",
     "/app/system/clients/get",
-    "/app/system/host/metrics/get",
-    "/app/system/host/inspect",
-    "/app/system/host/plan",
-    "/app/system/host/start",
-    "/app/system/host/operation/get",
-    "/app/system/host/restart",
-    "/app/system/host/permissions/get",
 ];

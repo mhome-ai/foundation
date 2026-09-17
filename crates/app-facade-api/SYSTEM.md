@@ -1,81 +1,12 @@
-# Hub-owned System facade
+# Space runtime observations
 
-A System is the Hub's LAN, plus its Cloud bridge and current Space clients.
-The Hub Core is the aggregation point. Its local Host supplies mDNS discovery;
-Core reads each discovered Host directly over HTTP. Host does not aggregate peers.
-Lion dispatches these exact targets to the selected Hub for a local-mode Space.
-Client daemon and native UI bridges do not aggregate this view or perform its maintenance.
+- `/app/system/instances/get` returns `mhome.system.instances.v1`: the selected
+  Space's persisted Hub and active Node bindings, including disconnected instances.
+- `/app/system/clients/get` returns the selected Space's client sessions.
+- Both take empty input, require Space membership, and are executed by the Space
+  Hub with cloud relay permitted. Host discovery does not filter Space instances.
 
-## Authority
-
-All current Space members can query and maintain the System. Core verifies
-membership; Lion applies the same member boundary (READ for observations,
-WRITE for plan/start/restart). Maintenance changes shared Host services and can
-affect multiple Spaces; this is intentional. Host's LAN control API retains
-its existing trusted-LAN boundary. A hostId selects a Host, not an identity proof.
-Caller-provided URLs, commands, paths and arbitrary proxy actions are not supported.
-
-Only commissioned Node identities for the current tenant and Space appear.
-An offline commissioned identity remains visible. No service instance discovery
-RPC is added. Host inspection's multi-Space runtime diagnostics never cross the
-facade: explicit projections expose only machine facts, components and operation
-receipts. Hub lifecycle, Hub–Cloud connection, Node–Hub connection and runtime
-health are separate fields. Reconnecting a Node does not refresh an old report.
-
-## Endpoints
-
-| Target | Input | Output |
-| --- | --- | --- |
-| `/app/system/inventory/get` | empty | Current LAN Host observations plus current Space commissioned instances |
-| `/app/system/clients/get` | empty | Current Space live client sessions |
-| `/app/system/host/metrics/get` | hostId | Independently timed metrics observation |
-| `/app/system/host/inspect` | hostId | Machine installation capabilities, components, safe service status, recent operations |
-| `/app/system/host/plan` | hostId, components, optional all | Signed-catalog installation plan receipt |
-| `/app/system/host/start` | hostId, planId | Persistent installation operation, idempotent by planId |
-| `/app/system/host/operation/get` | hostId, operationId | Persistent operation status |
-| `/app/system/host/restart` | hostId, component, operationId | Persistent Core/Node restart receipt, idempotent by caller-generated 32-hex operationId |
-
-Restart is queued on Host before execution. The caller retains its operationId
-across response loss, then polls or retries that same id. No automatic POST retry
-occurs in Core. Host rejects reuse of an id with a different component or plan.
-Core failure recovery, including access while the Hub is down, is outside this
-implementation. After a planned restart, polling resumes when the Hub reconnects.
-
-## Observation semantics and cost
-
-`status` is `ok`, `unavailable`, `unsupported`, or `notQueried`. `data` and
-`observedAtMs` are null until the first successful observation. Failed refreshes
-preserve successful data and its timestamp and mark it stale. `lastAttemptAtMs`
-tracks actual attempts, not render time. An unavailable service list is not an
-empty list. Source is `local`, `mdns`, or `commissioned` (reference only).
-
-Inventory is single-flight with a 3-second cache, four in-flight resource queries,
-an 8-second query budget after discovery, local priority and rotating remote order.
-Each query races at most two advertised IP addresses with a 3-second budget;
-info and services complete independently. Discovery has a separate 3-second cache
-and deadline. Metrics are queried on demand and coalesced per Host. Eight concurrent
-resource queries bound combined inventory/metrics work. Responses are capped at
-1 MiB, redirects/proxies are disabled, and returned Host identities are checked.
-No permanent topology scanner, binding-expiry write or runtime reconciliation is
-triggered by observation. Frontend owns graph layout and polls only while visible.
-
-The old `/app/topology/get` and `/app/topology/changed` routes are retired.
-Device Topology remains a separate contract.
-
-## Build and validation
-
-Protocol changes originate in Foundation and are published to crates.io and npm.
-Core and Baycat resolve the published Rust packages, including independent Android
-and Messaging roots. Pallas resolves the matching published npm protocol package.
-Consumers do not carry copied protocol sources or local protocol tarballs.
-
-## Host OS permissions (new contract; implementation rollout pending)
-
-`/app/system/host/permissions/get` takes `{hostId}` and returns `Permissions`:
-`hostId` and `snapshot: Observation<HostPermissions>`. Its JSON Schema is
-`schema/system-permissions.v1.schema.json`. It is a read-only Hub-vantage query;
-there are deliberately no public request-authorization or open-settings targets.
-OS authorization belongs to the Host identity independently of the routing Space.
-Local Desktop/CLI access goes through Client directly, without requiring a Space.
-See the core-api Host permission contract for action authentication, installed-package
-aggregation, per-application Automation and observation semantics.
+Machine inventory, installation, updates, restart, metrics and OS permissions are
+native Client responsibilities. They have no App Facade route and require no Space.
+See core-api `contract/host-management-v1.json`. A UI may join Client Host observations
+with Space instances for a topology view; this does not make Host management scoped.

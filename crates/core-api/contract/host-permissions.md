@@ -18,10 +18,9 @@ identify a permission grant. A permission does not enable a plugin in a Space.
   local control credentials. Host must require the control token independently
   of the Client's local identity check. Neither hostId nor isLocal authenticates
   a request. Never send that credential to discovered addresses or redirects.
-- `/app/system/host/permissions/get` projects only the passive GET through a Hub.
-  It has no OS mutation variants. The selected Space supplies the remote route,
-  not the permission owner. Native Desktop and CLI use the Client local route
-  without needing any Space or Hub.
+- Native Desktop and CLI use Client IPC; mobile uses its embedded Client.
+  Host management has no Core/Cloud Facade route and never requires a Space.
+
 
 `PermissionKey` includes targetBundleId for Automation; Music, Calendar and
 Messages are independent grants. Unknown future declaration keys must appear as

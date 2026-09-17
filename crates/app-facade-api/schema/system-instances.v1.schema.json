@@ -1,0 +1,185 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "scopeId",
+    "observedAtMs",
+    "instances"
+  ],
+  "properties": {
+    "contract": {
+      "const": "mhome.system.instances.v1"
+    },
+    "scopeId": {
+      "type": "string"
+    },
+    "observedAtMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "instances": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "hostId",
+          "serviceId",
+          "displayName",
+          "nodeType",
+          "hubId",
+          "commissioned",
+          "lifecycle",
+          "hubConnection",
+          "cloudConnection",
+          "health"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "hub",
+              "node"
+            ]
+          },
+          "hostId": {
+            "type": "string"
+          },
+          "serviceId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "nodeType": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hubId": {
+            "type": "string"
+          },
+          "commissioned": {
+            "type": "boolean"
+          },
+          "lifecycle": {
+            "anyOf": [
+              {
+                "enum": [
+                  "active",
+                  "inactive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hubConnection": {
+            "anyOf": [
+              {
+                "enum": [
+                  "connected",
+                  "disconnected"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cloudConnection": {
+            "anyOf": [
+              {
+                "enum": [
+                  "connected",
+                  "disconnected"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "health": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "data",
+              "observedAtMs",
+              "lastAttemptAtMs",
+              "stale",
+              "errorCode"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "ok",
+                  "unavailable",
+                  "unsupported",
+                  "notQueried"
+                ]
+              },
+              "data": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "observedAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastAttemptAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "errorCode": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

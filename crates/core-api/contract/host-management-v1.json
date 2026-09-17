@@ -1,0 +1,73 @@
+{
+  "contract": "mhome.host-management.v1",
+  "transport": "native-client",
+  "requiresSpace": false,
+  "discoveryService": "_mhome-host._tcp",
+  "methods": {
+    "list": {
+      "nativeMethod": "hostList",
+      "desktopCommand": "host_list",
+      "ipcMethod": "host.list"
+    },
+    "runtime": {
+      "nativeMethod": "hostRuntime",
+      "desktopCommand": "host_runtime",
+      "ipcMethod": "host.runtime"
+    }
+  },
+  "actions": {
+    "inspect": {
+      "path": "/v1/runtime",
+      "method": "POST"
+    },
+    "metrics": {
+      "path": "/metrics",
+      "method": "GET"
+    },
+    "plan": {
+      "path": "/v1/runtime",
+      "method": "POST"
+    },
+    "start": {
+      "path": "/v1/runtime",
+      "method": "POST"
+    },
+    "operation": {
+      "path": "/v1/runtime",
+      "method": "POST"
+    },
+    "restartOperation": {
+      "path": "/v1/runtime",
+      "method": "POST"
+    }
+  },
+  "requestFields": [
+    "hostId",
+    "action",
+    "components",
+    "all",
+    "planId",
+    "operationId",
+    "component"
+  ],
+  "listResponse": {
+    "hosts": "array of HostListEntry",
+    "entryRequired": [
+      "hostId",
+      "hostName",
+      "isLocal",
+      "reachable"
+    ],
+    "info": "HostInfo or null",
+    "infoError": "string or null"
+  },
+  "runtimeResponse": {
+    "metrics": "HostMetrics",
+    "otherActions": "HostRuntimeResponse.data (envelope verified by Client)"
+  },
+  "networkPolicy": {
+    "requiresLocalNetwork": true,
+    "invalidateOnNetworkChange": true,
+    "mutationsAutomaticallyRetried": false
+  }
+}

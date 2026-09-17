@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.12.0",
+  "contractVersion": "1.13.0",
   "protocols": {
     "agentGateway": {
       "submitTarget": "/agent/submit",
@@ -76,5 +76,9 @@
         "unknown"
       ]
     }
+  },
+  "hostManagement": {
+    "contract": "contract/host-management-v1.json",
+    "requestSchema": "schema/host-management-request.v1.schema.json"
   }
 }

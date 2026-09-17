@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.messaging.targets.v1",
-  "contractVersion": "1.12.0",
+  "contractVersion": "1.13.0",
   "requestTargets": [
     "/app/messaging/provider/list",
     "/app/messaging/provider-account/list",

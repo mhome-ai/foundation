@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "action"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "const": "inspect"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "action"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "const": "metrics"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "action",
+        "components"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "const": "plan"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "all": {
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "action",
+        "planId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "const": "start"
+        },
+        "planId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "action",
+        "operationId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "const": "operation"
+        },
+        "operationId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "action",
+        "operationId",
+        "component"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "const": "restartOperation"
+        },
+        "operationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "component": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  ]
+}
