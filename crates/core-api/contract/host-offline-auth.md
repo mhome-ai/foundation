@@ -50,3 +50,33 @@ allows one local context refresh. Unsigned errors, timeouts and business errors 
 
 HTTP signatures provide authentication/integrity/replay detection, not confidentiality. LAN TLS is separate work.
 Cross-language schemas, fixed vectors and full native Client integration remain required before release.
+
+## Explicit Host identity recovery
+
+`hostId` remains unchanged when a lost identity file causes a new Host key. Reuse
+`meow host authorize` and the existing cloud endpoints; never accept a replacement
+key asserted by LAN discovery. Normal UI login remains the prerequisite to opening
+Hosts. No separate Host UI entry or change to general login is introduced.
+
+Authenticated `authorizations/check` accepts `{transactionId, pairingCode}` and
+returns `{hostId, hostName, userId, directoryVersion, requiresIdentityRecovery,
+approved, complete, expiresAt}`. `directoryVersion` is a decimal **string** to
+preserve the database integer without JavaScript rounding. Before approval, pairing
+is checked; after approval only that authenticated user may poll the same transaction.
+
+`authorizations/approve` accepts `{transactionId, pairingCode, directoryVersion,
+recoverIdentity}`. A changed key requires explicit `recoverIdentity: true` and the
+current preview version. The transaction records the server-confirmed version.
+`commit` verifies the Host-signed receipt, then conditionally writes only that user's
+directory entry. An identical key is idempotent; a newer different identity cannot
+be overwritten by a stale receipt. The transaction becomes `complete` only after
+this commit; browser approval alone is not success. No additional permanent token
+or new endpoint is introduced. Other users authorize separately.
+
+Client inventory exposes `identityUnverified` when Host proof verification fails.
+Management stops. On the next inventory/refresh, Client fetches the user's Host key
+from its fixed HTTPS cloud, validates issuer/user/host, and verifies a fresh Host
+context using that key before persisting it. Existing enrollment handles subsequent
+registration. This path never retries an earlier install/restart. Normal known-Host
+inventory does not fetch cloud identity. A stopped Host remains a connectivity error;
+proof failure alone does not prove that the key was lost.
