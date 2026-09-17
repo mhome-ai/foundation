@@ -46,8 +46,8 @@ hardware metrics poll. A remote view has no actionable permission buttons.
   permissions plus declaration errors must not show an "all allowed" state.
 - In-flight permission requests are coalesced per key. Waiting is bounded, the
   request remains observable, and no detached retry loop prompts repeatedly.
-- A failed refresh retains a previous snapshot only as stale; public Facade uses
-  Observation<T> for this distinction.
+- A failed refresh retains a previous snapshot only as stale; the native Client/UI must preserve
+  this distinction instead of presenting cached grants as current.
 
 ## Packaging and rollout prerequisites
 
@@ -63,9 +63,10 @@ Matter Bluetooth commissioning, AudioBridge microphone recording, Mac Reminders
 and per-app Automation. Camera is a network camera service; its name alone does
 not justify requesting macOS camera permission.
 
-Release core-api first, then app-facade-api and its npm protocol package. Only
-then update consumer pins/lockfiles, implement Host/Client/Core/UI/CLI routes and
-regenerate Pallas protocol projections. An endpoint must not be considered
+Publish the canonical core-api contracts and matching npm protocol package
+before updating consumer pins/lockfiles and implementing Host/Client/UI/CLI
+routes. Regenerate native and Pallas protocol projections from those contracts.
+Host permissions must not introduce a Core/cloud Facade route. An endpoint must not be considered
 implemented merely because it appears in the routing manifest.
 
 Acceptance requires passive-query/no-prompt tests, cross-host mutation rejection,
