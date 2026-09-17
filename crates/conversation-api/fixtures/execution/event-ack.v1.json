@@ -1,0 +1,24 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "message-ack-1",
+    "correlation_id": "correlation-event-1",
+    "causation_id": "message-event-1",
+    "sent_at_unix_ms": 1700000000000,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "event_ack",
+    "payload": {
+      "event_id": "event-1",
+      "checkpoint": {
+        "object_key": "checkpoints/abc.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "format_version": 1
+      }
+    }
+  }
+}

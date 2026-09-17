@@ -60,37 +60,6 @@ impl Image {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct ChatToolCallFunction {
-    pub name: String,
-    pub arguments: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct ChatToolCall {
-    pub id: String,
-    #[serde(rename = "type")]
-    pub call_type: String,
-    pub function: ChatToolCallFunction,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct ChatMessage {
-    pub role: String,
-    pub content: String,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub images: Vec<Image>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub tool_calls: Vec<ChatToolCall>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub tool_call_id: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LlmGenerationOptions {
@@ -107,41 +76,15 @@ pub struct LlmCompleteRequest {
     pub use_case: Option<String>,
     #[serde(default)]
     pub mode: Option<String>,
-    pub messages: Vec<ChatMessage>,
+    pub messages: Vec<crate::Message>,
     #[serde(default)]
-    pub tools: Option<Value>,
+    pub tools: Option<Vec<crate::ToolDefinition>>,
     #[serde(default)]
     pub provider: Option<Value>,
     #[serde(default)]
     pub response_format: Option<Value>,
     #[serde(default)]
     pub options: LlmGenerationOptions,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ProviderToolCall {
-    pub id: String,
-    pub name: String,
-    pub arguments_json: String,
-}
-
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct LlmTokenUsage {
-    pub input_tokens: u64,
-    pub output_tokens: u64,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub cached_input_tokens: Option<u64>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub reasoning_output_tokens: Option<u64>,
-}
-
-impl LlmTokenUsage {
-    #[must_use]
-    pub fn total_tokens(self) -> u64 {
-        self.input_tokens.saturating_add(self.output_tokens)
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -155,11 +98,10 @@ pub struct LlmRouteInfo {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LlmCompleteResponse {
-    pub content: String,
-    #[serde(default)]
-    pub tool_calls: Vec<ProviderToolCall>,
+    pub message: crate::Message,
+    pub finish_reason: crate::FinishReason,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub usage: Option<LlmTokenUsage>,
+    pub usage: Option<crate::TokenUsage>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub route: Option<LlmRouteInfo>,
 }
@@ -183,10 +125,10 @@ mod tests {
     #[test]
     fn response_includes_normalized_usage() {
         let response = LlmCompleteResponse {
-            usage: Some(LlmTokenUsage {
+            usage: Some(crate::TokenUsage {
                 input_tokens: 2,
                 output_tokens: 3,
-                ..LlmTokenUsage::default()
+                ..crate::TokenUsage::default()
             }),
             ..LlmCompleteResponse::default()
         };

@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "message-user-action-1",
+    "correlation_id": "correlation-tool-2",
+    "causation_id": "message-prepare-2",
+    "sent_at_unix_ms": 1700000000520,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "app_facade_response",
+    "payload": {
+      "type": "prepared",
+      "action": {
+        "action_id": "action-install-1",
+        "operation_id": "run-1:step:0:tool:call-2",
+        "preview": {
+          "actionCode": "integration.install",
+          "title": "Integration required",
+          "message": "Install Matter, then continue.",
+          "tone": "normal",
+          "details": [
+            {
+              "label": "Integrations",
+              "value": {
+                "type": "text_list",
+                "items": [
+                  "matter"
+                ]
+              }
+            }
+          ],
+          "proceedLabel": "I've installed it",
+          "rejectLabel": "Skip",
+          "clientTask": {
+            "type": "install_integrations",
+            "integrationIds": [
+              "matter"
+            ]
+          }
+        },
+        "payload": {
+          "target": "/app/integration/install"
+        },
+        "revision": 8,
+        "approval": "always",
+        "interaction_kind": "user_action"
+      }
+    }
+  }
+}

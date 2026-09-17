@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mhome:llm:message:v1",
+  "title": "Canonical model message v1",
+  "$ref": "#/$defs/message",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tool_call": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "arguments"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "arguments": true
+      }
+    },
+    "content_part": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "text"
+          ],
+          "properties": {
+            "type": {
+              "const": "text"
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "uri",
+            "mime_type"
+          ],
+          "properties": {
+            "type": {
+              "const": "artifact"
+            },
+            "uri": {
+              "type": "string",
+              "pattern": "^meow-artifact://v1/"
+            },
+            "mime_type": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "id",
+            "name",
+            "arguments"
+          ],
+          "properties": {
+            "type": {
+              "const": "tool_call"
+            },
+            "id": {
+              "$ref": "#/$defs/identifier"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "arguments": true
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "call_id",
+            "result",
+            "is_error"
+          ],
+          "properties": {
+            "type": {
+              "const": "tool_result"
+            },
+            "call_id": {
+              "$ref": "#/$defs/identifier"
+            },
+            "result": true,
+            "is_error": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "image"
+          ],
+          "properties": {
+            "type": {
+              "const": "image"
+            },
+            "image": {
+              "$ref": "#/$defs/image"
+            }
+          }
+        }
+      ]
+    },
+    "message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "content"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "system",
+            "user",
+            "assistant",
+            "tool"
+          ]
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/content_part"
+          }
+        },
+        "continuation": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/continuation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "continuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "compatibility_key",
+        "payload"
+      ],
+      "properties": {
+        "format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "compatibility_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": true
+      }
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "base64": {
+          "type": "string"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

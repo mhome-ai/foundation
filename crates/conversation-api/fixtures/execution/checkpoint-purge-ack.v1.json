@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "purge-ack-1",
+    "correlation_id": "purge-1",
+    "causation_id": "purge-1",
+    "sent_at_unix_ms": 1700000000001,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "checkpoint_purge_ack",
+    "payload": {
+      "status": "deleted",
+      "purge_id": "purge-1",
+      "conversation_key": "conversation-1",
+      "thread_id": "thread-1",
+      "deleted_objects": 2
+    }
+  }
+}

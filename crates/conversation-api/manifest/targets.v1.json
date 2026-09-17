@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.conversation.targets.v1",
-  "contractVersion": "1.2.0",
+  "contractVersion": "1.3.0",
   "requestTargets": [
     "/chat/thread/list",
     "/chat/thread/create",

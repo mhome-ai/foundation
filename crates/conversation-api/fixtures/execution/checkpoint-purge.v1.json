@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "purge-1",
+    "correlation_id": "purge-1",
+    "causation_id": null,
+    "sent_at_unix_ms": 1700000000000,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "checkpoint_purge",
+    "payload": {
+      "purge_id": "purge-1",
+      "conversation_key": "conversation-1",
+      "scope": {
+        "tenant_id": "tenant-1",
+        "scope_id": "scope-1"
+      },
+      "thread_id": "thread-1",
+      "surface_id": "cs1:cp:dXNlci0x"
+    }
+  }
+}

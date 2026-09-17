@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "mhome-artifact-api-v*"
+      - "mhome-llm-api-v*"
       - "mhome-machine-identity-v*"
       - "mhome-core-api-v*"
       - "mhome-app-facade-api-v*"

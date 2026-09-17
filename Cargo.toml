@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
   "crates/artifact",
+  "crates/llm-api",
   "crates/app-facade-api",
   "crates/conversation-api",
   "crates/machine-identity",

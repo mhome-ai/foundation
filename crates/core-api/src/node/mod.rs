@@ -71,7 +71,7 @@ mod tests {
         );
         assert_eq!(
             manifest["llm"]["completeTarget"],
-            crate::llm::COMPLETE_TARGET
+            llm_api::service::COMPLETE_TARGET
         );
         assert_eq!(
             manifest["llm"]["ttsSynthesizeTarget"],

@@ -6,7 +6,8 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 
 - `mhome-artifact-api`: storage-independent, scoped artifact references.
 - `mhome-app-facade-api`: the canonical public `/app/*` request, response, and event protocol.
-- `mhome-conversation-api`: transport-neutral DTOs for the client-facing conversation protocol.
+- `mhome-conversation-api`: client conversation protocol plus Agent execution contracts/ports in `execution`.
+- `mhome-llm-api`: canonical model messages, tool schemas, completions and private continuation.
 - `mhome-machine-identity`: persistent local machine identity derivation and host naming.
 - `mhome-core-api`: shared Core/Node contracts and the canonical Host machine, metrics and permission types in `core_api::host`.
 - `mhome-playground-models`: deterministic playground device models and projections.

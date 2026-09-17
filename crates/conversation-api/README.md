@@ -19,3 +19,13 @@ Telegram forum topic without changing the provider account's base authorization 
 Message content is a provider-independent ordered list of text, image, audio, video, and file parts.
 Messaging runtimes must materialize provider media handles into this content before invoking the
 Conversation application port; the Agent and this contract never receive provider SDK objects.
+
+## Execution contracts
+
+`execution` owns Agent command/event DTOs and deployment ports. `execution::wire` owns the cloud
+transport envelopes and `schema/execution` / `fixtures/execution` conformance assets. These moved
+from the retired Agent contract/protocol crates. Client-facing root modules remain unchanged.
+
+Model data is re-exported from `llm-api`; there is one model-message representation. User-facing
+messages intentionally use separate content types and never contain private model continuation.
+Runtime state machines, checkpoint formats, prompts and recovery policy remain in Agent Runtime.

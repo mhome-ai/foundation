@@ -24,6 +24,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     manifest: "manifest/targets.v1.json",
     schemas: Object.freeze({
       frame: "schema/conversation-frame.v2.schema.json",
+      execution: "schema/execution/envelope.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",

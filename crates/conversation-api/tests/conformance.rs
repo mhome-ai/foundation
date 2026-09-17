@@ -1,14 +1,14 @@
 use conversation_api::{
-    ConversationAccessMode, ConversationEvent, ConversationQueue, DebugEvent,
-    InteractionAnswerDisposition, InteractionAnswerRequest, InteractionAnswerResponse,
-    InteractionSubmitDisposition, InteractionSubmitRequest, InteractionSubmitResponse,
-    MessageEnqueueDisposition, MessageEnqueueRequest, MessageEnqueueResponse, MessagePart,
-    QueueReorderRequest, RequestAdmissionState, RequestCancelOutcome, RequestCancelPhase,
-    RequestCancelRequest, RequestCancelResponse, SessionStartDisposition, SessionStartRequest,
-    SessionStartResponse, ThreadArchiveRequest, ThreadCatalog, ThreadCreateRequest,
-    ThreadListRequest, ThreadLoadRequest, ThreadLoadResponse, ThreadRotateRequest,
-    TurnSessionDisposition, TurnSubmitDisposition, TurnSubmitRequest, TurnSubmitResponse,
-    CHAT_DEBUG_TARGET, CHAT_EVENT_TARGET, MESSAGE_ENQUEUE_TARGET,
+    CHAT_DEBUG_TARGET, CHAT_EVENT_TARGET, ConversationAccessMode, ConversationEvent,
+    ConversationQueue, DebugEvent, InteractionAnswerDisposition, InteractionAnswerRequest,
+    InteractionAnswerResponse, InteractionSubmitDisposition, InteractionSubmitRequest,
+    InteractionSubmitResponse, MESSAGE_ENQUEUE_TARGET, MessageEnqueueDisposition,
+    MessageEnqueueRequest, MessageEnqueueResponse, MessagePart, QueueReorderRequest,
+    RequestAdmissionState, RequestCancelOutcome, RequestCancelPhase, RequestCancelRequest,
+    RequestCancelResponse, SessionStartDisposition, SessionStartRequest, SessionStartResponse,
+    ThreadArchiveRequest, ThreadCatalog, ThreadCreateRequest, ThreadListRequest, ThreadLoadRequest,
+    ThreadLoadResponse, ThreadRotateRequest, TurnSessionDisposition, TurnSubmitDisposition,
+    TurnSubmitRequest, TurnSubmitResponse,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -391,7 +391,9 @@ fn command_only_enums_reject_internal_state_values() {
     enqueue["body"]["accessMode"] = Value::String("internal".to_string());
     let schema: Value =
         serde_json::from_str(include_str!("../schema/conversation-frame.v2.schema.json")).unwrap();
-    assert!(!jsonschema::validator_for(&schema)
-        .unwrap()
-        .is_valid(&enqueue));
+    assert!(
+        !jsonschema::validator_for(&schema)
+            .unwrap()
+            .is_valid(&enqueue)
+    );
 }

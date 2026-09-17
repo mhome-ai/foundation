@@ -1,5 +1,5 @@
-use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::str::FromStr;
@@ -251,14 +251,27 @@ impl FromStr for ConversationSurface {
             ),
             [_, "cp", user_id] => Self::client_personal(decode(user_id)?),
             [_, "cg", group_id] => Self::client_group(decode(group_id)?),
-            [_, kind @ ("mp" | "mg"), provider, account_id, conversation_id] => messaging(
+            [
+                _,
+                kind @ ("mp" | "mg"),
+                provider,
+                account_id,
+                conversation_id,
+            ] => messaging(
                 kind,
                 provider,
                 decode(account_id)?,
                 decode(conversation_id)?,
                 None,
             ),
-            [_, kind @ ("mp" | "mg"), provider, account_id, conversation_id, lane_id] => messaging(
+            [
+                _,
+                kind @ ("mp" | "mg"),
+                provider,
+                account_id,
+                conversation_id,
+                lane_id,
+            ] => messaging(
                 kind,
                 provider,
                 decode(account_id)?,
@@ -379,9 +392,11 @@ mod tests {
         assert_ne!(alice.canonical_id(), bob.canonical_id());
         assert_eq!(alice.user_id(), Some("alice"));
         assert!(alice.is_personal());
-        assert!("cs1:n:audiobridge:bm9kZQ:c3BlYWtlcg"
-            .parse::<ConversationSurface>()
-            .is_err());
+        assert!(
+            "cs1:n:audiobridge:bm9kZQ:c3BlYWtlcg"
+                .parse::<ConversationSurface>()
+                .is_err()
+        );
         assert!(ConversationSurface::node("audioBridge", "node", "speaker", "").is_err());
     }
 

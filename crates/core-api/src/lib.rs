@@ -4,7 +4,6 @@ mod delivery;
 mod external_rpc;
 pub mod host;
 pub mod interaction_flow;
-pub mod llm;
 pub mod messaging;
 pub mod node;
 mod node_commissioning;

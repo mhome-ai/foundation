@@ -1,0 +1,39 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "message-4",
+    "correlation_id": "correlation-1",
+    "causation_id": "message-1",
+    "sent_at_unix_ms": 1700000000250,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "observation",
+    "payload": {
+      "context": {
+        "scope": {
+          "tenant_id": "tenant-1",
+          "scope_id": "scope-1"
+        },
+        "actor": {
+          "user_id": "user-1",
+          "client_id": "client-1"
+        },
+        "thread_id": "thread-1",
+        "run_id": "run-1",
+        "operation_id": "operation-1",
+        "deadline_unix_ms": null,
+        "traceparent": null,
+        "surface_id": "cs1:cp:dXNlci0x"
+      },
+      "observation": {
+        "type": "companion_text",
+        "content": "I will check that now.",
+        "append": false
+      }
+    }
+  }
+}

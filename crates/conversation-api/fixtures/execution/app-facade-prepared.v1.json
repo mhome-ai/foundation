@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "message-6",
+    "correlation_id": "correlation-tool-1",
+    "causation_id": "message-3",
+    "sent_at_unix_ms": 1700000000510,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "app_facade_response",
+    "payload": {
+      "type": "prepared",
+      "action": {
+        "action_id": "action-1",
+        "operation_id": "run-1:step:0:tool:call-1",
+        "preview": {
+          "actionCode": "device.power.update",
+          "title": "Turn on device",
+          "message": "Turn on the kitchen light.",
+          "tone": "normal",
+          "details": [
+            {
+              "label": "Device",
+              "value": {
+                "type": "text",
+                "text": "Kitchen light"
+              }
+            },
+            {
+              "label": "Power",
+              "value": {
+                "type": "bool",
+                "value": true
+              }
+            }
+          ],
+          "proceedLabel": "Continue",
+          "rejectLabel": "Cancel"
+        },
+        "payload": {
+          "target": "/app/capability/invoke"
+        },
+        "revision": 7,
+        "approval": "when_interactive",
+        "interaction_kind": "approval"
+      }
+    }
+  }
+}

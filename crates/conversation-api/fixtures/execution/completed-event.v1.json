@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "message-2",
+    "correlation_id": "correlation-1",
+    "causation_id": "message-1",
+    "sent_at_unix_ms": 1700000001000,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "event",
+    "payload": {
+      "event": {
+        "id": "event-1",
+        "sequence": 2,
+        "context": {
+          "scope": {
+            "tenant_id": "tenant-1",
+            "scope_id": "scope-1"
+          },
+          "actor": {
+            "user_id": "user-1",
+            "client_id": "client-1"
+          },
+          "thread_id": "thread-1",
+          "run_id": "run-1",
+          "operation_id": "operation-1",
+          "deadline_unix_ms": null,
+          "traceparent": null,
+          "surface_id": "cs1:cp:dXNlci0x"
+        },
+        "event": {
+          "type": "completed",
+          "result": {
+            "text": "done"
+          },
+          "usage": {
+            "model_requests": 1,
+            "reported_model_requests": 1,
+            "input_tokens": 10,
+            "output_tokens": 2,
+            "cached_input_tokens": null,
+            "reasoning_output_tokens": null,
+            "peak_input_tokens": 10,
+            "credits": null,
+            "tool_calls": 0,
+            "window_truncations": 0,
+            "trimmed_messages": 0
+          }
+        }
+      },
+      "checkpoint": {
+        "object_key": "checkpoints/abc.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "format_version": 1
+      }
+    }
+  }
+}

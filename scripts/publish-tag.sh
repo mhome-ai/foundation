@@ -7,6 +7,11 @@ protocol=""
 npm_package=""
 
 case "${tag}" in
+  mhome-llm-api-v*)
+    package="mhome-llm-api"
+    manifest="crates/llm-api/Cargo.toml"
+    version="${tag#mhome-llm-api-v}"
+    ;;
   mhome-artifact-api-v*)
     package="mhome-artifact-api"
     manifest="crates/artifact/Cargo.toml"
