@@ -60,3 +60,8 @@ fallback, and revoke the bootstrap token on npm.
 
 `mhome-artifact-api` 0.1.0 was originally published from Baycat. The contract moved here and this
 repository is authoritative beginning with version 0.2.0.
+
+The proposed Host permission extension is documented in
+[`crates/host-api/PERMISSIONS.md`](crates/host-api/PERMISSIONS.md). It defines
+passive Host observations and separately authenticated local macOS actions.
+Protocol definitions alone do not implement the Host/Client/Core/UI behavior.

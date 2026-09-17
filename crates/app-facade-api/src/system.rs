@@ -1,8 +1,10 @@
 //! Hub-vantage LAN inventory. Space instances come only from commissioned Core state.
+pub use host_api::permissions::HostPermissions;
 pub use host_api::{HostInfo, HostMetrics, Service};
 use serde::{Deserialize, Serialize};
 pub const INVENTORY_TARGET: &str = "/app/system/inventory/get";
 pub const CLIENTS_TARGET: &str = "/app/system/clients/get";
+pub const PERMISSIONS_TARGET: &str = "/app/system/host/permissions/get";
 pub const METRICS_TARGET: &str = "/app/system/host/metrics/get";
 pub const INVENTORY_CONTRACT: &str = "mhome.system.inventory.v1";
 pub const CLIENTS_CONTRACT: &str = "mhome.system.clients.v1";
@@ -13,6 +15,19 @@ pub struct InventoryRequest {}
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MetricsRequest {
     pub host_id: String,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PermissionsRequest {
+    pub host_id: String,
+}
+/// Read-only Hub-vantage projection. Local management uses the native Client
+/// route and never requires a Space. OS actions are intentionally not exposed.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Permissions {
+    pub host_id: String,
+    pub snapshot: Observation<HostPermissions>,
 }
 /// Query success and data freshness are independent; failed refreshes retain the last observation.
 #[derive(Debug, Clone, Serialize, Deserialize)]

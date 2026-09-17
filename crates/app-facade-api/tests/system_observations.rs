@@ -92,3 +92,65 @@ fn typed_system_responses_match_the_public_schemas() {
         include_str!("../schema/system-metrics.v1.schema.json"),
     );
 }
+
+#[test]
+fn host_permission_observations_preserve_unknown_and_partial_results() {
+    let snapshot: HostPermissions = serde_json::from_value(json!({
+        "hostId":"h", "subjectId":"ai.mhome.meowlink.hostd", "subjectName":"MeowLink Host",
+        "hostVersion":"1.0.0", "platform":"macos", "observedAtMs":20,
+        "permissions":[
+            {"permission":{"id":"localNetwork"}, "state":"unknown", "evidence":"unavailable", "observedAtMs":null,
+             "uses":[{"componentId":"host", "componentName":"Host", "feature":"Local discovery", "reason":"Discover nearby services"}],
+             "supportedActions":["request", "openSettings"], "error":null},
+            {"permission":{"id":"automation", "targetBundleId":"com.apple.Music"}, "state":"denied", "evidence":"system", "observedAtMs":20,
+             "uses":[{"componentId":"mac", "componentName":"Mac", "feature":"Music playback", "reason":"Control Music"}],
+             "supportedActions":["openSettings"], "error":null}
+        ],
+        "declarationErrors":[{"componentId":"broken", "message":"Installed package declaration could not be read"}]
+    })).unwrap();
+    let mut observation = Observation::default();
+    observation.success(snapshot, 20, 19);
+    observation.failed(ObservationStatus::Unavailable, "offline", 30);
+    let value = serde_json::to_value(Permissions {
+        host_id: "h".into(),
+        snapshot: observation,
+    })
+    .unwrap();
+    assert_eq!(value["snapshot"]["stale"], true);
+    assert_eq!(
+        value["snapshot"]["data"]["permissions"][0]["state"],
+        "unknown"
+    );
+    conforms(
+        value,
+        include_str!("../schema/system-permissions.v1.schema.json"),
+    );
+    conforms(
+        serde_json::to_value(Permissions {
+            host_id: "h".into(),
+            snapshot: Observation::default(),
+        })
+        .unwrap(),
+        include_str!("../schema/system-permissions.v1.schema.json"),
+    );
+}
+
+#[test]
+fn public_permission_route_is_read_only_and_contains_no_os_actions() {
+    let routing: Value = serde_json::from_str(include_str!("../manifest/routing.v1.json")).unwrap();
+    let manifest: Value =
+        serde_json::from_str(include_str!("../manifest/app-facade.v1.json")).unwrap();
+    let encoded = serde_json::to_string(&routing).unwrap();
+    assert!(encoded.contains(PERMISSIONS_TARGET));
+    for action in [
+        "/internal/permissions/request",
+        "/internal/permissions/open-settings",
+    ] {
+        assert!(!encoded.contains(action));
+        assert!(!serde_json::to_string(&manifest).unwrap().contains(action));
+    }
+    assert!(serde_json::from_value::<PermissionsRequest>(
+        json!({"hostId":"h", "action":"request"})
+    )
+    .is_err());
+}

@@ -1,4 +1,5 @@
-//! Machine facts only. No Space identities or runtime diagnostics belong here.
+//! Host observations and local OS authorization contracts. No Space identities.
+pub mod permissions;
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

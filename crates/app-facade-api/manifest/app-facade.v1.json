@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.10.2",
+  "contractVersion": "1.11.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -85,7 +85,8 @@
         "/app/system/host/plan",
         "/app/system/host/start",
         "/app/system/host/operation/get",
-        "/app/system/host/restart"
+        "/app/system/host/restart",
+        "/app/system/host/permissions/get"
       ]
     }
   }

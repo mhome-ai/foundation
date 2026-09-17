@@ -68,3 +68,14 @@ Protocol changes originate in Foundation and are published to crates.io and npm.
 Core and Baycat resolve the published Rust packages, including independent Android
 and Messaging roots. Pallas resolves the matching published npm protocol package.
 Consumers do not carry copied protocol sources or local protocol tarballs.
+
+## Host OS permissions (new contract; implementation rollout pending)
+
+`/app/system/host/permissions/get` takes `{hostId}` and returns `Permissions`:
+`hostId` and `snapshot: Observation<HostPermissions>`. Its JSON Schema is
+`schema/system-permissions.v1.schema.json`. It is a read-only Hub-vantage query;
+there are deliberately no public request-authorization or open-settings targets.
+OS authorization belongs to the Host identity independently of the routing Space.
+Local Desktop/CLI access goes through Client directly, without requiring a Space.
+See the host-api permission contract for action authentication, installed-package
+aggregation, per-application Automation and observation semantics.

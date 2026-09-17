@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.10.2",
+  "contractVersion": "1.11.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",
@@ -56,7 +56,8 @@
       "/app/system/host/plan",
       "/app/system/host/start",
       "/app/system/host/operation/get",
-      "/app/system/host/restart"
+      "/app/system/host/restart",
+      "/app/system/host/permissions/get"
     ]
   }
 }
