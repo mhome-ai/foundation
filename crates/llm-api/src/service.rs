@@ -73,6 +73,8 @@ pub struct LlmGenerationOptions {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LlmCompleteRequest {
     #[serde(default)]
+    pub constraints: crate::ModelConstraints,
+    #[serde(default)]
     pub use_case: Option<String>,
     #[serde(default)]
     pub mode: Option<String>,

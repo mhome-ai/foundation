@@ -2,7 +2,9 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 mod continuation;
+mod policy;
 pub use continuation::Continuation;
+pub use policy::{GenerationParameters, ModelCapabilities};
 pub use service::Image;
 
 /// Logical model use case resolved by the deployment's LLM implementation.
@@ -15,8 +17,10 @@ pub struct UseCase(pub String);
 #[serde(transparent)]
 pub struct ModelMode(pub String);
 
-/// Capabilities required by an invocation, without naming a provider or model.
+/// Caller-declared requirements. True requires confirmed support; false imposes no requirement.
+/// Adapters must not infer or override these flags from message content.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ModelConstraints {
     /// The model must accept image input.
     pub vision: bool,
@@ -24,8 +28,6 @@ pub struct ModelConstraints {
     pub tool_calling: bool,
     /// The model must support schema-constrained output.
     pub structured_output: bool,
-    /// Optional logical reasoning intensity understood by the LLM adapter.
-    pub reasoning: Option<String>,
 }
 
 /// Role of a message in a model conversation.
