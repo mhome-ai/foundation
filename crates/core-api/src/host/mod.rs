@@ -1,7 +1,7 @@
 //! Host observations and local OS authorization contracts. No Space identities.
 pub mod permissions;
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Service {
     pub service_id: String,
@@ -9,33 +9,33 @@ pub struct Service {
     pub kind: String,
     pub status: String,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceInventory {
     pub host_id: String,
     pub observed_at_ms: i64,
     pub services: Vec<Service>,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Cpu {
     pub arch: String,
     pub logical_cores: u64,
     pub model: String,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Capacity {
     pub total_bytes: u64,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Gpu {
     pub vendor: String,
     pub name: String,
     pub memory_bytes: Option<u64>,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HostInfo {
     pub host_id: String,
@@ -48,7 +48,7 @@ pub struct HostInfo {
     pub disk: Option<Capacity>,
     pub gpus: Vec<Gpu>,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceMetrics {
     pub service_id: String,
@@ -60,7 +60,7 @@ pub struct ServiceMetrics {
     pub disk_read_bytes_per_second: Option<f64>,
     pub disk_written_bytes_per_second: Option<f64>,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HostMetrics {
     pub host_id: String,

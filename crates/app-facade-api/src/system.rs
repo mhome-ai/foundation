@@ -1,6 +1,6 @@
 //! Hub-vantage LAN inventory. Space instances come only from commissioned Core state.
-pub use host_api::permissions::HostPermissions;
-pub use host_api::{HostInfo, HostMetrics, Service};
+pub use core_api::host::permissions::HostPermissions;
+pub use core_api::host::{HostInfo, HostMetrics, Service};
 use serde::{Deserialize, Serialize};
 pub const INVENTORY_TARGET: &str = "/app/system/inventory/get";
 pub const CLIENTS_TARGET: &str = "/app/system/clients/get";

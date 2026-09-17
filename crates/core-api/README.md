@@ -49,3 +49,17 @@ Messaging returns the same typed outcome, not a delivered boolean. Skipped means
 handled without a send and must not be reported as provider acceptance.
 There is no old-protocol compatibility path. Consumers must upgrade together;
 version 1.7.1 must be published before updating registry-backed consumer locks.
+
+## Host contracts (core-api 1.11.0)
+
+`core_api::host` is the single owner of Host hardware information, installed
+service inventory, system/service metrics, and OS permission declarations and
+observations. It replaces the independent `mhome-host-api` crate. App Facade
+reuses these types and owns its public routing and observation envelopes. Importing
+this module does not require a running Core or a Space.
+
+Host/Client producers and readers must use these DTOs rather than redeclare
+matching JSON structures. Platform collectors may keep private sampling structs;
+only the canonical DTOs cross HTTP/IPC boundaries. The permissions contract is in
+`contract/host-permissions.md`; runtime permission handlers remain a separate
+implementation step. The existing Core external runtime protocol stays at 15.

@@ -77,5 +77,5 @@ Consumers do not carry copied protocol sources or local protocol tarballs.
 there are deliberately no public request-authorization or open-settings targets.
 OS authorization belongs to the Host identity independently of the routing Space.
 Local Desktop/CLI access goes through Client directly, without requiring a Space.
-See the host-api permission contract for action authentication, installed-package
+See the core-api Host permission contract for action authentication, installed-package
 aggregation, per-application Automation and observation semantics.

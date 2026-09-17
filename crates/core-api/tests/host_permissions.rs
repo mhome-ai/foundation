@@ -1,4 +1,4 @@
-use mhome_host_api::permissions::*;
+use core_api::host::permissions::*;
 use serde_json::json;
 use std::collections::BTreeSet;
 

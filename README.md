@@ -8,8 +8,7 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 - `mhome-app-facade-api`: the canonical public `/app/*` request, response, and event protocol.
 - `mhome-conversation-api`: transport-neutral DTOs for the client-facing conversation protocol.
 - `mhome-machine-identity`: persistent local machine identity derivation and host naming.
-- `mhome-host-api`: Host machine information, services and metrics wire contracts.
-- `mhome-core-api`: shared core wire types and service contracts.
+- `mhome-core-api`: shared Core/Node contracts and the canonical Host machine, metrics and permission types in `core_api::host`.
 - `mhome-playground-models`: deterministic playground device models and projections.
 - `mhome-runtime-paths`: process-safe runtime paths, endpoint names, and daemon ownership checks.
 
@@ -62,6 +61,6 @@ fallback, and revoke the bootstrap token on npm.
 repository is authoritative beginning with version 0.2.0.
 
 The proposed Host permission extension is documented in
-[`crates/host-api/PERMISSIONS.md`](crates/host-api/PERMISSIONS.md). It defines
+[`crates/core-api/contract/host-permissions.md`](crates/core-api/contract/host-permissions.md). It defines
 passive Host observations and separately authenticated local macOS actions.
 Protocol definitions alone do not implement the Host/Client/Core/UI behavior.

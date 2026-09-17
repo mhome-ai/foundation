@@ -1,6 +1,6 @@
 [package]
 name = "mhome-core-api"
-version = "1.10.0"
+version = "1.11.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Shared wire types and service contracts for the mHome core"
 readme = "README.md"
 publish = ["crates-io"]
-include = ["src/**", "contract/**", "manifest/**", "schema/**", "fixtures/**", "Cargo.toml", "README.md", "LICENSE"]
+include = ["src/**", "tests/**", "contract/**", "manifest/**", "schema/**", "fixtures/**", "Cargo.toml", "README.md", "LICENSE"]
 
 [lib]
 name = "core_api"

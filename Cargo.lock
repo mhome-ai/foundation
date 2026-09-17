@@ -680,7 +680,7 @@ dependencies = [
  "jsonschema",
  "mhome-artifact-api",
  "mhome-conversation-api",
- "mhome-host-api",
+ "mhome-core-api",
  "serde",
  "serde_json",
 ]
@@ -707,20 +707,12 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.10.0"
+version = "1.11.0"
 dependencies = [
  "base64",
  "jsonschema",
  "mhome-artifact-api",
  "mhome-conversation-api",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "mhome-host-api"
-version = "0.1.1"
-dependencies = [
  "serde",
  "serde_json",
 ]

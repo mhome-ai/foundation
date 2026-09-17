@@ -64,7 +64,7 @@ Matter Bluetooth commissioning, AudioBridge microphone recording, Mac Reminders
 and per-app Automation. Camera is a network camera service; its name alone does
 not justify requesting macOS camera permission.
 
-Release host-api first, then app-facade-api and its npm protocol package. Only
+Release core-api first, then app-facade-api and its npm protocol package. Only
 then update consumer pins/lockfiles, implement Host/Client/Core/UI/CLI routes and
 regenerate Pallas protocol projections. An endpoint must not be considered
 implemented merely because it appears in the routing manifest.
