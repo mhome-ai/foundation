@@ -1,4 +1,5 @@
 //! Host observations and local OS authorization contracts. No Space identities.
+pub mod auth;
 pub mod management;
 pub mod permissions;
 use serde::{Deserialize, Serialize};
