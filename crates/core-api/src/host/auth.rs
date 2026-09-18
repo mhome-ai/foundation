@@ -195,3 +195,41 @@ pub struct ClientBinding {
     pub client_public_key: PublicKey,
     pub enrollment_kid: String,
 }
+
+/// Cloud claims are short-lived evidence for registration, never LAN bearer credentials.
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Grant {
+    pub iss: String,
+    pub sub: String,
+    pub aud: String,
+    pub jti: String,
+    pub iat: u64,
+    pub exp: u64,
+    pub host_id: String,
+    pub host_public_key: PublicKey,
+    pub client_public_key: Option<PublicKey>,
+    pub challenge: String,
+    pub boot_id: Option<String>,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LocalAuthorization {
+    pub host_id: String,
+    pub host_name: String,
+    pub host_public_key: PublicKey,
+    pub transaction_id: String,
+    pub expires_at: u64,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Possession {
+    pub proof_digest: String,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AuthorizationReceipt {
+    pub proof: String,
+    pub host_id: String,
+    pub user_id: String,
+}
