@@ -31,8 +31,8 @@ impl ModelConstraints {
 }
 
 /// Deployment-owned generation settings, never supplied through Agent constraints.
-/// None leaves the setting unspecified. Adapters must apply every explicit value
-/// or reject it; this basic validation does not establish model/provider support.
+/// None leaves the setting unspecified. These are desired preferences: adapters may omit
+/// unsupported settings. Syntax validation does not establish model/provider support.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GenerationParameters {

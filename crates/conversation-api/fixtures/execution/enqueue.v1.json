@@ -75,7 +75,25 @@
               "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
-              "reasoning_effort": null
+              "reasoning_effort": null,
+              "model_snapshot": {
+                "capabilities": {
+                  "vision": true,
+                  "tool_calling": true,
+                  "structured_output": true
+                },
+                "generation_support": {
+                  "temperature": true,
+                  "maxTokens": true,
+                  "reasoningEfforts": [
+                    "none",
+                    "high"
+                  ],
+                  "temperatureWithReasoning": true,
+                  "temperatureMax": null,
+                  "maxOutputTokens": null
+                }
+              }
             }
           },
           {
@@ -93,7 +111,25 @@
               "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
-              "reasoning_effort": null
+              "reasoning_effort": null,
+              "model_snapshot": {
+                "capabilities": {
+                  "vision": true,
+                  "tool_calling": true,
+                  "structured_output": true
+                },
+                "generation_support": {
+                  "temperature": true,
+                  "maxTokens": true,
+                  "reasoningEfforts": [
+                    "none",
+                    "high"
+                  ],
+                  "temperatureWithReasoning": true,
+                  "temperatureMax": null,
+                  "maxOutputTokens": null
+                }
+              }
             }
           },
           {
@@ -111,7 +147,25 @@
               "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
-              "reasoning_effort": null
+              "reasoning_effort": null,
+              "model_snapshot": {
+                "capabilities": {
+                  "vision": true,
+                  "tool_calling": true,
+                  "structured_output": true
+                },
+                "generation_support": {
+                  "temperature": true,
+                  "maxTokens": true,
+                  "reasoningEfforts": [
+                    "none",
+                    "high"
+                  ],
+                  "temperatureWithReasoning": true,
+                  "temperatureMax": null,
+                  "maxOutputTokens": null
+                }
+              }
             }
           },
           {
@@ -129,7 +183,25 @@
               "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
-              "reasoning_effort": null
+              "reasoning_effort": null,
+              "model_snapshot": {
+                "capabilities": {
+                  "vision": true,
+                  "tool_calling": true,
+                  "structured_output": true
+                },
+                "generation_support": {
+                  "temperature": true,
+                  "maxTokens": true,
+                  "reasoningEfforts": [
+                    "none",
+                    "high"
+                  ],
+                  "temperatureWithReasoning": true,
+                  "temperatureMax": null,
+                  "maxOutputTokens": null
+                }
+              }
             }
           },
           {
@@ -147,7 +219,25 @@
               "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
-              "reasoning_effort": null
+              "reasoning_effort": null,
+              "model_snapshot": {
+                "capabilities": {
+                  "vision": true,
+                  "tool_calling": true,
+                  "structured_output": true
+                },
+                "generation_support": {
+                  "temperature": true,
+                  "maxTokens": true,
+                  "reasoningEfforts": [
+                    "none",
+                    "high"
+                  ],
+                  "temperatureWithReasoning": true,
+                  "temperatureMax": null,
+                  "maxOutputTokens": null
+                }
+              }
             }
           },
           {
@@ -165,7 +255,25 @@
               "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
-              "reasoning_effort": null
+              "reasoning_effort": null,
+              "model_snapshot": {
+                "capabilities": {
+                  "vision": true,
+                  "tool_calling": true,
+                  "structured_output": true
+                },
+                "generation_support": {
+                  "temperature": true,
+                  "maxTokens": true,
+                  "reasoningEfforts": [
+                    "none",
+                    "high"
+                  ],
+                  "temperatureWithReasoning": true,
+                  "temperatureMax": null,
+                  "maxOutputTokens": null
+                }
+              }
             }
           },
           {
@@ -183,7 +291,25 @@
               "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
-              "reasoning_effort": null
+              "reasoning_effort": null,
+              "model_snapshot": {
+                "capabilities": {
+                  "vision": true,
+                  "tool_calling": true,
+                  "structured_output": true
+                },
+                "generation_support": {
+                  "temperature": true,
+                  "maxTokens": true,
+                  "reasoningEfforts": [
+                    "none",
+                    "high"
+                  ],
+                  "temperatureWithReasoning": true,
+                  "temperatureMax": null,
+                  "maxOutputTokens": null
+                }
+              }
             }
           },
           {
@@ -201,7 +327,25 @@
               "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
-              "reasoning_effort": null
+              "reasoning_effort": null,
+              "model_snapshot": {
+                "capabilities": {
+                  "vision": true,
+                  "tool_calling": true,
+                  "structured_output": true
+                },
+                "generation_support": {
+                  "temperature": true,
+                  "maxTokens": true,
+                  "reasoningEfforts": [
+                    "none",
+                    "high"
+                  ],
+                  "temperatureWithReasoning": true,
+                  "temperatureMax": null,
+                  "maxOutputTokens": null
+                }
+              }
             }
           }
         ]

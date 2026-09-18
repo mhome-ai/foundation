@@ -23,7 +23,7 @@ not using schema-constrained output leave it false.
 
 `GenerationParameters` belongs to deployment model configuration. Resolve and freeze
 it with the selected route; Agent cannot override reasoning or temperature. Explicit
-settings must be applied or rejected, never silently dropped. Model-specific support
+settings are desired preferences; adapters may omit unsupported settings without changing saved preferences. Model-specific support
 and parameter interactions are adapter responsibilities.
 
 Continuation payloads remain opaque, attached to the original assistant message,

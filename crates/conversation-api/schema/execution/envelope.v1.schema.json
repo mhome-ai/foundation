@@ -537,7 +537,8 @@
         "max_output_tokens",
         "context_window_tokens",
         "cache_control",
-        "reasoning_effort"
+        "reasoning_effort",
+        "model_snapshot"
       ],
       "properties": {
         "backend": {
@@ -600,6 +601,9 @@
               "type": "null"
             }
           ]
+        },
+        "model_snapshot": {
+          "$ref": "#/$defs/llm_model_snapshot"
         }
       }
     },
@@ -1839,6 +1843,95 @@
         },
         "createdAt": {
           "type": "integer"
+        }
+      }
+    },
+    "llm_generation_support": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "temperature": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "maxTokens": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "temperatureWithReasoning": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reasoningEfforts": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max",
+              "ultra"
+            ]
+          }
+        },
+        "temperatureMax": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "maxOutputTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    },
+    "llm_model_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capabilities",
+        "generation_support"
+      ],
+      "properties": {
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "vision",
+            "tool_calling",
+            "structured_output"
+          ],
+          "properties": {
+            "vision": {
+              "type": "boolean"
+            },
+            "tool_calling": {
+              "type": "boolean"
+            },
+            "structured_output": {
+              "type": "boolean"
+            }
+          }
+        },
+        "generation_support": {
+          "$ref": "#/$defs/llm_generation_support"
         }
       }
     }

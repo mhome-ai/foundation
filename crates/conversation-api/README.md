@@ -29,3 +29,13 @@ from the retired Agent contract/protocol crates. Client-facing root modules rema
 Model data is re-exported from `llm-api`; there is one model-message representation. User-facing
 messages intentionally use separate content types and never contain private model continuation.
 Runtime state machines, checkpoint formats, prompts and recovery policy remain in Agent Runtime.
+
+## Cloud admission model snapshot
+
+Every cloud `LlmRoute` carries a required `model_snapshot` containing confirmed capabilities
+and catalog `generation_support` (the camelCase `metadata.generationSupport` shape). Lion
+persists it with desired parameters at request admission. Deployments adapt preferences against
+these immutable facts; tool rounds and approval resumption never rediscover current metadata.
+The portable `CompletionRequest` and its caller-owned constraints are unchanged. An old plan
+without the snapshot fails decoding instead of silently changing behavior. This development
+contract change must be published and adopted by Lion and Cloud together before deployment.

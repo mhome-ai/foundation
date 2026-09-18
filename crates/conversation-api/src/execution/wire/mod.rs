@@ -180,6 +180,48 @@ pub enum CheckpointPurgeAck {
     },
 }
 
+/// Model facts captured by the deployment with the desired route parameters.
+/// This snapshot belongs to admission, not to the provider-neutral LLM request.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LlmModelSnapshot {
+    pub capabilities: llm_api::ModelCapabilities,
+    pub generation_support: LlmGenerationSupport,
+}
+
+/// Confirmed parameter support from catalog metadata.generationSupport.
+/// Missing information uses conservative adapter defaults; it is never inferred from preferences.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LlmGenerationSupport {
+    pub temperature: Option<bool>,
+    pub max_tokens: Option<bool>,
+    pub reasoning_efforts: Option<Vec<String>>,
+    pub temperature_with_reasoning: Option<bool>,
+    pub temperature_max: Option<f64>,
+    pub max_output_tokens: Option<u32>,
+}
+
+impl LlmGenerationSupport {
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if self
+            .temperature_max
+            .is_some_and(|v| !v.is_finite() || v < 0.0)
+            || self.max_output_tokens == Some(0)
+        {
+            return Err("invalid generation support limits");
+        }
+        for effort in self.reasoning_efforts.iter().flatten() {
+            llm_api::GenerationParameters {
+                temperature: None,
+                reasoning_effort: Some(effort.clone()),
+            }
+            .validate()?;
+        }
+        Ok(())
+    }
+}
+
 /// One concrete cloud model route frozen by the deployment before command admission.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct LlmRoute {
@@ -193,6 +235,8 @@ pub struct LlmRoute {
     pub reasoning_effort: Option<String>,
     /// Total context window of the exact frozen model route.
     pub context_window_tokens: u32,
+    /// Required immutable facts; old plans must not silently resolve against a new catalog.
+    pub model_snapshot: LlmModelSnapshot,
 }
 
 /// One logical selector and its concrete deployment route.
@@ -562,6 +606,17 @@ fn validate_llm_plan(plan: &LlmExecutionPlan) -> Result<(), ProtocolError> {
     let mut selectors = std::collections::HashSet::new();
     for binding in &plan.routes {
         let route = &binding.route;
+        route
+            .model_snapshot
+            .generation_support
+            .validate()
+            .map_err(|error| ProtocolError::InvalidBinding(error.into()))?;
+        llm_api::GenerationParameters {
+            temperature: route.temperature,
+            reasoning_effort: route.reasoning_effort.clone(),
+        }
+        .validate()
+        .map_err(|error| ProtocolError::InvalidBinding(error.into()))?;
         if binding.use_case.0.trim().is_empty()
             || binding.model_mode.0.trim().is_empty()
             || route.backend.trim().is_empty()
@@ -834,6 +889,20 @@ mod tests {
                             cache_control: Some(true),
                             reasoning_effort: None,
                             context_window_tokens: 128_000,
+                            model_snapshot: LlmModelSnapshot {
+                                capabilities: llm_api::ModelCapabilities {
+                                    vision: true,
+                                    tool_calling: true,
+                                    structured_output: true,
+                                },
+                                generation_support: LlmGenerationSupport {
+                                    temperature: Some(true),
+                                    max_tokens: Some(true),
+                                    reasoning_efforts: Some(vec!["none".into(), "high".into()]),
+                                    temperature_with_reasoning: Some(true),
+                                    ..LlmGenerationSupport::default()
+                                },
+                            },
                         },
                     })
                     .collect(),
@@ -847,6 +916,26 @@ mod tests {
             serde_json::to_value(envelope).expect("serializes"),
             serde_json::from_str::<serde_json::Value>(fixture).expect("fixture JSON")
         );
+    }
+
+    #[test]
+    fn snapshot_is_required_and_support_metadata_is_strict() {
+        let mut fixture: serde_json::Value = serde_json::from_str(ENQUEUE_FIXTURE).unwrap();
+        fixture["payload"]["payload"]["llm_plan"]["routes"][0]["route"]
+            .as_object_mut()
+            .unwrap()
+            .remove("model_snapshot");
+        assert!(Envelope::decode_json(&fixture.to_string()).is_err());
+        let mut envelope = Envelope::decode_json(ENQUEUE_FIXTURE).unwrap();
+        let Payload::Command(command) = &mut envelope.payload else {
+            panic!("command");
+        };
+        command.llm_plan.as_mut().unwrap().routes[0]
+            .route
+            .model_snapshot
+            .generation_support
+            .max_output_tokens = Some(0);
+        assert!(envelope.validate().is_err());
     }
 
     fn dispatch() -> DispatchBinding {
