@@ -2,8 +2,10 @@
 use crate::execution::{ExternalError, InvocationContext};
 use async_trait::async_trait;
 pub use llm_api::{
-    Completion, CompletionRequest, ContentPart, Continuation, FinishReason, Message, MessageRole,
+    Completion, CompletionRequest, ContentPart, Continuation, FinishReason, INPUT_AUDIO,
+    INPUT_FILE, INPUT_IMAGE, INPUT_VIDEO, Message, MessageRole, ModelCapabilities,
     ModelConstraints, ModelMode, ModelProfile, TokenUsage, ToolCall, UseCase,
+    input_modality_for_kind, payload_input_modalities,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

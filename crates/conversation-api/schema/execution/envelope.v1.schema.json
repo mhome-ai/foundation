@@ -1914,13 +1914,18 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "vision",
+            "input",
             "tool_calling",
             "structured_output"
           ],
           "properties": {
-            "vision": {
-              "type": "boolean"
+            "input": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": ["image", "video", "audio", "file"]
+              }
             },
             "tool_calling": {
               "type": "boolean"

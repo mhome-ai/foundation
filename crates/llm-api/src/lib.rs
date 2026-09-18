@@ -4,7 +4,12 @@ use serde_json::Value;
 mod continuation;
 mod policy;
 pub use continuation::Continuation;
-pub use policy::{GenerationParameters, ModelCapabilities};
+pub use policy::{
+    clamp_reasoning_effort, input_modality_for_kind, input_modality_for_mime,
+    normalize_capability_input, normalize_constraint_input, normalize_input_token,
+    payload_input_modalities, GenerationParameters, ModelCapabilities, INPUT_AUDIO, INPUT_FILE,
+    INPUT_IMAGE, INPUT_VIDEO, REASONING_EFFORT_LADDER,
+};
 pub use service::Image;
 
 /// Logical model use case resolved by the deployment's LLM implementation.
@@ -17,13 +22,15 @@ pub struct UseCase(pub String);
 #[serde(transparent)]
 pub struct ModelMode(pub String);
 
-/// Caller-declared requirements. True requires confirmed support; false imposes no requirement.
-/// Adapters must not infer or override these flags from message content.
+/// Caller-declared requirements. Listed input modalities and true flags require confirmed
+/// support; an empty `input` list and false flags impose no requirement.
+/// Adapters must not infer or override these declarations from message content.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ModelConstraints {
-    /// The model must accept image input.
-    pub vision: bool,
+    /// Closed vocabulary: `image`, `video`, `audio`, `file`. `text` and `vision` are rejected.
+    #[serde(default)]
+    pub input: Vec<String>,
     /// The model must support tool calls.
     pub tool_calling: bool,
     /// The model must support schema-constrained output.

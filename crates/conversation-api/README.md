@@ -36,6 +36,8 @@ Every cloud `LlmRoute` carries a required `model_snapshot` containing confirmed 
 and catalog `generation_support` (the camelCase `metadata.generationSupport` shape). Lion
 persists it with desired parameters at request admission. Deployments adapt preferences against
 these immutable facts; tool rounds and approval resumption never rediscover current metadata.
-The portable `CompletionRequest` and its caller-owned constraints are unchanged. An old plan
-without the snapshot fails decoding instead of silently changing behavior. This development
-contract change must be published and adopted by Lion and Cloud together before deployment.
+The portable `CompletionRequest` and its caller-owned constraints remain separate from this
+snapshot. Version 3 stores `capabilities.input` as `image|video|audio|file` instead of
+`vision: bool`. An old plan without the snapshot, or with `vision`, fails decoding instead
+of silently changing behavior. This development contract change must be published and
+adopted by Lion and Cloud together before deployment.

@@ -891,7 +891,7 @@ mod tests {
                             context_window_tokens: 128_000,
                             model_snapshot: LlmModelSnapshot {
                                 capabilities: llm_api::ModelCapabilities {
-                                    vision: true,
+                                    input: vec!["image".to_owned()],
                                     tool_calling: true,
                                     structured_output: true,
                                 },

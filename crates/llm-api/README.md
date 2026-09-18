@@ -15,16 +15,20 @@ use this package, so it does not introduce an unused npm package.
 
 ## Invocation policy
 
-Agent callers own `ModelConstraints`: true requires confirmed capability, false
-imposes no requirement. Deployments validate these declarations without inferring
-requirements from payloads. Callers must declare their needs correctly.
+Agent callers own `ModelConstraints`. `input` is a closed `image|video|audio|file`
+list; `text` is implied and rejected if listed. True tool/structured flags require
+confirmed capability; empty `input` and false flags impose no requirement.
+Deployments validate `payload ⊆ constraints.input ⊆ capabilities.input` without
+inferring requirements from payloads. Callers must declare their needs correctly.
 `structured_output` remains a capability requirement, not an output format; callers
 not using schema-constrained output leave it false.
 
 `GenerationParameters` belongs to deployment model configuration. Resolve and freeze
 it with the selected route; Agent cannot override reasoning or temperature. Explicit
-settings are desired preferences; adapters may omit unsupported settings without changing saved preferences. Model-specific support
-and parameter interactions are adapter responsibilities.
+settings are desired preferences. Adapters clamp reasoning effort onto the model's
+supported list (nearest neighbor, ties pick the lower effort) and omit it only when
+that list is empty. Saved preferences are not rewritten. Model-specific temperature
+interactions remain adapter responsibilities.
 
 Continuation payloads remain opaque, attached to the original assistant message,
 and must survive persistence and subsequent tool/user turns without modification.
@@ -32,3 +36,7 @@ Adapters own encoding and route compatibility checks.
 
 Version 2 removes the unused `ModelConstraints.reasoning` field. Move such settings
 to deployment generation configuration. Unknown constraint fields are rejected.
+
+Version 3 replaces `vision: bool` on `ModelConstraints` and `ModelCapabilities`
+with `input: list<string>`. There is no `vision` alias. Artifact kind and MIME
+must agree; adapters must not downgrade undeclared modalities to text.

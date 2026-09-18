@@ -78,7 +78,7 @@
               "reasoning_effort": null,
               "model_snapshot": {
                 "capabilities": {
-                  "vision": true,
+                  "input": ["image"],
                   "tool_calling": true,
                   "structured_output": true
                 },
@@ -114,7 +114,7 @@
               "reasoning_effort": null,
               "model_snapshot": {
                 "capabilities": {
-                  "vision": true,
+                  "input": ["image"],
                   "tool_calling": true,
                   "structured_output": true
                 },
@@ -150,7 +150,7 @@
               "reasoning_effort": null,
               "model_snapshot": {
                 "capabilities": {
-                  "vision": true,
+                  "input": ["image"],
                   "tool_calling": true,
                   "structured_output": true
                 },
@@ -186,7 +186,7 @@
               "reasoning_effort": null,
               "model_snapshot": {
                 "capabilities": {
-                  "vision": true,
+                  "input": ["image"],
                   "tool_calling": true,
                   "structured_output": true
                 },
@@ -222,7 +222,7 @@
               "reasoning_effort": null,
               "model_snapshot": {
                 "capabilities": {
-                  "vision": true,
+                  "input": ["image"],
                   "tool_calling": true,
                   "structured_output": true
                 },
@@ -258,7 +258,7 @@
               "reasoning_effort": null,
               "model_snapshot": {
                 "capabilities": {
-                  "vision": true,
+                  "input": ["image"],
                   "tool_calling": true,
                   "structured_output": true
                 },
@@ -294,7 +294,7 @@
               "reasoning_effort": null,
               "model_snapshot": {
                 "capabilities": {
-                  "vision": true,
+                  "input": ["image"],
                   "tool_calling": true,
                   "structured_output": true
                 },
@@ -330,7 +330,7 @@
               "reasoning_effort": null,
               "model_snapshot": {
                 "capabilities": {
-                  "vision": true,
+                  "input": ["image"],
                   "tool_calling": true,
                   "structured_output": true
                 },
