@@ -86,6 +86,7 @@ fn typed_system_responses_match_the_public_schemas() {
                 host_type: "host".into(),
                 source: "local".into(),
                 reachable: true,
+                claimable: false,
                 info,
             }],
         })

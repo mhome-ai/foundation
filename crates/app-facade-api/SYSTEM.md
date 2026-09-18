@@ -16,9 +16,11 @@
   on LAN, then the cloud binds that **user**, not Hub identity. Native Client
   `host.claim` remains the same-machine path for any signed-in user. Claimed
   Hosts stay on signed HTTP+auth. Unclaimed Hosts stay discoverable;
-  `info.errorCode` is `claimable` when the Host ACL is empty, or
-  `unauthorized` when someone else already has. One-click uses empty ACL;
-  cloud refusal is an error after the click, not a separate UI state.
+  `claimable` is true when the Host ACL is empty. Signed `/info` failures stay
+  on `info.errorCode` (`unauthorized`, `enrollmentRequired`, `unreachable`,
+  `identityMismatch`).
+  One-click uses empty ACL; cloud refusal is an error after the click, not a
+  separate UI state.
 - Inventory takes empty input. Runtime takes the native Host management request
   (`hostId` plus `action`). Claim takes `{ hostId }`. All require Space
   membership and run on the Space Hub with cloud relay permitted. They are only

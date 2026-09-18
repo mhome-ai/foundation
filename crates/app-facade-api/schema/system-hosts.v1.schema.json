@@ -29,6 +29,7 @@
           "hostType",
           "source",
           "reachable",
+          "claimable",
           "info"
         ],
         "properties": {
@@ -48,6 +49,9 @@
             ]
           },
           "reachable": {
+            "type": "boolean"
+          },
+          "claimable": {
             "type": "boolean"
           },
           "info": {

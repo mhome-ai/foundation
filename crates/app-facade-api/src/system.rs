@@ -108,6 +108,7 @@ pub struct Clients {
 }
 /// Hub-vantage machine observation. `source` is `local` for the Hub host or `mdns`
 /// for other LAN records. `/info` is signed LAN for every reachable Host.
+/// `claimable` is Host ACL empty; it is not an `/info` error.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Host {
@@ -116,6 +117,8 @@ pub struct Host {
     pub host_type: String,
     pub source: String,
     pub reachable: bool,
+    #[serde(default)]
+    pub claimable: bool,
     pub info: Observation<HostInfo>,
 }
 #[derive(Debug, Serialize, Deserialize)]
