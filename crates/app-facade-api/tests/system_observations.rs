@@ -1,4 +1,5 @@
 use app_facade_api::system::*;
+use core_api::host::{Capacity, Cpu, HostInfo};
 use serde_json::Value;
 fn conforms(value: Value, schema: &str) {
     let schema: Value = serde_json::from_str(schema).unwrap();
@@ -54,11 +55,60 @@ fn typed_system_responses_match_the_public_schemas() {
         .unwrap(),
         include_str!("../schema/system-clients.v1.schema.json"),
     );
+    let mut info = Observation::default();
+    info.success(
+        HostInfo {
+            host_id: "h".into(),
+            host_name: "Home".into(),
+            host_type: "host".into(),
+            os: "macos".into(),
+            os_version: Some("15".into()),
+            cpu: Cpu {
+                arch: "arm64".into(),
+                logical_cores: 8,
+                model: "M".into(),
+            },
+            memory: Capacity { total_bytes: 8 },
+            disk: None,
+            gpus: vec![],
+        },
+        10,
+        10,
+    );
+    conforms(
+        serde_json::to_value(Hosts {
+            contract: HOSTS_CONTRACT.into(),
+            scope_id: "s".into(),
+            observed_at_ms: 10,
+            hosts: vec![Host {
+                host_id: "h".into(),
+                host_name: "Home".into(),
+                host_type: "host".into(),
+                source: "local".into(),
+                reachable: true,
+                info,
+            }],
+        })
+        .unwrap(),
+        include_str!("../schema/system-hosts.v1.schema.json"),
+    );
+    conforms(
+        serde_json::to_value(HostsRuntime {
+            contract: HOSTS_RUNTIME_CONTRACT.into(),
+            scope_id: "s".into(),
+            host_id: "h".into(),
+            result: serde_json::json!({"hostId":"h"}),
+        })
+        .unwrap(),
+        include_str!("../schema/system-hosts-runtime.v1.schema.json"),
+    );
 }
 #[test]
-fn host_management_has_no_facade_routes() {
+fn host_management_uses_the_hosts_runtime_facade() {
     let routing = include_str!("../manifest/routing.v1.json");
     assert!(!routing.contains("/app/system/host/"));
     assert!(!routing.contains("/app/system/inventory/"));
     assert!(routing.contains(INSTANCES_TARGET));
+    assert!(routing.contains(HOSTS_TARGET));
+    assert!(routing.contains(HOSTS_RUNTIME_TARGET));
 }

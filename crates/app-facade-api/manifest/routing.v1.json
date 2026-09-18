@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.15.1",
+  "contractVersion": "1.16.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",
@@ -33,7 +33,8 @@
       "/app/object-storage/",
       "/app/runtime/",
       "/app/system/instances/",
-      "/app/system/clients/"
+      "/app/system/clients/",
+      "/app/system/hosts/"
     ],
     "requestPlacementPrefixes": [
       "/app/messaging/"
@@ -49,7 +50,9 @@
       "/app/object-storage/folders/list",
       "/app/object-storage/settings/update",
       "/app/system/instances/get",
-      "/app/system/clients/get"
+      "/app/system/clients/get",
+      "/app/system/hosts/get",
+      "/app/system/hosts/runtime"
     ]
   }
 }

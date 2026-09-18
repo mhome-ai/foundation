@@ -60,11 +60,10 @@ Relay permission is separate from execution authority so a client
 cannot silently turn every Hub request into a cloud-proxied request.
 
 The checked-in Rust table is generated from that manifest, and non-Rust clients
-consume the same manifest from the npm protocol package. A native Host may
-supervise Hub and Node processes, but it is not a public App Facade executor;
-Host process management is provided by the native Client, independent of the selected
-Hub. Lion's legacy controller annotations and non-`/app/*` protocols are
-outside this contract.
+consume the same manifest from the npm protocol package. Local Spaces execute
+Host inventory and management on the selected Hub through `/app/system/hosts/*`.
+A native Client remains the path when no local Hub is selected. Lion's legacy
+controller annotations and non-`/app/*` protocols are outside this contract.
 
 ### System plugin catalog
 
@@ -76,8 +75,7 @@ routing manifest. The response schema is `schema/plugin-catalog.v1.schema.json`.
 The catalog describes supported types, not installed software or bindings.
 `componentId` joins to Host runtime inspection; `nodeType` joins to existing
 Plugin candidate and installed/binding queries. Platform installability and
-versions come from the Host release catalog, not this directory. Host inventory
-is a native management API, not a portable App Facade executor.
+versions come from the Host release catalog, not this directory.
 
 Core and Cloud embed generated copies. After editing the catalog, run
 `node scripts/sync-plugin-catalog.mjs --write <core-resource> <cloud-resource>`
@@ -92,6 +90,6 @@ Code creation may omit bot/account and group/surface identifiers. The receiving 
 ## Space runtime observations
 
 `/app/system/instances/get` reads Space instances; `/app/system/clients/get` reads
-client sessions. These remain Hub-owned with cloud relay and Space membership.
-Host management is owned by the native Client and defined in core-api; it is never
-an App Facade operation. See [SYSTEM.md](SYSTEM.md).
+client sessions; `/app/system/hosts/get` and `/app/system/hosts/runtime` are
+Hub-vantage Host inventory and management. These remain Hub-owned with cloud
+relay and Space membership. See [SYSTEM.md](SYSTEM.md).

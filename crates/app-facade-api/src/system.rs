@@ -1,9 +1,17 @@
-//! Space-owned runtime instances and Client sessions. Host management belongs to native Clients.
+//! Space-owned runtime instances, Client sessions, and Hub-vantage Host inventory
+//! and management. The Hub acts as the current Space member against LAN Hosts.
+use core_api::host::management::HostRuntimeRequest;
+use core_api::host::HostInfo;
 use serde::{Deserialize, Serialize};
 pub const INSTANCES_TARGET: &str = "/app/system/instances/get";
 pub const CLIENTS_TARGET: &str = "/app/system/clients/get";
+pub const HOSTS_TARGET: &str = "/app/system/hosts/get";
+pub const HOSTS_RUNTIME_TARGET: &str = "/app/system/hosts/runtime";
 pub const INSTANCES_CONTRACT: &str = "mhome.system.instances.v1";
 pub const CLIENTS_CONTRACT: &str = "mhome.system.clients.v1";
+pub const HOSTS_CONTRACT: &str = "mhome.system.hosts.v1";
+pub const HOSTS_RUNTIME_CONTRACT: &str = "mhome.system.hosts.runtime.v1";
+pub type HostsRuntimeRequest = HostRuntimeRequest<String>;
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct InstancesRequest {}
@@ -95,4 +103,34 @@ pub struct Clients {
     pub scope_id: String,
     pub observed_at_ms: i64,
     pub sessions: Vec<ClientSession>,
+}
+/// Hub-vantage machine observation. `source` is `local` for the Hub host or `mdns`
+/// for other LAN records. `/info` is signed LAN for every reachable Host.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Host {
+    pub host_id: String,
+    pub host_name: String,
+    pub host_type: String,
+    pub source: String,
+    pub reachable: bool,
+    pub info: Observation<HostInfo>,
+}
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Hosts {
+    pub contract: String,
+    pub scope_id: String,
+    pub observed_at_ms: i64,
+    pub hosts: Vec<Host>,
+}
+/// Hub-vantage Host management. `result` is the native Host runtime payload
+/// (`HostRuntimeResponse.data` or metrics).
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HostsRuntime {
+    pub contract: String,
+    pub scope_id: String,
+    pub host_id: String,
+    pub result: serde_json::Value,
 }

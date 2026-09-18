@@ -48,6 +48,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       hubState: "schema/hub-state.v1.schema.json",
       localHubState: "schema/local-hub-state.v1.schema.json",
       systemClients: "schema/system-clients.v1.schema.json",
+      systemHosts: "schema/system-hosts.v1.schema.json",
+      systemHostsRuntime: "schema/system-hosts-runtime.v1.schema.json",
       systemInstances: "schema/system-instances.v1.schema.json",
       topology: "schema/topology.v1.schema.json",
       deviceTopology: "schema/device-topology.v1.schema.json",

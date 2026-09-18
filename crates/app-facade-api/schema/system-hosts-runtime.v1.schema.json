@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "scopeId",
+    "hostId",
+    "result"
+  ],
+  "properties": {
+    "contract": {
+      "const": "mhome.system.hosts.runtime.v1"
+    },
+    "scopeId": {
+      "type": "string"
+    },
+    "hostId": {
+      "type": "string"
+    },
+    "result": {}
+  }
+}

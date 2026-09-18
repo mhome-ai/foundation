@@ -1,0 +1,245 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "scopeId",
+    "observedAtMs",
+    "hosts"
+  ],
+  "properties": {
+    "contract": {
+      "const": "mhome.system.hosts.v1"
+    },
+    "scopeId": {
+      "type": "string"
+    },
+    "observedAtMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "hosts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "hostId",
+          "hostName",
+          "hostType",
+          "source",
+          "reachable",
+          "info"
+        ],
+        "properties": {
+          "hostId": {
+            "type": "string"
+          },
+          "hostName": {
+            "type": "string"
+          },
+          "hostType": {
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "local",
+              "mdns"
+            ]
+          },
+          "reachable": {
+            "type": "boolean"
+          },
+          "info": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "data",
+              "observedAtMs",
+              "lastAttemptAtMs",
+              "stale",
+              "errorCode"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "ok",
+                  "unavailable",
+                  "unsupported",
+                  "notQueried"
+                ]
+              },
+              "data": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "hostId",
+                      "hostName",
+                      "hostType",
+                      "os",
+                      "osVersion",
+                      "cpu",
+                      "memory",
+                      "disk",
+                      "gpus"
+                    ],
+                    "properties": {
+                      "hostId": {
+                        "type": "string"
+                      },
+                      "hostName": {
+                        "type": "string"
+                      },
+                      "hostType": {
+                        "type": "string"
+                      },
+                      "os": {
+                        "type": "string"
+                      },
+                      "osVersion": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "cpu": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "arch",
+                          "logicalCores",
+                          "model"
+                        ],
+                        "properties": {
+                          "arch": {
+                            "type": "string"
+                          },
+                          "logicalCores": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "model": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "memory": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "totalBytes"
+                        ],
+                        "properties": {
+                          "totalBytes": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        }
+                      },
+                      "disk": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "totalBytes"
+                            ],
+                            "properties": {
+                              "totalBytes": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "gpus": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "vendor",
+                            "name",
+                            "memoryBytes"
+                          ],
+                          "properties": {
+                            "vendor": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "memoryBytes": {
+                              "anyOf": [
+                                {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "observedAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lastAttemptAtMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "errorCode": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
