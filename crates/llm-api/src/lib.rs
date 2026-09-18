@@ -6,10 +6,10 @@ mod policy;
 pub use continuation::Continuation;
 pub use policy::{
     clamp_reasoning_effort, input_modality_for_kind, input_modality_for_mime,
-    middle_reasoning_effort, normalize_capability_input, normalize_constraint_input,
-    normalize_input_token, payload_input_modalities, GenerationParameters, ModelCapabilities,
-    DEFAULT_MAX_OUTPUT_TOKENS, INPUT_AUDIO, INPUT_FILE, INPUT_IMAGE, INPUT_VIDEO,
-    REASONING_EFFORT_LADDER,
+    normalize_capability_input, normalize_constraint_input, normalize_input_token,
+    payload_input_modalities, resolve, BackendCapability, EffectiveGeneration,
+    GenerationParameters, GenerationSupport, ModelCapabilities, DEFAULT_MAX_OUTPUT_TOKENS,
+    INPUT_AUDIO, INPUT_FILE, INPUT_IMAGE, INPUT_VIDEO, REASONING_EFFORT_LADDER,
 };
 pub use service::Image;
 

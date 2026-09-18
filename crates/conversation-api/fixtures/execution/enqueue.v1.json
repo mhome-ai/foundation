@@ -72,7 +72,6 @@
                 "OpenAI"
               ],
               "temperature": 0.5,
-              "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
               "reasoning_effort": null,
@@ -85,8 +84,8 @@
                 "generation_support": {
                   "temperature": true,
                   "maxTokens": true,
+                  "thinking": true,
                   "reasoningEfforts": [
-                    "none",
                     "high"
                   ],
                   "temperatureWithReasoning": true,
@@ -108,7 +107,6 @@
                 "OpenAI"
               ],
               "temperature": 0.5,
-              "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
               "reasoning_effort": null,
@@ -121,8 +119,8 @@
                 "generation_support": {
                   "temperature": true,
                   "maxTokens": true,
+                  "thinking": true,
                   "reasoningEfforts": [
-                    "none",
                     "high"
                   ],
                   "temperatureWithReasoning": true,
@@ -144,7 +142,6 @@
                 "OpenAI"
               ],
               "temperature": 0.5,
-              "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
               "reasoning_effort": null,
@@ -157,8 +154,8 @@
                 "generation_support": {
                   "temperature": true,
                   "maxTokens": true,
+                  "thinking": true,
                   "reasoningEfforts": [
-                    "none",
                     "high"
                   ],
                   "temperatureWithReasoning": true,
@@ -180,7 +177,6 @@
                 "OpenAI"
               ],
               "temperature": 0.5,
-              "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
               "reasoning_effort": null,
@@ -193,8 +189,8 @@
                 "generation_support": {
                   "temperature": true,
                   "maxTokens": true,
+                  "thinking": true,
                   "reasoningEfforts": [
-                    "none",
                     "high"
                   ],
                   "temperatureWithReasoning": true,
@@ -216,7 +212,6 @@
                 "OpenAI"
               ],
               "temperature": 0.5,
-              "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
               "reasoning_effort": null,
@@ -229,8 +224,8 @@
                 "generation_support": {
                   "temperature": true,
                   "maxTokens": true,
+                  "thinking": true,
                   "reasoningEfforts": [
-                    "none",
                     "high"
                   ],
                   "temperatureWithReasoning": true,
@@ -252,7 +247,6 @@
                 "OpenAI"
               ],
               "temperature": 0.5,
-              "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
               "reasoning_effort": null,
@@ -265,8 +259,8 @@
                 "generation_support": {
                   "temperature": true,
                   "maxTokens": true,
+                  "thinking": true,
                   "reasoningEfforts": [
-                    "none",
                     "high"
                   ],
                   "temperatureWithReasoning": true,
@@ -288,7 +282,6 @@
                 "OpenAI"
               ],
               "temperature": 0.5,
-              "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
               "reasoning_effort": null,
@@ -301,8 +294,8 @@
                 "generation_support": {
                   "temperature": true,
                   "maxTokens": true,
+                  "thinking": true,
                   "reasoningEfforts": [
-                    "none",
                     "high"
                   ],
                   "temperatureWithReasoning": true,
@@ -324,7 +317,6 @@
                 "OpenAI"
               ],
               "temperature": 0.5,
-              "max_output_tokens": 8192,
               "context_window_tokens": 128000,
               "cache_control": true,
               "reasoning_effort": null,
@@ -337,8 +329,8 @@
                 "generation_support": {
                   "temperature": true,
                   "maxTokens": true,
+                  "thinking": true,
                   "reasoningEfforts": [
-                    "none",
                     "high"
                   ],
                   "temperatureWithReasoning": true,

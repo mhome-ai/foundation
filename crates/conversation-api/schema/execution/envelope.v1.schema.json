@@ -534,7 +534,6 @@
         "model",
         "provider_preferences",
         "temperature",
-        "max_output_tokens",
         "context_window_tokens",
         "cache_control",
         "reasoning_effort",
@@ -560,17 +559,6 @@
           "oneOf": [
             {
               "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "max_output_tokens": {
-          "oneOf": [
-            {
-              "type": "integer",
-              "minimum": 1
             },
             {
               "type": "null"
@@ -1907,7 +1895,6 @@
           ],
           "items": {
             "enum": [
-              "none",
               "minimal",
               "low",
               "medium",

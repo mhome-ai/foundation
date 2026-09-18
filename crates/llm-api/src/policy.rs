@@ -59,10 +59,10 @@ impl ModelConstraints {
     }
 }
 
-/// Ordered from least to most thinking. Unknown tokens are not on this ladder.
-pub const REASONING_EFFORT_LADDER: &[&str] = &[
-    "none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra",
-];
+/// Reasoning intensity ordered from least to most. Turning thinking off is the `thinking`
+/// switch, never a listed intensity, so `none` is not on this ladder.
+pub const REASONING_EFFORT_LADDER: &[&str] =
+    &["minimal", "low", "medium", "high", "xhigh", "max", "ultra"];
 
 /// Internal per-response output cap. Not a user setting. Adapters omit it when
 /// the model snapshot says `maxTokens` is false.
@@ -120,28 +120,6 @@ pub fn clamp_reasoning_effort(
     best.map(|(item, _, _)| item.to_string())
 }
 
-/// Middle intensity on the ladder among `supported`. Empty or unranked lists omit.
-/// Even-length lists pick the lower-middle rank.
-pub fn middle_reasoning_effort(supported: &[impl AsRef<str>]) -> Option<String> {
-    let mut ranked: Vec<(usize, String)> = supported
-        .iter()
-        .filter_map(|value| {
-            let effort = value.as_ref();
-            if effort.is_empty() || effort == "none" {
-                return None;
-            }
-            effort_rank(effort).map(|rank| (rank, effort.to_string()))
-        })
-        .collect();
-    ranked.sort_by_key(|(rank, _)| *rank);
-    ranked.dedup_by(|(left, _), (right, _)| left == right);
-    if ranked.is_empty() {
-        return None;
-    }
-    let index = (ranked.len() - 1) / 2;
-    ranked.into_iter().nth(index).map(|(_, effort)| effort)
-}
-
 fn effort_rank(effort: &str) -> Option<usize> {
     REASONING_EFFORT_LADDER
         .iter()
@@ -151,10 +129,7 @@ fn effort_rank(effort: &str) -> Option<usize> {
 impl GenerationParameters {
     pub fn validate(&self) -> Result<(), &'static str> {
         if let Some(effort) = self.reasoning_effort.as_deref() {
-            if !matches!(
-                effort,
-                "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max" | "ultra"
-            ) {
+            if effort_rank(effort).is_none() {
                 return Err("invalid reasoning_effort");
             }
         }
@@ -166,6 +141,186 @@ impl GenerationParameters {
         }
         Ok(())
     }
+}
+
+/// Confirmed per-model parameter support from catalog `metadata.generationSupport`.
+/// Missing information never establishes support; it is never inferred from preferences.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GenerationSupport {
+    pub temperature: Option<bool>,
+    pub max_tokens: Option<bool>,
+    /// True when the model can run with thinking turned off.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thinking: Option<bool>,
+    /// Selectable intensities. `none` is not an intensity; see `thinking`.
+    pub reasoning_efforts: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reasoning_effort_default: Option<String>,
+    pub temperature_with_reasoning: Option<bool>,
+    pub temperature_max: Option<f64>,
+    pub max_output_tokens: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fast_mode: Option<bool>,
+}
+
+impl GenerationSupport {
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if self
+            .temperature_max
+            .is_some_and(|value| !value.is_finite() || value < 0.0)
+            || self.max_output_tokens == Some(0)
+        {
+            return Err("invalid generation support limits");
+        }
+        for effort in self.efforts() {
+            if effort_rank(effort).is_none() {
+                return Err("reasoningEfforts must list reasoning intensities");
+            }
+        }
+        if let Some(default) = self.reasoning_effort_default.as_deref() {
+            if !self.efforts().any(|effort| effort == default) {
+                return Err("reasoningEffortDefault must be listed in reasoningEfforts");
+            }
+        }
+        Ok(())
+    }
+
+    fn efforts(&self) -> impl Iterator<Item = &str> {
+        self.reasoning_efforts
+            .iter()
+            .flatten()
+            .map(String::as_str)
+    }
+
+    /// Thinking can be turned off only where the catalog says so.
+    #[must_use]
+    pub fn thinking_supported(&self) -> bool {
+        self.thinking == Some(true)
+    }
+
+    /// Whether the model reasons at all, either switchably or always.
+    #[must_use]
+    pub fn reasons(&self) -> bool {
+        self.thinking_supported() || self.efforts().next().is_some()
+    }
+
+    /// Product default for the thinking switch is on. Models that cannot turn thinking
+    /// off reason whenever they declare intensities.
+    #[must_use]
+    pub fn thinking_on(&self, desired: Option<bool>) -> bool {
+        if self.thinking_supported() {
+            desired.unwrap_or(true)
+        } else {
+            self.efforts().next().is_some()
+        }
+    }
+
+    /// Internal output cap. Omitted when the model rejects a token cap.
+    #[must_use]
+    pub fn effective_max_output_tokens(&self) -> Option<u32> {
+        if self.max_tokens == Some(false) {
+            None
+        } else {
+            Some(
+                self.max_output_tokens
+                    .map_or(DEFAULT_MAX_OUTPUT_TOKENS, |max| {
+                        DEFAULT_MAX_OUTPUT_TOKENS.min(max)
+                    }),
+            )
+        }
+    }
+}
+
+/// What one backend protocol can express, independent of any model. These are wire facts
+/// owned by the adapter, not catalog facts: a protocol that cannot carry a field makes the
+/// field unusable even when the model supports it.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct BackendCapability {
+    /// Accepts a per-response output token cap.
+    pub token_cap: bool,
+    /// Accepts a sampling temperature.
+    pub temperature: bool,
+    /// Can encode the thinking switch, and therefore can turn thinking off.
+    pub thinking_switch: bool,
+    /// Can encode a reasoning intensity.
+    pub intensity: bool,
+    /// Can request the fast service tier.
+    pub fast: bool,
+}
+
+/// Generation parameters that may reach the wire. Fields left `None` are omitted from the
+/// payload, which leaves the provider default in effect.
+#[derive(Clone, Debug, Default, PartialEq, Serialize)]
+pub struct EffectiveGeneration {
+    pub temperature: Option<f64>,
+    pub max_output_tokens: Option<u32>,
+    pub thinking: Option<bool>,
+    pub reasoning_effort: Option<String>,
+    pub fast_mode: Option<bool>,
+}
+
+/// The single resolution of desired generation parameters against model and protocol facts.
+/// Every caller resolves exactly once, against facts frozen for the request, so replaying a
+/// frozen route always yields the same wire payload.
+///
+/// An unsupported or undeclared setting is omitted rather than guessed, except for the
+/// internal output cap, which is a product default and applies unless the protocol or the
+/// model rejects a cap.
+pub fn resolve(
+    desired: &GenerationParameters,
+    support: &GenerationSupport,
+    backend: &BackendCapability,
+) -> Result<EffectiveGeneration, &'static str> {
+    desired.validate()?;
+    support.validate()?;
+
+    let thinking_on = support.thinking_on(desired.thinking);
+    let thinking = (backend.thinking_switch && support.reasons()).then_some(thinking_on);
+
+    let reasoning_effort = if thinking_on && backend.intensity {
+        let intensities: Vec<&str> = support.efforts().collect();
+        clamp_reasoning_effort(
+            desired
+                .reasoning_effort
+                .as_deref()
+                .or(support.reasoning_effort_default.as_deref()),
+            &intensities,
+        )
+    } else {
+        None
+    };
+
+    let temperature = desired
+        .temperature
+        .filter(|_| {
+            backend.temperature
+                && support.temperature == Some(true)
+                && (support.temperature_with_reasoning.unwrap_or(false) || !thinking_on)
+        })
+        .map(|value| {
+            support
+                .temperature_max
+                .map_or(value, |max| value.min(max))
+        });
+
+    let max_output_tokens = backend
+        .token_cap
+        .then(|| support.effective_max_output_tokens())
+        .flatten();
+
+    let fast_mode = (backend.fast
+        && support.fast_mode == Some(true)
+        && desired.fast_mode == Some(true))
+    .then_some(true);
+
+    Ok(EffectiveGeneration {
+        temperature,
+        max_output_tokens,
+        thinking,
+        reasoning_effort,
+        fast_mode,
+    })
 }
 
 /// Maps one catalog/constraint token. `text` is dropped. `vision` and unknown values fail.
@@ -438,10 +593,6 @@ mod tests {
     fn clamps_desired_effort_onto_supported_list() {
         let flash = ["max", "high", "low"];
         assert_eq!(
-            clamp_reasoning_effort(Some("none"), &flash).as_deref(),
-            Some("low")
-        );
-        assert_eq!(
             clamp_reasoning_effort(Some("low"), &flash).as_deref(),
             Some("low")
         );
@@ -454,33 +605,16 @@ mod tests {
             Some("low")
         );
         assert_eq!(
-            clamp_reasoning_effort(Some("none"), &["high", "max"]).as_deref(),
+            clamp_reasoning_effort(Some("minimal"), &["high", "max"]).as_deref(),
             Some("high")
         );
-        assert_eq!(clamp_reasoning_effort(Some("none"), &[] as &[&str]), None);
+        assert_eq!(clamp_reasoning_effort(Some("low"), &[] as &[&str]), None);
         assert_eq!(clamp_reasoning_effort(None, &flash), None);
     }
 
     #[test]
-    fn middle_effort_picks_lower_middle_of_ranked_list() {
-        assert_eq!(
-            middle_reasoning_effort(&["low", "medium", "high", "xhigh", "max"]).as_deref(),
-            Some("high")
-        );
-        assert_eq!(
-            middle_reasoning_effort(&["low", "high", "max"]).as_deref(),
-            Some("high")
-        );
-        assert_eq!(
-            middle_reasoning_effort(&["none", "low", "medium", "high"]).as_deref(),
-            Some("medium")
-        );
-        assert_eq!(middle_reasoning_effort(&[] as &[&str]), None);
-    }
-
-    #[test]
     fn validates_explicit_generation_settings() {
-        for effort in ["none", "low", "high", "max", "ultra"] {
+        for effort in ["minimal", "low", "high", "max", "ultra"] {
             assert!(GenerationParameters {
                 reasoning_effort: Some(effort.into()),
                 ..Default::default()
@@ -488,12 +622,14 @@ mod tests {
             .validate()
             .is_ok());
         }
-        assert!(GenerationParameters {
-            reasoning_effort: Some("unknown".into()),
-            ..Default::default()
+        for effort in ["unknown", "none"] {
+            assert!(GenerationParameters {
+                reasoning_effort: Some(effort.into()),
+                ..Default::default()
+            }
+            .validate()
+            .is_err());
         }
-        .validate()
-        .is_err());
         for temperature in [-1.0, f64::NAN, f64::INFINITY] {
             assert!(GenerationParameters {
                 temperature: Some(temperature),
@@ -502,5 +638,267 @@ mod tests {
             .validate()
             .is_err());
         }
+    }
+
+    const FULL: BackendCapability = BackendCapability {
+        token_cap: true,
+        temperature: true,
+        thinking_switch: true,
+        intensity: true,
+        fast: true,
+    };
+
+    fn switchable() -> GenerationSupport {
+        GenerationSupport {
+            temperature: Some(true),
+            max_tokens: Some(true),
+            thinking: Some(true),
+            reasoning_efforts: Some(vec!["low".into(), "medium".into(), "high".into()]),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn thinking_defaults_on_and_the_switch_turns_it_off() {
+        let support = switchable();
+        let on = resolve(&GenerationParameters::default(), &support, &FULL).unwrap();
+        assert_eq!(on.thinking, Some(true));
+        let off = resolve(
+            &GenerationParameters {
+                thinking: Some(false),
+                ..Default::default()
+            },
+            &support,
+            &FULL,
+        )
+        .unwrap();
+        assert_eq!(off.thinking, Some(false));
+        assert_eq!(off.reasoning_effort, None);
+    }
+
+    #[test]
+    fn intensity_comes_from_the_request_or_the_catalog_default_and_is_never_invented() {
+        let support = switchable();
+        assert_eq!(
+            resolve(&GenerationParameters::default(), &support, &FULL)
+                .unwrap()
+                .reasoning_effort,
+            None
+        );
+        assert_eq!(
+            resolve(
+                &GenerationParameters {
+                    reasoning_effort: Some("ultra".into()),
+                    ..Default::default()
+                },
+                &support,
+                &FULL
+            )
+            .unwrap()
+            .reasoning_effort
+            .as_deref(),
+            Some("high")
+        );
+        let defaulted = GenerationSupport {
+            reasoning_effort_default: Some("medium".into()),
+            ..switchable()
+        };
+        assert_eq!(
+            resolve(&GenerationParameters::default(), &defaulted, &FULL)
+                .unwrap()
+                .reasoning_effort
+                .as_deref(),
+            Some("medium")
+        );
+    }
+
+    #[test]
+    fn a_protocol_that_cannot_express_a_field_omits_it() {
+        let support = GenerationSupport {
+            fast_mode: Some(true),
+            ..switchable()
+        };
+        let desired = GenerationParameters {
+            temperature: Some(0.7),
+            reasoning_effort: Some("low".into()),
+            thinking: Some(false),
+            fast_mode: Some(true),
+        };
+        let full = resolve(&desired, &support, &FULL).unwrap();
+        assert_eq!(
+            (full.thinking, full.fast_mode, full.max_output_tokens),
+            (Some(false), Some(true), Some(DEFAULT_MAX_OUTPUT_TOKENS))
+        );
+        let bare = resolve(
+            &desired,
+            &support,
+            &BackendCapability {
+                token_cap: false,
+                temperature: false,
+                thinking_switch: false,
+                intensity: false,
+                fast: false,
+            },
+        )
+        .unwrap();
+        assert_eq!(bare, EffectiveGeneration::default());
+    }
+
+    #[test]
+    fn undeclared_support_omits_instead_of_guessing() {
+        let silent = GenerationSupport::default();
+        let effective = resolve(
+            &GenerationParameters {
+                temperature: Some(0.7),
+                reasoning_effort: Some("high".into()),
+                thinking: Some(false),
+                fast_mode: Some(true),
+            },
+            &silent,
+            &FULL,
+        )
+        .unwrap();
+        assert_eq!(
+            effective,
+            EffectiveGeneration {
+                max_output_tokens: Some(DEFAULT_MAX_OUTPUT_TOKENS),
+                ..Default::default()
+            }
+        );
+    }
+
+    #[test]
+    fn temperature_needs_declared_support_and_coexistence_with_thinking() {
+        let hot = GenerationSupport {
+            temperature_max: Some(1.0),
+            ..switchable()
+        };
+        let desired = GenerationParameters {
+            temperature: Some(1.5),
+            ..Default::default()
+        };
+        assert_eq!(resolve(&desired, &hot, &FULL).unwrap().temperature, None);
+        let coexists = GenerationSupport {
+            temperature_with_reasoning: Some(true),
+            ..hot.clone()
+        };
+        assert_eq!(
+            resolve(&desired, &coexists, &FULL).unwrap().temperature,
+            Some(1.0)
+        );
+        assert_eq!(
+            resolve(
+                &GenerationParameters {
+                    thinking: Some(false),
+                    ..desired
+                },
+                &hot,
+                &FULL
+            )
+            .unwrap()
+            .temperature,
+            Some(1.0)
+        );
+    }
+
+    #[test]
+    fn non_switchable_models_reason_whenever_they_declare_intensities() {
+        let always = GenerationSupport {
+            reasoning_efforts: Some(vec!["low".into(), "high".into()]),
+            max_tokens: Some(true),
+            ..Default::default()
+        };
+        let effective = resolve(
+            &GenerationParameters {
+                thinking: Some(false),
+                ..Default::default()
+            },
+            &always,
+            &FULL,
+        )
+        .unwrap();
+        assert_eq!(effective.thinking, Some(true));
+        let none = GenerationSupport::default();
+        assert_eq!(
+            resolve(&GenerationParameters::default(), &none, &FULL)
+                .unwrap()
+                .thinking,
+            None
+        );
+    }
+
+    #[test]
+    fn resolution_is_stable_when_replayed_against_the_same_facts() {
+        let support = GenerationSupport {
+            fast_mode: Some(true),
+            temperature_with_reasoning: Some(true),
+            reasoning_effort_default: Some("medium".into()),
+            ..switchable()
+        };
+        let desired = GenerationParameters {
+            temperature: Some(0.4),
+            reasoning_effort: Some("ultra".into()),
+            thinking: Some(true),
+            fast_mode: Some(true),
+        };
+        let first = resolve(&desired, &support, &FULL).unwrap();
+        let replay = resolve(
+            &GenerationParameters {
+                temperature: first.temperature,
+                reasoning_effort: first.reasoning_effort.clone(),
+                thinking: first.thinking,
+                fast_mode: first.fast_mode,
+            },
+            &support,
+            &FULL,
+        )
+        .unwrap();
+        assert_eq!(first, replay);
+    }
+
+    #[test]
+    fn support_rejects_disable_as_an_intensity_and_unlisted_defaults() {
+        assert!(GenerationSupport {
+            reasoning_efforts: Some(vec!["none".into()]),
+            ..Default::default()
+        }
+        .validate()
+        .is_err());
+        assert!(GenerationSupport {
+            reasoning_effort_default: Some("max".into()),
+            ..switchable()
+        }
+        .validate()
+        .is_err());
+        assert!(GenerationSupport {
+            max_output_tokens: Some(0),
+            ..Default::default()
+        }
+        .validate()
+        .is_err());
+    }
+
+    #[test]
+    fn the_internal_output_cap_is_a_product_default_not_a_capability() {
+        assert_eq!(
+            GenerationSupport::default().effective_max_output_tokens(),
+            Some(DEFAULT_MAX_OUTPUT_TOKENS)
+        );
+        assert_eq!(
+            GenerationSupport {
+                max_output_tokens: Some(4_096),
+                ..Default::default()
+            }
+            .effective_max_output_tokens(),
+            Some(4_096)
+        );
+        assert_eq!(
+            GenerationSupport {
+                max_tokens: Some(false),
+                ..Default::default()
+            }
+            .effective_max_output_tokens(),
+            None
+        );
     }
 }
