@@ -64,15 +64,21 @@ pub const REASONING_EFFORT_LADDER: &[&str] = &[
     "none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra",
 ];
 
+/// Internal per-response output cap. Not a user setting. Adapters omit it when
+/// the model snapshot says `maxTokens` is false.
+pub const DEFAULT_MAX_OUTPUT_TOKENS: u32 = 32_768;
+
 /// Deployment-owned generation settings, never supplied through Agent constraints.
-/// None leaves the setting unspecified. These are desired preferences. Adapters clamp
-/// reasoning effort onto the model's supported list and omit it only when that list is
-/// empty. Syntax validation does not establish model/provider support.
+/// None leaves the setting unspecified. These are desired preferences. Adapters
+/// omit unsupported fields and clamp reasoning intensity onto the model's list.
+/// Syntax validation does not establish model/provider support.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GenerationParameters {
     pub reasoning_effort: Option<String>,
     pub temperature: Option<f64>,
+    pub thinking: Option<bool>,
+    pub fast_mode: Option<bool>,
 }
 
 /// Maps a desired effort onto `supported`. Exact matches are kept. Otherwise the nearest
@@ -112,6 +118,28 @@ pub fn clamp_reasoning_effort(
         }
     }
     best.map(|(item, _, _)| item.to_string())
+}
+
+/// Middle intensity on the ladder among `supported`. Empty or unranked lists omit.
+/// Even-length lists pick the lower-middle rank.
+pub fn middle_reasoning_effort(supported: &[impl AsRef<str>]) -> Option<String> {
+    let mut ranked: Vec<(usize, String)> = supported
+        .iter()
+        .filter_map(|value| {
+            let effort = value.as_ref();
+            if effort.is_empty() || effort == "none" {
+                return None;
+            }
+            effort_rank(effort).map(|rank| (rank, effort.to_string()))
+        })
+        .collect();
+    ranked.sort_by_key(|(rank, _)| *rank);
+    ranked.dedup_by(|(left, _), (right, _)| left == right);
+    if ranked.is_empty() {
+        return None;
+    }
+    let index = (ranked.len() - 1) / 2;
+    ranked.into_iter().nth(index).map(|(_, effort)| effort)
 }
 
 fn effort_rank(effort: &str) -> Option<usize> {
@@ -434,18 +462,35 @@ mod tests {
     }
 
     #[test]
+    fn middle_effort_picks_lower_middle_of_ranked_list() {
+        assert_eq!(
+            middle_reasoning_effort(&["low", "medium", "high", "xhigh", "max"]).as_deref(),
+            Some("high")
+        );
+        assert_eq!(
+            middle_reasoning_effort(&["low", "high", "max"]).as_deref(),
+            Some("high")
+        );
+        assert_eq!(
+            middle_reasoning_effort(&["none", "low", "medium", "high"]).as_deref(),
+            Some("medium")
+        );
+        assert_eq!(middle_reasoning_effort(&[] as &[&str]), None);
+    }
+
+    #[test]
     fn validates_explicit_generation_settings() {
         for effort in ["none", "low", "high", "max", "ultra"] {
             assert!(GenerationParameters {
                 reasoning_effort: Some(effort.into()),
-                temperature: None
+                ..Default::default()
             }
             .validate()
             .is_ok());
         }
         assert!(GenerationParameters {
             reasoning_effort: Some("unknown".into()),
-            temperature: None
+            ..Default::default()
         }
         .validate()
         .is_err());

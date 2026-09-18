@@ -602,6 +602,26 @@
             }
           ]
         },
+        "thinking": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fast_mode": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "model_snapshot": {
           "$ref": "#/$defs/llm_model_snapshot"
         }
@@ -1862,6 +1882,18 @@
             "null"
           ]
         },
+        "thinking": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reasoningEffortDefault": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "temperatureWithReasoning": {
           "type": [
             "boolean",
@@ -1899,6 +1931,12 @@
             "null"
           ],
           "minimum": 1
+        },
+        "fastMode": {
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       }
     },

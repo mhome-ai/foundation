@@ -196,10 +196,16 @@ pub struct LlmModelSnapshot {
 pub struct LlmGenerationSupport {
     pub temperature: Option<bool>,
     pub max_tokens: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thinking: Option<bool>,
     pub reasoning_efforts: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reasoning_effort_default: Option<String>,
     pub temperature_with_reasoning: Option<bool>,
     pub temperature_max: Option<f64>,
     pub max_output_tokens: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fast_mode: Option<bool>,
 }
 
 impl LlmGenerationSupport {
@@ -215,10 +221,63 @@ impl LlmGenerationSupport {
             llm_api::GenerationParameters {
                 temperature: None,
                 reasoning_effort: Some(effort.clone()),
+                thinking: None,
+                fast_mode: None,
             }
             .validate()?;
         }
+        let intensity = self.intensity_efforts();
+        if let Some(default) = self.reasoning_effort_default.as_deref() {
+            if intensity.is_empty() || !intensity.iter().any(|value| value == default) {
+                return Err("reasoningEffortDefault must be an intensity in reasoningEfforts");
+            }
+        }
         Ok(())
+    }
+
+    /// Thinking can be turned off when declared, or when a legacy snapshot listed `none`.
+    #[must_use]
+    pub fn thinking_supported(&self) -> bool {
+        self.thinking.unwrap_or(false)
+            || self
+                .reasoning_efforts
+                .as_ref()
+                .is_some_and(|values| values.iter().any(|value| value == "none"))
+    }
+
+    /// Intensity ladder without `none`. Disable is the thinking switch, not a listed effort.
+    #[must_use]
+    pub fn intensity_efforts(&self) -> Vec<String> {
+        self.reasoning_efforts
+            .iter()
+            .flatten()
+            .filter(|value| value.as_str() != "none")
+            .cloned()
+            .collect()
+    }
+
+    /// Product default for the thinking switch is off whenever the model can disable thinking.
+    #[must_use]
+    pub fn thinking_on(&self, desired: Option<bool>) -> bool {
+        if self.thinking_supported() {
+            desired.unwrap_or(false)
+        } else {
+            !self.intensity_efforts().is_empty()
+        }
+    }
+
+    /// Internal output cap. Omitted when the model rejects a token cap.
+    #[must_use]
+    pub fn effective_max_output_tokens(&self) -> Option<u32> {
+        if self.max_tokens == Some(false) {
+            None
+        } else {
+            let desired = llm_api::DEFAULT_MAX_OUTPUT_TOKENS;
+            Some(
+                self.max_output_tokens
+                    .map_or(desired, |max| desired.min(max)),
+            )
+        }
     }
 }
 
@@ -233,6 +292,10 @@ pub struct LlmRoute {
     pub max_output_tokens: Option<u32>,
     pub cache_control: Option<bool>,
     pub reasoning_effort: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thinking: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fast_mode: Option<bool>,
     /// Total context window of the exact frozen model route.
     pub context_window_tokens: u32,
     /// Required immutable facts; old plans must not silently resolve against a new catalog.
@@ -614,6 +677,8 @@ fn validate_llm_plan(plan: &LlmExecutionPlan) -> Result<(), ProtocolError> {
         llm_api::GenerationParameters {
             temperature: route.temperature,
             reasoning_effort: route.reasoning_effort.clone(),
+            thinking: route.thinking,
+            fast_mode: route.fast_mode,
         }
         .validate()
         .map_err(|error| ProtocolError::InvalidBinding(error.into()))?;
@@ -888,6 +953,8 @@ mod tests {
                             max_output_tokens: Some(8192),
                             cache_control: Some(true),
                             reasoning_effort: None,
+                            thinking: None,
+                            fast_mode: None,
                             context_window_tokens: 128_000,
                             model_snapshot: LlmModelSnapshot {
                                 capabilities: llm_api::ModelCapabilities {
@@ -936,6 +1003,40 @@ mod tests {
             .generation_support
             .max_output_tokens = Some(0);
         assert!(envelope.validate().is_err());
+    }
+
+    #[test]
+    fn generation_support_splits_thinking_from_intensity() {
+        let legacy = LlmGenerationSupport {
+            reasoning_efforts: Some(vec!["none".into(), "low".into(), "high".into()]),
+            max_tokens: Some(true),
+            max_output_tokens: Some(8_192),
+            ..LlmGenerationSupport::default()
+        };
+        assert!(legacy.thinking_supported());
+        assert_eq!(legacy.intensity_efforts(), vec!["low", "high"]);
+        assert!(!legacy.thinking_on(None));
+        assert!(legacy.thinking_on(Some(true)));
+        assert_eq!(legacy.effective_max_output_tokens(), Some(8_192));
+
+        let intensity_only = LlmGenerationSupport {
+            thinking: Some(false),
+            reasoning_efforts: Some(vec!["low".into(), "medium".into(), "high".into()]),
+            reasoning_effort_default: Some("medium".into()),
+            ..LlmGenerationSupport::default()
+        };
+        assert!(!intensity_only.thinking_supported());
+        assert!(intensity_only.thinking_on(None));
+        assert!(intensity_only.validate().is_ok());
+
+        let switch_only = LlmGenerationSupport {
+            thinking: Some(true),
+            max_tokens: Some(false),
+            ..LlmGenerationSupport::default()
+        };
+        assert!(switch_only.thinking_supported());
+        assert!(!switch_only.thinking_on(None));
+        assert_eq!(switch_only.effective_max_output_tokens(), None);
     }
 
     fn dispatch() -> DispatchBinding {
