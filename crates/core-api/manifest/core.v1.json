@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.15.0",
+  "contractVersion": "1.15.1",
   "protocols": {
     "agentGateway": {
       "submitTarget": "/agent/submit",
