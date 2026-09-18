@@ -64,6 +64,12 @@ only the canonical DTOs cross HTTP/IPC boundaries. The permissions contract is i
 `contract/host-permissions.md`; runtime permission handlers remain a separate
 implementation step. The existing Core external runtime protocol stays at 15.
 
+## Offline Host authorization (core-api 1.15.0)
+
+`host::auth` is the language-neutral Client–Host authorization payload contract.
+See [`contract/host-offline-auth.md`](contract/host-offline-auth.md). This crate
+does not implement signing, key storage, or transport.
+
 ## Native Client Host management
 
 `host::management` defines the generic runtime request/action and response envelope.
