@@ -141,7 +141,7 @@ pub struct HostsRuntime {
 pub struct HostsClaimRequest {
     pub host_id: String,
 }
-/// Hub-vantage first-claim of an unused LAN Host for the current Space owner.
+/// Hub-vantage first-claim of an unused LAN Host for the current Space member.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HostsClaim {
