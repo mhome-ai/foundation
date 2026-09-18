@@ -53,4 +53,5 @@ pub const CLOUD_RELAY_TARGETS: &[&str] = &[
     "/app/system/clients/get",
     "/app/system/hosts/get",
     "/app/system/hosts/runtime",
+    "/app/system/hosts/claim",
 ];

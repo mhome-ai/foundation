@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.16.0",
+  "contractVersion": "1.17.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -81,11 +81,14 @@
       "hostsSchema": "schema/system-hosts.v1.schema.json",
       "hostsRuntimeContract": "mhome.system.hosts.runtime.v1",
       "hostsRuntimeSchema": "schema/system-hosts-runtime.v1.schema.json",
+      "hostsClaimContract": "mhome.system.hosts.claim.v1",
+      "hostsClaimSchema": "schema/system-hosts-claim.v1.schema.json",
       "requestTargets": [
         "/app/system/instances/get",
         "/app/system/clients/get",
         "/app/system/hosts/get",
-        "/app/system/hosts/runtime"
+        "/app/system/hosts/runtime",
+        "/app/system/hosts/claim"
       ]
     }
   }

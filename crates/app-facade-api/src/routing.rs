@@ -156,6 +156,10 @@ mod tests {
             Some(RELAYABLE_HUB)
         );
         assert_eq!(
+            route_policy_for_target(crate::system::HOSTS_CLAIM_TARGET),
+            Some(RELAYABLE_HUB)
+        );
+        assert_eq!(
             route_policy_for_target(crate::device_topology::GET_TARGET),
             Some(DIRECT_SCOPE)
         );

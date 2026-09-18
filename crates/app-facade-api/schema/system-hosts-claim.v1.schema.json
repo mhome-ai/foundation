@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "scopeId",
+    "hostId",
+    "claimed"
+  ],
+  "properties": {
+    "contract": {
+      "const": "mhome.system.hosts.claim.v1"
+    },
+    "scopeId": {
+      "type": "string"
+    },
+    "hostId": {
+      "type": "string"
+    },
+    "claimed": {
+      "const": true
+    }
+  }
+}

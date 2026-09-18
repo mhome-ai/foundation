@@ -11,10 +11,19 @@
   Host inspect, metrics, plan, start, operation and restart actions as the
   native Client `host.runtime` contract. The Hub uses that member's Hub-held
   Client; the Host still authorizes the user.
+- `/app/system/hosts/claim` returns `mhome.system.hosts.claim.v1`: first-claim
+  an unused LAN Host for the current Space owner. The Hub must reach the Host
+  on LAN, then the cloud binds that **user**, not Hub identity. Native Client
+  `host.claim` remains the same-machine path for any signed-in user. Claimed
+  Hosts stay on signed HTTP+auth. Unclaimed Hosts stay discoverable;
+  `info.errorCode` is `claimable` when the first user can authorize, or
+  `unauthorized` when someone else already has.
 - Inventory takes empty input. Runtime takes the native Host management request
-  (`hostId` plus `action`). Both require Space membership and run on the Space
-  Hub with cloud relay permitted. They are only available for a local Space with
-  a connected Hub. Host discovery does not filter Space instances.
+  (`hostId` plus `action`). Claim takes `{ hostId }`. All require Space
+  membership and run on the Space Hub with cloud relay permitted. They are only
+  available for a local Space with a connected Hub. Host discovery does not
+  filter Space instances.
 
-Native Client `host.list` / `host.runtime` remain for machines that are not on a
-local Space Hub path. Retired `/app/system/host/*` targets stay removed.
+Native Client `host.list` / `host.claim` / `host.runtime` remain for machines
+that are not on a local Space Hub path. Retired `/app/system/host/*` targets
+stay removed.

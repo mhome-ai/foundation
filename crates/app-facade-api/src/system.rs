@@ -7,10 +7,12 @@ pub const INSTANCES_TARGET: &str = "/app/system/instances/get";
 pub const CLIENTS_TARGET: &str = "/app/system/clients/get";
 pub const HOSTS_TARGET: &str = "/app/system/hosts/get";
 pub const HOSTS_RUNTIME_TARGET: &str = "/app/system/hosts/runtime";
+pub const HOSTS_CLAIM_TARGET: &str = "/app/system/hosts/claim";
 pub const INSTANCES_CONTRACT: &str = "mhome.system.instances.v1";
 pub const CLIENTS_CONTRACT: &str = "mhome.system.clients.v1";
 pub const HOSTS_CONTRACT: &str = "mhome.system.hosts.v1";
 pub const HOSTS_RUNTIME_CONTRACT: &str = "mhome.system.hosts.runtime.v1";
+pub const HOSTS_CLAIM_CONTRACT: &str = "mhome.system.hosts.claim.v1";
 pub type HostsRuntimeRequest = HostRuntimeRequest<String>;
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -133,4 +135,18 @@ pub struct HostsRuntime {
     pub scope_id: String,
     pub host_id: String,
     pub result: serde_json::Value,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HostsClaimRequest {
+    pub host_id: String,
+}
+/// Hub-vantage first-claim of an unused LAN Host for the current Space owner.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HostsClaim {
+    pub contract: String,
+    pub scope_id: String,
+    pub host_id: String,
+    pub claimed: bool,
 }

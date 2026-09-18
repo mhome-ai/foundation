@@ -90,6 +90,7 @@ Code creation may omit bot/account and group/surface identifiers. The receiving 
 ## Space runtime observations
 
 `/app/system/instances/get` reads Space instances; `/app/system/clients/get` reads
-client sessions; `/app/system/hosts/get` and `/app/system/hosts/runtime` are
-Hub-vantage Host inventory and management. These remain Hub-owned with cloud
-relay and Space membership. See [SYSTEM.md](SYSTEM.md).
+client sessions; `/app/system/hosts/get`, `/app/system/hosts/runtime`, and
+`/app/system/hosts/claim` are Hub-vantage Host inventory, management, and
+first-claim. These remain Hub-owned with cloud relay and Space membership. See
+[SYSTEM.md](SYSTEM.md).
