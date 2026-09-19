@@ -14,7 +14,7 @@ include = ["src/**", "tests/**", "contract/**", "manifest/**", "schema/**", "fix
 name = "core_api"
 
 [dependencies]
-llm-api = { package = "mhome-llm-api", version = "=3.0.1", path = "../llm-api" }
+llm-api = { package = "mhome-llm-api", version = "=3.0.2", path = "../llm-api" }
 base64 = "0.22"
 artifact-api = { package = "mhome-artifact-api", version = "=1.2.0", path = "../artifact" }
 conversation-api = { package = "mhome-conversation-api", version = "=3.0.0", path = "../conversation-api" }

@@ -94,7 +94,7 @@ fn clamp_reasoning_effort(desired: Option<&str>, supported: &[impl AsRef<str>]) 
     if supported.is_empty() {
         return None;
     }
-    if supported.iter().any(|item| *item == desired) {
+    if supported.contains(&desired) {
         return Some(desired.to_string());
     }
     let want = effort_rank(desired)?;
@@ -997,10 +997,10 @@ mod tests {
             ..switchable()
         };
         let shown = controls(&switchable, &FULL);
-        assert_eq!(shown.temperature, true);
+        assert!(shown.temperature);
         assert_eq!(shown.temperature_max, Some(1.0));
-        assert_eq!(shown.thinking, true);
-        assert_eq!(shown.fast_mode, true);
+        assert!(shown.thinking);
+        assert!(shown.fast_mode);
         assert_eq!(
             shown.reasoning_efforts,
             vec!["low".to_string(), "medium".to_string(), "high".to_string()]
