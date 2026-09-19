@@ -84,10 +84,7 @@ pub struct GenerationParameters {
 /// Maps a desired effort onto `supported`. Exact matches are kept. Otherwise the nearest
 /// ladder neighbor is used; ties pick the lower effort. An empty supported list, or no
 /// desired value, omits the field. Values not on the ladder are ignored.
-fn clamp_reasoning_effort(
-    desired: Option<&str>,
-    supported: &[impl AsRef<str>],
-) -> Option<String> {
+fn clamp_reasoning_effort(desired: Option<&str>, supported: &[impl AsRef<str>]) -> Option<String> {
     let desired = desired?;
     let supported: Vec<&str> = supported
         .iter()
@@ -214,10 +211,7 @@ impl GenerationSupport {
     }
 
     fn efforts(&self) -> impl Iterator<Item = &str> {
-        self.reasoning_efforts
-            .iter()
-            .flatten()
-            .map(String::as_str)
+        self.reasoning_efforts.iter().flatten().map(String::as_str)
     }
 
     fn thinking_supported(&self) -> bool {
@@ -378,21 +372,16 @@ pub fn resolve(
                 && support.temperature == Some(true)
                 && (support.temperature_with_reasoning.unwrap_or(false) || !thinking_on)
         })
-        .map(|value| {
-            support
-                .temperature_max
-                .map_or(value, |max| value.min(max))
-        });
+        .map(|value| support.temperature_max.map_or(value, |max| value.min(max)));
 
     let max_output_tokens = backend
         .token_cap
         .then(|| support.effective_max_output_tokens())
         .flatten();
 
-    let fast_mode = (backend.fast
-        && support.fast_mode == Some(true)
-        && desired.fast_mode == Some(true))
-    .then_some(true);
+    let fast_mode =
+        (backend.fast && support.fast_mode == Some(true) && desired.fast_mode == Some(true))
+            .then_some(true);
 
     Ok(EffectiveGeneration {
         temperature,
@@ -1068,14 +1057,12 @@ mod tests {
         assert_eq!(garbage.thinking, Some(true));
         assert_eq!(garbage.reasoning_effort, None);
         assert_eq!(garbage.temperature, None);
-        assert!(
-            GenerationParameters {
-                reasoning_effort: Some("none".into()),
-                ..Default::default()
-            }
-            .validate()
-            .is_err()
-        );
+        assert!(GenerationParameters {
+            reasoning_effort: Some("none".into()),
+            ..Default::default()
+        }
+        .validate()
+        .is_err());
     }
 
     #[test]

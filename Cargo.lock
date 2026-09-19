@@ -736,7 +736,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-llm-api"
-version = "3.0.0"
+version = "3.0.1"
 dependencies = [
  "mhome-artifact-api",
  "serde",

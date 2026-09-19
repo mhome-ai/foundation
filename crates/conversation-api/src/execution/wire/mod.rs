@@ -931,8 +931,14 @@ mod tests {
             fast_mode: Some(true),
         };
         let encoded = serde_json::to_value(&support).unwrap();
-        assert_eq!(encoded["reasoningEfforts"], serde_json::json!(["low", "high"]));
-        assert_eq!(encoded["temperatureWithReasoning"], serde_json::json!(false));
+        assert_eq!(
+            encoded["reasoningEfforts"],
+            serde_json::json!(["low", "high"])
+        );
+        assert_eq!(
+            encoded["temperatureWithReasoning"],
+            serde_json::json!(false)
+        );
         assert_eq!(
             serde_json::from_value::<LlmGenerationSupport>(encoded).unwrap(),
             support
