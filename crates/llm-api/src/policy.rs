@@ -84,7 +84,7 @@ pub struct GenerationParameters {
 /// Maps a desired effort onto `supported`. Exact matches are kept. Otherwise the nearest
 /// ladder neighbor is used; ties pick the lower effort. An empty supported list, or no
 /// desired value, omits the field. Values not on the ladder are ignored.
-pub fn clamp_reasoning_effort(
+fn clamp_reasoning_effort(
     desired: Option<&str>,
     supported: &[impl AsRef<str>],
 ) -> Option<String> {
@@ -141,12 +141,39 @@ impl GenerationParameters {
         }
         Ok(())
     }
+
+    /// Stored preferences are wishes, not a contract. Retired `none` means thinking off;
+    /// any other illegal value is dropped so a request can still run.
+    #[must_use]
+    pub fn normalize_stored(mut self) -> Self {
+        if self.reasoning_effort.as_deref() == Some("none") {
+            self.reasoning_effort = None;
+            if self.thinking.is_none() {
+                self.thinking = Some(false);
+            }
+        }
+        if self
+            .reasoning_effort
+            .as_deref()
+            .is_some_and(|effort| effort_rank(effort).is_none())
+        {
+            self.reasoning_effort = None;
+        }
+        if self
+            .temperature
+            .is_some_and(|value| !value.is_finite() || value < 0.0)
+        {
+            self.temperature = None;
+        }
+        self
+    }
 }
 
 /// Confirmed per-model parameter support from catalog `metadata.generationSupport`.
 /// Missing information never establishes support; it is never inferred from preferences.
+/// Unknown catalog keys are ignored so a newer catalog cannot break an older client.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
 pub struct GenerationSupport {
     pub temperature: Option<bool>,
     pub max_tokens: Option<bool>,
@@ -193,22 +220,15 @@ impl GenerationSupport {
             .map(String::as_str)
     }
 
-    /// Thinking can be turned off only where the catalog says so.
-    #[must_use]
-    pub fn thinking_supported(&self) -> bool {
+    fn thinking_supported(&self) -> bool {
         self.thinking == Some(true)
     }
 
-    /// Whether the model reasons at all, either switchably or always.
-    #[must_use]
-    pub fn reasons(&self) -> bool {
+    fn reasons(&self) -> bool {
         self.thinking_supported() || self.efforts().next().is_some()
     }
 
-    /// Product default for the thinking switch is on. Models that cannot turn thinking
-    /// off reason whenever they declare intensities.
-    #[must_use]
-    pub fn thinking_on(&self, desired: Option<bool>) -> bool {
+    fn thinking_on(&self, desired: Option<bool>) -> bool {
         if self.thinking_supported() {
             desired.unwrap_or(true)
         } else {
@@ -216,9 +236,7 @@ impl GenerationSupport {
         }
     }
 
-    /// Internal output cap. Omitted when the model rejects a token cap.
-    #[must_use]
-    pub fn effective_max_output_tokens(&self) -> Option<u32> {
+    fn effective_max_output_tokens(&self) -> Option<u32> {
         if self.max_tokens == Some(false) {
             None
         } else {
@@ -260,23 +278,85 @@ pub struct EffectiveGeneration {
     pub fast_mode: Option<bool>,
 }
 
+impl EffectiveGeneration {
+    /// Provider payloads carry temperature as f32.
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
+    pub fn temperature_f32(&self) -> Option<f32> {
+        self.temperature.map(|value| value as f32)
+    }
+
+    /// The internal cap, lowered by an optional per-call output budget. A budget never raises
+    /// the cap, and it stays out of the wire identity so it can vary between steps of one run.
+    #[must_use]
+    pub fn output_cap(&self, budget: Option<u32>) -> Option<u32> {
+        self.max_output_tokens
+            .map(|ceiling| budget.unwrap_or(ceiling).min(ceiling))
+    }
+}
+
+/// What a settings UI may expose after intersecting catalog facts with the backend protocol.
+/// This is the same judgment `resolve` uses; a hidden control cannot appear on the wire, and
+/// a shown control is one the current backend can actually carry.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GenerationControls {
+    pub temperature: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temperature_max: Option<f64>,
+    pub thinking: bool,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub reasoning_efforts: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_effort_default: Option<String>,
+    pub fast_mode: bool,
+}
+
+/// Settings that can take effect on this backend for this model. Callers must not infer
+/// controls from catalog fields alone.
+#[must_use]
+pub fn controls(support: &GenerationSupport, backend: &BackendCapability) -> GenerationControls {
+    let thinking = backend.thinking_switch && support.thinking_supported();
+    let reasoning_efforts: Vec<String> = if backend.intensity {
+        support.efforts().map(str::to_owned).collect()
+    } else {
+        Vec::new()
+    };
+    let can_use_temperature_while_reasoning = support.temperature_with_reasoning.unwrap_or(false);
+    let temperature = backend.temperature
+        && support.temperature == Some(true)
+        && (can_use_temperature_while_reasoning || thinking || !support.reasons());
+    GenerationControls {
+        temperature_max: temperature.then_some(support.temperature_max).flatten(),
+        temperature,
+        thinking,
+        reasoning_effort_default: reasoning_efforts
+            .iter()
+            .find(|effort| Some(effort.as_str()) == support.reasoning_effort_default.as_deref())
+            .cloned(),
+        reasoning_efforts,
+        fast_mode: backend.fast && support.fast_mode == Some(true),
+    }
+}
+
 /// The single resolution of desired generation parameters against model and protocol facts.
 /// Every caller resolves exactly once, against facts frozen for the request, so replaying a
 /// frozen route always yields the same wire payload.
 ///
 /// An unsupported or undeclared setting is omitted rather than guessed, except for the
 /// internal output cap, which is a product default and applies unless the protocol or the
-/// model rejects a cap.
+/// model rejects a cap. Illegal *desired* values are dropped the same way; illegal catalog
+/// support still fails, because that data is ours.
 pub fn resolve(
     desired: &GenerationParameters,
     support: &GenerationSupport,
     backend: &BackendCapability,
 ) -> Result<EffectiveGeneration, &'static str> {
-    desired.validate()?;
     support.validate()?;
+    let desired = desired.clone().normalize_stored();
 
     let thinking_on = support.thinking_on(desired.thinking);
-    let thinking = (backend.thinking_switch && support.reasons()).then_some(thinking_on);
+    let thinking = (backend.thinking_switch && support.thinking_supported()).then_some(thinking_on);
 
     let reasoning_effort = if thinking_on && backend.intensity {
         let intensities: Vec<&str> = support.efforts().collect();
@@ -817,7 +897,8 @@ mod tests {
             &FULL,
         )
         .unwrap();
-        assert_eq!(effective.thinking, Some(true));
+        assert_eq!(effective.thinking, None);
+        assert_eq!(effective.reasoning_effort, None);
         let none = GenerationSupport::default();
         assert_eq!(
             resolve(&GenerationParameters::default(), &none, &FULL)
@@ -900,5 +981,113 @@ mod tests {
             .effective_max_output_tokens(),
             None
         );
+        assert_eq!(
+            EffectiveGeneration {
+                max_output_tokens: Some(4_096),
+                ..Default::default()
+            }
+            .output_cap(Some(1_024)),
+            Some(1_024)
+        );
+        assert_eq!(
+            EffectiveGeneration {
+                max_output_tokens: Some(4_096),
+                ..Default::default()
+            }
+            .output_cap(Some(100_000)),
+            Some(4_096)
+        );
+    }
+
+    #[test]
+    fn controls_match_what_resolve_can_put_on_the_wire() {
+        let switchable = GenerationSupport {
+            temperature: Some(true),
+            temperature_max: Some(1.0),
+            fast_mode: Some(true),
+            ..switchable()
+        };
+        let shown = controls(&switchable, &FULL);
+        assert_eq!(shown.temperature, true);
+        assert_eq!(shown.temperature_max, Some(1.0));
+        assert_eq!(shown.thinking, true);
+        assert_eq!(shown.fast_mode, true);
+        assert_eq!(
+            shown.reasoning_efforts,
+            vec!["low".to_string(), "medium".to_string(), "high".to_string()]
+        );
+        let always = GenerationSupport {
+            temperature: Some(true),
+            reasoning_efforts: Some(vec!["low".into(), "high".into()]),
+            ..Default::default()
+        };
+        let hidden = controls(&always, &FULL);
+        assert!(!hidden.temperature);
+        assert!(!hidden.thinking);
+        assert_eq!(hidden.reasoning_efforts, vec!["low", "high"]);
+        let protocol = controls(
+            &switchable,
+            &BackendCapability {
+                token_cap: true,
+                temperature: true,
+                thinking_switch: false,
+                intensity: true,
+                fast: false,
+            },
+        );
+        assert!(!protocol.thinking);
+        assert!(!protocol.temperature);
+        assert!(!protocol.fast_mode);
+    }
+
+    #[test]
+    fn retired_and_illegal_preferences_are_dropped_instead_of_failing_the_request() {
+        let support = switchable();
+        let from_none = resolve(
+            &GenerationParameters {
+                reasoning_effort: Some("none".into()),
+                ..Default::default()
+            },
+            &support,
+            &FULL,
+        )
+        .unwrap();
+        assert_eq!(from_none.thinking, Some(false));
+        assert_eq!(from_none.reasoning_effort, None);
+        let garbage = resolve(
+            &GenerationParameters {
+                reasoning_effort: Some("not-a-ladder".into()),
+                temperature: Some(f64::NAN),
+                thinking: Some(true),
+                ..Default::default()
+            },
+            &support,
+            &FULL,
+        )
+        .unwrap();
+        assert_eq!(garbage.thinking, Some(true));
+        assert_eq!(garbage.reasoning_effort, None);
+        assert_eq!(garbage.temperature, None);
+        assert!(
+            GenerationParameters {
+                reasoning_effort: Some("none".into()),
+                ..Default::default()
+            }
+            .validate()
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn catalog_support_ignores_unknown_keys() {
+        let support = serde_json::from_value::<GenerationSupport>(serde_json::json!({
+            "temperature": true,
+            "thinking": true,
+            "reasoningEfforts": ["low"],
+            "futureFlag": true
+        }))
+        .unwrap();
+        assert_eq!(support.temperature, Some(true));
+        assert!(support.validate().is_ok());
     }
 }

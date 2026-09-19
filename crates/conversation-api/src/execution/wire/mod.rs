@@ -937,12 +937,17 @@ mod tests {
             serde_json::from_value::<LlmGenerationSupport>(encoded).unwrap(),
             support
         );
-        assert!(serde_json::from_value::<LlmGenerationSupport>(serde_json::json!({
+        let ignored = serde_json::from_value::<LlmGenerationSupport>(serde_json::json!({
             "temperature": true, "maxTokens": true, "reasoningEfforts": ["low"],
             "temperatureWithReasoning": null, "temperatureMax": null, "maxOutputTokens": null,
             "reasoningIntensity": "high"
         }))
-        .is_err());
+        .unwrap();
+        assert_eq!(ignored.temperature, Some(true));
+        assert_eq!(
+            ignored.reasoning_efforts.as_deref(),
+            Some(["low".to_string()].as_slice())
+        );
     }
 
     fn dispatch() -> DispatchBinding {
