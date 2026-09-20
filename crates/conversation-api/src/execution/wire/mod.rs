@@ -1060,10 +1060,10 @@ mod tests {
             serde_json::Value::Null;
         input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["thinking"] =
             serde_json::Value::Null;
-        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]
-            ["generation_support"]["fastMode"] = serde_json::Value::Null;
-        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]
-            ["generation_support"]["reasoningEffortDefault"] = serde_json::Value::Null;
+        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]["generation_support"]
+            ["fastMode"] = serde_json::Value::Null;
+        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]["generation_support"]
+            ["reasoningEffortDefault"] = serde_json::Value::Null;
         input["payload"]["payload"]["command"]["message"]["continuation"] = serde_json::Value::Null;
 
         let envelope = Envelope::decode_json(&input.to_string())
