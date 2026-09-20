@@ -100,6 +100,9 @@ pub struct RunOutcome {
     pub error_code: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub failure: Option<RunFailure>,
+    /// User-visible sentence for this settlement. Hosts write it once; clients display it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
