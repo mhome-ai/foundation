@@ -367,14 +367,7 @@
           }
         },
         "continuation": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/continuation"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "$ref": "#/$defs/continuation"
         }
       }
     },
@@ -1857,16 +1850,10 @@
           ]
         },
         "thinking": {
-          "type": [
-            "boolean",
-            "null"
-          ]
+          "type": "boolean"
         },
         "reasoningEffortDefault": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": "string"
         },
         "temperatureWithReasoning": {
           "type": [
@@ -1906,10 +1893,7 @@
           "minimum": 1
         },
         "fastMode": {
-          "type": [
-            "boolean",
-            "null"
-          ]
+          "type": "boolean"
         }
       }
     },

@@ -1047,6 +1047,37 @@ mod tests {
     }
 
     #[test]
+    fn schema_rejects_generation_support_and_continuation_nulls() {
+        let fixture = include_str!("../../../fixtures/execution/enqueue.v1.json");
+        let schema: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../schema/execution/envelope.v1.schema.json"
+        ))
+        .expect("schema");
+        let validator = jsonschema::validator_for(&schema).expect("schema");
+        let golden: serde_json::Value = serde_json::from_str(fixture).expect("fixture JSON");
+        assert!(
+            validator.validate(&golden).is_ok(),
+            "golden enqueue fixture must remain emit-valid"
+        );
+
+        let mut support_null = golden.clone();
+        support_null["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]
+            ["generation_support"]["fastMode"] = serde_json::Value::Null;
+        assert!(
+            validator.validate(&support_null).is_err(),
+            "skip-optional generation_support.fastMode must omit, not null"
+        );
+
+        let mut continuation_null = golden;
+        continuation_null["payload"]["payload"]["command"]["message"]["continuation"] =
+            serde_json::Value::Null;
+        assert!(
+            validator.validate(&continuation_null).is_err(),
+            "skip-optional message.continuation must omit, not null"
+        );
+    }
+
+    #[test]
     fn strict_decoder_still_rejects_unknown_null_fields() {
         let fixture = include_str!("../../../fixtures/execution/enqueue.v1.json");
         let mut input: serde_json::Value = serde_json::from_str(fixture).expect("fixture JSON");

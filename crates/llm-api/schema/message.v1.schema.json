@@ -151,14 +151,7 @@
           }
         },
         "continuation": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/continuation"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "$ref": "#/$defs/continuation"
         }
       }
     },
