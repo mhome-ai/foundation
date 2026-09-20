@@ -1061,8 +1061,8 @@ mod tests {
         );
 
         let mut support_null = golden.clone();
-        support_null["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]
-            ["generation_support"]["fastMode"] = serde_json::Value::Null;
+        support_null["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]["generation_support"]
+            ["fastMode"] = serde_json::Value::Null;
         assert!(
             validator.validate(&support_null).is_err(),
             "skip-optional generation_support.fastMode must omit, not null"

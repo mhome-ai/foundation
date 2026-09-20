@@ -15,7 +15,7 @@ include = ["src/**", "tests/**", "schema/**", "fixtures/**", "manifest/**", "Car
 name = "conversation_api"
 
 [dependencies]
-llm-api = { package = "mhome-llm-api", version = "=3.0.3", path = "../llm-api" }
+llm-api = { package = "mhome-llm-api", version = "=3.0.4", path = "../llm-api" }
 artifact-api = { package = "mhome-artifact-api", version = "=1.2.0", path = "../artifact" }
 async-trait = "0.1"
 thiserror = "2"
