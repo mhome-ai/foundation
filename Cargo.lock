@@ -686,7 +686,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.18.1"
+version = "1.18.2"
 dependencies = [
  "jsonschema",
  "mhome-artifact-api",
@@ -723,7 +723,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.15.3"
+version = "1.15.4"
 dependencies = [
  "base64",
  "jsonschema",
