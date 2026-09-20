@@ -112,7 +112,7 @@ mod tests {
             Some(DIRECT_SCOPE)
         );
         assert_eq!(
-            route_policy_for_target(crate::plugin::INSTALLED_LIST_TARGET),
+            route_policy_for_target(crate::plugin::ENABLED_LIST_TARGET),
             Some(RELAYABLE_HUB)
         );
         assert_eq!(
@@ -120,7 +120,7 @@ mod tests {
             Some(RELAYABLE_HUB)
         );
         assert_eq!(
-            route_policy_for_target(crate::plugin::ADD_START_TARGET),
+            route_policy_for_target(crate::plugin::ENABLE_START_TARGET),
             Some(DIRECT_HUB)
         );
     }

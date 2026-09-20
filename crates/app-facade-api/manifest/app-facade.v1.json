@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.18.2",
+  "contractVersion": "1.19.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -26,13 +26,13 @@
       "catalogSchema": "schema/plugin-catalog.v1.schema.json",
       "exactRequestTargets": [
         "/app/plugin/catalog/list",
-        "/app/plugin/installed/list",
+        "/app/plugin/enabled/list",
         "/app/plugin/detail/get",
         "/app/plugin/candidate/list",
-        "/app/plugin/add/start",
-        "/app/plugin/add/status",
-        "/app/plugin/add/cancel",
-        "/app/plugin/remove",
+        "/app/plugin/enable/start",
+        "/app/plugin/enable/status",
+        "/app/plugin/enable/cancel",
+        "/app/plugin/disable",
         "/app/plugin/profile/update"
       ],
       "eventTargets": [

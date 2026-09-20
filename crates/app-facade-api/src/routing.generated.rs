@@ -42,7 +42,7 @@ const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
 pub const CLOUD_RELAY_TARGETS: &[&str] = &[
     "/app/plugin/candidate/list",
     "/app/plugin/detail/get",
-    "/app/plugin/installed/list",
+    "/app/plugin/enabled/list",
     "/app/object-storage/overview",
     "/app/object-storage/folders/create",
     "/app/object-storage/folders/get",
