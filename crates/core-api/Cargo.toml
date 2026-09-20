@@ -1,6 +1,6 @@
 [package]
 name = "mhome-core-api"
-version = "1.15.4"
+version = "1.15.5"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
