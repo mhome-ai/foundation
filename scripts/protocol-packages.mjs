@@ -52,7 +52,6 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       systemHostsRuntime: "schema/system-hosts-runtime.v1.schema.json",
       systemInstances: "schema/system-instances.v1.schema.json",
       topology: "schema/topology.v1.schema.json",
-      deviceTopology: "schema/device-topology.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",

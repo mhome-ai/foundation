@@ -1,4 +1,4 @@
-use app_facade_api::{device_topology::DeviceTopologySnapshot, topology::TopologySnapshot};
+use app_facade_api::topology::TopologySnapshot;
 use serde::de::DeserializeOwned;
 use serde_json::{json, Value};
 
@@ -28,13 +28,5 @@ fn system_snapshot_requires_every_schema_required_field() {
             "generation": "generation-1", "revision": 1, "observedAtMs": 1,
             "entities": [], "edges": []
         }),
-    );
-}
-
-#[test]
-fn device_snapshot_requires_every_schema_required_field() {
-    assert_required_fields::<DeviceTopologySnapshot>(
-        include_str!("../schema/device-topology.v1.schema.json"),
-        serde_json::from_str(include_str!("../fixtures/device-topology.snapshot.json")).unwrap(),
     );
 }

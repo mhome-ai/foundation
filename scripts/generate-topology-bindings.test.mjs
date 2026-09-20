@@ -10,17 +10,13 @@ test('bindings are reproducible and drift is rejected', () => {
   const destination = mkdtempSync(join(tmpdir(), 'topology-bindings-test-'));
   try {
     const script = fileURLToPath(new URL('./generate-topology-bindings.mjs', import.meta.url));
-    const args = [script, '--meowcore', destination, '--baycat', destination, '--lion-service', destination, '--pallas', destination];
+    const args = [script, '--baycat', destination];
     const run = extra => spawnSync(process.execPath, [...args, ...extra], {encoding:'utf8'});
     assert.equal(run([]).status, 0);
     assert.equal(run(['--check']).status, 0);
     for (const target of [
-      'src/application/device_topology/camera_contract.generated.rs',
+      'nodes/camera/src/topology_contract.generated.rs',
       'nodes/matter/src/device_sources_contract.generated.rs',
-      'src/application/device_topology/contract.generated.rs',
-      'src/application/device_topology/graph_rules.generated.rs',
-      'src/test/resources/topology/device-topology.v1.schema.json',
-      'script/protocol/fixtures/device-topology.sources.json',
     ]) {
       const file=join(destination,target), original=readFileSync(file,'utf8');
       appendFileSync(file, '// drift\n');

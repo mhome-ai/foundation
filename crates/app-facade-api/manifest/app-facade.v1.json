@@ -54,14 +54,6 @@
         "/app/runtime/status/changed"
       ]
     },
-    "deviceTopology": {
-      "contract": "mhome.device.topology.v1",
-      "schema": "schema/device-topology.v1.schema.json",
-      "requestTargets": [
-        "/app/device/topology/get"
-      ],
-      "eventTargets": []
-    },
     "interactionFlow": {
       "schema": "schema/interaction-flow-app.v1.schema.json",
       "requestTargets": [
