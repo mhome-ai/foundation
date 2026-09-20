@@ -6,19 +6,19 @@ pub const CACHE_CLEAR_TARGET: &str = "/app/hub/cache/clear";
 
 pub const LOCAL_GET_TARGET: &str = "/local/hub/get";
 pub const LOCAL_CANDIDATES_TARGET: &str = "/local/hub/candidates";
-pub const LOCAL_ADD_START_TARGET: &str = "/local/hub/add/start";
-pub const LOCAL_ADD_CONFIRM_TARGET: &str = "/local/hub/add/confirm";
-pub const LOCAL_ADD_STATUS_TARGET: &str = "/local/hub/add/status";
-pub const LOCAL_ADD_CANCEL_TARGET: &str = "/local/hub/add/cancel";
+pub const LOCAL_SETUP_START_TARGET: &str = "/local/hub/setup/start";
+pub const LOCAL_SETUP_CONFIRM_TARGET: &str = "/local/hub/setup/confirm";
+pub const LOCAL_SETUP_STATUS_TARGET: &str = "/local/hub/setup/status";
+pub const LOCAL_SETUP_CANCEL_TARGET: &str = "/local/hub/setup/cancel";
 
 pub const APP_TARGETS: &[&str] = &[GET_TARGET, REMOVE_TARGET, CACHE_CLEAR_TARGET];
 pub const LOCAL_TARGETS: &[&str] = &[
     LOCAL_GET_TARGET,
     LOCAL_CANDIDATES_TARGET,
-    LOCAL_ADD_START_TARGET,
-    LOCAL_ADD_CONFIRM_TARGET,
-    LOCAL_ADD_STATUS_TARGET,
-    LOCAL_ADD_CANCEL_TARGET,
+    LOCAL_SETUP_START_TARGET,
+    LOCAL_SETUP_CONFIRM_TARGET,
+    LOCAL_SETUP_STATUS_TARGET,
+    LOCAL_SETUP_CANCEL_TARGET,
 ];
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -262,7 +262,7 @@ pub struct HubEndpoint {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HubAddStartRequest {
+pub struct HubSetupStartRequest {
     pub host_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub endpoint: Option<HubEndpoint>,
@@ -270,7 +270,7 @@ pub struct HubAddStartRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HubAddStartResponse {
+pub struct HubSetupStartResponse {
     pub scope_id: String,
     pub session_id: String,
     pub candidate: HubCandidate,
@@ -280,13 +280,13 @@ pub struct HubAddStartResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HubAddSessionRequest {
+pub struct HubSetupSessionRequest {
     pub session_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HubAddConfirmResponse {
+pub struct HubSetupConfirmResponse {
     pub scope_id: String,
     pub session_id: String,
     pub accepted: bool,
@@ -294,7 +294,7 @@ pub struct HubAddConfirmResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HubAddStatusResponse {
+pub struct HubSetupStatusResponse {
     pub scope_id: String,
     pub session_id: String,
     pub complete: bool,
@@ -306,7 +306,7 @@ pub struct HubAddStatusResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HubAddCancelResponse {
+pub struct HubSetupCancelResponse {
     pub scope_id: String,
     pub session_id: String,
     pub cancelled: bool,
