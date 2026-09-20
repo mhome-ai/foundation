@@ -328,20 +328,16 @@ pub struct Envelope {
 }
 
 impl Envelope {
-    /// Strictly decodes a JSON envelope and rejects fields unknown to the Rust DTO graph.
+    /// Decodes a JSON envelope against the protocol types.
     ///
     /// Transport adapters should use this entry point rather than calling `serde_json` directly.
-    /// Explicit `null` on a skip-optional field (canonical serialization omits `None`) is treated
-    /// as absent. Explicit `null` on an unknown key is still rejected.
+    /// Unknown keys are rejected. Canonical emit omits skip-optional `None`; an explicit `null` on
+    /// those keys is accepted as absent so accept follows the types instead of a serialize roundtrip.
     ///
     /// # Errors
     ///
     /// Returns `ProtocolError` for malformed JSON, unknown fields, or failed envelope validation.
     pub fn decode_json(input: &str) -> Result<Self, ProtocolError> {
-        let input_value: serde_json::Value =
-            serde_json::from_str(input).map_err(|error| ProtocolError::InvalidJson {
-                message: error.to_string(),
-            })?;
         let mut deserializer = serde_json::Deserializer::from_str(input);
         let mut unknown = Vec::new();
         let envelope: Self = serde_ignored::deserialize(&mut deserializer, |path| {
@@ -356,13 +352,6 @@ impl Envelope {
                 message: error.to_string(),
             })?;
         if let Some(path) = unknown.into_iter().next() {
-            return Err(ProtocolError::UnknownField { path });
-        }
-        let canonical =
-            serde_json::to_value(&envelope).map_err(|error| ProtocolError::InvalidJson {
-                message: error.to_string(),
-            })?;
-        if let Some(path) = first_extra_field(&input_value, &canonical, "$") {
             return Err(ProtocolError::UnknownField { path });
         }
         envelope.validate()?;
@@ -633,41 +622,6 @@ fn validate_llm_plan(plan: &LlmExecutionPlan) -> Result<(), ProtocolError> {
         }
     }
     Ok(())
-}
-
-fn first_extra_field(
-    input: &serde_json::Value,
-    canonical: &serde_json::Value,
-    path: &str,
-) -> Option<String> {
-    match (input, canonical) {
-        (serde_json::Value::Object(input), serde_json::Value::Object(canonical)) => {
-            for (key, value) in input {
-                let child_path = format!("{path}.{key}");
-                let Some(expected) = canonical.get(key) else {
-                    // `skip_serializing_if = "Option::is_none"` omits the key. Serde still
-                    // accepts an explicit null as `None`; treat that as canonical absence.
-                    // Unknown keys are rejected earlier by `serde_ignored`, including `"k": null`.
-                    if value.is_null() {
-                        continue;
-                    }
-                    return Some(child_path);
-                };
-                if let Some(extra) = first_extra_field(value, expected, &child_path) {
-                    return Some(extra);
-                }
-            }
-            None
-        }
-        (serde_json::Value::Array(input), serde_json::Value::Array(canonical)) => input
-            .iter()
-            .zip(canonical)
-            .enumerate()
-            .find_map(|(index, (value, expected))| {
-                first_extra_field(value, expected, &format!("{path}[{index}]"))
-            }),
-        _ => None,
-    }
 }
 
 fn validate_context(context: &InvocationContext) -> Result<(), ProtocolError> {
@@ -1067,7 +1021,7 @@ mod tests {
         input["payload"]["payload"]["command"]["message"]["continuation"] = serde_json::Value::Null;
 
         let envelope = Envelope::decode_json(&input.to_string())
-            .expect("null on skip-optional fields matches canonical omit");
+            .expect("null on skip-optional fields deserializes as absent");
         let canonical = serde_json::to_value(&envelope).expect("serializes");
         let canonical_route = &canonical["payload"]["payload"]["llm_plan"]["routes"][0]["route"];
         assert!(canonical_route.get("fast_mode").is_none());
@@ -1079,6 +1033,16 @@ mod tests {
             canonical["payload"]["payload"]["command"]["message"]
                 .get("continuation")
                 .is_none()
+        );
+
+        let schema: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../schema/execution/envelope.v1.schema.json"
+        ))
+        .expect("schema");
+        let validator = jsonschema::validator_for(&schema).expect("schema");
+        assert!(
+            validator.validate(&input).is_err(),
+            "canonical emit omits skip-optional keys; schema must not advertise null"
         );
     }
 

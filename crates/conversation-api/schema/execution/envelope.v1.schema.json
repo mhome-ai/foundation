@@ -591,24 +591,10 @@
           ]
         },
         "thinking": {
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": "boolean"
         },
         "fast_mode": {
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": "boolean"
         },
         "model_snapshot": {
           "$ref": "#/$defs/llm_model_snapshot"
