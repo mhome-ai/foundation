@@ -9,11 +9,7 @@ fn key(kid: &str, status: SigningKeyStatus) -> SigningKey {
     }
 }
 fn set(version: u64, keys: Vec<SigningKey>) -> SigningKeySet {
-    SigningKeySet {
-        issuer: "https://api.example.test".into(),
-        version,
-        keys,
-    }
+    SigningKeySet { version, keys }
 }
 #[test]
 fn authoritative_rotation_requires_refresh_only_for_retired_bindings() {
@@ -25,7 +21,7 @@ fn authoritative_rotation_requires_refresh_only_for_retired_bindings() {
             key("two", SigningKeyStatus::Active),
         ],
     );
-    overlap.validate_update(&old.issuer, Some(&old)).unwrap();
+    overlap.validate_update(Some(&old)).unwrap();
     assert!(overlap.permits_binding("one"));
     let disabled = set(
         3,
@@ -34,17 +30,13 @@ fn authoritative_rotation_requires_refresh_only_for_retired_bindings() {
             key("two", SigningKeyStatus::Active),
         ],
     );
-    disabled
-        .validate_update(&old.issuer, Some(&overlap))
-        .unwrap();
+    disabled.validate_update(Some(&overlap)).unwrap();
     assert!(!disabled.permits_binding("one"));
     assert!(disabled.permits_binding("two"));
-    assert!(old.validate_update(&old.issuer, Some(&disabled)).is_err());
+    assert!(old.validate_update(Some(&disabled)).is_err());
     let mut resurrect = overlap.clone();
     resurrect.version = 4;
-    assert!(resurrect
-        .validate_update(&old.issuer, Some(&disabled))
-        .is_err());
+    assert!(resurrect.validate_update(Some(&disabled)).is_err());
 }
 #[test]
 fn same_version_is_order_independent_but_cannot_change_contents() {
@@ -57,15 +49,15 @@ fn same_version_is_order_independent_but_cannot_change_contents() {
     );
     let mut reordered = old.clone();
     reordered.keys.reverse();
-    reordered.validate_update(&old.issuer, Some(&old)).unwrap();
+    reordered.validate_update(Some(&old)).unwrap();
     reordered.keys[1].status = SigningKeyStatus::Disabled;
-    assert!(reordered.validate_update(&old.issuer, Some(&old)).is_err());
+    assert!(reordered.validate_update(Some(&old)).is_err());
 }
 #[test]
 fn missing_and_disabled_keys_cannot_authorize_clients() {
     let old = set(1, vec![key("one", SigningKeyStatus::Active)]);
     let next = set(2, vec![key("two", SigningKeyStatus::Active)]);
-    next.validate_update(&old.issuer, Some(&old)).unwrap();
+    next.validate_update(Some(&old)).unwrap();
     assert!(!next.permits_binding("one"));
     let tombstones = set(
         3,
@@ -75,7 +67,7 @@ fn missing_and_disabled_keys_cannot_authorize_clients() {
         ],
     );
     assert!(set(4, next.keys)
-        .validate_update(&old.issuer, Some(&tombstones))
+        .validate_update(Some(&tombstones))
         .is_err());
 }
 #[test]
@@ -85,14 +77,14 @@ fn malformed_or_rebound_keys_fail_before_cache_update() {
         let mut next = old.clone();
         next.version = 2;
         match change {
-            0 => next.issuer = "https://attacker.test".into(),
+            0 => next.keys[0].kid.clear(),
             1 => next.keys.push(next.keys[0].clone()),
             2 => next.keys[0].e = "Aw".into(),
             3 => next.keys[0].n = URL_SAFE_NO_PAD.encode([0x81; 256]),
             4 => next.keys[0].status = SigningKeyStatus::VerifyOnly,
             _ => next.version = 0,
         }
-        assert!(next.validate_update(&old.issuer, Some(&old)).is_err());
+        assert!(next.validate_update(Some(&old)).is_err());
     }
 }
 #[test]

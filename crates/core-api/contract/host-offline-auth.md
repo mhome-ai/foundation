@@ -6,7 +6,7 @@ Client keys are separate from OAuth sessions. Expiring a cloud session does not 
 explicit logout deletes its local private key. Host users are added only via protected local administrator IPC.
 
 The trusted cloud API is a configured HTTPS origin/path, never a URL obtained from LAN discovery or a token.
-`GET /api/v1/host/auth/keys` returns `SigningKeySet`: issuer, monotonically increasing version and complete RSA public-key list.
+`GET /api/v1/host/auth/keys` returns `SigningKeySet`: monotonically increasing version and complete RSA public-key list.
 RS256 is fixed. Exactly one active key; verification-only keys allow overlap; disabled keys cannot authorize bindings.
 Missing/disabled enrollment kids require re-registration. Disabled tombstones cannot disappear or reactivate.
 Same-version conflicting content, key-ID rebound and version rollback must be rejected atomically.
@@ -18,7 +18,7 @@ A learned disablement prevents affected bindings from managing Host until a fres
 
 Bootstrap endpoints (POST):
 - `/v1/auth/context`: random probeId → Host-signed context (protocol, hostId, bootId, probeId, serverTime).
-- `/v1/auth/enroll/challenge`: issuer/user/Client P-256 key/probe → Host-signed short-lived challenge.
+- `/v1/auth/enroll/challenge`: user/Client P-256 key/probe → Host-signed short-lived challenge.
 - `/v1/auth/enroll`: cloud enrollment proof + Client signature of its digest → durable registration.
 Bootstrap responses cannot grant permissions without cryptographic verification and the local user ACL.
 
@@ -31,7 +31,7 @@ HTTP signatures follow a fixed RFC 9421 profile:
 - `Content-Digest`: SHA-256 over exact transmitted body; GET has an empty body.
 - `Content-Type`: `application/json`.
 - `X-Meow-Auth`: unpadded base64url of UTF-8 JSON identity.
-- Request identity: issuer, userId, hostId, clientKeyId, bootId, requestId, created, expires.
+- Request identity: userId, hostId, clientKeyId, bootId, requestId, created, expires.
 - Request covered components, in order: `@method`, `@target-uri`, `content-digest`, `content-type`, `x-meow-auth`.
 - Response identity: hostId and requestDigest (SHA-256 binding to the signature base and signature of the original request).
 - Response covered components: `@status`, `content-digest`, `content-type`, `x-meow-auth`.
@@ -75,7 +75,7 @@ or new endpoint is introduced. Other users authorize separately.
 
 Client inventory exposes `identityUnverified` when Host proof verification fails.
 Management stops. On the next inventory/refresh, Client fetches the user's Host key
-from its fixed HTTPS cloud, validates issuer/user/host, and verifies a fresh Host
+from its fixed HTTPS cloud, validates user/host, and verifies a fresh Host
 context using that key before persisting it. Existing enrollment handles subsequent
 registration. This path never retries an earlier install/restart. Normal known-Host
 inventory does not fetch cloud identity. A stopped Host remains a connectivity error;

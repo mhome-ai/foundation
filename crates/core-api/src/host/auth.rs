@@ -34,24 +34,19 @@ pub struct SigningKey {
     pub e: String,
 }
 
-/// A complete authoritative snapshot from the configured HTTPS issuer.
+/// A complete authoritative snapshot from the configured HTTPS cloud.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SigningKeySet {
-    pub issuer: String,
     pub version: u64,
     pub keys: Vec<SigningKey>,
 }
 
 impl SigningKeySet {
-    pub fn validate_update(
-        &self,
-        issuer: &str,
-        previous: Option<&Self>,
-    ) -> Result<(), &'static str> {
+    pub fn validate_update(&self, previous: Option<&Self>) -> Result<(), &'static str> {
         use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
-        if self.issuer != issuer || self.version == 0 || self.version > 9_007_199_254_740_991 {
-            return Err("invalid issuer or key set version");
+        if self.version == 0 || self.version > 9_007_199_254_740_991 {
+            return Err("invalid key set version");
         }
         if self.keys.is_empty() || self.keys.len() > 128 {
             return Err("invalid key set size");
@@ -80,7 +75,7 @@ impl SigningKeySet {
             return Err("exactly one active signing key is required");
         }
         if let Some(old) = previous {
-            if old.issuer != self.issuer || self.version < old.version {
+            if self.version < old.version {
                 return Err("key set rollback");
             }
             let index: BTreeMap<_, _> = old.keys.iter().map(|k| (&k.kid, k)).collect();
@@ -168,7 +163,6 @@ pub struct EnrollmentRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EnrollmentChallengeRequest {
-    pub issuer: String,
     pub user_id: String,
     pub client_public_key: PublicKey,
     pub probe_id: String,
@@ -179,7 +173,6 @@ pub struct EnrollmentChallengeRequest {
 pub struct EnrollmentChallenge {
     pub host_id: String,
     pub boot_id: String,
-    pub issuer: String,
     pub user_id: String,
     pub client_public_key: PublicKey,
     pub probe_id: String,
@@ -190,7 +183,6 @@ pub struct EnrollmentChallenge {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ClientBinding {
-    pub issuer: String,
     pub user_id: String,
     pub client_public_key: PublicKey,
     pub enrollment_kid: String,
@@ -200,7 +192,6 @@ pub struct ClientBinding {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Grant {
-    pub iss: String,
     pub sub: String,
     pub aud: String,
     pub jti: String,
