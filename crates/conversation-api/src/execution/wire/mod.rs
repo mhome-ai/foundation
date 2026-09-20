@@ -331,6 +331,8 @@ impl Envelope {
     /// Strictly decodes a JSON envelope and rejects fields unknown to the Rust DTO graph.
     ///
     /// Transport adapters should use this entry point rather than calling `serde_json` directly.
+    /// Explicit `null` on a skip-optional field (canonical serialization omits `None`) is treated
+    /// as absent. Explicit `null` on an unknown key is still rejected.
     ///
     /// # Errors
     ///
@@ -643,6 +645,12 @@ fn first_extra_field(
             for (key, value) in input {
                 let child_path = format!("{path}.{key}");
                 let Some(expected) = canonical.get(key) else {
+                    // `skip_serializing_if = "Option::is_none"` omits the key. Serde still
+                    // accepts an explicit null as `None`; treat that as canonical absence.
+                    // Unknown keys are rejected earlier by `serde_ignored`, including `"k": null`.
+                    if value.is_null() {
+                        continue;
+                    }
                     return Some(child_path);
                 };
                 if let Some(extra) = first_extra_field(value, expected, &child_path) {
@@ -1038,6 +1046,48 @@ mod tests {
 
         let mut input: serde_json::Value = serde_json::from_str(fixture).expect("fixture JSON");
         input["payload"]["payload"]["options"]["unexpected"] = serde_json::Value::Bool(true);
+        assert!(matches!(
+            Envelope::decode_json(&input.to_string()),
+            Err(ProtocolError::UnknownField { .. })
+        ));
+    }
+
+    #[test]
+    fn strict_decoder_treats_skip_optional_nulls_as_absent() {
+        let fixture = include_str!("../../../fixtures/execution/enqueue.v1.json");
+        let mut input: serde_json::Value = serde_json::from_str(fixture).expect("fixture JSON");
+        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["fast_mode"] =
+            serde_json::Value::Null;
+        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["thinking"] =
+            serde_json::Value::Null;
+        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]
+            ["generation_support"]["fastMode"] = serde_json::Value::Null;
+        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]
+            ["generation_support"]["reasoningEffortDefault"] = serde_json::Value::Null;
+        input["payload"]["payload"]["command"]["message"]["continuation"] = serde_json::Value::Null;
+
+        let envelope = Envelope::decode_json(&input.to_string())
+            .expect("null on skip-optional fields matches canonical omit");
+        let canonical = serde_json::to_value(&envelope).expect("serializes");
+        let canonical_route = &canonical["payload"]["payload"]["llm_plan"]["routes"][0]["route"];
+        assert!(canonical_route.get("fast_mode").is_none());
+        assert!(canonical_route.get("thinking").is_none());
+        let canonical_support = &canonical_route["model_snapshot"]["generation_support"];
+        assert!(canonical_support.get("fastMode").is_none());
+        assert!(canonical_support.get("reasoningEffortDefault").is_none());
+        assert!(
+            canonical["payload"]["payload"]["command"]["message"]
+                .get("continuation")
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn strict_decoder_still_rejects_unknown_null_fields() {
+        let fixture = include_str!("../../../fixtures/execution/enqueue.v1.json");
+        let mut input: serde_json::Value = serde_json::from_str(fixture).expect("fixture JSON");
+        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["unexpected"] =
+            serde_json::Value::Null;
         assert!(matches!(
             Envelope::decode_json(&input.to_string()),
             Err(ProtocolError::UnknownField { .. })
