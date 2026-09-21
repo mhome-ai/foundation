@@ -187,12 +187,10 @@ impl RunErrorCode {
     pub fn failure_source_of(code: &str) -> Option<FailureSource> {
         Self::parse(code)
             .and_then(Self::failure_source)
-            .or_else(|| {
-                if code.is_empty() {
-                    None
-                } else {
-                    Some(FailureSource::AgentRuntime)
-                }
+            .or(if code.is_empty() {
+                None
+            } else {
+                Some(FailureSource::AgentRuntime)
             })
     }
 }
