@@ -16,7 +16,7 @@ name = "app_facade_api"
 [dependencies]
 core-api = { package = "mhome-core-api", version = "=1.15.6", path = "../core-api" }
 artifact-api = { package = "mhome-artifact-api", version = "=1.2.0", path = "../artifact" }
-conversation-api = { package = "mhome-conversation-api", version = "=3.0.4", path = "../conversation-api" }
+conversation-api = { package = "mhome-conversation-api", version = "=3.1.0", path = "../conversation-api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 

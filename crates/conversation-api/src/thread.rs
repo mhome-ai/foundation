@@ -87,6 +87,7 @@ pub enum FailureSource {
 #[serde(rename_all = "camelCase")]
 pub struct RunFailure {
     pub source: FailureSource,
+    /// Same catalog member as [`RunOutcome::error_code`].
     pub code: String,
     pub message: String,
 }
@@ -96,6 +97,7 @@ pub struct RunFailure {
 pub struct RunOutcome {
     pub request_id: String,
     pub status: RunStatus,
+    /// Catalog member from [`crate::RunErrorCode`] when the run did not complete.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub error_code: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

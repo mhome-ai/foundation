@@ -30,6 +30,11 @@ Model data is re-exported from `llm-api`; there is one model-message representat
 messages intentionally use separate content types and never contain private model continuation.
 Runtime state machines, checkpoint formats, prompts and recovery policy remain in Agent Runtime.
 
+`RunErrorCode` is the closed catalog for `runOutcome.errorCode` and Agent `Failed.code`. Host
+terminalize and Agent failures emit the same strings. `status` and `failure.source` are properties
+of the code; `failure.code` equals `errorCode`. User-visible copy stays in `runOutcome.message`,
+not in this crate. Command `/chat/*` errors and adapter `ExternalErrorKind` are separate layers.
+
 ## Cloud admission model snapshot
 
 Every cloud `LlmRoute` carries a required `model_snapshot` containing confirmed capabilities

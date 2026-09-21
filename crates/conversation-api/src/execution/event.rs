@@ -33,7 +33,7 @@ pub enum AgentEvent {
     },
     /// The run failed definitively.
     Failed {
-        /// Stable machine-readable failure code.
+        /// Catalog member from [`crate::RunErrorCode`].
         code: String,
         /// Safe user-facing or diagnostic message.
         message: String,

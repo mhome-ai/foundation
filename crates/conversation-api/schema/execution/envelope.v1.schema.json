@@ -8,6 +8,43 @@
       "type": "string",
       "minLength": 1
     },
+    "run_error_code": {
+      "type": "string",
+      "enum": [
+        "CANCELLED",
+        "RUN_INTERRUPTED",
+        "EXECUTOR_TERMINATED",
+        "THREAD_EXPIRED",
+        "THREAD_ARCHIVED",
+        "AGENT_ADMISSION_TIMEOUT",
+        "AGENT_DEADLINE_EXCEEDED",
+        "AGENT_CONNECTION_LOST",
+        "AGENT_UNAVAILABLE",
+        "PROCESS_INTERRUPTED",
+        "PROTOCOL",
+        "INVALID_ENVELOPE",
+        "INVALID_FRAME",
+        "INVALID_JSON",
+        "STALE_DISPATCH",
+        "STALE_SESSION",
+        "UNSUPPORTED_VERSION",
+        "INVALID_FAMILY",
+        "INVALID_REQUEST",
+        "UNAUTHORIZED",
+        "UNAVAILABLE",
+        "RATE_LIMITED",
+        "CONTEXT_LIMIT",
+        "TIMEOUT",
+        "INTERNAL",
+        "OUTPUT_TRUNCATED",
+        "CREDIT_BUDGET_EXCEEDED",
+        "THREAD_BUSY",
+        "ADMISSION_REJECTED",
+        "AGENT_EXECUTION_FAILED",
+        "INVALID_MODEL_FINISH",
+        "INVALID_MODEL_TOOL_CALLS"
+      ]
+    },
     "conversation_surface": {
       "type": "string",
       "pattern": "^cs1:(?:(?:cp|cg):[A-Za-z0-9_-]+|(?:mp|mg):[a-z0-9_]+:[A-Za-z0-9_-]+:[A-Za-z0-9_-]+(?::[A-Za-z0-9_-]+)?)$"
@@ -1043,7 +1080,7 @@
               "const": "failed"
             },
             "code": {
-              "$ref": "#/$defs/identifier"
+              "$ref": "#/$defs/run_error_code"
             },
             "message": {
               "type": "string"
