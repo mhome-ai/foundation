@@ -108,3 +108,13 @@ context using that key before persisting it. Existing enrollment handles subsequ
 registration. This path never retries an earlier install/restart. Normal known-Host
 inventory does not fetch cloud identity. A stopped Host remains a connectivity error;
 proof failure alone does not prove that the key was lost.
+
+## Android native first-claim bridge
+
+The native Host-management contract declares `hostClaim({hostId})`. It takes neither
+Space nor a caller-provided URL; the native Client resolves the Host on its current LAN.
+Success requires Host persistence and a confirmed cloud `commit-claim`, not just a grant.
+`claimable` comes from a fresh verified empty-ACL challenge. `claimed` in that challenge
+does not imply authorization for the current user. No new Host or cloud endpoint is added.
+Android and desktop advertise native claim; iOS native first claim remains separate work.
+Ordinary UI management still prefers Core; the native first-claim path bootstraps without it.

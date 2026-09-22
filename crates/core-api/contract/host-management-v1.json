@@ -13,6 +13,11 @@
       "nativeMethod": "hostRuntime",
       "desktopCommand": "host_runtime",
       "ipcMethod": "host.runtime"
+    },
+    "claim": {
+      "nativeMethod": "hostClaim",
+      "desktopCommand": "host_claim",
+      "ipcMethod": "host.claim"
     }
   },
   "actions": {
@@ -59,7 +64,9 @@
       "reachable"
     ],
     "info": "HostInfo or null",
-    "infoError": "string or null"
+    "infoError": "string or null",
+    "claimable": "boolean; verified empty-ACL challenge, not a permission result",
+    "identityUnverified": "boolean; blocks TOFU and management after verification failure"
   },
   "runtimeResponse": {
     "metrics": "HostMetrics",
@@ -69,5 +76,12 @@
     "requiresLocalNetwork": true,
     "invalidateOnNetworkChange": true,
     "mutationsAutomaticallyRetried": false
+  },
+  "claimRequest": {
+    "hostId": "non-empty string; no scope or endpoint accepted"
+  },
+  "claimResponse": {
+    "claimed": "true only after Host persistence and cloud receipt commit",
+    "hostId": "requested Host identity when supplied"
   }
 }
