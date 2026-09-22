@@ -6,6 +6,9 @@ pub const APP_TARGET_PREFIX: &str = "/app/plugin/camera/";
 pub const RUNTIME_TARGET_PREFIX: &str = "/camera/app/";
 pub const DEVICE_LIST: &str = "device/list";
 pub const MANAGEMENT_SNAPSHOT: &str = "management/snapshot";
+pub const SOURCE_REMOVE: &str = "source/remove";
+pub const RUNTIME_SOURCE_REMOVE_TARGET: &str = "/camera/app/source/remove";
+pub const APP_SOURCE_REMOVE_TARGET: &str = "/app/plugin/camera/source/remove";
 pub const DEVICE_REMOVE: &str = "device/remove";
 pub const WATCH_STATUS: &str = "watch/status";
 pub const WATCH_SET: &str = "watch/set";
@@ -32,6 +35,12 @@ pub type RecognitionUpdateRequest = crate::node::settings::UpdateRequest<Recogni
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EmptyRequest {}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SourceIdRequest {
+    pub source_id: String,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -73,6 +82,8 @@ pub struct ProviderCatalogItem {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CameraDevice {
+    pub source_id: Option<String>,
+    pub resolution_status: CameraResolutionStatus,
     pub id: String,
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -105,8 +116,27 @@ pub struct WatchControlResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum CameraResolutionStatus {
+    Unresolved,
+    Ready,
+    Failed,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HomeAssistantSource {
+    pub id: String,
+    pub name: String,
+    pub device_count: usize,
+    pub last_error: Option<String>,
+    pub last_refreshed_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ManagementSnapshot {
+    pub sources: Vec<HomeAssistantSource>,
     pub providers: Vec<ProviderCatalogItem>,
     pub devices: Vec<CameraDevice>,
     pub online_states: Vec<OnlineStateObservation>,
@@ -151,6 +181,7 @@ mod tests {
         assert_eq!(camera["routes"]["deviceList"], DEVICE_LIST);
         assert_eq!(camera["routes"]["managementSnapshot"], MANAGEMENT_SNAPSHOT);
         assert_eq!(camera["routes"]["deviceRemove"], DEVICE_REMOVE);
+        assert_eq!(camera["routes"]["sourceRemove"], SOURCE_REMOVE);
         assert_eq!(camera["routes"]["watchStatus"], WATCH_STATUS);
         assert_eq!(camera["routes"]["watchSet"], WATCH_SET);
         assert_eq!(camera["flows"]["deviceAdd"], DEVICE_ADD_FLOW);
