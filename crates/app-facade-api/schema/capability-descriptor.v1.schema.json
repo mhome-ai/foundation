@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/capability-descriptor.v1.schema.json",
+  "title": "CapabilityDescriptor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "capabilityId",
+    "type",
+    "displayName",
+    "description",
+    "visibility"
+  ],
+  "properties": {
+    "capabilityId": {
+      "type": "string",
+      "pattern": "^[^.\\s]+\\.[^.\\s]+\\.(command|state|event|data)\\.[^.\\s]+$"
+    },
+    "parentCapabilityId": {
+      "type": "string",
+      "pattern": "^[^.\\s]+\\.[^.\\s]+\\.(command|state|event|data)\\.[^.\\s]+$"
+    },
+    "type": {
+      "enum": [
+        "COMMAND",
+        "STATE",
+        "EVENT",
+        "DATA"
+      ]
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "visibility": {
+      "enum": [
+        "full",
+        "internal"
+      ]
+    },
+    "tag": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\S(?:.*\\S)?$"
+    }
+  }
+}

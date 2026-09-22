@@ -8,6 +8,7 @@
 pub mod artifact;
 pub mod call;
 pub mod hub;
+pub mod integration;
 pub mod interaction_flow;
 pub mod messaging;
 pub mod plugin;

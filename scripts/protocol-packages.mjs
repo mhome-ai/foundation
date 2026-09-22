@@ -41,6 +41,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "manifest/hub-targets.v1.json",
     ]),
     schemas: Object.freeze({
+      capabilityDescriptor: "schema/capability-descriptor.v1.schema.json",
       call: "schema/facade-call.v1.schema.json",
       frame: "schema/messaging-frame.v3.schema.json",
       interactionFlow: "schema/interaction-flow-app.v1.schema.json",
@@ -56,6 +57,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     fixtures: Object.freeze({
       valid: "fixtures",
       invalid: "fixtures/invalid",
+      capabilityDescriptor: "fixtures/capability-descriptor.conformance.json",
       interactionFlow: "fixtures/interaction-flow.conformance.json",
     }),
   }),

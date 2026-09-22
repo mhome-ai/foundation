@@ -1,0 +1,117 @@
+{
+  "valid": [
+    {
+      "name": "main definition",
+      "value": {
+        "capabilityId": "basic.device.command.onOff",
+        "type": "COMMAND",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full",
+        "tag": "on/off"
+      }
+    },
+    {
+      "name": "provider implementation",
+      "value": {
+        "capabilityId": "mlinkHue.device.command.onOff",
+        "type": "COMMAND",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full",
+        "tag": "on/off",
+        "parentCapabilityId": "basic.device.command.onOff"
+      }
+    },
+    {
+      "name": "no primary tag",
+      "value": {
+        "capabilityId": "basic.device.command.onOff",
+        "type": "COMMAND",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full"
+      }
+    },
+    {
+      "name": "parent without tag",
+      "value": {
+        "capabilityId": "mlinkHue.device.command.onOff",
+        "type": "COMMAND",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full",
+        "parentCapabilityId": "basic.device.command.onOff"
+      }
+    },
+    {
+      "name": "data capability",
+      "value": {
+        "capabilityId": "basic.time.data.now",
+        "type": "DATA",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full",
+        "tag": "time"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "null tag",
+      "value": {
+        "capabilityId": "basic.device.command.onOff",
+        "type": "COMMAND",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full",
+        "tag": null
+      }
+    },
+    {
+      "name": "empty tag",
+      "value": {
+        "capabilityId": "basic.device.command.onOff",
+        "type": "COMMAND",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full",
+        "tag": ""
+      }
+    },
+    {
+      "name": "partial ID",
+      "value": {
+        "capabilityId": "command.onOff",
+        "type": "COMMAND",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full",
+        "tag": "on/off"
+      }
+    },
+    {
+      "name": "obsolete definitionId",
+      "value": {
+        "capabilityId": "basic.device.command.onOff",
+        "type": "COMMAND",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full",
+        "tag": "on/off",
+        "definitionId": "basic.device.command.onOff"
+      }
+    },
+    {
+      "name": "whitespace in ID",
+      "value": {
+        "capabilityId": "basic.device.command.on Off",
+        "type": "COMMAND",
+        "displayName": "Power on / off",
+        "description": "Controls the device on/off state.",
+        "visibility": "full",
+        "tag": "on/off"
+      }
+    }
+  ]
+}
