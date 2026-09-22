@@ -5,6 +5,12 @@ provider runtimes. Public `/app/*` contracts belong to
 `mhome-app-facade-api`; this crate owns internal MWS, authentication, LLM,
 Messaging normalization, Node runtime, and Storage contracts.
 
+MWS uses standard WebSocket Ping/Pong control frames for connection liveness.
+There are no application `pi`/`po` messages or auth `heartbeatInterval` field.
+The transport owns heartbeat timing and reports authenticated local connection
+activity through `RefreshLocalAppClient`; closing the transport removes that
+connection through `CleanupLocalAppClient`.
+
 `interaction_flow` defines the serializable Core-to-Node flow definition and
 handler protocol. Definitions name logical operations only; MeowCore chooses
 and pins the Node instance and fixed transport routes for each session.

@@ -227,8 +227,6 @@ impl MwsMessageType {
     pub const SERVER_RESP: &'static str = "srp";
     pub const APP_DATA: &'static str = "ad";
     pub const SERVER_DATA: &'static str = "sd";
-    pub const PING: &'static str = "pi";
-    pub const PONG: &'static str = "po";
 }
 
 pub struct MwsSource;
@@ -1130,7 +1128,6 @@ impl Default for ScopeInfo {
 #[serde(rename_all = "camelCase")]
 pub struct AuthConfig {
     pub tenant_id: String,
-    pub heartbeat_interval: i32,
     pub command_timeout: i32,
     pub user_info: UserInfo,
     pub scope: ScopeInfo,
@@ -1143,14 +1140,12 @@ pub struct AuthConfig {
 impl AuthConfig {
     pub fn new(
         tenant_id: String,
-        heartbeat_interval: i32,
         command_timeout: i32,
         user_info: UserInfo,
         scope: ScopeInfo,
     ) -> Self {
         Self {
             tenant_id,
-            heartbeat_interval,
             command_timeout,
             user_info,
             scope,
@@ -1164,7 +1159,6 @@ impl Default for AuthConfig {
     fn default() -> Self {
         Self {
             tenant_id: String::new(),
-            heartbeat_interval: 240,
             command_timeout: 10,
             user_info: UserInfo::new(String::new()),
             scope: ScopeInfo::default(),
