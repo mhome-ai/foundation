@@ -24,6 +24,11 @@ case "${tag}" in
     manifest="crates/machine-identity/Cargo.toml"
     version="${tag#mhome-machine-identity-v}"
     ;;
+  mhome-host-auth-v*)
+    package="mhome-host-auth"
+    manifest="crates/host-auth/Cargo.toml"
+    version="${tag#mhome-host-auth-v}"
+    ;;
   mhome-core-api-v*)
     package="mhome-core-api"
     manifest="crates/core-api/Cargo.toml"
