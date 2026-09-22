@@ -1,9 +1,24 @@
-# Host offline authorization (implementation draft)
+# Host offline authorization
 
-This contract is not published. Authentication is independent of Space/Core routing.
+Host management prefers the current local Space's Core. The Core holds a Hub Client
+identity on behalf of the Space member and calls Host over LAN. Native Clients retain
+the direct path for CLI and cases without a usable Core. This routing does not change
+the Host's user-based ACL or the signed LAN protocol.
 `hostId` identifies the machine; Host P-256 identity keys and local user ACL survive updates.
 Client keys are separate from OAuth sessions. Expiring a cloud session does not revoke an offline Client;
-explicit logout deletes its local private key. Host users are added only via protected local administrator IPC.
+explicit logout deletes the native Client's local private key. Hub-held Client identities
+are retired when the corresponding Space membership is removed.
+
+An unused Host supports first-claim by the first signed-in LAN user (TOFU). Once its
+ACL is occupied, another user cannot claim it; additional users and explicit identity
+recovery use protected local administrator IPC. An existing authorized user may retry
+an interrupted first-claim. TOFU does not allow silently replacing a trusted Host key.
+
+Client registrations expire after 30 days of inactivity, independently of the user ACL.
+The Host normally coalesces usage timestamp writes over 24 hours and checks expiry
+against the stored usage time. Expiry returns `HOST_ENROLLMENT_REQUIRED`: it requires cloud-assisted Client
+registration again, not another user authorization. If cloud is unavailable, renewal
+must fail explicitly; it must not bypass expiry or be reported as lack of user permission.
 
 The trusted cloud API is a configured HTTPS origin/path, never a URL obtained from LAN discovery or a token.
 `GET /api/v1/host/auth/keys` returns `SigningKeySet`: monotonically increasing version and complete RSA public-key list.
@@ -17,6 +32,8 @@ Network failure preserves established trust and backs off; 24 hours is not an au
 A learned disablement prevents affected bindings from managing Host until a fresh cloud proof is registered.
 
 Bootstrap endpoints (POST):
+- `/v1/auth/claim/challenge`: probeId → Host-signed TOFU challenge and claimed ACL bit.
+- `/v1/auth/claim`: cloud first-claim grant → durable user ACL and Host-signed receipt.
 - `/v1/auth/context`: random probeId → Host-signed context (protocol, hostId, bootId, probeId, serverTime).
 - `/v1/auth/enroll/challenge`: user/Client P-256 key/probe → Host-signed short-lived challenge.
 - `/v1/auth/enroll`: cloud enrollment proof + Client signature of its digest → durable registration.
@@ -24,8 +41,17 @@ Bootstrap responses cannot grant permissions without cryptographic verification 
 
 Cloud APIs under `/api/v1/host`:
 - POST `/authorizations/init`, `/authorizations/check`, `/authorizations/approve`, `/authorizations/result`, `/authorizations/commit` for the local administrator transaction.
+- POST `/authorizations/claim` and `/authorizations/claim-from-hub`: user or current Hub credentials → first-claim grant.
+- POST `/authorizations/commit-claim`: verify the Host receipt, conditionally record its identity, then complete the claim transaction.
 - POST `/identity/get`: authenticated user's previously confirmed Host public key.
 - POST `/client-enrollments/issue`: authenticated user plus Host challenge and Client possession proof → five-minute RS256 enrollment proof.
+- POST `/client-enrollments/issue-from-hub`: current Hub credentials and confirmed Space membership → the same user-based enrollment proof.
+
+The configured cloud API URL is not an `issuer` wire field. Request identities,
+enrollment challenges and cloud identity responses use the current issuer-free contract.
+A `claimed` bit describes whether the Host ACL is occupied; it says nothing about why
+an authenticated information request failed. Preserve that request's error separately.
+Claim success means both Host persistence and cloud receipt commit have completed.
 
 HTTP signatures follow a fixed RFC 9421 profile:
 - `Content-Digest`: SHA-256 over exact transmitted body; GET has an empty body.
@@ -49,7 +75,9 @@ retry once, preserving the business operationId while using a fresh signature re
 allows one local context refresh. Unsigned errors, timeouts and business errors do not authorize automatic replay.
 
 HTTP signatures provide authentication/integrity/replay detection, not confidentiality. LAN TLS is separate work.
-Cross-language schemas, fixed vectors and full native Client integration remain required before release.
+These verification and renewal requirements apply equally to native and Hub-held Clients.
+Cross-language vectors and end-to-end acceptance must exercise each implementation;
+the presence of protocol types or unit tests alone is not proof of full integration.
 
 ## Explicit Host identity recovery
 
