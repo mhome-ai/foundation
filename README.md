@@ -35,7 +35,7 @@ Publication is immutable and restricted to the allowlist in `scripts/publish-tag
 The artifact, conversation, App Facade, and Core protocol crates also publish matching, data-only npm
 packages for JavaScript consumers' build-time conformance checks. Each npm package contains the
 crate's manifest, JSON Schemas, and fixtures without an executable or browser entry point. Its
-version is identical to the Cargo crate version and is published publicly from the
+version is identical to the Cargo crate version and is published publicly with provenance from the
 same release tag:
 
 - `@mhome/artifact-protocol`
@@ -51,11 +51,9 @@ node scripts/stage-protocol-package.mjs appFacade "${staging}"
 npm pack "${staging}"
 ```
 
-Protocol npm packages publish from the self-hosted macOS runner with an npm automation token.
-The workflow passes repository secret `NPM_TOKEN` as `NODE_AUTH_TOKEN`. It does not request
-`id-token: write` and does not generate npm provenance. The token should be limited to
-`@mhome/artifact-protocol`, `@mhome/conversation-protocol`, `@mhome/app-facade-protocol`, and
-`@mhome/core-protocol`. Those packages must still allow token publishing.
+The published protocol packages trust GitHub Actions for organization `mhome-ai`, repository
+`foundation`, and workflow `publish-crate.yml`. That workflow runs on `ubuntu-latest`, grants
+`id-token: write`, and publishes with provenance. No npm token is required.
 
 `mhome-artifact-api` 0.1.0 was originally published from Baycat. The contract moved here and this
 repository is authoritative beginning with version 0.2.0.
@@ -67,6 +65,4 @@ Protocol definitions alone do not implement the Host/Client/Core/UI behavior.
 
 ## Self-hosted CI source layout
 
-CI and crate publishing use `[self-hosted, macOS, ARM64, release-macos-primary]`, the runner that already has `~/.mhome/foundation`. Provision `~/.mhome/{releases,foundation}` with GitHub read access. Workflows fetch the shared Releases bootstrap and create an isolated worktree for the exact workflow event SHA under `~/.mhome/work/`; they never clone product sources or move the canonical checkout branch. Cleanup runs after success or failure. Deploy the Releases bootstrap before enabling these workflows.
-
-Protocol tags publish the crate and the npm package from this runner. Rust-only tags do not read `NPM_TOKEN`.
+CI uses `[self-hosted, macOS, ARM64, release-macos-primary]`. Provision `~/.mhome/{releases,foundation}` with GitHub read access. The CI workflow fetches the shared Releases bootstrap and creates an isolated worktree for the exact workflow event SHA under `~/.mhome/work/`. Crate publishing uses GitHub-hosted `ubuntu-latest` and checks out the tagged commit directly, so npm trusted publishing and provenance work.

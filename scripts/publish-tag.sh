@@ -82,11 +82,12 @@ if [[ "${manifest_version}" != "${version}" ]]; then
   exit 2
 fi
 
-# Protocol packages publish with an npm automation token. Provenance and OIDC
-# trusted publishing require a GitHub-hosted runner, so self-hosted releases
-# skip both. Fail before either registry changes when the token is missing.
-if [[ "${publish}" == "--publish" && -n "${protocol}" && -z "${NODE_AUTH_TOKEN:-}" ]]; then
-  echo "NODE_AUTH_TOKEN is required to publish ${npm_package}." >&2
+# npm trusted publishing and provenance require a GitHub-hosted runner. Stop
+# before either registry is changed rather than publishing the crate and failing
+# on npm.
+if [[ "${publish}" == "--publish" && -n "${protocol}" && "${RUNNER_ENVIRONMENT:-}" == "self-hosted" ]]; then
+  echo "npm trusted publishing/provenance does not support self-hosted runners." >&2
+  echo "Protocol packages publish from the GitHub-hosted runner." >&2
   exit 1
 fi
 
@@ -162,6 +163,6 @@ if [[ -n "${npm_package}" ]]; then
   else
     # Always make the current canonical release the default, including when a
     # previously published erroneous version has a numerically higher semver.
-    NPM_CONFIG_PROVENANCE=false npm publish "${protocol_tarball}" --access public --tag latest
+    npm publish "${protocol_tarball}" --access public --provenance --tag latest
   fi
 fi

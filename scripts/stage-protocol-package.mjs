@@ -101,7 +101,7 @@ export function stageProtocolPackage(name, outputDir) {
       "./schema/*": "./schema/*",
       "./fixtures/*": "./fixtures/*",
     },
-    publishConfig: { access: "public" },
+    publishConfig: { access: "public", provenance: true },
   };
   fs.writeFileSync(
     path.join(stagingRoot, "protocol.json"),
