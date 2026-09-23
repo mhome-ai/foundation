@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   publish:
-    runs-on: [self-hosted, Linux, AMD64, release-linux-amd64]
+    runs-on: [self-hosted, macOS, ARM64, release-macos-primary]
     steps:
       - name: Prepare source from runner repositories
         id: source

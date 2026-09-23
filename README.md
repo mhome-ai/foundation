@@ -69,6 +69,6 @@ Protocol definitions alone do not implement the Host/Client/Core/UI behavior.
 
 ## Self-hosted CI source layout
 
-CI and crate publishing use `[self-hosted, Linux, AMD64, release-linux-amd64]`. Provision `~/.mhome/{releases,foundation}` with GitHub read access. Workflows fetch the shared Releases bootstrap and create an isolated worktree for the exact workflow event SHA under `~/.mhome/work/`; they never clone product sources or move the canonical checkout branch. Cleanup runs after success or failure. Deploy the Releases bootstrap before enabling these workflows.
+CI uses `[self-hosted, Linux, AMD64, release-linux-amd64]`. Crate publishing uses `[self-hosted, macOS, ARM64, release-macos-primary]`, the runner that already has `~/.mhome/foundation`. Provision `~/.mhome/{releases,foundation}` with GitHub read access. Workflows fetch the shared Releases bootstrap and create an isolated worktree for the exact workflow event SHA under `~/.mhome/work/`; they never clone product sources or move the canonical checkout branch. Cleanup runs after success or failure. Deploy the Releases bootstrap before enabling these workflows.
 
 Self-hosted npm publication needs an explicit authentication decision: npm trusted publishing and `--provenance` currently require cloud-hosted runners (https://docs.npmjs.com/trusted-publishers/). Until token-based or manual npm publishing is selected, protocol-tag publishing fails before publishing either registry. Rust-only crate tags are unaffected. No npm token has been created or configured by this change.
