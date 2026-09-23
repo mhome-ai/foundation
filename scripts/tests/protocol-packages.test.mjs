@@ -22,7 +22,6 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
       });
       assert.deepEqual(staged.packageJson.publishConfig, {
         access: "public",
-        provenance: true,
       });
       assert.equal(staged.packageJson.main, undefined);
       assert.equal(staged.packageJson.module, undefined);

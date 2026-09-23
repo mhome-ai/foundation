@@ -35,7 +35,7 @@ Publication is immutable and restricted to the allowlist in `scripts/publish-tag
 The artifact, conversation, App Facade, and Core protocol crates also publish matching, data-only npm
 packages for JavaScript consumers' build-time conformance checks. Each npm package contains the
 crate's manifest, JSON Schemas, and fixtures without an executable or browser entry point. Its
-version is identical to the Cargo crate version and is published publicly with provenance from the
+version is identical to the Cargo crate version and is published publicly from the
 same release tag:
 
 - `@mhome/artifact-protocol`
@@ -51,13 +51,11 @@ node scripts/stage-protocol-package.mjs appFacade "${staging}"
 npm pack "${staging}"
 ```
 
-The published protocol packages trust GitHub Actions for organization `mhome-ai`, repository
-`foundation`, and workflow `publish-crate.yml`. The workflow grants `id-token: write` and uses a
-compatible npm CLI, so releases authenticate with short-lived OIDC credentials and generate
-provenance without an npm publish token. A future package that does not yet have an npm settings
-page must be bootstrapped once with a temporary `NPM_TOKEN` wired to `NODE_AUTH_TOKEN`; immediately
-after that first publish, configure its Trusted Publisher, remove the repository secret and workflow
-fallback, and revoke the bootstrap token on npm.
+Protocol npm packages publish from the self-hosted macOS runner with an npm automation token.
+The workflow passes repository secret `NPM_TOKEN` as `NODE_AUTH_TOKEN`. It does not request
+`id-token: write` and does not generate npm provenance. The token should be limited to
+`@mhome/artifact-protocol`, `@mhome/conversation-protocol`, `@mhome/app-facade-protocol`, and
+`@mhome/core-protocol`. Those packages must still allow token publishing.
 
 `mhome-artifact-api` 0.1.0 was originally published from Baycat. The contract moved here and this
 repository is authoritative beginning with version 0.2.0.
@@ -71,4 +69,4 @@ Protocol definitions alone do not implement the Host/Client/Core/UI behavior.
 
 CI and crate publishing use `[self-hosted, macOS, ARM64, release-macos-primary]`, the runner that already has `~/.mhome/foundation`. Provision `~/.mhome/{releases,foundation}` with GitHub read access. Workflows fetch the shared Releases bootstrap and create an isolated worktree for the exact workflow event SHA under `~/.mhome/work/`; they never clone product sources or move the canonical checkout branch. Cleanup runs after success or failure. Deploy the Releases bootstrap before enabling these workflows.
 
-Self-hosted npm publication needs an explicit authentication decision: npm trusted publishing and `--provenance` currently require cloud-hosted runners (https://docs.npmjs.com/trusted-publishers/). Until token-based or manual npm publishing is selected, protocol-tag publishing fails before publishing either registry. Rust-only crate tags are unaffected. No npm token has been created or configured by this change.
+Protocol tags publish the crate and the npm package from this runner. Rust-only tags do not read `NPM_TOKEN`.
