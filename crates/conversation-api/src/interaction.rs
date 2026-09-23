@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
 pub enum PreviewValue {
     Text { text: String },
     TextList { items: Vec<String> },
@@ -11,6 +12,7 @@ pub enum PreviewValue {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct PreviewDetail {
     pub label: String,
     pub value: PreviewValue,
@@ -30,12 +32,14 @@ pub enum InteractionTone {
     rename_all = "snake_case",
     rename_all_fields = "camelCase"
 )]
+#[serde(deny_unknown_fields)]
 pub enum ClientTask {
     InstallIntegrations { integration_ids: Vec<String> },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct InteractionPreview {
     pub action_code: String,
     pub title: String,

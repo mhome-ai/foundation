@@ -12,8 +12,10 @@ use crate::execution::{
 /// Event emitted by the Runtime.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
 pub enum AgentEvent {
     /// A run has started or resumed.
+    #[serde(deserialize_with = "crate::execution::deserialize_empty_variant")]
     Started,
     /// The run requires user input before it can continue.
     InteractionRequired {
@@ -45,6 +47,7 @@ pub enum AgentEvent {
 /// Best-effort, request-scoped observation that is not part of the durable outbox.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
 pub enum AgentObservation {
     /// Coarse progress for live presentation.
     Progress {

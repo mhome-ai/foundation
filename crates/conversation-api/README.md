@@ -46,3 +46,7 @@ snapshot. Version 3 stores `capabilities.input` as `image|video|audio|file` inst
 `vision: bool`. An old plan without the snapshot, or with `vision`, fails decoding instead
 of silently changing behavior. This development contract change must be published and
 adopted by Lion and Cloud together before deployment.
+
+### Strict execution envelope decoding
+
+Execution commands, events, facade responses and their typed nested objects reject undeclared fields, including null-valued unknown fields. Opaque JSON inputs/results and model continuation payloads remain extensible; known optional null fields remain accepted. Enforcement lives on the typed DTOs as well as the wire entry point because Serde's internally tagged enum buffering bypasses an outer `serde_ignored` observer. Tagged unit variants explicitly require an empty remaining map. This restores the existing wire-v1 contract without changing its message shape or major version.

@@ -82,6 +82,15 @@ if [[ "${manifest_version}" != "${version}" ]]; then
   exit 2
 fi
 
+# npm trusted publishing and provenance require a cloud-hosted runner. Until
+# the owner selects token-based or manual npm publication, stop before either
+# registry is changed rather than publishing the crate and failing on npm.
+if [[ "${publish}" == "--publish" && -n "${protocol}" && "${RUNNER_ENVIRONMENT:-}" == "self-hosted" ]]; then
+  echo "npm trusted publishing/provenance does not support self-hosted runners." >&2
+  echo "Choose token-based npm publishing or a manual npm release before publishing protocol packages." >&2
+  exit 1
+fi
+
 cargo fmt --all -- --check
 cargo clippy -p "${package}" --all-targets --locked -- -D warnings
 cargo test -p "${package}" --locked

@@ -57,6 +57,7 @@ pub enum MessageRole {
 /// One typed part of a model message.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
 pub enum ContentPart {
     /// Plain text content.
     Text {
@@ -87,6 +88,7 @@ pub enum ContentPart {
 
 /// Provider-neutral conversation message.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Message {
     /// Speaker role.
     pub role: MessageRole,
@@ -106,6 +108,7 @@ pub struct ToolDefinition {
 }
 /// Tool call returned by an LLM.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ToolCall {
     /// Provider-neutral identifier used to correlate the result.
     pub id: String,

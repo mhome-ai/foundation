@@ -10,6 +10,7 @@ use crate::execution::{
 
 /// Canonical App Facade request selected by Agent-owned tool code.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct FacadeRequest {
     /// Stable idempotency identifier for this tool operation.
     pub operation_id: OperationId,
@@ -25,6 +26,7 @@ pub use crate::{
 
 /// Prepared operation awaiting an explicit commit or rejection.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PreparedAction {
     /// Stable action identifier used for idempotent commit and rejection.
     pub action_id: ActionId,
@@ -45,6 +47,7 @@ pub struct PreparedAction {
 
 /// Structured result returned by an App Facade operation.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct FacadeResult {
     /// App Facade result payload.
     pub value: Value,

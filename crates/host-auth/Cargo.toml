@@ -14,7 +14,7 @@ include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
 name = "host_auth"
 
 [dependencies]
-core-api = { package = "mhome-core-api", version = "=1.15.6", path = "../core-api" }
+core-api = { package = "mhome-core-api", version = "=1.15.7", path = "../core-api" }
 anyhow = "1"
 base64 = "0.22"
 http = "1"

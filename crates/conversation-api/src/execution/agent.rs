@@ -20,6 +20,7 @@ pub enum AccessMode {
 
 /// Per-run policy supplied by a deployment rather than selected through conditional compilation.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RunOptions {
     /// Logical LLM route selected by the deployment.
     pub use_case: UseCase,
@@ -39,6 +40,7 @@ pub struct RunOptions {
 
 /// Decision for one prepared action in a pending interaction batch.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct InteractionDecision {
     /// Prepared action identifier.
     pub action_id: crate::execution::ActionId,
@@ -48,6 +50,7 @@ pub struct InteractionDecision {
 
 /// User decisions submitted to a waiting run.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Interaction {
     /// Batch identifier emitted by `InteractionRequired`.
     pub batch_id: MessageId,
@@ -77,6 +80,7 @@ impl QueuedRun {
 /// Semantic commands understood by the Runtime.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
 pub enum AgentCommand {
     /// Enqueues a new user message.
     Enqueue {

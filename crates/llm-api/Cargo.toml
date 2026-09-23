@@ -1,6 +1,6 @@
 [package]
 name = "mhome-llm-api"
-version = "3.0.4"
+version = "3.0.5"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true

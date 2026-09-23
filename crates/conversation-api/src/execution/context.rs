@@ -8,6 +8,7 @@ use crate::execution::{
 
 /// Ownership boundary used for authorization and persistence partitioning.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Scope {
     /// Optional tenant for multi-tenant deployments.
     pub tenant_id: Option<TenantId>,
@@ -17,6 +18,7 @@ pub struct Scope {
 
 /// Authenticated actor that initiated an Agent run.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Actor {
     /// Authenticated user identity.
     pub user_id: UserId,
@@ -26,6 +28,7 @@ pub struct Actor {
 
 /// Context that follows one Agent invocation across all ports.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct InvocationContext {
     /// Authorization and persistence scope.
     pub scope: Scope,

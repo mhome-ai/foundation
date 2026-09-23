@@ -109,6 +109,7 @@ pub struct ToolPolicy {
 
 /// Aggregated model and tool usage for one Agent run.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct UsageSummary {
     /// Model requests attempted by Runtime.
     pub model_requests: u32,

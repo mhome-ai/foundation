@@ -822,7 +822,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-conversation-api"
-version = "3.1.0"
+version = "3.1.1"
 dependencies = [
  "async-trait",
  "base64",
@@ -837,7 +837,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.15.6"
+version = "1.15.7"
 dependencies = [
  "base64",
  "jsonschema",
@@ -865,7 +865,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-llm-api"
-version = "3.0.4"
+version = "3.0.5"
 dependencies = [
  "mhome-artifact-api",
  "serde",

@@ -10,32 +10,54 @@ permissions:
 
 jobs:
   rust:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, AMD64, release-linux-amd64]
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v6
+      - name: Prepare source from runner repositories
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools_repo="$HOME/.mhome/releases"
+          test -e "$tools_repo/.git" || { echo "Provision ~/.mhome/releases before running CI" >&2; exit 1; }
+          git -C "$tools_repo" fetch origin +refs/heads/main:refs/remotes/origin/main
+          tools_revision="$(git -C "$tools_repo" rev-parse refs/remotes/origin/main)"
+          helper="$RUNNER_TEMP/source-worktree-${GITHUB_RUN_ID}-${GITHUB_JOB}-${GITHUB_RUN_ATTEMPT}.cjs"
+          git -C "$tools_repo" show "$tools_revision:scripts/ci/source-worktree.cjs" > "$helper"
+          echo "MHOME_SOURCE_HELPER=$helper" >> "$GITHUB_ENV"
+          node "$helper" prepare foundation
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@1.94.0
         with:
           components: clippy,rustfmt
       - name: Check formatting
+        working-directory: ${{ env.MHOME_SOURCE_DIR }}
         run: cargo fmt --all -- --check
       - name: Lint
+        working-directory: ${{ env.MHOME_SOURCE_DIR }}
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Test
+        working-directory: ${{ env.MHOME_SOURCE_DIR }}
         run: cargo test --workspace --locked
       - name: Build documentation
+        working-directory: ${{ env.MHOME_SOURCE_DIR }}
         run: cargo doc --workspace --no-deps --locked
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
       - name: Verify protocol npm packages
+        working-directory: ${{ env.MHOME_SOURCE_DIR }}
         run: |
           npm run verify:app-facade-routing
           npm run test:protocol-packages
+          staging_root="$(mktemp -d)"
+          trap 'rm -rf "$staging_root"' EXIT
           for protocol in artifact conversation appFacade core; do
-            staging="$(mktemp -d)/package"
+            staging="$staging_root/$protocol"
             node scripts/stage-protocol-package.mjs "${protocol}" "${staging}"
             npm pack "${staging}" --dry-run
           done
+      - name: Clean task source worktrees
+        if: always() && env.MHOME_WORK_ROOT != ''
+        shell: bash
+        run: node "$MHOME_SOURCE_HELPER" cleanup

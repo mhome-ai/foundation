@@ -46,3 +46,16 @@ pub use storage::{
 };
 
 pub mod wire;
+
+// Serde's internally tagged unit variants otherwise discard their remaining
+// map even with deny_unknown_fields on the enum. Preserve the public unit
+// variant API while requiring an empty payload after the tag is consumed.
+pub(crate) fn deserialize_empty_variant<'de, D>(deserializer: D) -> Result<(), D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Empty {}
+    <Empty as serde::Deserialize>::deserialize(deserializer).map(|_| ())
+}

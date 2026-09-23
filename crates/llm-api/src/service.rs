@@ -5,6 +5,7 @@ pub const COMPLETE_TARGET: &str = "/llm/complete";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct Image {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,

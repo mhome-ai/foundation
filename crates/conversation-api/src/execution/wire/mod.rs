@@ -59,6 +59,7 @@ pub struct Metadata {
 /// Request to execute an App Facade call over a transport.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "phase", rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
 pub enum AppFacadeRequest {
     /// Executes a direct App Facade request.
     Invoke {
@@ -93,6 +94,7 @@ pub enum AppFacadeRequest {
 /// Immediate response to command admission for the selected execution attempt.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
 pub enum CommandResponse {
     /// Command was admitted; final state is delivered through events.
     Accepted {
@@ -164,6 +166,7 @@ pub struct CheckpointPurgeRequest {
 /// Result of one idempotent checkpoint-prefix purge.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "status", rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
 pub enum CheckpointPurgeAck {
     Deleted {
         purge_id: String,
@@ -268,6 +271,7 @@ pub struct EventMessage {
 /// Result of an App Facade request transported back to Runtime.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
 pub enum AppFacadeResponse {
     /// Read-only or committed operation result.
     Result {
@@ -280,6 +284,7 @@ pub enum AppFacadeResponse {
         action: PreparedAction,
     },
     /// Rejection completed successfully.
+    #[serde(deserialize_with = "crate::execution::deserialize_empty_variant")]
     Rejected,
     /// Stable error safe to expose across the transport.
     Failed {
@@ -982,6 +987,135 @@ mod tests {
         assert_eq!(
             envelope.validate(),
             Err(ProtocolError::MissingIdentifier("scope_id"))
+        );
+    }
+
+    #[test]
+    fn strict_decoder_checks_other_commands_and_message_parts() {
+        let golden: serde_json::Value = serde_json::from_str(ENQUEUE_FIXTURE).unwrap();
+        let context = golden["payload"]["payload"]["command"]["context"].clone();
+        for command in [
+            serde_json::json!({"type": "cancel", "context": context}),
+            serde_json::json!({"type": "submit_interaction", "context": context,
+                "interaction": {"batch_id": "batch-1", "decisions": [{"action_id": "action-1", "proceed": true}]}}),
+        ] {
+            let mut input = golden.clone();
+            if command["type"] == "cancel" {
+                input["payload"]["payload"]["llm_plan"] = serde_json::Value::Null;
+                input["payload"]["payload"]["context_generation"] = serde_json::Value::Null;
+            }
+            input["payload"]["payload"]["command"] = command;
+            Envelope::decode_json(&input.to_string()).expect("valid command");
+            input["payload"]["payload"]["command"]["unexpected"] = serde_json::Value::Null;
+            assert!(Envelope::decode_json(&input.to_string()).is_err());
+        }
+        for part in [
+            serde_json::json!({"type": "text", "text": "hello"}),
+            serde_json::json!({"type": "artifact", "uri": "meow-artifact://test", "mime_type": "image/png"}),
+            serde_json::json!({"type": "image", "image": {"url": "https://example.invalid/image.png"}}),
+            serde_json::json!({"type": "tool_call", "id": "call-1", "name": "test", "arguments": {"arbitrary": {"nested": null}}}),
+            serde_json::json!({"type": "tool_result", "call_id": "call-1", "result": {"arbitrary": true}, "is_error": false}),
+        ] {
+            let mut input = golden.clone();
+            input["payload"]["payload"]["command"]["message"]["content"][0] = part;
+            Envelope::decode_json(&input.to_string()).expect("valid content and opaque JSON");
+            input["payload"]["payload"]["command"]["message"]["content"][0]["unexpected"] =
+                serde_json::Value::Bool(true);
+            assert!(Envelope::decode_json(&input.to_string()).is_err());
+        }
+        assert!(
+            serde_json::from_value::<crate::execution::AgentEvent>(
+                serde_json::json!({"type": "started", "unexpected": true})
+            )
+            .is_err()
+        );
+        assert!(
+            serde_json::from_value::<AppFacadeResponse>(
+                serde_json::json!({"type": "rejected", "unexpected": null})
+            )
+            .is_err()
+        );
+        assert!(
+            serde_json::from_value::<crate::execution::AgentEvent>(
+                serde_json::json!({"type": "started"})
+            )
+            .is_ok()
+        );
+        assert!(
+            serde_json::from_value::<AppFacadeResponse>(serde_json::json!({"type": "rejected"}))
+                .is_ok()
+        );
+    }
+
+    #[test]
+    fn decoder_checks_every_closed_object_in_golden_envelopes() {
+        fn object_paths(value: &serde_json::Value, pointer: &str, paths: &mut Vec<String>) {
+            match value {
+                serde_json::Value::Object(fields) => {
+                    paths.push(pointer.to_owned());
+                    for (key, child) in fields {
+                        let key = key.replace('~', "~0").replace('/', "~1");
+                        object_paths(child, &format!("{pointer}/{key}"), paths);
+                    }
+                }
+                serde_json::Value::Array(items) => {
+                    for (index, child) in items.iter().enumerate() {
+                        object_paths(child, &format!("{pointer}/{index}"), paths);
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        let schema: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../schema/execution/envelope.v1.schema.json"
+        ))
+        .unwrap();
+        let validator = jsonschema::validator_for(&schema).unwrap();
+        let fixtures = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("fixtures/execution");
+        let mut accepted_unknown = Vec::new();
+        let mut checked = 0;
+        for file in std::fs::read_dir(fixtures).unwrap() {
+            let file = file.unwrap().path();
+            if file.extension().is_none_or(|extension| extension != "json") {
+                continue;
+            }
+            let input = std::fs::read_to_string(&file).unwrap();
+            let golden: serde_json::Value = serde_json::from_str(&input).unwrap();
+            validator
+                .validate(&golden)
+                .expect("valid canonical fixture");
+            Envelope::decode_json(&input).expect("valid fixture decodes");
+            let mut paths = Vec::new();
+            object_paths(&golden, "", &mut paths);
+            for pointer in paths {
+                for extra in [serde_json::Value::Bool(true), serde_json::Value::Null] {
+                    let mut input = golden.clone();
+                    input
+                        .pointer_mut(&pointer)
+                        .unwrap()
+                        .as_object_mut()
+                        .unwrap()
+                        .insert("__unknown_probe".to_owned(), extra);
+                    let decoded = Envelope::decode_json(&input.to_string());
+                    if validator.is_valid(&input) {
+                        decoded.expect("protocol-owned opaque JSON must remain extensible");
+                    } else {
+                        checked += 1;
+                        if decoded.is_ok() {
+                            accepted_unknown.push(format!(
+                                "{}:{pointer}",
+                                file.file_name().unwrap().to_string_lossy()
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+        assert!(checked > 100, "exercise the entire fixture graph");
+        assert!(
+            accepted_unknown.is_empty(),
+            "unknown fields accepted at {accepted_unknown:#?}"
         );
     }
 

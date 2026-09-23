@@ -23,13 +23,23 @@ concurrency:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, AMD64, release-linux-amd64]
     steps:
-      - name: Checkout tagged source
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
+      - name: Prepare source from runner repositories
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools_repo="$HOME/.mhome/releases"
+          test -e "$tools_repo/.git" || { echo "Provision ~/.mhome/releases before running CI" >&2; exit 1; }
+          git -C "$tools_repo" fetch origin +refs/heads/main:refs/remotes/origin/main
+          tools_revision="$(git -C "$tools_repo" rev-parse refs/remotes/origin/main)"
+          helper="$RUNNER_TEMP/source-worktree-${GITHUB_RUN_ID}-${GITHUB_JOB}-${GITHUB_RUN_ATTEMPT}.cjs"
+          git -C "$tools_repo" show "$tools_revision:scripts/ci/source-worktree.cjs" > "$helper"
+          echo "MHOME_SOURCE_HELPER=$helper" >> "$GITHUB_ENV"
+          node "$helper" prepare foundation
       - name: Require release commit on main
+        working-directory: ${{ env.MHOME_SOURCE_DIR }}
         run: git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@1.94.0
@@ -44,4 +54,9 @@ jobs:
       - name: Verify and publish selected crate
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        working-directory: ${{ env.MHOME_SOURCE_DIR }}
         run: bash scripts/publish-tag.sh "${GITHUB_REF_NAME}" --publish
+      - name: Clean task source worktrees
+        if: always() && env.MHOME_WORK_ROOT != ''
+        shell: bash
+        run: node "$MHOME_SOURCE_HELPER" cleanup
