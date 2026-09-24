@@ -1,6 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
+  "crates/person-api",
+  "crates/face-matching",
   "crates/artifact",
   "crates/llm-api",
   "crates/app-facade-api",

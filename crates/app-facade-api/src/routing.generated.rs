@@ -32,6 +32,7 @@ const HUB_PREFIXES: &[&str] = &[
     "/app/system/instances/",
     "/app/system/clients/",
     "/app/system/hosts/",
+    "/app/person/",
 ];
 
 const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
@@ -54,4 +55,23 @@ pub const CLOUD_RELAY_TARGETS: &[&str] = &[
     "/app/system/hosts/get",
     "/app/system/hosts/runtime",
     "/app/system/hosts/claim",
+    "/app/person/status",
+    "/app/person/list",
+    "/app/person/get",
+    "/app/person/create",
+    "/app/person/update",
+    "/app/person/delete",
+    "/app/person/reset",
+    "/app/person/clusters/list",
+    "/app/person/clusters/get",
+    "/app/person/clusters/assign",
+    "/app/person/clusters/merge",
+    "/app/person/clusters/split",
+    "/app/person/samples/review",
+    "/app/person/samples/image",
+    "/app/person/backup/export",
+    "/app/person/backup/read",
+    "/app/person/backup/import/start",
+    "/app/person/backup/import/write",
+    "/app/person/backup/import/commit",
 ];

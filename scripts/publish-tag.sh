@@ -7,6 +7,16 @@ protocol=""
 npm_package=""
 
 case "${tag}" in
+  mhome-person-api-v*)
+    package="mhome-person-api"
+    manifest="crates/person-api/Cargo.toml"
+    version="${tag#mhome-person-api-v}"
+    ;;
+  mhome-face-matching-v*)
+    package="mhome-face-matching"
+    manifest="crates/face-matching/Cargo.toml"
+    version="${tag#mhome-face-matching-v}"
+    ;;
   mhome-llm-api-v*)
     package="mhome-llm-api"
     manifest="crates/llm-api/Cargo.toml"

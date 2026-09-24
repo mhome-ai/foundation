@@ -800,12 +800,13 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.21.0"
+version = "1.22.0"
 dependencies = [
  "jsonschema",
  "mhome-artifact-api",
  "mhome-conversation-api",
  "mhome-core-api",
+ "mhome-person-api",
  "serde",
  "serde_json",
 ]
@@ -849,6 +850,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "mhome-face-matching"
+version = "0.1.0"
+dependencies = [
+ "mhome-person-api",
+]
+
+[[package]]
 name = "mhome-host-auth"
 version = "0.1.0"
 dependencies = [
@@ -884,6 +892,14 @@ dependencies = [
  "serde_json",
  "sha2",
  "uuid",
+]
+
+[[package]]
+name = "mhome-person-api"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -5,6 +5,8 @@ on:
     tags:
       - "mhome-artifact-api-v*"
       - "mhome-llm-api-v*"
+      - "mhome-person-api-v*"
+      - "mhome-face-matching-v*"
       - "mhome-machine-identity-v*"
       - "mhome-core-api-v*"
       - "mhome-host-auth-v*"

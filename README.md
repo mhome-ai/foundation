@@ -4,6 +4,9 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 
 ## Crates
 
+- `mhome-person-api`: Space-owned Person, embedding-space and gallery contracts.
+- `mhome-face-matching`: shared pure matching over model-compatible galleries.
+
 - `mhome-artifact-api`: storage-independent, scoped artifact references.
 - `mhome-app-facade-api`: the canonical public `/app/*` request, response, and event protocol.
 - `mhome-conversation-api`: client conversation protocol plus Agent execution contracts/ports in `execution`.

@@ -1,0 +1,297 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mhome.person.v1",
+  "title": "Person management inputs",
+  "$defs": {
+    "ListInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": []
+    },
+    "IdInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "PersonCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "idempotencyKey"
+      ]
+    },
+    "PersonUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "expectedRevision": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "expectedRevision",
+        "name",
+        "tags",
+        "notes"
+      ]
+    },
+    "RevisionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "expectedRevision": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        }
+      },
+      "required": [
+        "id",
+        "expectedRevision"
+      ]
+    },
+    "ClusterAssign": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "expectedRevision": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "personId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "expectedRevision"
+      ]
+    },
+    "ClusterMerge": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sourceId": {
+          "type": "string"
+        },
+        "sourceRevision": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "targetId": {
+          "type": "string"
+        },
+        "targetRevision": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        }
+      },
+      "required": [
+        "sourceId",
+        "sourceRevision",
+        "targetId",
+        "targetRevision"
+      ]
+    },
+    "ClusterSplit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "expectedRevision": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "sampleIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "expectedRevision",
+        "sampleIds"
+      ]
+    },
+    "SampleReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "clusterRevision": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "accept": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "clusterRevision",
+        "accept"
+      ]
+    },
+    "ResetInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expectedEpoch": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "expectedEpoch"
+      ]
+    },
+    "ExportInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "password": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "password"
+      ]
+    },
+    "ReadInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "id",
+        "offset"
+      ]
+    },
+    "ImportStart": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "sizeBytes"
+      ]
+    },
+    "ImportWrite": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dataBase64": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "offset",
+        "dataBase64"
+      ]
+    },
+    "ImportCommit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "expectedEpoch": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "password",
+        "expectedEpoch"
+      ]
+    }
+  }
+}
