@@ -337,22 +337,6 @@
         "password",
         "expectedEpoch"
       ]
-    },
-    "MigrationApprove": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "expectedEpoch": {
-          "type": "string"
-        },
-        "nodeId": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "expectedEpoch",
-        "nodeId"
-      ]
     }
   }
 }

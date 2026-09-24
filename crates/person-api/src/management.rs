@@ -143,20 +143,3 @@ pub struct Chunk {
     pub next_offset: usize,
     pub done: bool,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct MigrationApprove {
-    pub expected_epoch: String,
-    pub node_id: String,
-}
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MigrationStatus {
-    pub imported_sample_count: u32,
-    pub last_error: Option<String>,
-    pub node_id: String,
-    pub state: String,
-    pub person_count: u32,
-    pub sample_count: u32,
-}

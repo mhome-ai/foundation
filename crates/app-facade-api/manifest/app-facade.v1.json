@@ -112,8 +112,6 @@
         "/app/person/delete",
         "/app/person/get",
         "/app/person/list",
-        "/app/person/migrations/approve",
-        "/app/person/migrations/list",
         "/app/person/reset",
         "/app/person/samples/image",
         "/app/person/samples/review",
