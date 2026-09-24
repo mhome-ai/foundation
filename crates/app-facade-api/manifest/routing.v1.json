@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.22.0",
+  "contractVersion": "1.23.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",
@@ -73,7 +73,10 @@
       "/app/person/backup/read",
       "/app/person/backup/import/start",
       "/app/person/backup/import/write",
-      "/app/person/backup/import/commit"
+      "/app/person/backup/import/commit",
+      "/app/person/clusters/delete",
+      "/app/person/migrations/list",
+      "/app/person/migrations/approve"
     ]
   }
 }

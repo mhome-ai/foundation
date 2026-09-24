@@ -74,4 +74,7 @@ pub const CLOUD_RELAY_TARGETS: &[&str] = &[
     "/app/person/backup/import/start",
     "/app/person/backup/import/write",
     "/app/person/backup/import/commit",
+    "/app/person/clusters/delete",
+    "/app/person/migrations/list",
+    "/app/person/migrations/approve",
 ];

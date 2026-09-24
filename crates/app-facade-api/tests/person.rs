@@ -2,7 +2,7 @@ use app_facade_api::person::*;
 use serde_json::json;
 #[test]
 fn person_inputs_are_scope_neutral_and_strict() {
-    let valid = json!({"name":"Alice","tags":["Family"],"notes":"","idempotencyKey":"creation-1"});
+    let valid = json!({"expectedEpoch":"e","name":"Alice","tags":["Family"],"notes":"","idempotencyKey":"creation-1"});
     let schema: serde_json::Value =
         serde_json::from_str(include_str!("../schema/person.v1.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema["$defs"]["PersonCreate"]).unwrap();
@@ -26,7 +26,7 @@ fn person_manifest_routes_all_management_operations_to_hub() {
     let targets = manifest["domains"]["person"]["requestTargets"]
         .as_array()
         .unwrap();
-    assert_eq!(targets.len(), 19);
+    assert_eq!(targets.len(), 22);
     let routing = serde_json::to_string(&routing).unwrap();
     for target in targets {
         assert!(routing.contains(target.as_str().unwrap()));

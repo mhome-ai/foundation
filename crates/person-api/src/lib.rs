@@ -1,6 +1,7 @@
 //! Transport-neutral Person contracts. No camera, storage or inference dependencies.
 pub mod gallery;
 pub mod learning;
+pub mod management;
 pub mod model;
 pub use gallery::*;
 pub use learning::*;
@@ -18,3 +19,8 @@ pub const GALLERY_LEASE_MS: u64 = 300_000;
 pub const MATCH_POLICY: &str = "cosine-prototype.v1";
 
 pub const IMPORT_FINISH_TARGET: &str = "/person/legacy/finish";
+
+/// Live evidence is not a durable offline queue. Receipts outlive this acceptance window.
+pub const MAX_EVIDENCE_AGE_MS: u64 = 24 * 60 * 60 * 1000;
+
+pub const IMPORT_OFFER_TARGET: &str = "/person/legacy/offer";
