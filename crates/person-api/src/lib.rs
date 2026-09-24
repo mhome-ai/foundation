@@ -9,6 +9,7 @@ pub use model::*;
 pub const PROTOCOL_VERSION: &str = "person.v1";
 pub const DESCRIBE_TARGET: &str = "/person/describe";
 pub const GALLERY_TARGET: &str = "/person/gallery/sync";
+pub const OBSERVE_TARGET: &str = "/person/observe";
 pub const SUBMIT_TARGET: &str = "/person/samples/submit";
 pub const ACK_TARGET: &str = "/person/gallery/ack";
 pub const MAX_SAMPLES_PER_BATCH: usize = 16;
