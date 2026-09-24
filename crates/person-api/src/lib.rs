@@ -16,7 +16,7 @@ pub const MAX_SAMPLES_PER_BATCH: usize = 16;
 pub const MAX_VECTOR_DIMENSIONS: usize = 4096;
 pub const MAX_IMAGE_BYTES: usize = 512 * 1024;
 pub const GALLERY_LEASE_MS: u64 = 300_000;
-pub const MATCH_POLICY: &str = "cosine-prototype.v1";
+pub const MATCH_POLICY: &str = "cosine-prototype.v2";
 
 pub const IMPORT_FINISH_TARGET: &str = "/person/legacy/finish";
 
@@ -24,3 +24,5 @@ pub const IMPORT_FINISH_TARGET: &str = "/person/legacy/finish";
 pub const MAX_EVIDENCE_AGE_MS: u64 = 24 * 60 * 60 * 1000;
 
 pub const IMPORT_OFFER_TARGET: &str = "/person/legacy/offer";
+
+pub const IMPORT_REPORT_TARGET: &str = "/person/legacy/report";

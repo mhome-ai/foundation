@@ -26,7 +26,7 @@ fn person_manifest_routes_all_management_operations_to_hub() {
     let targets = manifest["domains"]["person"]["requestTargets"]
         .as_array()
         .unwrap();
-    assert_eq!(targets.len(), 22);
+    assert_eq!(targets.len(), 23);
     let routing = serde_json::to_string(&routing).unwrap();
     for target in targets {
         assert!(routing.contains(target.as_str().unwrap()));

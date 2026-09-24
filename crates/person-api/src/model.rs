@@ -99,7 +99,7 @@ pub struct PersonStatus {
 #[serde(rename_all = "camelCase")]
 pub struct NodeSyncStatus {
     pub node_id: String,
-    pub epoch: String,
-    pub revision: String,
-    pub acknowledged_at_ms: u64,
+    pub epoch: Option<String>,
+    pub revision: Option<String>,
+    pub acknowledged_at_ms: Option<u64>,
 }

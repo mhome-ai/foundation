@@ -56,6 +56,9 @@ pub struct GalleryResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GalleryEntry {
+    /// Competes during matching, but cannot establish a recognized identity yet.
+    #[serde(default)]
+    pub provisional: bool,
     pub cluster_id: String,
     pub person_id: Option<String>,
     pub centroid: Vec<f32>,

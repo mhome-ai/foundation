@@ -101,6 +101,7 @@
         "/app/person/backup/import/start",
         "/app/person/backup/import/write",
         "/app/person/backup/read",
+        "/app/person/backup/close",
         "/app/person/clusters/assign",
         "/app/person/clusters/delete",
         "/app/person/clusters/get",

@@ -153,6 +153,8 @@ pub struct MigrationApprove {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MigrationStatus {
+    pub imported_sample_count: u32,
+    pub last_error: Option<String>,
     pub node_id: String,
     pub state: String,
     pub person_count: u32,

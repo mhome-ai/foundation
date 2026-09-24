@@ -75,3 +75,10 @@ pub struct LegacyOfferResponse {
     pub grant_token: Option<String>,
     pub state: String,
 }
+
+/// A producer reports a bounded diagnostic; biometric evidence is never part of it.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LegacyReportRequest {
+    pub error: Option<String>,
+}

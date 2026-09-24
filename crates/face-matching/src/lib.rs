@@ -77,6 +77,22 @@ pub fn identify(vector: &[f32], entries: &[GalleryEntry], policy: &MatchPolicy) 
         },
     }
 }
+/// Recognition uses every candidate for ambiguity checks, including provisional ones.
+/// Provisional winners remain uncertain until enough independent evidence is retained.
+pub fn recognize(vector: &[f32], entries: &[GalleryEntry], policy: &MatchPolicy) -> Match {
+    let matched = identify(vector, entries, policy);
+    let cluster = match &matched {
+        Match::Known { cluster_id, .. } | Match::UnknownCluster { cluster_id, .. } => {
+            Some(cluster_id)
+        }
+        _ => None,
+    };
+    if cluster.is_some_and(|id| entries.iter().any(|e| &e.cluster_id == id && e.provisional)) {
+        Match::Ambiguous
+    } else {
+        matched
+    }
+}
 pub fn centroid(vectors: &[Vec<f32>]) -> Option<Vec<f32>> {
     let dimensions = vectors.first()?.len();
     if vectors.iter().any(|v| !validate_vector(v, dimensions)) {
@@ -96,6 +112,7 @@ mod tests {
     use super::*;
     fn entry(cluster: &str, person: Option<&str>) -> GalleryEntry {
         GalleryEntry {
+            provisional: false,
             cluster_id: cluster.into(),
             person_id: person.map(str::to_string),
             centroid: vec![1., 0.],
@@ -135,6 +152,7 @@ mod threshold_tests {
     #[test]
     fn different_acceptance_thresholds_do_not_hide_an_ambiguous_candidate() {
         let entry = |id: &str, person: Option<&str>, cos: f32| GalleryEntry {
+            provisional: false,
             cluster_id: id.into(),
             person_id: person.map(str::to_string),
             centroid: vec![cos, (1. - cos * cos).sqrt()],
@@ -151,5 +169,47 @@ mod threshold_tests {
             ),
             Match::Ambiguous
         );
+    }
+}
+
+#[cfg(test)]
+mod provisional_tests {
+    use super::*;
+    fn vector(degrees: f32) -> Vec<f32> {
+        vec![degrees.to_radians().cos(), degrees.to_radians().sin()]
+    }
+    #[test]
+    fn provisional_competitor_prevents_false_known_and_cannot_identify_itself() {
+        let known = GalleryEntry {
+            cluster_id: "known".into(),
+            person_id: Some("alice".into()),
+            provisional: false,
+            centroid: vector(0.),
+            exemplars: vec![],
+        };
+        let provisional = GalleryEntry {
+            cluster_id: "candidate".into(),
+            person_id: None,
+            provisional: true,
+            centroid: vector(55.),
+            exemplars: vec![],
+        };
+        let entries = vec![known, provisional];
+        assert!(matches!(
+            recognize(&vector(28.), &entries[..1], &MatchPolicy::default()),
+            Match::Known { .. }
+        ));
+        assert_eq!(
+            recognize(&vector(28.), &entries, &MatchPolicy::default()),
+            Match::Ambiguous
+        );
+        assert_eq!(
+            recognize(&vector(55.), &entries[1..], &MatchPolicy::default()),
+            Match::Ambiguous
+        );
+        assert!(matches!(
+            identify(&vector(55.), &entries[1..], &MatchPolicy::default()),
+            Match::UnknownCluster { .. }
+        ));
     }
 }
