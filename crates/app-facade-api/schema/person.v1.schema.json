@@ -14,16 +14,6 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 100
-        },
-        "personIds": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "type": "string"
-          }
-        },
-        "unnamed": {
-          "type": "boolean"
         }
       },
       "required": []
@@ -38,73 +28,6 @@
       },
       "required": [
         "id"
-      ]
-    },
-    "PersonCreate": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "notes": {
-          "type": "string"
-        },
-        "idempotencyKey": {
-          "type": "string"
-        },
-        "expectedEpoch": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "name",
-        "idempotencyKey",
-        "expectedEpoch"
-      ]
-    },
-    "PersonUpdate": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "expectedRevision": {
-          "type": "string",
-          "pattern": "^[0-9]+$"
-        },
-        "name": {
-          "type": "string"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "notes": {
-          "type": "string"
-        },
-        "expectedEpoch": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "id",
-        "expectedRevision",
-        "name",
-        "tags",
-        "notes",
-        "expectedEpoch"
       ]
     },
     "RevisionInput": {
@@ -126,120 +49,6 @@
       "required": [
         "id",
         "expectedRevision",
-        "expectedEpoch"
-      ]
-    },
-    "ClusterAssign": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "expectedRevision": {
-          "type": "string",
-          "pattern": "^[0-9]+$"
-        },
-        "personId": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "expectedEpoch": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "id",
-        "expectedRevision",
-        "expectedEpoch"
-      ]
-    },
-    "ClusterMerge": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "sourceId": {
-          "type": "string"
-        },
-        "sourceRevision": {
-          "type": "string",
-          "pattern": "^[0-9]+$"
-        },
-        "targetId": {
-          "type": "string"
-        },
-        "targetRevision": {
-          "type": "string",
-          "pattern": "^[0-9]+$"
-        },
-        "expectedEpoch": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "sourceId",
-        "sourceRevision",
-        "targetId",
-        "targetRevision",
-        "expectedEpoch"
-      ]
-    },
-    "ClusterSplit": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "expectedRevision": {
-          "type": "string",
-          "pattern": "^[0-9]+$"
-        },
-        "sampleIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "expectedEpoch": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "id",
-        "expectedRevision",
-        "sampleIds",
-        "expectedEpoch"
-      ]
-    },
-    "SampleReview": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "clusterRevision": {
-          "type": "string",
-          "pattern": "^[0-9]+$"
-        },
-        "accept": {
-          "type": "boolean"
-        },
-        "expectedEpoch": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "id",
-        "clusterRevision",
-        "accept",
         "expectedEpoch"
       ]
     },
@@ -336,6 +145,55 @@
         "id",
         "password",
         "expectedEpoch"
+      ]
+    },
+    "ClusterName": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "expectedRevision": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "expectedEpoch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "representativeSampleId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "expectedRevision",
+        "expectedEpoch",
+        "name",
+        "representativeSampleId"
+      ]
+    },
+    "ImageInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "representativeSampleId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "representativeSampleId"
       ]
     }
   }

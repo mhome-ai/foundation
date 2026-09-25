@@ -32,60 +32,29 @@ impl EmbeddingSpace {
     }
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Person {
     pub id: String,
     pub name: String,
-    pub tags: Vec<String>,
-    pub notes: String,
     pub revision: String,
     pub created_at_ms: u64,
     pub updated_at_ms: u64,
 }
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum SampleState {
-    Active,
-    Pending,
-    Rejected,
-}
+/// A user-facing face group; retained recognition evidence stays private to Core.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FaceCluster {
     pub id: String,
-    pub embedding_space_id: String,
     pub person_id: Option<String>,
-    pub stable: bool,
+    pub name: Option<String>,
     pub revision: String,
-    pub sample_count: u32,
-    pub pending_count: u32,
-    pub first_seen_at_ms: u64,
-    pub last_seen_at_ms: u64,
-    pub representative_sample_id: Option<String>,
-}
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct FaceSampleView {
-    pub id: String,
-    pub cluster_id: String,
-    pub state: SampleState,
-    pub source_node_id: String,
-    pub source_device_id: String,
-    pub captured_at_ms: u64,
-    pub quality: f32,
-    pub has_image: bool,
-}
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ClusterDetail {
-    pub cluster: FaceCluster,
-    pub samples: Vec<FaceSampleView>,
+    pub representative_sample_id: String,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PersonStatus {
     pub epoch: String,
-    pub gallery_revision: String,
+    pub revision: String,
     pub person_count: u32,
     pub cluster_count: u32,
     pub sample_count: u32,

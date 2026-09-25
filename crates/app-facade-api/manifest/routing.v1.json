@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.24.0",
+  "contractVersion": "1.25.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",
@@ -58,23 +58,16 @@
       "/app/person/status",
       "/app/person/list",
       "/app/person/get",
-      "/app/person/create",
-      "/app/person/update",
-      "/app/person/delete",
       "/app/person/reset",
       "/app/person/clusters/list",
-      "/app/person/clusters/get",
-      "/app/person/clusters/assign",
-      "/app/person/clusters/merge",
-      "/app/person/clusters/split",
-      "/app/person/samples/review",
-      "/app/person/samples/image",
+      "/app/person/clusters/image",
       "/app/person/backup/export",
       "/app/person/backup/read",
       "/app/person/backup/close",
       "/app/person/backup/import/start",
       "/app/person/backup/import/write",
       "/app/person/backup/import/commit",
+      "/app/person/clusters/name",
       "/app/person/clusters/delete"
     ]
   }

@@ -11,22 +11,12 @@ pub struct SampleEvidence {
     pub quality: f32,
     pub image_base64: Option<String>,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SampleReceipt {
-    pub id: String,
-    pub outcome: SampleOutcome,
-    pub cluster_id: Option<String>,
-    pub reason: Option<String>,
-}
+/// Transient admission result; no receipt or rejected evidence is persisted.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub enum SampleOutcome {
-    Active,
-    Pending,
-    Duplicate,
-    Rejected,
-    Deferred,
+pub enum LearningOutcome {
+    Retained,
+    Skipped,
 }
 
 /// Core classifies against the pre-learning gallery, then applies its learning policy.
@@ -59,7 +49,8 @@ pub struct ObserveRequest {
 #[serde(rename_all = "camelCase")]
 pub struct ObservationResult {
     pub decision: PersonDecision,
-    pub receipt: SampleReceipt,
+    pub id: String,
+    pub learning: LearningOutcome,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
