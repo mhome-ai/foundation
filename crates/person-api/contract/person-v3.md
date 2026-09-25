@@ -7,11 +7,14 @@ No gallery download, review workflow, separate sample submission or observation 
 An observation expires after five minutes. Core returns its current recognition decision
 and a transient retained/skipped learning result. No decision receipts, rejected evidence,
 or request history are persisted. Retained samples alone carry their source ID for deduplication.
+Capture timestamps and source device IDs are not retained in the library or archive.
 
 Core reads a consistent snapshot, releases the database transaction, and computes matching
 and learning in memory. Matching projections are derived, never stored separately.
 A short transaction validates epoch/revision and applies useful changes atomically.
 Ordinary redundant recognition does not write the database. No per-sighting timestamps are stored.
+Card revisions describe the representative photo, name and identity assignment;
+hidden sample changes only invalidate the internal Space snapshot revision.
 All decisions in a batch use its pre-learning snapshot. Unavailable or ambiguous recognition
 is not evidence of a stranger.
 
@@ -33,5 +36,5 @@ Camera events and recordings remain separate owners.
 
 Explicit encrypted backup contains only the current library, including naming anchors.
 Transfers are temporary, scoped to the member and Space, and closed or expired. The archive
-format is v3 and does not import prior review/receipt formats. Person data is never registered
+format is v4 and does not import prior formats. Person data is never registered
 with general cloud data synchronization.
