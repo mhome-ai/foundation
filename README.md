@@ -4,7 +4,7 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 
 ## Crates
 
-- `mhome-person-api`: Space-owned Person, embedding-space and gallery contracts.
+- `mhome-person-api`: Space-owned Person management, embedding contracts and authoritative observations.
 - `mhome-face-matching`: shared pure matching over model-compatible galleries.
 
 - `mhome-artifact-api`: storage-independent, scoped artifact references.

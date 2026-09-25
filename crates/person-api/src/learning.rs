@@ -12,20 +12,6 @@ pub struct SampleEvidence {
     pub image_base64: Option<String>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SubmitSamplesRequest {
-    pub epoch: String,
-    pub embedding_space_id: String,
-    pub samples: Vec<SampleEvidence>,
-}
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SubmitSamplesResponse {
-    pub epoch: String,
-    pub revision: String,
-    pub results: Vec<SampleReceipt>,
-}
-#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SampleReceipt {
     pub id: String,

@@ -93,13 +93,4 @@ pub struct PersonStatus {
     pub image_limit_bytes: u64,
     pub unknown_retention_days: u32,
     pub models: Vec<EmbeddingSpace>,
-    pub nodes: Vec<NodeSyncStatus>,
-}
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct NodeSyncStatus {
-    pub node_id: String,
-    pub epoch: Option<String>,
-    pub revision: Option<String>,
-    pub acknowledged_at_ms: Option<u64>,
 }

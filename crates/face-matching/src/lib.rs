@@ -1,4 +1,4 @@
-//! Pure matching shared by the gallery authority and its consumers.
+//! Pure matching used by Core; evidence producers do not choose matching policy.
 use person_api::{GalleryEntry, MatchPolicy};
 #[derive(Debug, Clone, PartialEq)]
 pub enum Match {
