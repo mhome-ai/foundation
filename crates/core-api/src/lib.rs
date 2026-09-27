@@ -515,6 +515,9 @@ impl Default for MwsMessage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeAuthRequest {
+    /// Revision of this Node type's Core-facing contract, independent of package versions.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub core_protocol_version: Option<u32>,
     pub hub_id: String,
     pub token: String,
     pub node_type: String,
@@ -531,6 +534,9 @@ pub struct NodeAuthRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeAuthResponse {
+    /// Echoed only after the actual Core accepts the Node contract revision.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub core_protocol_version: Option<u32>,
     pub ok: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub session_id: Option<String>,
