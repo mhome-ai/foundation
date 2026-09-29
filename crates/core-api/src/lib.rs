@@ -299,6 +299,11 @@ pub struct MwsMessage {
     pub r#type: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub payload: Option<String>,
+    /// Transport-owned lifecycle data.  It is deliberately separate from the
+    /// application payload so schema request bodies never become a framework
+    /// envelope.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub control: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<ErrorResponse>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -318,6 +323,7 @@ impl MwsMessage {
             target: Some(target),
             sig: Some(sig),
             payload: Some(payload),
+            control: None,
             r#type: Some(msg_type),
             from: None,
             error: None,
@@ -333,6 +339,7 @@ impl MwsMessage {
             sig: None,
             r#type: None,
             payload: None,
+            control: None,
             error: None,
             client_info: None,
         }
@@ -351,6 +358,7 @@ impl MwsMessage {
             sig: Some(sig),
             r#type: Some(MwsMessageType::SERVER_RESP.to_string()),
             payload: Some(payload),
+            control: None,
             error: None,
             client_info: Some(client_info),
         }
@@ -369,6 +377,7 @@ impl MwsMessage {
             sig: Some(sig),
             r#type: Some(MwsMessageType::SERVER_RESP.to_string()),
             payload: None,
+            control: None,
             error: Some(error),
             client_info: Some(client_info),
         }
@@ -386,6 +395,7 @@ impl MwsMessage {
             sig: None,
             r#type: Some(MwsMessageType::SERVER_DATA.to_string()),
             payload: Some(payload),
+            control: None,
             error: None,
             client_info: Some(client_info),
         }
@@ -404,6 +414,7 @@ impl MwsMessage {
             sig: None,
             r#type: Some(MwsMessageType::SERVER_DATA.to_string()),
             payload: Some(payload),
+            control: None,
             error: None,
             client_info,
         }
@@ -422,6 +433,7 @@ impl MwsMessage {
             sig: Some(sig),
             r#type: Some(MwsMessageType::HUB_RESP.to_string()),
             payload: Some(payload),
+            control: None,
             error: None,
             client_info: Some(client_info),
         }
@@ -440,6 +452,7 @@ impl MwsMessage {
             sig: Some(sig),
             r#type: Some(MwsMessageType::HUB_RESP.to_string()),
             payload: None,
+            control: None,
             error: Some(error),
             client_info: Some(client_info),
         }
@@ -451,6 +464,16 @@ impl MwsMessage {
         sig: String,
         payload: String,
     ) -> Self {
+        Self::hub_request_with_control(scope_id, target, sig, payload, None)
+    }
+
+    pub fn hub_request_with_control(
+        scope_id: Option<String>,
+        target: String,
+        sig: String,
+        payload: String,
+        control: Option<String>,
+    ) -> Self {
         Self {
             scope_id,
             from: None,
@@ -458,6 +481,7 @@ impl MwsMessage {
             sig: Some(sig),
             r#type: Some(MwsMessageType::HUB_REQ.to_string()),
             payload: Some(payload),
+            control,
             error: None,
             client_info: None,
         }
@@ -476,6 +500,7 @@ impl MwsMessage {
             sig: Some(sig),
             r#type: Some(MwsMessageType::HUB_DATA.to_string()),
             payload: Some(payload),
+            control: None,
             error: None,
             client_info: None,
         }
