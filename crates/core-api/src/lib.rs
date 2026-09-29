@@ -973,6 +973,10 @@ pub enum ServiceCoreInput {
     NodeRequest {
         target: String,
         payload: String,
+        /// Transport-owned metadata for a Node-to-Core request. It is not part
+        /// of the integration payload and is validated by the Core target.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        control: Option<String>,
         tenant_id: String,
         scope_id: String,
         node_type: String,
