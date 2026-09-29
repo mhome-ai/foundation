@@ -1,8 +1,8 @@
-# Person producer v3
+# Person v1
 
 Core owns the Space-wide library and all identity decisions. Producers describe an
-immutable embedding contract and submit live observations. The protocol is a hard cut.
-No gallery download, review workflow, separate sample submission or observation replay.
+immutable embedding contract and submit live observations. There is no gallery download,
+review workflow, separate sample submission, or observation replay.
 
 An observation expires after five minutes. Core returns its current recognition decision
 and a transient retained/skipped learning result. No decision receipts, rejected evidence,
@@ -36,5 +36,4 @@ Camera events and recordings remain separate owners.
 
 Explicit encrypted backup contains only the current library, including naming anchors.
 Transfers are temporary, scoped to the member and Space, and closed or expired. The archive
-format is v4 and does not import prior formats. Person data is never registered
-with general cloud data synchronization.
+format is v1. Person data is never registered with general cloud data synchronization.

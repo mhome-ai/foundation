@@ -16,12 +16,12 @@ pub struct DescribeResponse {
 mod tests {
     use super::*;
     #[test]
-    fn producer_contract_rejects_policy_negotiation() {
+    fn describe_rejects_unknown_fields() {
         let model = serde_json::json!({"id":"m","dimensions":2,"recognizerSha256":"a".repeat(64),"preprocessing":"rgb","normalized":true,"metric":"cosine"});
         let input = serde_json::json!({"embeddingSpace": model});
         assert!(serde_json::from_value::<DescribeRequest>(input.clone()).is_ok());
-        let mut legacy = input;
-        legacy["proposedPolicy"] = serde_json::json!({});
-        assert!(serde_json::from_value::<DescribeRequest>(legacy).is_err());
+        let mut extra = input;
+        extra["proposedPolicy"] = serde_json::json!({});
+        assert!(serde_json::from_value::<DescribeRequest>(extra).is_err());
     }
 }
