@@ -1,9 +1,13 @@
-//! OS authorization for one Host identity; independent of any Space.
+//! OS authorization for one computer's Host and the services it runs; independent
+//! of any Space.
 //!
-//! Installed packages declare uses per OS. The Host merges uses by PermissionKey,
-//! including stopped services. Merely reading this snapshot MUST NOT request OS
-//! authorization. Local Network has no general passive status API: a probe result
-//! is historical evidence, never a silently refreshed system setting.
+//! Each installed package declares requirements per OS. The same PermissionKey on
+//! another process is a separate grant, because the operating system attributes
+//! the call to the process that makes it. The snapshot therefore keeps one row
+//! per declaring component, including stopped services, and does not merge those
+//! rows. Merely reading this snapshot MUST NOT request OS authorization. Local
+//! Network has no general passive status API: a probe result is historical
+//! evidence, never a silently refreshed system setting.
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -104,9 +108,11 @@ pub struct HostPermissions {
     pub declaration_errors: Vec<PermissionDeclarationError>,
 }
 
-/// Internal local-control request. Not an App Facade operation. The server must
-/// verify the local control credential and Host identity; this DTO deliberately
-/// has no caller-controlled isLocal flag or arbitrary Settings URL.
+/// Local-control mutation. A Hub may later relay `GET /v1/permissions`; it must
+/// not relay this request, and it does not store or decide the grant. The server
+/// must verify the local control credential and Host identity. This DTO has no
+/// caller-controlled isLocal flag or arbitrary Settings URL. Each current
+/// PermissionKey belongs to one process; the request names that key.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostPermissionRequest {

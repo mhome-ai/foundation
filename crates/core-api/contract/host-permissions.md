@@ -10,16 +10,23 @@ to `ai.mhome.meowlink.clientd` and are not returned here. Never use a Space ID t
 identify a permission grant. A permission does not enable a plugin in a Space.
 
 - `GET /v1/permissions`: passive, per installed-package requirements, including
-  stopped Core/Nodes. Merge duplicate PermissionKey values, retain every use.
-- `POST /internal/permissions/request`: explicit local macOS request/probe.
-- `POST /internal/permissions/open-settings`: explicit local macOS navigation.
+  stopped Core/Nodes. The same PermissionKey on another process stays a separate
+  row. Do not merge those rows: the operating system grants the process that
+  calls the API.
+- `POST /internal/permissions/request`: explicit local request or probe, executed
+  in the process that owns that permission.
+- `POST /internal/permissions/open-settings`: explicit local navigation. Opening
+  Settings is not a grant; the caller must read status again.
 - Both POSTs take HostPermissionRequest and return a refreshed HostPermissions.
   They must reject the wrong hostId, nonlocal control routes and missing/invalid
   local control credentials. Host must require the control token independently
   of the Client's local identity check. Neither hostId nor isLocal authenticates
   a request. Never send that credential to discovered addresses or redirects.
-- Native Desktop and CLI use Client IPC; mobile uses its embedded Client.
-  Host management has no Core/Cloud Facade route and never requires a Space.
+  Mutations stay on the machine's local control socket.
+- Native Desktop and CLI use Client IPC for this computer. A remote Host accepts
+  status only. A Hub may relay `GET /v1/permissions` for a connected local Space;
+  Lion does not store or decide the grant. Mutations are not a facade operation
+  and never require a Space.
 
 
 `PermissionKey` includes targetBundleId for Automation; Music, Calendar and
@@ -51,12 +58,16 @@ hardware metrics poll. A remote view has no actionable permission buttons.
 
 ## Packaging and rollout prerequisites
 
-OS adapters must run as the Host authorization identity; no Desktop-side proxy
-request and no new permission-helper identity. Check the actual signed Host
-bundle's usage descriptions and hardened-runtime entitlements. The Host carries
-the supported declaration vocabulary/capabilities. Service installation must
-compare a package's requirements with those capabilities before activation and
-require a Host update when missing. Never patch a signed plist in place.
+Read and request each permission in the process that calls the API. Host reads
+local network and Bluetooth. AudioBridge reads the microphone. The Mac service
+reads Reminders and per-app automation. The desktop shell's camera, microphone
+and notification grants are separate and are not part of this snapshot. Do not
+add a permission-helper identity, and do not have the desktop process request a
+grant that belongs to Host or a service. Check the signed calling bundle's usage
+descriptions. Opening System Settings may be performed by Host. The Host carries
+the supported declaration vocabulary. Service installation must compare a
+package's requirements with those capabilities before activation and require a
+Host update when missing. Never patch a signed plist in place.
 
 Initial declarations follow actual implementations: Host local discovery,
 Matter Bluetooth commissioning, AudioBridge microphone recording, Mac Reminders
@@ -66,10 +77,11 @@ not justify requesting macOS camera permission.
 Publish the canonical core-api contracts and matching npm protocol package
 before updating consumer pins/lockfiles and implementing Host/Client/UI/CLI
 routes. Regenerate native and Pallas protocol projections from those contracts.
-Host permissions must not introduce a Core/cloud Facade route. An endpoint must not be considered
-implemented merely because it appears in the routing manifest.
+A Hub facade read, when added, only relays Host `GET /v1/permissions`. It is not
+implemented by this contract revision. An endpoint must not be considered
+implemented merely because it appears in a routing manifest.
 
 Acceptance requires passive-query/no-prompt tests, cross-host mutation rejection,
 no-Space native access, stopped-service declarations, incomplete manifests,
-per-target Automation, and actual allow/deny/relaunch checks under the signed
-Host identity. Signing fixtures do not prove TCC authorization attribution.
+per-target Automation, and actual allow/deny/relaunch checks in the process
+that calls the API. Signing fixtures do not prove TCC authorization attribution.
