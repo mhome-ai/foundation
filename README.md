@@ -13,6 +13,7 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 - `mhome-llm-api`: canonical model messages, tool schemas, completions and private continuation.
 - `mhome-machine-identity`: persistent local machine identity derivation and host naming.
 - `mhome-host-auth`: transport-independent Host signatures, verification and Client session rules.
+- `mhome-os-permissions`: in-process permission status, requests, and System Settings links.
 - `mhome-core-api`: shared Core/Node contracts and the canonical Host machine, metrics and permission types in `core_api::host`.
 - `mhome-playground-models`: deterministic playground device models and projections.
 - `mhome-runtime-paths`: process-safe runtime paths, endpoint names, and daemon ownership checks.

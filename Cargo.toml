@@ -12,6 +12,7 @@ members = [
   "crates/host-auth",
   "crates/playground-models",
   "crates/runtime-paths",
+  "crates/os-permissions",
 ]
 
 [workspace.package]
