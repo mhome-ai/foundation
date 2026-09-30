@@ -33,6 +33,7 @@ pub fn open_settings(permission: &PermissionKey) -> Result<(), String> {
     platform::open_settings(permission)
 }
 
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 fn now_ms() -> i64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -67,6 +68,7 @@ fn unsupported(permission: &PermissionKey, error: &str) -> PermissionObservation
     )
 }
 
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 fn system_authorization(permission: PermissionKey, code: i32) -> PermissionObservation {
     let (state, error) = match code {
         0 => (PermissionState::NotDetermined, None),
@@ -90,6 +92,7 @@ fn system_authorization(permission: PermissionKey, code: i32) -> PermissionObser
     observation(permission, state, evidence, Some(now_ms()), error)
 }
 
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 fn classify_dns_service(error: i32) -> Result<PermissionState, String> {
     match error {
         0 => Ok(PermissionState::Granted),
