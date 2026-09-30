@@ -48,3 +48,29 @@ fn installed_requirements_are_os_specific_and_feature_scoped() {
     );
     assert_eq!(requirements["macos"][0].feature, "Audio recording");
 }
+
+#[test]
+fn permission_actions_keep_the_selected_component_and_accept_legacy_requests() {
+    let request: HostPermissionRequest = serde_json::from_value(json!({
+        "hostId":"h", "componentId":"camera", "permission":{"id":"microphone"}
+    }))
+    .unwrap();
+    assert_eq!(request.component_id.as_deref(), Some("camera"));
+    assert_eq!(
+        serde_json::to_value(&request).unwrap()["componentId"],
+        "camera"
+    );
+    let legacy: HostPermissionRequest = serde_json::from_value(json!({
+        "hostId":"h", "permission":{"id":"microphone"}
+    }))
+    .unwrap();
+    assert!(legacy.component_id.is_none());
+    assert!(serde_json::to_value(legacy)
+        .unwrap()
+        .get("componentId")
+        .is_none());
+    assert!(serde_json::from_value::<HostPermissionRequest>(json!({
+        "hostId":"h", "componentId":42, "permission":{"id":"microphone"}
+    }))
+    .is_err());
+}

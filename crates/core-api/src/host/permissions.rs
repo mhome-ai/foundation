@@ -111,12 +111,15 @@ pub struct HostPermissions {
 /// Local-control mutation. A Hub may later relay `GET /v1/permissions`; it must
 /// not relay this request, and it does not store or decide the grant. The server
 /// must verify the local control credential and Host identity. This DTO has no
-/// caller-controlled isLocal flag or arbitrary Settings URL. Each current
-/// PermissionKey belongs to one process; the request names that key.
+/// caller-controlled isLocal flag or arbitrary Settings URL. The component
+/// selects an installed service (or "host"); the key selects its permission.
+/// Older callers may omit the component only when ownership is unambiguous.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostPermissionRequest {
     pub host_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub component_id: Option<String>,
     pub permission: PermissionKey,
 }
 

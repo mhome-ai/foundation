@@ -18,6 +18,10 @@ identify a permission grant. A permission does not enable a plugin in a Space.
 - `POST /internal/permissions/open-settings`: explicit local navigation. Opening
   Settings is not a grant; the caller must read status again.
 - Both POSTs take HostPermissionRequest and return a refreshed HostPermissions.
+  `componentId` selects the declaring installed service, or `host` for the Host
+  itself. The selected component must declare the exact permission key. For
+  compatibility, an omitted component is accepted only when exactly one
+  component declares that key; ambiguous requests must fail without prompting.
   They must reject the wrong hostId, nonlocal control routes and missing/invalid
   local control credentials. Host must require the control token independently
   of the Client's local identity check. Neither hostId nor isLocal authenticates
