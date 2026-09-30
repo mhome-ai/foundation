@@ -800,7 +800,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.25.5"
+version = "1.26.0"
 dependencies = [
  "jsonschema",
  "mhome-artifact-api",
@@ -838,7 +838,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.15.11"
+version = "1.16.0"
 dependencies = [
  "base64",
  "jsonschema",
@@ -858,7 +858,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "base64",
@@ -896,12 +896,11 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "cc",
  "libc",
  "mhome-core-api",
- "serde",
 ]
 
 [[package]]

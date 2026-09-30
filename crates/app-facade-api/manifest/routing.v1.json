@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.25.5",
+  "contractVersion": "1.26.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",

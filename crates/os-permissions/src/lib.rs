@@ -1,21 +1,18 @@
 //! In-process operating-system permission calls.
 //!
-//! The caller is the process macOS will charge. This crate does not choose an
-//! owner, persist install records, or expose HTTP.
+//! These observations describe the calling process's execution context. macOS
+//! may attribute that access to a responsible application, including Host. This
+//! crate does not discover a grant owner or query another process's permission.
 
-pub use core_api::host::permissions::{PermissionEvidence, PermissionKey, PermissionState};
-use serde::Serialize;
+pub use core_api::host::permissions::{
+    PermissionAccess, PermissionAccessState, PermissionEvidence, PermissionKey,
+    PermissionObservation, PermissionState,
+};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PermissionObservation {
-    pub permission: PermissionKey,
-    pub state: PermissionState,
-    pub evidence: PermissionEvidence,
-    pub observed_at_ms: Option<i64>,
-    pub error: Option<String>,
-}
+/// Budget for the platform's asynchronous authorization waits and explicit probes.
+/// The enclosing IPC deadline must also allow time to collect the refreshed report.
+pub const REQUEST_TIMEOUT_MS: u64 = 60_000;
 
 /// Passive read. This does not raise a system prompt. Local Network has no
 /// passive API, so its state is the last request in this process.
@@ -23,8 +20,9 @@ pub fn status(permission: &PermissionKey) -> PermissionObservation {
     platform::status(permission)
 }
 
-/// Ask this process for the permission. Bluetooth opens System Settings because
-/// reading its authorization does not prompt.
+/// Explicitly request authorization in this process's execution context.
+/// Completion does not imply approval; read status again. Opening Settings is a
+/// separate action. Linux resource probes belong in the resource's actual backend.
 pub fn request(permission: &PermissionKey) -> Result<(), String> {
     platform::request(permission)
 }
@@ -50,14 +48,16 @@ fn observation(
 ) -> PermissionObservation {
     PermissionObservation {
         permission,
+        process_id: std::process::id(),
         state,
         evidence,
         observed_at_ms,
+        access: None,
         error,
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn unsupported(permission: &PermissionKey, error: &str) -> PermissionObservation {
     observation(
         permission.clone(),
@@ -90,6 +90,28 @@ fn system_authorization(permission: PermissionKey, code: i32) -> PermissionObser
         PermissionEvidence::Unavailable
     };
     observation(permission, state, evidence, Some(now_ms()), error)
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn linux_status(permission: &PermissionKey) -> PermissionObservation {
+    match permission {
+        PermissionKey::LocalNetwork {}
+        | PermissionKey::Bluetooth {}
+        | PermissionKey::Microphone {} => observation(
+            permission.clone(),
+            PermissionState::NotRequired,
+            PermissionEvidence::Platform,
+            Some(now_ms()),
+            None,
+        ),
+        PermissionKey::Reminders {} | PermissionKey::Automation { .. } => observation(
+            permission.clone(),
+            PermissionState::Unsupported,
+            PermissionEvidence::Unavailable,
+            None,
+            Some("This permission is specific to macOS.".into()),
+        ),
+    }
 }
 
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
@@ -149,9 +171,16 @@ mod platform {
                 });
                 Ok(())
             }
-            PermissionKey::Bluetooth {} => open_settings(permission),
+            PermissionKey::Bluetooth {} => {
+                let code = unsafe { os_permissions_bluetooth_request(REQUEST_TIMEOUT_MS) };
+                if code < 0 {
+                    Err("Bluetooth permission request timed out".into())
+                } else {
+                    Ok(())
+                }
+            }
             PermissionKey::Microphone {} => {
-                let code = unsafe { os_permissions_microphone_request() };
+                let code = unsafe { os_permissions_microphone_request(REQUEST_TIMEOUT_MS) };
                 if code < 0 {
                     Err("Microphone permission request timed out".into())
                 } else {
@@ -159,7 +188,7 @@ mod platform {
                 }
             }
             PermissionKey::Reminders {} => {
-                let code = unsafe { os_permissions_reminders_request() };
+                let code = unsafe { os_permissions_reminders_request(REQUEST_TIMEOUT_MS) };
                 if code < 0 {
                     Err("Reminders permission request timed out".into())
                 } else {
@@ -304,7 +333,7 @@ mod platform {
         if fd < 0 {
             return Err("Local network check returned no socket".into());
         }
-        let deadline = Instant::now() + Duration::from_secs(8);
+        let deadline = Instant::now() + Duration::from_millis(REQUEST_TIMEOUT_MS);
         while Instant::now() < deadline {
             let mut poll = libc::pollfd {
                 fd,
@@ -355,10 +384,11 @@ mod platform {
 
     extern "C" {
         fn os_permissions_bluetooth_authorization() -> i32;
+        fn os_permissions_bluetooth_request(timeout_ms: u64) -> i32;
         fn os_permissions_microphone_authorization() -> i32;
-        fn os_permissions_microphone_request() -> i32;
+        fn os_permissions_microphone_request(timeout_ms: u64) -> i32;
         fn os_permissions_reminders_authorization() -> i32;
-        fn os_permissions_reminders_request() -> i32;
+        fn os_permissions_reminders_request(timeout_ms: u64) -> i32;
         fn os_permissions_automation(bundle_id: *const c_char, ask: i32) -> i32;
         fn DNSServiceRegister(
             sd: *mut *mut c_void,
@@ -393,14 +423,21 @@ mod platform {
     use super::*;
 
     pub fn status(permission: &PermissionKey) -> PermissionObservation {
-        unsupported(
-            permission,
-            "This operating system has no system permission to read.",
-        )
+        #[cfg(target_os = "linux")]
+        {
+            linux_status(permission)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            unsupported(
+                permission,
+                "Permission observation is not implemented for this platform.",
+            )
+        }
     }
 
     pub fn request(_permission: &PermissionKey) -> Result<(), String> {
-        Err("Permission requests are only available on macOS".into())
+        Err("This platform has no supported application-consent request. Check access in the resource backend; system configuration may require administrator authorization.".into())
     }
 
     pub fn open_settings(_permission: &PermissionKey) -> Result<(), String> {
@@ -433,5 +470,34 @@ mod tests {
         let unreadable = system_authorization(PermissionKey::Bluetooth {}, -1);
         assert_eq!(unreadable.state, PermissionState::Unknown);
         assert_eq!(unreadable.evidence, PermissionEvidence::Unavailable);
+        assert_eq!(granted.process_id, std::process::id());
+        assert!(granted.access.is_none());
+    }
+
+    #[test]
+    fn linux_no_app_consent_does_not_claim_resource_access() {
+        for key in [
+            PermissionKey::LocalNetwork {},
+            PermissionKey::Bluetooth {},
+            PermissionKey::Microphone {},
+        ] {
+            let observed = linux_status(&key);
+            assert_eq!(observed.state, PermissionState::NotRequired);
+            assert_eq!(observed.evidence, PermissionEvidence::Platform);
+            assert_eq!(observed.process_id, std::process::id());
+            assert!(observed.access.is_none());
+            assert!(observed.error.is_none());
+        }
+        assert_eq!(
+            linux_status(&PermissionKey::Reminders {}).state,
+            PermissionState::Unsupported
+        );
+        assert_eq!(
+            linux_status(&PermissionKey::Automation {
+                target_bundle_id: "com.apple.Music".into()
+            })
+            .state,
+            PermissionState::Unsupported
+        );
     }
 }

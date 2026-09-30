@@ -1,13 +1,12 @@
 //! OS authorization for one computer's Host and the services it runs; independent
 //! of any Space.
 //!
-//! Each installed package declares requirements per OS. The same PermissionKey on
-//! another process is a separate grant, because the operating system attributes
-//! the call to the process that makes it. The snapshot therefore keeps one row
-//! per declaring component, including stopped services, and does not merge those
-//! rows. Merely reading this snapshot MUST NOT request OS authorization. Local
-//! Network has no general passive status API: a probe result is historical
-//! evidence, never a silently refreshed system setting.
+//! Services declare requirements and report observations from the processes that
+//! actually access the resource. An executing process is not necessarily a
+//! separate OS authorization identity: helpers can share a responsible app.
+//! Host groups only established authorization subjects and preserves every
+//! service's observations. Reading a report must never request authorization.
+//! A previous access probe is historical evidence, not a current OS setting.
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -43,6 +42,11 @@ pub struct PermissionUse {
     pub component_name: String,
     pub feature: String,
     pub reason: String,
+    /// Measured in the actual executor, including a sidecar when applicable.
+    /// None means that the executor could not be observed; never copy a sibling's grant.
+    pub observation: Option<PermissionObservation>,
+    /// Collection/declaration failure, separate from a successfully observed OS denial.
+    pub error: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -51,6 +55,9 @@ pub enum PermissionState {
     Unknown,
     NotDetermined,
     Granted,
+    /// This platform has no per-application consent for this resource. This says
+    /// nothing about device, account, session, sandbox or system-policy access.
+    NotRequired,
     Denied,
     Restricted,
     Unsupported,
@@ -61,6 +68,9 @@ pub enum PermissionState {
 pub enum PermissionEvidence {
     /// A passive OS authorization query, not hardware availability.
     System,
+    /// Platform semantics, e.g. Linux has no TCC consent for Bluetooth.
+    /// This is not evidence that an operation or device is available.
+    Platform,
     /// A previous explicit request/probe; observedAtMs is mandatory.
     Probe,
     Unavailable,
@@ -73,17 +83,66 @@ pub enum PermissionAction {
     OpenSettings,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum PermissionAccessState {
+    Unknown,
+    Available,
+    Unavailable,
+}
+
+/// Runtime resource access is independent of user consent. A successful scan,
+/// for example, does not grant permission and does not prove a future connection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PermissionAccess {
+    pub state: PermissionAccessState,
+    pub observed_at_ms: Option<i64>,
+    /// The operation/condition actually checked; never imply a broader guarantee.
+    pub detail: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PermissionObservation {
+    pub permission: PermissionKey,
+    /// PID of the process where this observation was made, not its OS grant owner.
+    pub process_id: u32,
+    pub state: PermissionState,
+    pub evidence: PermissionEvidence,
+    pub observed_at_ms: Option<i64>,
+    pub access: Option<PermissionAccess>,
+    pub error: Option<String>,
+}
+
+/// A subject established for this permission and launch environment. Neither a
+/// common parent nor equal permission states are enough to establish a subject.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PermissionSubject {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ServicePermissions {
+    /// Reporting service PID; individual observations may come from its sidecar.
+    pub process_id: u32,
+    pub permissions: Vec<PermissionObservation>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostPermission {
     pub permission: PermissionKey,
-    pub state: PermissionState,
-    pub evidence: PermissionEvidence,
-    pub observed_at_ms: Option<i64>,
+    /// None keeps this component separate until its authorization scope is known.
+    pub subject: Option<PermissionSubject>,
     pub uses: Vec<PermissionUse>,
+    /// A currently available executor chosen by Host. No executor means no request.
+    pub request_component_id: Option<String>,
     /// Mechanisms supported by this Host, NOT authority for a remote caller.
     pub supported_actions: Vec<PermissionAction>,
-    pub error: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -97,8 +156,6 @@ pub struct PermissionDeclarationError {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostPermissions {
     pub host_id: String,
-    pub subject_id: String,
-    pub subject_name: String,
     pub host_version: String,
     pub platform: String,
     pub observed_at_ms: i64,
@@ -113,13 +170,12 @@ pub struct HostPermissions {
 /// must verify the local control credential and Host identity. This DTO has no
 /// caller-controlled isLocal flag or arbitrary Settings URL. The component
 /// selects an installed service (or "host"); the key selects its permission.
-/// Older callers may omit the component only when ownership is unambiguous.
+/// The component is always explicit, including when Host has grouped a shared grant.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostPermissionRequest {
     pub host_id: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub component_id: Option<String>,
+    pub component_id: String,
     pub permission: PermissionKey,
 }
 

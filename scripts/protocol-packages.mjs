@@ -72,9 +72,11 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/node-service-protocol-v1.json",
       "contract/recipient-id-v1.md",
       "contract/host-management-v1.json",
+      "contract/host-permissions.md",
     ]),
     schemas: Object.freeze({
       hostManagementRequest: "schema/host-management-request.v1.schema.json",
+      hostPermissions: "schema/host-permissions.schema.json",
       normalizedInbound: "schema/normalized-inbound.v4.schema.json",
       messagingCommands: "schema/messaging-commands.v1.schema.json",
       interactionFlowNode: "schema/interaction-flow-node.v1.schema.json",

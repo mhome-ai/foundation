@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.15.11",
+  "contractVersion": "1.16.0",
   "protocols": {
     "agentGateway": {
       "submitTarget": "/agent/submit",
@@ -76,6 +76,12 @@
         "failed",
         "unknown"
       ]
+    },
+    "hostPermissions": {
+      "schema": "schema/host-permissions.schema.json",
+      "statusPath": "/v1/permissions",
+      "requestPath": "/internal/permissions/request",
+      "settingsPath": "/internal/permissions/open-settings"
     }
   },
   "hostManagement": {
