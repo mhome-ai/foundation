@@ -851,14 +851,14 @@ dependencies = [
 
 [[package]]
 name = "mhome-face-matching"
-version = "0.5.0"
+version = "1.0.0"
 dependencies = [
  "mhome-person-api",
 ]
 
 [[package]]
 name = "mhome-host-auth"
-version = "0.2.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "base64",
@@ -882,7 +882,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-machine-identity"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "base64",
@@ -896,7 +896,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "0.2.0"
+version = "1.0.0"
 dependencies = [
  "cc",
  "libc",
@@ -905,7 +905,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-person-api"
-version = "0.5.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -913,7 +913,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-playground-models"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "serde",
@@ -922,7 +922,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-runtime-paths"
-version = "0.1.1"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "libc",
