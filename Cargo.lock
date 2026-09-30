@@ -803,9 +803,9 @@ name = "mhome-app-facade-api"
 version = "1.25.4"
 dependencies = [
  "jsonschema",
- "mhome-artifact-api 1.2.0",
- "mhome-conversation-api 3.1.1",
- "mhome-core-api 1.15.10",
+ "mhome-artifact-api",
+ "mhome-conversation-api",
+ "mhome-core-api",
  "mhome-person-api",
  "serde",
  "serde_json",
@@ -822,59 +822,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "mhome-artifact-api"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18cb5c61d2d45038c75c74d9facaf8251f31ad4c5b3bb7c30a937d3c3982c74f"
-dependencies = [
- "base64",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "mhome-conversation-api"
 version = "3.1.1"
 dependencies = [
  "async-trait",
  "base64",
  "jsonschema",
- "mhome-artifact-api 1.2.0",
- "mhome-llm-api 3.0.5",
+ "mhome-artifact-api",
+ "mhome-llm-api",
  "serde",
  "serde_ignored",
  "serde_json",
  "thiserror 2.0.20",
-]
-
-[[package]]
-name = "mhome-conversation-api"
-version = "3.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1255020d4cec9feb23ddab4d5d6b8f5a87039cd6b61bb476594014300e0a409b"
-dependencies = [
- "async-trait",
- "base64",
- "mhome-artifact-api 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "mhome-llm-api 3.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde",
- "serde_ignored",
- "serde_json",
- "thiserror 2.0.20",
-]
-
-[[package]]
-name = "mhome-core-api"
-version = "1.15.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10540c96742563dafc2db2b4b65665256be1843b141e1e0b7106342e95ae15c7"
-dependencies = [
- "base64",
- "mhome-artifact-api 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "mhome-conversation-api 3.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "mhome-llm-api 3.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -883,9 +842,9 @@ version = "1.15.10"
 dependencies = [
  "base64",
  "jsonschema",
- "mhome-artifact-api 1.2.0",
- "mhome-conversation-api 3.1.1",
- "mhome-llm-api 3.0.5",
+ "mhome-artifact-api",
+ "mhome-conversation-api",
+ "mhome-llm-api",
  "serde",
  "serde_json",
 ]
@@ -904,7 +863,7 @@ dependencies = [
  "anyhow",
  "base64",
  "http",
- "mhome-core-api 1.15.10",
+ "mhome-core-api",
  "p256",
  "rand",
  "serde",
@@ -916,18 +875,7 @@ dependencies = [
 name = "mhome-llm-api"
 version = "3.0.5"
 dependencies = [
- "mhome-artifact-api 1.2.0",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "mhome-llm-api"
-version = "3.0.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f055468bdfc73667044f6099cbe3dd84f00d87c773b799df7bebda6807d8981"
-dependencies = [
- "mhome-artifact-api 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mhome-artifact-api",
  "serde",
  "serde_json",
 ]
@@ -952,7 +900,7 @@ version = "0.1.0"
 dependencies = [
  "cc",
  "libc",
- "mhome-core-api 1.15.8",
+ "mhome-core-api",
  "serde",
 ]
 

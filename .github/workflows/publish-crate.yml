@@ -9,6 +9,7 @@ on:
       - "mhome-face-matching-v*"
       - "mhome-machine-identity-v*"
       - "mhome-core-api-v*"
+      - "mhome-os-permissions-v*"
       - "mhome-host-auth-v*"
       - "mhome-app-facade-api-v*"
       - "mhome-playground-models-v*"

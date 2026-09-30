@@ -14,7 +14,7 @@ include = ["src/**", "native/**", "build.rs", "Cargo.toml", "README.md", "LICENS
 name = "os_permissions"
 
 [dependencies]
-core-api = { package = "mhome-core-api", version = "=1.15.8" }
+core-api = { package = "mhome-core-api", version = "=1.15.10", path = "../core-api" }
 libc = "0.2"
 serde = { version = "1", features = ["derive"] }
 
