@@ -4,8 +4,7 @@
 //! Services declare requirements and report observations from the processes that
 //! actually access the resource. An executing process is not necessarily a
 //! separate OS authorization identity: helpers can share a responsible app.
-//! Host groups only established authorization subjects and preserves every
-//! service's observations. Reading a report must never request authorization.
+//! Host reports one row per component and permission. Reading a report must never request authorization.
 //! A previous access probe is historical evidence, not a current OS setting.
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -33,20 +32,6 @@ pub struct PermissionRequirement {
     /// Human-readable affected capability; denial need not disable the service.
     pub feature: String,
     pub reason: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PermissionUse {
-    pub component_id: String,
-    pub component_name: String,
-    pub feature: String,
-    pub reason: String,
-    /// Measured in the actual executor, including a sidecar when applicable.
-    /// None means that the executor could not be observed; never copy a sibling's grant.
-    pub observation: Option<PermissionObservation>,
-    /// Collection/declaration failure, separate from a successfully observed OS denial.
-    pub error: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -95,13 +80,17 @@ pub struct PermissionObservation {
     pub error: Option<String>,
 }
 
-/// A subject established for this permission and launch environment. Neither a
-/// common parent nor equal permission states are enough to establish a subject.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PermissionSubject {
-    pub id: String,
-    pub name: String,
+impl PermissionObservation {
+    pub fn is_satisfied(&self) -> bool {
+        self.process_id != 0
+            && self.error.is_none()
+            && self.evidence != PermissionEvidence::Unavailable
+            && (self.evidence != PermissionEvidence::Probe || self.observed_at_ms.is_some())
+            && matches!(
+                self.state,
+                PermissionState::Granted | PermissionState::NotRequired
+            )
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -115,14 +104,26 @@ pub struct ServicePermissions {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostPermission {
+    pub component_id: String,
+    pub component_name: String,
     pub permission: PermissionKey,
-    /// None keeps this component separate until its authorization scope is known.
-    pub subject: Option<PermissionSubject>,
-    pub uses: Vec<PermissionUse>,
-    /// A currently available executor chosen by Host. No executor means no request.
-    pub request_component_id: Option<String>,
-    /// Mechanisms supported by this Host, NOT authority for a remote caller.
+    pub feature: String,
+    pub reason: String,
+    /// None means that the actual executor could not be observed.
+    pub observation: Option<PermissionObservation>,
+    /// Collection failure, distinct from an observed OS denial.
+    pub error: Option<String>,
+    /// Mechanisms supported locally; remote callers can only read status.
     pub supported_actions: Vec<PermissionAction>,
+}
+
+impl HostPermission {
+    pub fn is_satisfied(&self) -> bool {
+        self.error.is_none()
+            && self.observation.as_ref().is_some_and(|observation| {
+                observation.permission == self.permission && observation.is_satisfied()
+            })
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -150,7 +151,7 @@ pub struct HostPermissions {
 /// must verify the local control credential and Host identity. This DTO has no
 /// caller-controlled isLocal flag or arbitrary Settings URL. The component
 /// selects an installed service (or "host"); the key selects its permission.
-/// The component is always explicit, including when Host has grouped a shared grant.
+/// The component is always explicit.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostPermissionRequest {

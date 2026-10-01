@@ -121,34 +121,18 @@
         }
       ]
     },
-    "PermissionSubject": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "name"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
-    "PermissionUse": {
+    "HostPermission": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "componentId",
         "componentName",
+        "permission",
         "feature",
         "reason",
         "observation",
-        "error"
+        "error",
+        "supportedActions"
       ],
       "properties": {
         "componentId": {
@@ -158,6 +142,9 @@
         "componentName": {
           "type": "string",
           "minLength": 1
+        },
+        "permission": {
+          "$ref": "#/$defs/PermissionKey"
         },
         "feature": {
           "type": "string",
@@ -186,50 +173,6 @@
               "type": "null"
             }
           ]
-        }
-      }
-    },
-    "HostPermission": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "permission",
-        "subject",
-        "uses",
-        "requestComponentId",
-        "supportedActions"
-      ],
-      "properties": {
-        "permission": {
-          "$ref": "#/$defs/PermissionKey"
-        },
-        "subject": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/PermissionSubject"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "uses": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "$ref": "#/$defs/PermissionUse"
-          }
-        },
-        "requestComponentId": {
-          "anyOf": [
-            {
-              "type": "string",
-              "minLength": 1
-            },
-            {
-              "type": "null"
-            }
-          ]
         },
         "supportedActions": {
           "type": "array",
@@ -241,45 +184,7 @@
             ]
           }
         }
-      },
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "subject": {
-                "type": "null"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "uses": {
-                "maxItems": 1
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "requestComponentId": {
-                "type": "null"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "supportedActions": {
-                "not": {
-                  "contains": {
-                    "const": "request"
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
+      }
     },
     "PermissionDeclarationError": {
       "type": "object",

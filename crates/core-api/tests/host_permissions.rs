@@ -71,69 +71,79 @@ fn permission_actions_require_the_selected_component() {
 }
 
 #[test]
-fn a_shared_subject_preserves_each_executors_observation() {
-    let observation = |pid, state| PermissionObservation {
-        permission: PermissionKey::Bluetooth {},
-        process_id: pid,
-        state,
-        evidence: PermissionEvidence::System,
-        observed_at_ms: Some(123),
-        error: None,
-    };
-    let usage = |id: &str, observation| PermissionUse {
+fn rows_preserve_each_components_authorization_without_grouping() {
+    let row = |id: &str, state| HostPermission {
         component_id: id.into(),
         component_name: id.into(),
-        feature: "Discovery".into(),
-        reason: "Discover nearby devices".into(),
-        observation,
-        error: None,
-    };
-    let row = HostPermission {
         permission: PermissionKey::Bluetooth {},
-        subject: Some(PermissionSubject {
-            id: "ai.mhome.meowlink.hostd".into(),
-            name: "MeowLink Host".into(),
+        feature: "Discovery".into(),
+        reason: "Discover devices".into(),
+        observation: Some(PermissionObservation {
+            permission: PermissionKey::Bluetooth {},
+            process_id: 101,
+            state,
+            evidence: PermissionEvidence::System,
+            observed_at_ms: Some(123),
+            error: None,
         }),
-        uses: vec![
-            usage("matter", Some(observation(101, PermissionState::Granted))),
-            usage(
-                "second-service",
-                Some(observation(102, PermissionState::Denied)),
-            ),
-            usage("stopped-service", None),
-        ],
-        request_component_id: Some("matter".into()),
-        supported_actions: vec![PermissionAction::Request, PermissionAction::OpenSettings],
+        error: None,
+        supported_actions: vec![PermissionAction::Request],
     };
-    let wire = serde_json::to_value(&row).unwrap();
-    assert!(
-        wire.get("state").is_none(),
-        "A group must not overwrite conflicting observations with one grant"
-    );
-    let snapshot = json!({"hostId":"h", "hostVersion":"1.0.0", "platform":"macos", "observedAtMs":123, "permissions":[wire.clone()], "declarationErrors":[]});
+    let granted = row("matter", PermissionState::Granted);
+    let denied = row("other", PermissionState::Denied);
+    assert!(granted.is_satisfied());
+    assert!(!denied.is_satisfied());
+    let mut stopped = row("stopped", PermissionState::Granted);
+    stopped.observation = None;
+    stopped.supported_actions.clear();
+    assert!(!stopped.is_satisfied());
+    let snapshot = json!({"hostId":"h", "hostVersion":"1", "platform":"macos", "observedAtMs":123,
+        "permissions":[granted, denied, stopped], "declarationErrors":[]});
     let schema: serde_json::Value =
         serde_json::from_str(include_str!("../schema/host-permissions.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     assert!(validator.is_valid(&snapshot));
-    let mut unknown_shared = snapshot.clone();
-    unknown_shared["permissions"][0]["subject"] = serde_json::Value::Null;
-    assert!(
-        !validator.is_valid(&unknown_shared),
-        "Unconfirmed subjects must stay separate"
-    );
-    let mut missing_executor = snapshot.clone();
-    missing_executor["permissions"][0]["requestComponentId"] = serde_json::Value::Null;
-    assert!(!validator.is_valid(&missing_executor));
-    let decoded: HostPermission = serde_json::from_value(wire).unwrap();
-    assert_eq!(
-        decoded.uses[0].observation.as_ref().unwrap().process_id,
-        101
-    );
-    assert_eq!(
-        decoded.uses[1].observation.as_ref().unwrap().state,
-        PermissionState::Denied
-    );
-    assert!(decoded.uses[2].observation.is_none());
+    for (key, value) in [
+        ("subject", json!(null)),
+        ("uses", json!([])),
+        ("requestComponentId", json!("matter")),
+    ] {
+        let mut invalid = snapshot.clone();
+        invalid["permissions"][0][key] = value;
+        assert!(!validator.is_valid(&invalid));
+        assert!(serde_json::from_value::<HostPermissions>(invalid).is_err());
+    }
+}
+
+#[test]
+fn only_valid_authorization_observations_satisfy_a_requirement() {
+    let mut observed = PermissionObservation {
+        permission: PermissionKey::LocalNetwork {},
+        process_id: 1,
+        state: PermissionState::NotRequired,
+        evidence: PermissionEvidence::Platform,
+        observed_at_ms: Some(123),
+        error: None,
+    };
+    assert!(observed.is_satisfied());
+    for state in [
+        PermissionState::Unknown,
+        PermissionState::NotDetermined,
+        PermissionState::Denied,
+        PermissionState::Restricted,
+        PermissionState::Unsupported,
+    ] {
+        observed.state = state;
+        assert!(!observed.is_satisfied());
+    }
+    observed.state = PermissionState::Granted;
+    observed.evidence = PermissionEvidence::Probe;
+    observed.observed_at_ms = None;
+    assert!(!observed.is_satisfied());
+    observed.observed_at_ms = Some(123);
+    assert!(observed.is_satisfied());
+    observed.error = Some("Query failed".into());
+    assert!(!observed.is_satisfied());
 }
 
 #[test]

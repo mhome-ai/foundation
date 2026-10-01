@@ -9,47 +9,37 @@ This is a direct development cutover. There is one report model and no legacy
 serialization, implicit component selection or alternative compatibility route.
 Update Foundation consumers together after publishing the matching packages.
 
-## Declaration, executor and authorization subject
+## Declaration and executor
 
-Each service keeps its source-root `permission.yml`, packages it, and reports its
-own requirements. Host stores installed declarations so stopped services remain
-visible. A declaration says which feature needs access, not who the OS charges.
+Each service keeps its source-root `permission.yml` and packages it. The installed
+package is the sole source of desired permissions. Host loads declarations into
+its installed-service inventory on startup and when packages change. Status reads
+use that memory snapshot; they do not scan packages or maintain a database copy.
+Stopped services retain their requirements. Invalid declarations remain visible.
 
-`PermissionObservation.processId` identifies the actual executing process. It is
-not a grant identity. A helper may share its responsible application's consent.
-A Rust service must obtain a sidecar's observation over its private transport when
-that sidecar executes the protected operation; it must not substitute its own
-Foundation query. Standalone launches report their actual launch context, which can differ
-from Host-managed launches. Reading status must not start an absent sidecar.
+Each `HostPermission` is one component and one permission: `componentId`,
+`componentName`, `permission`, `feature`, `reason`, `observation`, `error`, and
+`supportedActions`. There are no grouped subjects or selected substitute executors.
+`PermissionObservation.processId` identifies the actual executing process, not an
+OS grant identity. A sidecar reports its own observation through its service.
+Reading status must not start an absent sidecar or substitute its parent's grant.
 
-`PermissionSubject` is an authorization scope established for the specific
-permission, launch path and packaging profile. Host may group by this subject and
-the full `PermissionKey`. Equal states, equal signing teams, a common parent,
-service-supplied labels or environment variables alone do not establish sharing.
-There is no generic public macOS query in this contract that discovers another
-process's TCC grant owner. Verify responsible-application attribution using the
-real signed launch chain before enabling a shared subject for a permission.
-If attribution is unconfirmed, `subject` is null and that component stays separate.
-Different Automation `targetBundleId` values always remain distinct grants.
-
-A grouped row preserves every `PermissionUse`, its observation and any collection
-error. There is deliberately no group-level grant/state that can erase a denial,
-an unknown executor or conflicting observations. A stopped service has no current
-observation. Do not copy another service's grant into that empty observation.
-Host chooses `requestComponentId` from available executors; it is null when none
-can handle the request. `supportedActions` describes available mechanisms only.
+A helper can share its responsible application's consent without any grouping
+fields in this protocol. Equal PIDs, signing teams or states alone do not establish
+shared grants. Automation keys remain distinct per target application.
 
 ## Transport and actions
 
 - `GET /v1/permissions` returns `HostPermissions` for installed requirements,
   including stopped services and declaration/collection failures.
 - `POST /internal/permissions/request` performs one explicit request or probe in
-  the selected service's actual execution context, then refreshes the report.
+  the selected service's actual execution context. It returns `{ "ok": true }`
+  once submitted, without collecting another snapshot or waiting for user consent.
 - `POST /internal/permissions/open-settings` opens the platform settings pane.
-  Opening Settings is not a grant; status must be refreshed afterwards.
+  It returns `{ "ok": true }` after opening. Status is queried separately.
 - Both POSTs take `HostPermissionRequest`. `hostId`, `componentId` and `permission`
-  are mandatory. The component must declare that exact key. Host derives grouping
-  itself; the caller cannot assert a subject, locality or an arbitrary Settings URL.
+  are mandatory. The component must declare that exact key. The caller cannot assert locality
+  or an arbitrary Settings URL.
 - Require valid local control credentials and matching Host identity. Native
   Desktop and CLI use Client IPC. Remote Hosts accept status only. Do not send
   local control credentials to discovered addresses or redirects. A future Hub
@@ -58,11 +48,11 @@ can handle the request. `supportedActions` describes available mechanisms only.
   PID identifies the reporting service; individual observations can identify its
   sidecar. The service rejects requests outside its declared requirements.
 
-Host coalesces in-flight requests for an established shared subject and key, or
-for the individual executor and key when sharing is unknown. Transport timeout
-must not start a duplicate native request. Refresh all affected service reports
-when an operation completes. Bound collection concurrency and the whole snapshot
-latency; a stalled executor must not delay every other service indefinitely.
+Foundation owns native request deduplication in the actual executor. Transport
+timeouts do not release that ownership. UI polls status every two seconds while
+managing permissions and refreshes on focus; a pending read is shared. CLI batch
+requests query once after submission. Bound collection concurrency and the whole
+snapshot latency so a stalled executor cannot hold every other service indefinitely.
 
 ## Authorization observations
 
@@ -115,10 +105,9 @@ policies are separate deployment conditions, not automatically inherited grants.
 ## Acceptance
 
 Test passive reads without prompts; real signed allow/deny/revoke/relaunch
-behavior; shared grants across two executors; independent/unknown subjects;
-sidecar and stopped-service observations; conflicting per-service states;
+behavior; shared grants across two executors; sidecar and stopped-service observations; conflicting per-component states;
 per-target Automation; cross-host mutation rejection; required component
-selection; incomplete manifests; bounded collection; coalesced requests; and
+selection; incomplete manifests; bounded collection; native request deduplication; and
 Linux `notRequired` without any resource observation. Test Linux setup first as
 a dry-run and verify effective access in the intended ordinary runtime session.
 Signing fixtures and mocked status tests do not prove TCC attribution.
