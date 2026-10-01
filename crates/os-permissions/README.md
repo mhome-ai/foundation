@@ -8,12 +8,24 @@ opening the matching System Settings pane. Its observation records the executing
 not the OS grant owner. macOS may attribute a helper's access to its responsible application.
 The crate does not discover that identity, inspect another process, persist grants, or serve HTTP.
 
-macOS implements the native authorization queries. Only an explicit Bluetooth request creates a
-Core Bluetooth manager; status reads do not initialize Bluetooth. Call blocking requests on a
-worker thread. Asynchronous native waits and the Local Network probe use `REQUEST_TIMEOUT_MS`;
-an enclosing IPC timeout must allow additional time to refresh observations. The synchronous
-Apple Events request is controlled by macOS and cannot be cancelled by this timeout. A transport
-timeout must not start another native request while the previous one remains in flight.
+macOS implements native authorization queries. `request()` starts authorization and returns
+without waiting for the user's decision. Poll `status()` to update a permission page; accepting a
+request is not permission approval. The process retains at most one in-flight request per key
+(including the Automation target). Losing an HTTP caller does not cancel or duplicate it. Native
+completion callbacks release request objects; only the synchronous Apple Events API needs a worker.
+No UI operation identifier, persistent grant record, or client callback subscription is required.
+
+Only explicit Bluetooth requests initialize Core Bluetooth. Only an explicit Local Network request
+starts a process-owned Bonjour monitor. Its state callback updates the latest network observation,
+including a later waiting/error state. Repeated explicit requests replace that monitor, with at most
+one live browser. Status reads do not start a probe or raise a prompt. Local Network has no general
+passive authorization API: its report is operation evidence, with the original observation time,
+not a guaranteed live reading of the System Settings switch. A fresh process has no such evidence.
+The monitor does not enumerate or return discovered devices.
+
+Opening System Settings is a separate action. Returning from Settings does not establish a grant;
+the caller should resume passive polling. When no new network observation exists, preserve its
+observation time rather than presenting the last successful probe as a fresh authorization check.
 
 Linux reports `notRequired` / `platform` for native Bluetooth, local networking and microphone
 consent. This is **not** a successful resource-access check. The real backend must separately

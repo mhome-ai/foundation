@@ -12,4 +12,5 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=AVFoundation");
     println!("cargo:rustc-link-lib=framework=EventKit");
     println!("cargo:rustc-link-lib=framework=CoreServices");
+    println!("cargo:rustc-link-lib=framework=Network");
 }

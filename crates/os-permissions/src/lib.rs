@@ -10,19 +10,18 @@ pub use core_api::host::permissions::{
 };
 use std::time::{SystemTime, UNIX_EPOCH};
 
-/// Budget for the platform's asynchronous authorization waits and explicit probes.
-/// The enclosing IPC deadline must also allow time to collect the refreshed report.
-pub const REQUEST_TIMEOUT_MS: u64 = 60_000;
-
 /// Passive read. This does not raise a system prompt. Local Network has no
-/// passive API, so its state is the last request in this process.
+/// passive API, so its state is the latest observation from an explicitly started
+/// network monitor in this process. Reading status never starts that monitor.
 pub fn status(permission: &PermissionKey) -> PermissionObservation {
     platform::status(permission)
 }
 
 /// Explicitly request authorization in this process's execution context.
-/// Completion does not imply approval; read status again. Opening Settings is a
-/// separate action. Linux resource probes belong in the resource's actual backend.
+/// Returns after starting the request, without waiting for the user. Repeated
+/// requests for the same permission reuse the pending request. Poll status for
+/// approval; successful submission is not a grant. Opening Settings is separate.
+/// Linux resource probes belong in the resource's actual backend.
 pub fn request(permission: &PermissionKey) -> Result<(), String> {
     platform::request(permission)
 }
@@ -123,25 +122,34 @@ fn classify_dns_service(error: i32) -> Result<PermissionState, String> {
     }
 }
 
+#[cfg(any(target_os = "macos", test))]
+mod requests;
+
 #[cfg(target_os = "macos")]
 mod platform {
+    use super::requests::Requests;
     use super::*;
     use std::ffi::{c_char, c_void, CString};
-    use std::sync::Mutex;
-    use std::time::{Duration, Instant};
+    use std::sync::{LazyLock, Mutex};
 
-    #[derive(Clone)]
-    struct NetworkObservation {
-        state: PermissionState,
-        at_ms: Option<i64>,
-        error: Option<String>,
-    }
-
-    static NETWORK: Mutex<Option<NetworkObservation>> = Mutex::new(None);
+    static REQUESTS: LazyLock<Requests> = LazyLock::new(Requests::default);
+    static NETWORK: Mutex<Option<PermissionObservation>> = Mutex::new(None);
 
     pub fn status(permission: &PermissionKey) -> PermissionObservation {
-        match permission {
-            PermissionKey::LocalNetwork {} => network_status(),
+        let mut result = match permission {
+            PermissionKey::LocalNetwork {} => NETWORK
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .clone()
+                .unwrap_or_else(|| {
+                    observation(
+                        permission.clone(),
+                        PermissionState::Unknown,
+                        PermissionEvidence::Unavailable,
+                        None,
+                        None,
+                    )
+                }),
             PermissionKey::Bluetooth {} => system_authorization(permission.clone(), unsafe {
                 os_permissions_bluetooth_authorization()
             }),
@@ -154,55 +162,98 @@ mod platform {
             PermissionKey::Automation { target_bundle_id } => {
                 automation_status(target_bundle_id, false)
             }
+        };
+        if matches!(
+            result.state,
+            PermissionState::Unknown | PermissionState::NotDetermined
+        ) {
+            if let Some(error) = REQUESTS.error(permission) {
+                result.error = Some(error);
+            }
         }
+        result
     }
 
     pub fn request(permission: &PermissionKey) -> Result<(), String> {
+        if let PermissionKey::Automation { target_bundle_id } = permission {
+            if target_bundle_id.trim().is_empty()
+                || CString::new(target_bundle_id.as_str()).is_err()
+            {
+                return Err("Automation target is not valid".into());
+            }
+        }
+        if !REQUESTS.begin(permission) {
+            return Ok(());
+        }
         match permission {
             PermissionKey::LocalNetwork {} => {
-                let state = probe_local_network()?;
-                let mut slot = NETWORK
-                    .lock()
-                    .map_err(|_| "Permission state is unavailable".to_string())?;
-                *slot = Some(NetworkObservation {
-                    state,
-                    at_ms: Some(now_ms()),
-                    error: None,
-                });
-                Ok(())
-            }
-            PermissionKey::Bluetooth {} => {
-                let code = unsafe { os_permissions_bluetooth_request(REQUEST_TIMEOUT_MS) };
-                if code < 0 {
-                    Err("Bluetooth permission request timed out".into())
-                } else {
-                    Ok(())
-                }
-            }
-            PermissionKey::Microphone {} => {
-                let code = unsafe { os_permissions_microphone_request(REQUEST_TIMEOUT_MS) };
-                if code < 0 {
-                    Err("Microphone permission request timed out".into())
-                } else {
-                    Ok(())
-                }
-            }
-            PermissionKey::Reminders {} => {
-                let code = unsafe { os_permissions_reminders_request(REQUEST_TIMEOUT_MS) };
-                if code < 0 {
-                    Err("Reminders permission request timed out".into())
-                } else {
-                    Ok(())
+                // The native monitor remains alive after an observation so Settings
+                // changes can update it. Only explicit requests start/restart it.
+                *NETWORK.lock().unwrap_or_else(|e| e.into_inner()) = None;
+                unsafe {
+                    os_permissions_network_request(network_changed);
                 }
             }
             PermissionKey::Automation { target_bundle_id } => {
-                let observed = automation_status(target_bundle_id, true);
-                match observed.error {
-                    Some(error) => Err(error),
-                    None => Ok(()),
+                let key = permission.clone();
+                let target = target_bundle_id.clone();
+                // Apple Events has a synchronous API. At most one worker per target
+                // remains blocked while the OS waits; caller timeouts don't release it.
+                if let Err(error) = std::thread::Builder::new()
+                    .name("permission-automation".into())
+                    .spawn(move || {
+                        let result = automation_status(&target, true);
+                        REQUESTS.finish(&key, result.error);
+                    })
+                {
+                    let error = format!("Could not start authorization: {error}");
+                    REQUESTS.finish(permission, Some(error.clone()));
+                    return Err(error);
+                }
+            }
+            _ => {
+                let context = Box::into_raw(Box::new(permission.clone())).cast::<c_void>();
+                unsafe {
+                    match permission {
+                        PermissionKey::Bluetooth {} => {
+                            os_permissions_bluetooth_request(native_completed, context)
+                        }
+                        PermissionKey::Microphone {} => {
+                            os_permissions_microphone_request(native_completed, context)
+                        }
+                        PermissionKey::Reminders {} => {
+                            os_permissions_reminders_request(native_completed, context)
+                        }
+                        _ => unreachable!(),
+                    }
                 }
             }
         }
+        Ok(())
+    }
+
+    extern "C" fn native_completed(context: *mut c_void, code: i32) {
+        // Every native request owns this context and completes exactly once.
+        let key = unsafe { Box::from_raw(context.cast::<PermissionKey>()) };
+        REQUESTS.finish(
+            &key,
+            (code < 0).then(|| "The system could not complete the permission request.".into()),
+        );
+    }
+
+    extern "C" fn network_changed(code: i32) {
+        let (state, error) = match classify_dns_service(code) {
+            Ok(state) => (state, None),
+            Err(error) => (PermissionState::Unknown, Some(error)),
+        };
+        *NETWORK.lock().unwrap_or_else(|e| e.into_inner()) = Some(observation(
+            PermissionKey::LocalNetwork {},
+            state,
+            PermissionEvidence::Probe,
+            Some(now_ms()),
+            error.clone(),
+        ));
+        REQUESTS.finish(&PermissionKey::LocalNetwork {}, error);
     }
 
     pub fn open_settings(permission: &PermissionKey) -> Result<(), String> {
@@ -226,26 +277,6 @@ mod platform {
         }
     }
 
-    fn network_status() -> PermissionObservation {
-        let slot = NETWORK.lock().ok().and_then(|slot| slot.clone());
-        match slot {
-            Some(item) => observation(
-                PermissionKey::LocalNetwork {},
-                item.state,
-                PermissionEvidence::Probe,
-                item.at_ms,
-                item.error,
-            ),
-            None => observation(
-                PermissionKey::LocalNetwork {},
-                PermissionState::Unknown,
-                PermissionEvidence::Unavailable,
-                None,
-                None,
-            ),
-        }
-    }
-
     fn automation_status(bundle_id: &str, ask: bool) -> PermissionObservation {
         let permission = PermissionKey::Automation {
             target_bundle_id: bundle_id.to_string(),
@@ -259,10 +290,10 @@ mod platform {
                     PermissionEvidence::Unavailable,
                     None,
                     Some("Automation target is not valid".into()),
-                );
+                )
             }
         };
-        let code = unsafe { os_permissions_automation(c_bundle.as_ptr(), if ask { 1 } else { 0 }) };
+        let code = unsafe { os_permissions_automation(c_bundle.as_ptr(), i32::from(ask)) };
         let (state, evidence, error) = match code {
             0 => (PermissionState::Granted, PermissionEvidence::System, None),
             -1743 => (PermissionState::Denied, PermissionEvidence::System, None),
@@ -286,135 +317,21 @@ mod platform {
             permission,
             state,
             evidence,
-            if evidence == PermissionEvidence::System {
-                Some(now_ms())
-            } else {
-                None
-            },
+            (evidence == PermissionEvidence::System).then(now_ms),
             error,
         )
     }
 
-    fn probe_local_network() -> Result<PermissionState, String> {
-        let name = CString::new(format!(
-            "meow-permission-{}-{}",
-            std::process::id(),
-            now_ms()
-        ))
-        .map_err(|error| error.to_string())?;
-        let kind = CString::new("_meow-permission._tcp").unwrap();
-        let domain = CString::new("local.").unwrap();
-        let mut result: Option<i32> = None;
-        let mut raw = std::ptr::null_mut();
-        let error = unsafe {
-            DNSServiceRegister(
-                &mut raw,
-                0,
-                0,
-                name.as_ptr(),
-                kind.as_ptr(),
-                domain.as_ptr(),
-                std::ptr::null(),
-                9u16.to_be(),
-                0,
-                std::ptr::null(),
-                registered,
-                &mut result as *mut _ as *mut c_void,
-            )
-        };
-        if error != 0 {
-            return classify_dns_service(error);
-        }
-        if raw.is_null() {
-            return Err("Local network check returned no registration".into());
-        }
-        let registration = Registration(raw);
-        let fd = unsafe { DNSServiceRefSockFD(registration.0) };
-        if fd < 0 {
-            return Err("Local network check returned no socket".into());
-        }
-        let deadline = Instant::now() + Duration::from_millis(REQUEST_TIMEOUT_MS);
-        while Instant::now() < deadline {
-            let mut poll = libc::pollfd {
-                fd,
-                events: libc::POLLIN,
-                revents: 0,
-            };
-            let ready = unsafe { libc::poll(&mut poll, 1, 100) };
-            if ready < 0 {
-                let error = std::io::Error::last_os_error();
-                if error.kind() == std::io::ErrorKind::Interrupted {
-                    continue;
-                }
-                return Err(format!("Local network check failed: {error}"));
-            }
-            if ready > 0 {
-                let error = unsafe { DNSServiceProcessResult(registration.0) };
-                if error != 0 {
-                    return classify_dns_service(error);
-                }
-                if let Some(error) = result {
-                    return classify_dns_service(error);
-                }
-            }
-        }
-        Ok(PermissionState::Unknown)
-    }
-
-    struct Registration(*mut c_void);
-    impl Drop for Registration {
-        fn drop(&mut self) {
-            unsafe { DNSServiceRefDeallocate(self.0) }
-        }
-    }
-
-    extern "C" fn registered(
-        _: *mut c_void,
-        _: u32,
-        error: i32,
-        _: *const c_char,
-        _: *const c_char,
-        _: *const c_char,
-        context: *mut c_void,
-    ) {
-        unsafe {
-            *(context as *mut Option<i32>) = Some(error);
-        }
-    }
-
+    type Completion = extern "C" fn(*mut c_void, i32);
     extern "C" {
         fn os_permissions_bluetooth_authorization() -> i32;
-        fn os_permissions_bluetooth_request(timeout_ms: u64) -> i32;
+        fn os_permissions_bluetooth_request(done: Completion, context: *mut c_void);
         fn os_permissions_microphone_authorization() -> i32;
-        fn os_permissions_microphone_request(timeout_ms: u64) -> i32;
+        fn os_permissions_microphone_request(done: Completion, context: *mut c_void);
         fn os_permissions_reminders_authorization() -> i32;
-        fn os_permissions_reminders_request(timeout_ms: u64) -> i32;
+        fn os_permissions_reminders_request(done: Completion, context: *mut c_void);
         fn os_permissions_automation(bundle_id: *const c_char, ask: i32) -> i32;
-        fn DNSServiceRegister(
-            sd: *mut *mut c_void,
-            flags: u32,
-            index: u32,
-            name: *const c_char,
-            kind: *const c_char,
-            domain: *const c_char,
-            host: *const c_char,
-            port: u16,
-            txt_len: u16,
-            txt: *const c_void,
-            callback: extern "C" fn(
-                *mut c_void,
-                u32,
-                i32,
-                *const c_char,
-                *const c_char,
-                *const c_char,
-                *mut c_void,
-            ),
-            context: *mut c_void,
-        ) -> i32;
-        fn DNSServiceRefSockFD(sd: *mut c_void) -> i32;
-        fn DNSServiceProcessResult(sd: *mut c_void) -> i32;
-        fn DNSServiceRefDeallocate(sd: *mut c_void);
+        fn os_permissions_network_request(changed: extern "C" fn(i32));
     }
 }
 
