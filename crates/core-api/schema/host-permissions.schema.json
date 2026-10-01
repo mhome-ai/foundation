@@ -41,39 +41,6 @@
         }
       ]
     },
-    "PermissionAccess": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "state",
-        "observedAtMs",
-        "detail"
-      ],
-      "properties": {
-        "state": {
-          "enum": [
-            "unknown",
-            "available",
-            "unavailable"
-          ]
-        },
-        "observedAtMs": {
-          "anyOf": [
-            {
-              "type": "integer",
-              "minimum": 0
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "detail": {
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
     "PermissionObservation": {
       "type": "object",
       "additionalProperties": false,
@@ -83,7 +50,6 @@
         "state",
         "evidence",
         "observedAtMs",
-        "access",
         "error"
       ],
       "properties": {
@@ -118,16 +84,6 @@
             {
               "type": "integer",
               "minimum": 0
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "access": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/PermissionAccess"
             },
             {
               "type": "null"

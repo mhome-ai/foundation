@@ -28,8 +28,8 @@ the caller should resume passive polling. When no new network observation exists
 observation time rather than presenting the last successful probe as a fresh authorization check.
 
 Linux reports `notRequired` / `platform` for native Bluetooth, local networking and microphone
-consent. This is **not** a successful resource-access check. The real backend must separately
-report device/session availability and access-policy failures. A sandbox or portal can impose
+consent. Permission reports contain authorization only; device/session availability and
+business-operation results belong to service diagnostics. A sandbox or portal can impose
 additional restrictions. macOS-specific Reminders and Apple Events report `unsupported` on Linux.
 Other operating systems explicitly report an unimplemented adapter.
 

@@ -83,25 +83,6 @@ pub enum PermissionAction {
     OpenSettings,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum PermissionAccessState {
-    Unknown,
-    Available,
-    Unavailable,
-}
-
-/// Runtime resource access is independent of user consent. A successful scan,
-/// for example, does not grant permission and does not prove a future connection.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PermissionAccess {
-    pub state: PermissionAccessState,
-    pub observed_at_ms: Option<i64>,
-    /// The operation/condition actually checked; never imply a broader guarantee.
-    pub detail: String,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PermissionObservation {
@@ -111,7 +92,6 @@ pub struct PermissionObservation {
     pub state: PermissionState,
     pub evidence: PermissionEvidence,
     pub observed_at_ms: Option<i64>,
-    pub access: Option<PermissionAccess>,
     pub error: Option<String>,
 }
 

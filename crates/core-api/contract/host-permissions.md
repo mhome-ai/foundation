@@ -19,8 +19,7 @@ visible. A declaration says which feature needs access, not who the OS charges.
 not a grant identity. A helper may share its responsible application's consent.
 A Rust service must obtain a sidecar's observation over its private transport when
 that sidecar executes the protected operation; it must not substitute its own
-Foundation query. Check the real backend used by that executor, including access
-errors. Standalone launches report their actual launch context, which can differ
+Foundation query. Standalone launches report their actual launch context, which can differ
 from Host-managed launches. Reading status must not start an absent sidecar.
 
 `PermissionSubject` is an authorization scope established for the specific
@@ -65,12 +64,13 @@ must not start a duplicate native request. Refresh all affected service reports
 when an operation completes. Bound collection concurrency and the whole snapshot
 latency; a stalled executor must not delay every other service indefinitely.
 
-## Consent and actual access
+## Authorization observations
 
-`PermissionObservation.state` describes application consent. `access` is a
-separate backend observation. A successful consent check does not establish that
-a device is powered on, present, correctly configured or usable. A successful
-scan does not prove that every connection or operation will succeed.
+`PermissionObservation.state` describes application consent only. The report
+contains declared requirements and authorization observations; it does not collect
+or carry resource availability or business-operation results. `granted` and
+`notRequired` satisfy a requirement when the observation has valid evidence and
+no errors. Missing, denied or unreadable observations remain unresolved.
 
 - `system`: passive native authorization query and its timestamp.
 - `platform`: platform consent semantics, not measured resource availability.
@@ -78,17 +78,13 @@ scan does not prove that every connection or operation will succeed.
 - `unavailable`: a reliable consent observation could not be obtained.
 - `notRequired`: this native backend has no application-consent step. It does not
   bypass users/groups, D-Bus policies, device rules, sessions, portals or sandboxes.
-- `access`: the actual backend's checked condition, timestamp and result. Missing
-  access evidence is unknown, not proof of success. Its detail describes only the
-  operation/condition actually observed. Do not relabel a hardware failure as OS
-  user denial or a successful consent query as a successful resource probe.
 
 Passive report reads never request authorization, probe Local Network, scan
 Bluetooth, launch an Automation target, restart a service or open Settings.
 Local Network's last explicit probe is historical; ordinary Refresh cannot make
 it a fresh OS setting. Keep cached reports visibly stale when collection fails.
 Missing/malformed declarations remain errors; an empty list is not proof of a
-complete inventory or successful access. Do not grant by default on other OSes.
+complete inventory. Do not grant by default on other OSes.
 
 ## macOS and Linux
 
@@ -107,8 +103,8 @@ Host BLE broker is implied by this contract.
 
 Linux native services use the configured ordinary runtime account and existing
 system interfaces, including BlueZ D-Bus. Foundation reports the absence of a
-native application-consent step separately from the backend's access results.
-Host and services must not claim access merely because there is no macOS TCC.
+native application-consent step as `notRequired`. Resource health belongs to the
+service's own diagnostics and does not affect this permission report.
 An installation preflight collects concrete missing conditions. An administrator
 may authorize a bounded, idempotent setup step for those conditions; service
 manifests must not supply privileged commands. Runtime processes remain ordinary
@@ -123,6 +119,6 @@ behavior; shared grants across two executors; independent/unknown subjects;
 sidecar and stopped-service observations; conflicting per-service states;
 per-target Automation; cross-host mutation rejection; required component
 selection; incomplete manifests; bounded collection; coalesced requests; and
-Linux policy denial versus missing/disabled resources. Test Linux setup first as
+Linux `notRequired` without any resource observation. Test Linux setup first as
 a dry-run and verify effective access in the intended ordinary runtime session.
 Signing fixtures and mocked status tests do not prove TCC attribution.

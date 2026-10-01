@@ -5,8 +5,7 @@
 //! crate does not discover a grant owner or query another process's permission.
 
 pub use core_api::host::permissions::{
-    PermissionAccess, PermissionAccessState, PermissionEvidence, PermissionKey,
-    PermissionObservation, PermissionState,
+    PermissionEvidence, PermissionKey, PermissionObservation, PermissionState,
 };
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -21,7 +20,6 @@ pub fn status(permission: &PermissionKey) -> PermissionObservation {
 /// Returns after starting the request, without waiting for the user. Repeated
 /// requests for the same permission reuse the pending request. Poll status for
 /// approval; successful submission is not a grant. Opening Settings is separate.
-/// Linux resource probes belong in the resource's actual backend.
 pub fn request(permission: &PermissionKey) -> Result<(), String> {
     platform::request(permission)
 }
@@ -51,7 +49,6 @@ fn observation(
         state,
         evidence,
         observed_at_ms,
-        access: None,
         error,
     }
 }
@@ -354,7 +351,7 @@ mod platform {
     }
 
     pub fn request(_permission: &PermissionKey) -> Result<(), String> {
-        Err("This platform has no supported application-consent request. Check access in the resource backend; system configuration may require administrator authorization.".into())
+        Err("This platform has no supported application-consent request.".into())
     }
 
     pub fn open_settings(_permission: &PermissionKey) -> Result<(), String> {
@@ -388,11 +385,10 @@ mod tests {
         assert_eq!(unreadable.state, PermissionState::Unknown);
         assert_eq!(unreadable.evidence, PermissionEvidence::Unavailable);
         assert_eq!(granted.process_id, std::process::id());
-        assert!(granted.access.is_none());
     }
 
     #[test]
-    fn linux_no_app_consent_does_not_claim_resource_access() {
+    fn linux_native_permissions_require_no_application_consent() {
         for key in [
             PermissionKey::LocalNetwork {},
             PermissionKey::Bluetooth {},
@@ -402,7 +398,6 @@ mod tests {
             assert_eq!(observed.state, PermissionState::NotRequired);
             assert_eq!(observed.evidence, PermissionEvidence::Platform);
             assert_eq!(observed.process_id, std::process::id());
-            assert!(observed.access.is_none());
             assert!(observed.error.is_none());
         }
         assert_eq!(

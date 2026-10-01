@@ -78,7 +78,6 @@ fn a_shared_subject_preserves_each_executors_observation() {
         state,
         evidence: PermissionEvidence::System,
         observed_at_ms: Some(123),
-        access: None,
         error: None,
     };
     let usage = |id: &str, observation| PermissionUse {
@@ -138,21 +137,31 @@ fn a_shared_subject_preserves_each_executors_observation() {
 }
 
 #[test]
-fn linux_access_failure_is_not_fabricated_user_denial() {
-    let observed: PermissionObservation = serde_json::from_value(json!({
+fn permission_reports_only_describe_authorization() {
+    let observed = json!({
         "permission": {"id":"bluetooth"},
         "processId": 101,
         "state":"notRequired",
         "evidence":"platform",
         "observedAtMs":123,
-        "access": {"state":"unavailable", "observedAtMs":123, "detail":"BlueZ rejected the scan request"},
         "error":null
-    })).unwrap();
-    assert_eq!(observed.state, PermissionState::NotRequired);
-    assert_eq!(
-        observed.access.unwrap().state,
-        PermissionAccessState::Unavailable
-    );
+    });
+    let decoded: PermissionObservation = serde_json::from_value(observed.clone()).unwrap();
+    assert_eq!(decoded.state, PermissionState::NotRequired);
+    assert_eq!(serde_json::to_value(decoded).unwrap(), observed);
+    let schema: serde_json::Value =
+        serde_json::from_str(include_str!("../schema/host-permissions.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    assert!(validator.is_valid(&json!({"processId":101, "permissions":[observed.clone()]})));
+    for resource_state in [
+        serde_json::Value::Null,
+        json!({"state":"available", "observedAtMs":123, "detail":"Transport initialized"}),
+    ] {
+        let mut invalid = observed.clone();
+        invalid["access"] = resource_state;
+        assert!(serde_json::from_value::<PermissionObservation>(invalid.clone()).is_err());
+        assert!(!validator.is_valid(&json!({"processId":101, "permissions":[invalid]})));
+    }
 }
 
 #[test]
@@ -164,7 +173,7 @@ fn npm_wire_schema_rejects_legacy_actions_and_undated_probes() {
     assert!(validator
         .is_valid(&json!({"hostId":"h", "componentId":"matter", "permission":{"id":"bluetooth"}})));
     let mut report = json!({"processId":10, "permissions":[{
-        "permission":{"id":"localNetwork"}, "processId":11, "state":"granted", "evidence":"probe", "observedAtMs":null, "access":null, "error":null
+        "permission":{"id":"localNetwork"}, "processId":11, "state":"granted", "evidence":"probe", "observedAtMs":null, "error":null
     }]});
     assert!(!validator.is_valid(&report));
     report["permissions"][0]["observedAtMs"] = json!(123);
