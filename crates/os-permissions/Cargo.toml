@@ -1,6 +1,6 @@
 [package]
 name = "mhome-os-permissions"
-version = "1.2.0"
+version = "1.2.1"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -14,7 +14,7 @@ include = ["src/**", "native/**", "build.rs", "Cargo.toml", "README.md", "LICENS
 name = "os_permissions"
 
 [dependencies]
-core-api = { package = "mhome-core-api", version = "=1.17.0", path = "../core-api" }
+core-api = { package = "mhome-core-api", version = "=1.18.0", path = "../core-api" }
 
 [build-dependencies]
 cc = "1"

@@ -27,6 +27,28 @@ Storage separates backing-filesystem capacity from Storage-owned logical
 usage. Namespace is an internal protocol term; user-facing clients present it
 as a Folder.
 
+## Host LAN observations (core-api 1.18.0)
+
+The Host owns `host::network::HostNetworkSnapshot`, exposed through local IPC
+`GET /internal/network`. It samples eligible private IPv4 interfaces at startup
+and every 15 seconds, preferring `192.168/16`, then `10/8`, then `172.16/12`.
+Within the best priority it retains a still-valid address, otherwise picks the
+numerically smallest address. This is a deterministic common LAN policy, not
+Ethernet/Wi-Fi classification or proof of reachability to every destination.
+
+The response is `{ "lanIpv4": "192.168.1.2", "observedAtMs": 123456789 }`;
+`lanIpv4: null` means unavailable. Consumers reject observations older than
+45 seconds, future observations, and non-private IPv4. No loopback fallback.
+The query does not enumerate interfaces. Existing multicast discovery still
+uses its own complete interface inventory, not this single preferred address.
+
+External protocol 16 changes `UpdateCallbackBaseRequest` to `{ network, port }`.
+The service supplies the actual bound HTTP port and the unchanged Host
+observation. Core derives the origin instead of trusting an independent URL.
+Before the service reports, the sidecar has no callback origin. Freshness-only
+updates do not trigger subscription reconciliation. Shell and runtime must be
+upgraded together; local IPC is distinct from advertised callback URLs.
+
 ## Playground Provider (core-api 1.10.0)
 
 External protocol 15 removes the dedicated Playground webhook method and payload.

@@ -1,6 +1,7 @@
 //! Host observations and local OS authorization contracts. No Space identities.
 pub mod auth;
 pub mod management;
+pub mod network;
 pub mod permissions;
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

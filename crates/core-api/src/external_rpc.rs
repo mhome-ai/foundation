@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::{AuthRequest, AuthenticatedSession, ServiceCoreInput, ServiceCoreOutput};
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 15;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 16;
 pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
 pub const ARTIFACT_UPLOAD_PATH_PREFIX: &str = "/artifact/v1/upload/";
 
@@ -91,11 +91,23 @@ pub struct CleanupWsStateRequest {
     pub ws_id: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UpdateCallbackBaseRequest {
-    pub callback_base: String,
-    pub host: String,
+    /// Host observation, never an independently discovered or fallback address.
+    pub network: crate::host::network::HostNetworkSnapshot,
+    /// Actual bound HTTP listener port. Zero means the listener is not ready.
     pub port: u16,
+}
+
+impl UpdateCallbackBaseRequest {
+    pub fn callback_base(&self, now_ms: i64) -> Option<String> {
+        if self.port == 0 {
+            return None;
+        }
+        self.network
+            .available_ipv4(now_ms)
+            .map(|ip| format!("http://{ip}:{}", self.port))
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -396,6 +408,31 @@ mod tests {
     use super::*;
 
     #[test]
+    fn callback_address_requires_a_fresh_host_observation_and_bound_port() {
+        let mut request = UpdateCallbackBaseRequest {
+            network: crate::host::network::HostNetworkSnapshot {
+                lan_ipv4: Some("192.168.1.5".parse().unwrap()),
+                observed_at_ms: 100_000,
+            },
+            port: 3210,
+        };
+        assert_eq!(
+            request.callback_base(100_000).as_deref(),
+            Some("http://192.168.1.5:3210")
+        );
+        let roundtrip: UpdateCallbackBaseRequest =
+            serde_json::from_value(serde_json::to_value(&request).unwrap()).unwrap();
+        assert_eq!(request, roundtrip);
+        assert_eq!(request.callback_base(145_000), None);
+        request.port = 0;
+        assert_eq!(request.callback_base(100_000), None);
+        assert_eq!(
+            UpdateCallbackBaseRequest::default().callback_base(100_000),
+            None
+        );
+    }
+
+    #[test]
     fn messaging_delivery_is_a_closed_request_response_contract() {
         let request = serde_json::json!({"tenantId":"t", "scopeId":"s", "surfaceId":"m",
             "target":"/chat/event", "payload":"{}"});
@@ -414,7 +451,7 @@ mod tests {
     }
 
     #[test]
-    fn external_events_use_the_v15_wire_shape() {
+    fn external_events_use_the_current_wire_shape() {
         let event = ExternalCoreEvent {
             event_id: "event-1".to_string(),
             kind: ExternalCoreEventKind::ScopeOwnedDataPurgeRequested,
@@ -427,7 +464,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 15);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 16);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");
