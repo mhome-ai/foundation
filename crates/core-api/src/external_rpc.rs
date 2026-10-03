@@ -8,6 +8,20 @@ pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 17;
 pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
 pub const ARTIFACT_UPLOAD_PATH_PREFIX: &str = "/artifact/v1/upload/";
 
+/// Derive a bounded, workdir-specific Windows IPC name from the metadata socket path.
+/// The metadata itself stays in the ordinary runtime directory on every platform.
+pub fn external_core_pipe_name(socket_path: &std::path::Path) -> String {
+    use sha2::{Digest, Sha256};
+    let normalized = socket_path
+        .to_string_lossy()
+        .replace('/', "\\")
+        .to_lowercase();
+    format!(
+        r"\\.\pipe\meowcore-{:x}",
+        Sha256::digest(normalized.as_bytes())
+    )
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExternalCoreRequest {
     pub id: String,

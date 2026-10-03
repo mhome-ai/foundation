@@ -3,6 +3,7 @@
 mod delivery;
 mod external_rpc;
 pub mod host;
+pub mod ingress;
 pub mod interaction_flow;
 pub mod messaging;
 pub mod node;
