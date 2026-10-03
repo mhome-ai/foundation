@@ -1,0 +1,1 @@
+{"target":"/app/messaging/identity-code/status","direction":"request","body":{"provider":"telegram","placement":"local","challengeId":"challenge_01"}}

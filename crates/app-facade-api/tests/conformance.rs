@@ -1,13 +1,14 @@
 use app_facade_api::hub::{HubState, LocalHubState, APP_TARGETS, LOCAL_TARGETS};
 use app_facade_api::messaging::{
-    ActorLinkChallengeResponse, ActorLinkClaimEvent, ActorLinkClaimRequest, ActorLinkClaimResponse,
-    ActorLinkCodeCreateRequest, ActorLinkDeleteRequest, ActorLinkListRequest,
-    ActorLinkListResponse, ChallengeCodeResponse, MutationResponse, ProviderAccountListResponse,
-    ProviderAccountRequest, ProviderAccountStatusResponse, ProviderAccountTestRequest,
-    ProviderAccountTestResponse, ProviderAccountUpdateRequest, ProviderAccountUpdateResponse,
-    ProviderListRequest, ProviderListResponse, ProviderPlacementRequest, RouteListRequest,
-    RouteListResponse, RouteRequest, RouteUpdateRequest, RouteUpdateResponse, SetupOptionsResponse,
-    SetupResponse, SetupStartRequest, SetupStatusRequest, SharedAccountGrantListRequest,
+    ActorLinkChallengeResponse, ActorLinkCodeCreateRequest, ActorLinkDeleteRequest,
+    ActorLinkListRequest, ActorLinkListResponse, ChallengeCodeResponse, IdentityCodeStatusEvent,
+    IdentityCodeStatusRequest, IdentityCodeStatusResponse, MutationResponse,
+    ProviderAccountListResponse, ProviderAccountRequest, ProviderAccountStatusResponse,
+    ProviderAccountTestRequest, ProviderAccountTestResponse, ProviderAccountUpdateRequest,
+    ProviderAccountUpdateResponse, ProviderListRequest, ProviderListResponse,
+    ProviderPlacementRequest, RouteListRequest, RouteListResponse, RouteRequest,
+    RouteUpdateRequest, RouteUpdateResponse, SetupOptionsResponse, SetupResponse,
+    SetupStartRequest, SetupStatusRequest, SharedAccountGrantListRequest,
     SharedAccountGrantListResponse, SharedAccountGrantRequest, SurfaceBindCodeCreateRequest,
     SurfaceListRequest, SurfaceListResponse, SurfaceRequest, MANAGEMENT_TARGETS,
 };
@@ -177,24 +178,16 @@ const VALID_FIXTURES: &[(&str, &str)] = &[
         include_str!("../fixtures/actor-link-code-create.response.json"),
     ),
     (
-        "actor-link-claim-status.request.json",
-        include_str!("../fixtures/actor-link-claim-status.request.json"),
+        "identity-code-status.request.json",
+        include_str!("../fixtures/identity-code-status.request.json"),
     ),
     (
-        "actor-link-claim-status.response.json",
-        include_str!("../fixtures/actor-link-claim-status.response.json"),
+        "identity-code-status.response.json",
+        include_str!("../fixtures/identity-code-status.response.json"),
     ),
     (
-        "actor-link-claim-confirm.request.json",
-        include_str!("../fixtures/actor-link-claim-confirm.request.json"),
-    ),
-    (
-        "actor-link-claim-confirm.response.json",
-        include_str!("../fixtures/actor-link-claim-confirm.response.json"),
-    ),
-    (
-        "actor-link-claim-event.response.json",
-        include_str!("../fixtures/actor-link-claim-event.response.json"),
+        "identity-code-event.response.json",
+        include_str!("../fixtures/identity-code-event.response.json"),
     ),
     (
         "actor-link-list.request.json",
@@ -360,11 +353,9 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
     body::<ChallengeCodeResponse>("surface-bind-code-create.response.json");
     body::<ActorLinkCodeCreateRequest>("actor-link-code-create.request.json");
     body::<ActorLinkChallengeResponse>("actor-link-code-create.response.json");
-    body::<ActorLinkClaimRequest>("actor-link-claim-status.request.json");
-    body::<ActorLinkClaimResponse>("actor-link-claim-status.response.json");
-    body::<ActorLinkClaimRequest>("actor-link-claim-confirm.request.json");
-    body::<ActorLinkClaimResponse>("actor-link-claim-confirm.response.json");
-    body::<ActorLinkClaimEvent>("actor-link-claim-event.response.json");
+    body::<IdentityCodeStatusRequest>("identity-code-status.request.json");
+    body::<IdentityCodeStatusResponse>("identity-code-status.response.json");
+    body::<IdentityCodeStatusEvent>("identity-code-event.response.json");
     body::<ActorLinkListRequest>("actor-link-list.request.json");
     body::<ActorLinkListResponse>("actor-link-list.response.json");
     body::<ActorLinkDeleteRequest>("actor-link-delete.request.json");
@@ -757,4 +748,27 @@ fn plugin_catalog_is_valid_and_has_unique_types() {
         .map(|plugin| plugin["nodeType"].as_str().unwrap())
         .collect();
     assert_eq!(types.len(), plugins.len());
+}
+
+#[test]
+fn messaging_identity_codes_reject_the_retired_target_and_confirmation_contract() {
+    use app_facade_api::messaging::IdentityCodeStatusResponse;
+    use serde_json::json;
+    assert!(serde_json::from_value::<ActorLinkCodeCreateRequest>(json!({
+        "provider":"telegram", "placement":"cloud", "target":{"audience":"personal"}
+    }))
+    .is_err());
+    assert!(serde_json::from_value::<ActorLinkCodeCreateRequest>(json!({
+        "provider":"telegram", "placement":"cloud", "accountId":"bot"
+    }))
+    .is_err());
+    assert!(
+        serde_json::from_value::<SurfaceBindCodeCreateRequest>(json!({
+            "provider":"telegram", "placement":"cloud", "scopeId":"space", "surfaceId":"group"
+        }))
+        .is_err()
+    );
+    assert!(serde_json::from_value::<IdentityCodeStatusResponse>(json!({"claim":{}})).is_err());
+    assert!(!MANAGEMENT_TARGETS.contains(&"/app/messaging/actor/link-claim/confirm"));
+    assert!(!MANAGEMENT_TARGETS.contains(&"/app/messaging/actor/link-claim/status"));
 }

@@ -195,8 +195,7 @@
         "surface.dismiss",
         "surface.bind_code.create",
         "actor.link_code.create",
-        "actor.link_claim.status",
-        "actor.link_claim.confirm",
+        "identity_code.status",
         "actor.link.list",
         "actor.link.delete"
       ]
@@ -651,7 +650,8 @@
       "required": [
         "code",
         "command",
-        "expiresAtMs"
+        "expiresAtMs",
+        "challengeId"
       ],
       "properties": {
         "code": {
@@ -1066,9 +1066,6 @@
         "placement": {
           "$ref": "#/$defs/placement"
         },
-        "surfaceId": {
-          "$ref": "#/$defs/id"
-        },
         "scopeId": {
           "$ref": "#/$defs/id"
         }
@@ -1079,8 +1076,7 @@
       "additionalProperties": false,
       "required": [
         "provider",
-        "placement",
-        "target"
+        "placement"
       ],
       "properties": {
         "provider": {
@@ -1088,12 +1084,6 @@
         },
         "placement": {
           "$ref": "#/$defs/placement"
-        },
-        "accountId": {
-          "$ref": "#/$defs/id"
-        },
-        "target": {
-          "$ref": "#/$defs/actorLinkTarget"
         }
       }
     },
@@ -2189,10 +2179,7 @@
           "$ref": "#/$defs/actorLinkCodeCreateRequest"
         },
         {
-          "$ref": "#/$defs/actorLinkClaimStatusRequest"
-        },
-        {
-          "$ref": "#/$defs/actorLinkClaimConfirmRequest"
+          "$ref": "#/$defs/identityCodeStatusRequest"
         },
         {
           "$ref": "#/$defs/actorLinkListRequest"
@@ -2262,13 +2249,10 @@
           "$ref": "#/$defs/actorLinkCodeCreateResponse"
         },
         {
-          "$ref": "#/$defs/actorLinkClaimStatusResponse"
+          "$ref": "#/$defs/identityCodeStatusResponse"
         },
         {
-          "$ref": "#/$defs/actorLinkClaimConfirmResponse"
-        },
-        {
-          "$ref": "#/$defs/actorLinkClaimEventResponse"
+          "$ref": "#/$defs/identityCodeStatusEventResponse"
         },
         {
           "$ref": "#/$defs/actorLinkListResponse"
@@ -2285,37 +2269,6 @@
         },
         {
           "$ref": "#/$defs/responseFrame"
-        }
-      ]
-    },
-    "actorLinkTarget": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "audience"
-          ],
-          "properties": {
-            "audience": {
-              "const": "personal"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "audience"
-          ],
-          "properties": {
-            "audience": {
-              "const": "shared"
-            },
-            "surfaceId": {
-              "$ref": "#/$defs/id"
-            }
-          }
         }
       ]
     },
@@ -2369,7 +2322,7 @@
         }
       }
     },
-    "actorLinkCandidate": {
+    "identityCodeReceipt": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -2389,16 +2342,16 @@
         }
       }
     },
-    "actorLinkClaim": {
+    "identityCodeStatus": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "challengeId",
         "provider",
         "placement",
-        "target",
         "expiresAtMs",
-        "lifecycle"
+        "lifecycle",
+        "kind"
       ],
       "properties": {
         "challengeId": {
@@ -2413,15 +2366,12 @@
         "accountId": {
           "$ref": "#/$defs/id"
         },
-        "target": {
-          "$ref": "#/$defs/actorLinkTarget"
-        },
         "expiresAtMs": {
           "type": "integer",
           "minimum": 0
         },
         "lifecycle": {
-          "$ref": "#/$defs/actorLinkClaimLifecycle"
+          "$ref": "#/$defs/identityCodeLifecycle"
         },
         "kind": {
           "enum": [
@@ -2438,7 +2388,6 @@
         "challengeId",
         "code",
         "command",
-        "target",
         "expiresAtMs"
       ],
       "properties": {
@@ -2451,16 +2400,13 @@
         "command": {
           "$ref": "#/$defs/id"
         },
-        "target": {
-          "$ref": "#/$defs/actorLinkTarget"
-        },
         "expiresAtMs": {
           "type": "integer",
           "minimum": 0
         }
       }
     },
-    "actorLinkClaimBody": {
+    "identityCodeStatusBody": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -2480,19 +2426,19 @@
         }
       }
     },
-    "actorLinkClaimResponseBody": {
+    "identityCodeStatusResponseBody": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "claim"
+        "status"
       ],
       "properties": {
-        "claim": {
-          "$ref": "#/$defs/actorLinkClaim"
+        "status": {
+          "$ref": "#/$defs/identityCodeStatus"
         }
       }
     },
-    "actorLinkClaimStatusRequest": {
+    "identityCodeStatusRequest": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -2502,17 +2448,17 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/actor/link-claim/status"
+          "const": "/app/messaging/identity-code/status"
         },
         "direction": {
           "const": "request"
         },
         "body": {
-          "$ref": "#/$defs/actorLinkClaimBody"
+          "$ref": "#/$defs/identityCodeStatusBody"
         }
       }
     },
-    "actorLinkClaimStatusResponse": {
+    "identityCodeStatusResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -2522,17 +2468,17 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/actor/link-claim/status"
+          "const": "/app/messaging/identity-code/status"
         },
         "direction": {
           "const": "response"
         },
         "body": {
-          "$ref": "#/$defs/actorLinkClaimResponseBody"
+          "$ref": "#/$defs/identityCodeStatusResponseBody"
         }
       }
     },
-    "actorLinkClaimConfirmRequest": {
+    "identityCodeStatusEventResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -2542,57 +2488,17 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/actor/link-claim/confirm"
-        },
-        "direction": {
-          "const": "request"
-        },
-        "body": {
-          "$ref": "#/$defs/actorLinkClaimBody"
-        }
-      }
-    },
-    "actorLinkClaimConfirmResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "direction",
-        "body"
-      ],
-      "properties": {
-        "target": {
-          "const": "/app/messaging/actor/link-claim/confirm"
+          "const": "/app/messaging/identity-code/changed"
         },
         "direction": {
           "const": "response"
         },
         "body": {
-          "$ref": "#/$defs/actorLinkClaimResponseBody"
+          "$ref": "#/$defs/identityCodeStatusResponseBody"
         }
       }
     },
-    "actorLinkClaimEventResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "direction",
-        "body"
-      ],
-      "properties": {
-        "target": {
-          "const": "/app/messaging/actor/link-claim/changed"
-        },
-        "direction": {
-          "const": "response"
-        },
-        "body": {
-          "$ref": "#/$defs/actorLinkClaimResponseBody"
-        }
-      }
-    },
-    "actorLinkClaimLifecycle": {
+    "identityCodeLifecycle": {
       "oneOf": [
         {
           "type": "object",
@@ -2635,14 +2541,14 @@
           "additionalProperties": false,
           "required": [
             "state",
-            "candidate"
+            "receipt"
           ],
           "properties": {
             "state": {
-              "const": "awaiting_confirmation"
+              "const": "processing"
             },
-            "candidate": {
-              "$ref": "#/$defs/actorLinkCandidate"
+            "receipt": {
+              "$ref": "#/$defs/identityCodeReceipt"
             }
           }
         },
@@ -2651,33 +2557,17 @@
           "additionalProperties": false,
           "required": [
             "state",
-            "candidate"
-          ],
-          "properties": {
-            "state": {
-              "const": "confirming"
-            },
-            "candidate": {
-              "$ref": "#/$defs/actorLinkCandidate"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "state",
-            "candidate"
+            "receipt"
           ],
           "properties": {
             "state": {
               "const": "completed"
             },
-            "candidate": {
-              "$ref": "#/$defs/actorLinkCandidate"
-            },
             "linkId": {
               "$ref": "#/$defs/id"
+            },
+            "receipt": {
+              "$ref": "#/$defs/identityCodeReceipt"
             }
           }
         }

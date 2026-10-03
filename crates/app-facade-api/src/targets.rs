@@ -19,9 +19,8 @@ pub const SURFACE_LIST_TARGET: &str = "/app/messaging/surface/list";
 pub const SURFACE_DISMISS_TARGET: &str = "/app/messaging/surface/dismiss";
 pub const SURFACE_BIND_CODE_CREATE_TARGET: &str = "/app/messaging/surface/bind-code/create";
 pub const ACTOR_LINK_CODE_CREATE_TARGET: &str = "/app/messaging/actor/link-code/create";
-pub const ACTOR_LINK_CLAIM_STATUS_TARGET: &str = "/app/messaging/actor/link-claim/status";
-pub const ACTOR_LINK_CLAIM_CONFIRM_TARGET: &str = "/app/messaging/actor/link-claim/confirm";
-pub const ACTOR_LINK_CLAIM_EVENT_TARGET: &str = "/app/messaging/actor/link-claim/changed";
+pub const IDENTITY_CODE_STATUS_TARGET: &str = "/app/messaging/identity-code/status";
+pub const IDENTITY_CODE_EVENT_TARGET: &str = "/app/messaging/identity-code/changed";
 pub const ACTOR_LINK_LIST_TARGET: &str = "/app/messaging/actor/link/list";
 pub const ACTOR_LINK_DELETE_TARGET: &str = "/app/messaging/actor/link/delete";
 
@@ -45,13 +44,12 @@ pub const MANAGEMENT_TARGETS: &[&str] = &[
     SURFACE_DISMISS_TARGET,
     SURFACE_BIND_CODE_CREATE_TARGET,
     ACTOR_LINK_CODE_CREATE_TARGET,
-    ACTOR_LINK_CLAIM_STATUS_TARGET,
-    ACTOR_LINK_CLAIM_CONFIRM_TARGET,
+    IDENTITY_CODE_STATUS_TARGET,
     ACTOR_LINK_LIST_TARGET,
     ACTOR_LINK_DELETE_TARGET,
 ];
 
-pub const EVENT_TARGETS: &[&str] = &[ACTOR_LINK_CLAIM_EVENT_TARGET];
+pub const EVENT_TARGETS: &[&str] = &[IDENTITY_CODE_EVENT_TARGET];
 
 pub fn is_management_target(target: &str) -> bool {
     MANAGEMENT_TARGETS.contains(&target)
@@ -80,11 +78,10 @@ pub fn required_management_operation(target: &str) -> Option<ManagementOperation
         SURFACE_DISMISS_TARGET => SurfaceDismiss,
         SURFACE_BIND_CODE_CREATE_TARGET => SurfaceBindCodeCreate,
         ACTOR_LINK_CODE_CREATE_TARGET => ActorLinkCodeCreate,
-        ACTOR_LINK_CLAIM_STATUS_TARGET => ActorLinkClaimStatus,
-        ACTOR_LINK_CLAIM_CONFIRM_TARGET => ActorLinkClaimConfirm,
+        IDENTITY_CODE_STATUS_TARGET => IdentityCodeStatus,
         ACTOR_LINK_LIST_TARGET => ActorLinkList,
         ACTOR_LINK_DELETE_TARGET => ActorLinkDelete,
-        PROVIDER_LIST_TARGET | ACTOR_LINK_CLAIM_EVENT_TARGET => return None,
+        PROVIDER_LIST_TARGET | IDENTITY_CODE_EVENT_TARGET => return None,
         _ => return None,
     })
 }

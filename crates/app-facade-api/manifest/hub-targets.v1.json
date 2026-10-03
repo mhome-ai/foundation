@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.hub.targets.v1",
-  "contractVersion": "1.27.3",
+  "contractVersion": "1.28.0",
   "appTargets": [
     "/app/hub/get",
     "/app/hub/remove",
@@ -14,7 +14,9 @@
     "/local/hub/setup/status",
     "/local/hub/setup/cancel"
   ],
-  "appInvocationModes": ["direct"],
+  "appInvocationModes": [
+    "direct"
+  ],
   "localPayload": "domainInput",
   "localForwardable": false
 }
