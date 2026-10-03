@@ -27,7 +27,20 @@ Storage separates backing-filesystem capacity from Storage-owned logical
 usage. Namespace is an internal protocol term; user-facing clients present it
 as a Folder.
 
-## Host LAN observations (core-api 1.18.0)
+## Lossless external boundaries (core-api 1.19.0)
+
+External protocol **17** returns `HttpPayloadResponse { statusCode, body }` from
+all HTTP handler RPCs. A completed HTTP response (including 4xx/5xx) is an RPC
+success; RPC errors describe failures to execute the call, not HTTP status.
+Hosts preserve status and JSON body, never infer them from error messages.
+`ExternalCoreError` preserves domain `code`, `message` and optional `details`,
+with conversions to/from the shared client `ErrorResponse`.
+
+The transport-neutral `webhook` module defines the common route, body limit and
+JSON-versus-UTF-8-text decoding. Hosts own network listeners and method admission;
+Core owns dispatch and execution. Upgrade service shell and Core together.
+
+## Host LAN observations (introduced in core-api 1.18.0)
 
 The Host owns `host::network::HostNetworkSnapshot`, exposed through local IPC
 `GET /internal/network`. It samples eligible private IPv4 interfaces at startup

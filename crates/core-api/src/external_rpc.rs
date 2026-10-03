@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::{AuthRequest, AuthenticatedSession, ServiceCoreInput, ServiceCoreOutput};
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 16;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 17;
 pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
 pub const ARTIFACT_UPLOAD_PATH_PREFIX: &str = "/artifact/v1/upload/";
 
@@ -29,6 +29,45 @@ pub struct ExternalCoreResponse {
 pub struct ExternalCoreError {
     pub code: String,
     pub message: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub details: Option<Value>,
+}
+
+impl From<crate::ErrorResponse> for ExternalCoreError {
+    fn from(error: crate::ErrorResponse) -> Self {
+        Self {
+            code: error.error,
+            message: error.message,
+            details: error.details,
+        }
+    }
+}
+
+impl From<ExternalCoreError> for crate::ErrorResponse {
+    fn from(error: ExternalCoreError) -> Self {
+        Self {
+            error: error.code,
+            message: error.message,
+            details: error.details,
+        }
+    }
+}
+
+impl std::fmt::Display for ExternalCoreError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}] {}", self.code, self.message)
+    }
+}
+
+impl std::error::Error for ExternalCoreError {}
+
+/// A completed JSON HTTP handler response, including non-2xx responses.
+/// This is an RPC result, not an RPC error. Hosts must preserve both fields.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HttpPayloadResponse {
+    pub status_code: u16,
+    pub body: Value,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -464,7 +503,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 16);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 17);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");
