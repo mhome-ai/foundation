@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.28.0",
+  "contractVersion": "1.29.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -8,7 +8,9 @@
     "artifact": {
       "contract": "mhome.artifact.v1",
       "requestTargets": [
-        "/app/artifact/resolve"
+        "/app/artifact/resolve",
+        "/app/artifact/put",
+        "/app/artifact/import"
       ]
     },
     "hub": {

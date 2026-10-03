@@ -1,8 +1,13 @@
 {
   "manifest": "mhome.artifact.v1",
-  "contractVersion": "1.2.0",
+  "contractVersion": "1.3.0",
   "uriPrefix": "meow-artifact://v1/",
-  "kinds": ["image", "audio", "video", "file"],
+  "kinds": [
+    "image",
+    "audio",
+    "video",
+    "file"
+  ],
   "resolve": {
     "target": "/artifact/resolve",
     "schema": "schema/artifact-resolve.v1.schema.json",
@@ -16,6 +21,14 @@
   "uploadPrepare": {
     "target": "/artifact/upload/prepare",
     "schema": "schema/artifact-upload.v1.schema.json",
+    "schemaVersion": 1
+  },
+  "mediaReference": {
+    "schema": "schema/media-reference.v1.schema.json",
+    "schemaVersion": 1
+  },
+  "import": {
+    "schema": "schema/artifact-import.v1.schema.json",
     "schemaVersion": 1
   }
 }

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/artifact-import.v1.schema.json",
+  "title": "MeowLink artifact import request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "sourceUrl"
+  ],
+  "properties": {
+    "kind": {
+      "enum": [
+        "IMAGE",
+        "AUDIO",
+        "FILE"
+      ]
+    },
+    "sourceUrl": {
+      "type": "string",
+      "pattern": "^https?://",
+      "minLength": 8
+    },
+    "mimeType": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 255
+    }
+  }
+}

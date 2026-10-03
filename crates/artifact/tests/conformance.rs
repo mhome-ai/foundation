@@ -204,3 +204,40 @@ fn upload_fixture_matches_rust_contract_and_schema() {
         assert!(!validator.is_valid(&case.value), "{} must fail", case.name);
     }
 }
+
+#[test]
+fn media_and_import_schemas_reject_legacy_shapes() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/media-reference.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    let uri = ArtifactReference::new(
+        "tenant",
+        "scope",
+        "a".repeat(64),
+        artifact_api::ArtifactMetadata::audio("audio/mpeg", 3, None).unwrap(),
+    )
+    .unwrap()
+    .uri()
+    .unwrap();
+    assert!(validator.is_valid(&serde_json::json!({"uri":uri})));
+    for invalid in [
+        serde_json::json!({"url":uri}),
+        serde_json::json!({"uri":uri,"mimeType":"audio/mpeg"}),
+        serde_json::json!({"uri":uri,"createdAt":1}),
+        serde_json::json!({"uri":"https://example.test/a"}),
+    ] {
+        assert!(!validator.is_valid(&invalid));
+    }
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-import.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    assert!(validator
+        .is_valid(&serde_json::json!({"kind":"AUDIO","sourceUrl":"https://example.test/audio"})));
+    for invalid in [
+        serde_json::json!({"kind":"AUDIO","url":"https://example.test/a"}),
+        serde_json::json!({"kind":"AUDIO","sourceUrl":"data:audio/mpeg;base64,YWJj"}),
+        serde_json::json!({"kind":"VIDEO","sourceUrl":"https://example.test/v"}),
+    ] {
+        assert!(!validator.is_valid(&invalid));
+    }
+}

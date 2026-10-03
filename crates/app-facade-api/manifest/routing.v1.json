@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.28.0",
+  "contractVersion": "1.29.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",
@@ -25,7 +25,9 @@
     ],
     "scopeModeTargets": [
       "/app/artifact/resolve",
-      "/app/scope/context/get"
+      "/app/scope/context/get",
+      "/app/artifact/put",
+      "/app/artifact/import"
     ],
     "hubPrefixes": [
       "/app/plugin/",

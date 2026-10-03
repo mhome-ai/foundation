@@ -8,6 +8,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       artifactMetadata: "schema/artifact-metadata.v1.schema.json",
       artifactResolve: "schema/artifact-resolve.v1.schema.json",
       artifactPut: "schema/artifact-put.v1.schema.json",
+      artifactImport: "schema/artifact-import.v1.schema.json",
+      mediaReference: "schema/media-reference.v1.schema.json",
       artifactUpload: "schema/artifact-upload.v1.schema.json",
     }),
     fixtures: Object.freeze({
