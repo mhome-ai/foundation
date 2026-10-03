@@ -2561,6 +2561,22 @@
           ],
           "properties": {
             "state": {
+              "const": "failed"
+            },
+            "receipt": {
+              "$ref": "#/$defs/identityCodeReceipt"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "receipt"
+          ],
+          "properties": {
+            "state": {
               "const": "completed"
             },
             "linkId": {

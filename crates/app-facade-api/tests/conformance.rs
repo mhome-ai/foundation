@@ -18,6 +18,10 @@ use std::collections::BTreeSet;
 
 const VALID_FIXTURES: &[(&str, &str)] = &[
     (
+        "identity-code-failed.response.json",
+        include_str!("../fixtures/identity-code-failed.response.json"),
+    ),
+    (
         "shared-code-link-create.request.json",
         include_str!("../fixtures/shared-code-link-create.request.json"),
     ),
@@ -355,6 +359,7 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
     body::<ActorLinkChallengeResponse>("actor-link-code-create.response.json");
     body::<IdentityCodeStatusRequest>("identity-code-status.request.json");
     body::<IdentityCodeStatusResponse>("identity-code-status.response.json");
+    body::<IdentityCodeStatusResponse>("identity-code-failed.response.json");
     body::<IdentityCodeStatusEvent>("identity-code-event.response.json");
     body::<ActorLinkListRequest>("actor-link-list.request.json");
     body::<ActorLinkListResponse>("actor-link-list.response.json");
