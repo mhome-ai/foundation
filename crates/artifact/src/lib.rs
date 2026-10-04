@@ -496,6 +496,9 @@ fn invalid(message: impl Into<String>) -> ArtifactReferenceError {
     ArtifactReferenceError::new(ArtifactReferenceErrorKind::InvalidReference, message)
 }
 
+/// Public upload/import policy, not a limit on internally generated artifacts.
+pub const MAX_EXTERNAL_ARTIFACT_BYTES: usize = 1024 * 1024;
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -545,6 +548,3 @@ mod tests {
         assert!(ArtifactMetadata::file("Application/PDF", 100).is_err());
     }
 }
-
-/// Public upload/import policy, not a limit on internally generated artifacts.
-pub const MAX_EXTERNAL_ARTIFACT_BYTES: usize = 1024 * 1024;
