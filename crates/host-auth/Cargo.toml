@@ -1,6 +1,6 @@
 [package]
 name = "mhome-host-auth"
-version = "1.0.5"
+version = "1.0.6"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -14,7 +14,7 @@ include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
 name = "host_auth"
 
 [dependencies]
-core-api = { package = "mhome-core-api", version = "=1.20.1", path = "../core-api" }
+core-api = { package = "mhome-core-api", version = "=1.21.0", path = "../core-api" }
 anyhow = "1"
 base64 = "0.22"
 http = "1"

@@ -5,10 +5,13 @@ use std::fmt;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+mod image_transform;
 mod media;
 mod put;
 mod resolve;
 mod upload;
+
+pub use image_transform::{ImageOutputFormat, ImageTransform};
 
 pub use media::{ImportArtifactRequest, MediaReference};
 
