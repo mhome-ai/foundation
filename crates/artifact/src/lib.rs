@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
+use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 mod media;
@@ -10,7 +10,7 @@ mod put;
 mod resolve;
 mod upload;
 
-pub use media::{ImportArtifactRequest, MediaReference};
+pub use media::{ArtifactUri, ImportArtifactRequest, MediaReference};
 
 pub use put::{PutArtifactRequest, PutArtifactResponse, PutArtifactValidationError};
 

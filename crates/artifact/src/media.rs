@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MediaReference {
-    pub uri: String,
+    pub uri: ArtifactUri,
 }
 
 impl MediaReference {
@@ -65,21 +65,76 @@ mod tests {
         )
         .unwrap();
         let media = MediaReference {
-            uri: reference.uri().unwrap(),
+            uri: reference.uri().unwrap().parse().unwrap(),
         };
-        assert!(media
-            .validate("tenant", "scope", ArtifactKind::Audio)
-            .is_ok());
-        assert!(media
-            .validate("tenant", "other", ArtifactKind::Audio)
-            .is_err());
-        assert!(media
-            .validate("tenant", "scope", ArtifactKind::Image)
-            .is_err());
-        assert!(MediaReference {
-            uri: "https://example.com/a".into()
-        }
-        .reference(ArtifactKind::Audio)
-        .is_err());
+        assert!(
+            media
+                .validate("tenant", "scope", ArtifactKind::Audio)
+                .is_ok()
+        );
+        assert!(
+            media
+                .validate("tenant", "other", ArtifactKind::Audio)
+                .is_err()
+        );
+        assert!(
+            media
+                .validate("tenant", "scope", ArtifactKind::Image)
+                .is_err()
+        );
+        assert!(
+            serde_json::from_value::<MediaReference>(serde_json::json!({
+                "uri": "https://example.com/a"
+            }))
+            .is_err()
+        );
+    }
+}
+
+/// A canonical artifact URI. Construction and deserialization reject non-artifact sources.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(try_from = "String", into = "String")]
+pub struct ArtifactUri(String);
+
+impl ArtifactUri {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+    pub fn reference(&self) -> ArtifactReference {
+        ArtifactReference::parse(&self.0).expect("ArtifactUri was validated at construction")
+    }
+}
+impl std::str::FromStr for ArtifactUri {
+    type Err = ArtifactReferenceError;
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        let reference = ArtifactReference::parse(value)?;
+        Ok(Self(reference.uri()?))
+    }
+}
+impl TryFrom<String> for ArtifactUri {
+    type Error = ArtifactReferenceError;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl From<ArtifactUri> for String {
+    fn from(value: ArtifactUri) -> String {
+        value.0
+    }
+}
+impl std::ops::Deref for ArtifactUri {
+    type Target = str;
+    fn deref(&self) -> &str {
+        self.as_str()
+    }
+}
+impl AsRef<str> for ArtifactUri {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+impl std::fmt::Display for ArtifactUri {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }

@@ -17,7 +17,9 @@ pub use crate::ConversationSurface;
 pub use agent::{
     AccessMode, AgentCommand, Interaction, InteractionDecision, QueuedRun, RunOptions,
 };
-pub use artifact_api::{ARTIFACT_URL_PREFIX, ArtifactKind, ArtifactMetadata, ArtifactReference};
+pub use artifact_api::{
+    ARTIFACT_URL_PREFIX, ArtifactKind, ArtifactMetadata, ArtifactReference, ArtifactUri,
+};
 pub use context::{Actor, InvocationContext, Scope};
 pub use error::{ExternalError, ExternalErrorKind};
 pub use event::{AgentEvent, AgentObservation, DurableEvent, EventPublisher, Observer};

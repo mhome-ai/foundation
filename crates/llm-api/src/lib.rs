@@ -3,15 +3,15 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 mod continuation;
 mod policy;
+pub use artifact_api::ArtifactUri;
 pub use continuation::Continuation;
 pub use policy::{
-    controls, input_modality_for_kind, input_modality_for_mime, normalize_capability_input,
-    normalize_constraint_input, normalize_input_token, payload_input_modalities, resolve,
-    BackendCapability, EffectiveGeneration, GenerationControls, GenerationParameters,
-    GenerationSupport, ModelCapabilities, DEFAULT_MAX_OUTPUT_TOKENS, INPUT_AUDIO, INPUT_FILE,
-    INPUT_IMAGE, INPUT_VIDEO, REASONING_EFFORT_LADDER,
+    BackendCapability, DEFAULT_MAX_OUTPUT_TOKENS, EffectiveGeneration, GenerationControls,
+    GenerationParameters, GenerationSupport, INPUT_AUDIO, INPUT_FILE, INPUT_IMAGE, INPUT_VIDEO,
+    ModelCapabilities, REASONING_EFFORT_LADDER, controls, input_modality_for_kind,
+    input_modality_for_mime, normalize_capability_input, normalize_constraint_input,
+    normalize_input_token, payload_input_modalities, resolve,
 };
-pub use service::Image;
 
 /// Logical model use case resolved by the deployment's LLM implementation.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
@@ -67,12 +67,8 @@ pub enum ContentPart {
     /// Scope-owned content-addressed artifact managed by the application artifact service.
     Artifact {
         /// Canonical `meow-artifact://` URI.
-        uri: String,
-        /// MIME type copied from the validated artifact metadata.
-        mime_type: String,
+        uri: ArtifactUri,
     },
-    /// An image already materialized by the caller.
-    Image { image: Image },
     /// A model-requested tool invocation.
     ToolCall(ToolCall),
     /// Result of an earlier tool invocation.
@@ -237,9 +233,12 @@ impl TokenUsage {
     }
 }
 impl Message {
-    pub fn with_images(mut self, images: impl IntoIterator<Item = Image>) -> Self {
-        self.content
-            .extend(images.into_iter().map(|image| ContentPart::Image { image }));
+    pub fn with_artifacts(mut self, artifacts: impl IntoIterator<Item = ArtifactUri>) -> Self {
+        self.content.extend(
+            artifacts
+                .into_iter()
+                .map(|uri| ContentPart::Artifact { uri }),
+        );
         self
     }
 }

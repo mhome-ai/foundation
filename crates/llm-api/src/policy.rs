@@ -1,7 +1,9 @@
 //! Pure invocation policy shared by deployments. No discovery or provider routing.
 use std::collections::BTreeSet;
 
-use artifact_api::{ArtifactKind, ArtifactReference};
+use artifact_api::ArtifactKind;
+#[cfg(test)]
+use artifact_api::ArtifactReference;
 use serde::{Deserialize, Serialize};
 
 use crate::{ContentPart, Message, ModelConstraints};
@@ -467,7 +469,7 @@ pub fn input_modality_for_mime(mime_type: &str) -> &'static str {
     }
 }
 
-/// Distinct payload modalities required by `Artifact` and `Image` parts.
+/// Distinct payload modalities required by artifact parts.
 pub fn payload_input_modalities<'a>(
     messages: impl IntoIterator<Item = &'a Message>,
 ) -> Result<Vec<String>, &'static str> {
@@ -484,25 +486,11 @@ pub fn payload_input_modalities<'a>(
 
 fn part_input_modality(part: &ContentPart) -> Result<Option<&'static str>, &'static str> {
     match part {
-        ContentPart::Image { .. } => Ok(Some(INPUT_IMAGE)),
-        ContentPart::Artifact { uri, mime_type } => {
-            artifact_input_modality(uri, mime_type).map(Some)
-        }
+        ContentPart::Artifact { uri } => Ok(Some(input_modality_for_kind(
+            uri.reference().metadata().kind(),
+        ))),
         _ => Ok(None),
     }
-}
-
-fn artifact_input_modality(uri: &str, mime_type: &str) -> Result<&'static str, &'static str> {
-    let reference = ArtifactReference::parse(uri).map_err(|_| "invalid artifact reference")?;
-    if reference.metadata().mime_type() != mime_type {
-        return Err("artifact mime type does not match the message");
-    }
-    let from_kind = input_modality_for_kind(reference.metadata().kind());
-    let from_mime = input_modality_for_mime(mime_type);
-    if from_kind != from_mime {
-        return Err("artifact kind does not match mime type");
-    }
-    Ok(from_kind)
 }
 
 fn static_input_token(token: &str) -> &'static str {
@@ -554,9 +542,11 @@ mod tests {
             structured_output: true,
         };
         assert!(ModelConstraints::default().validate(&supported).is_ok());
-        assert!(ModelConstraints::default()
-            .validate(&ModelCapabilities::default())
-            .is_ok());
+        assert!(
+            ModelConstraints::default()
+                .validate(&ModelCapabilities::default())
+                .is_ok()
+        );
         for constraints in [
             ModelConstraints {
                 input: vec![INPUT_IMAGE.into()],
@@ -602,21 +592,19 @@ mod tests {
 
     #[test]
     fn payload_must_be_declared_and_kind_must_match_mime() {
-        let (image_uri, image_mime) = image_uri();
-        let (audio_uri, audio_mime) = audio_uri();
+        let (image_uri, _image_mime) = image_uri();
+        let (audio_uri, _audio_mime) = audio_uri();
         let image_message = Message {
             role: MessageRole::User,
             content: vec![ContentPart::Artifact {
-                uri: image_uri,
-                mime_type: image_mime,
+                uri: image_uri.parse().unwrap(),
             }],
             continuation: None,
         };
         let audio_message = Message {
             role: MessageRole::User,
             content: vec![ContentPart::Artifact {
-                uri: audio_uri.clone(),
-                mime_type: audio_mime,
+                uri: audio_uri.parse().unwrap(),
             }],
             continuation: None,
         };
@@ -633,15 +621,18 @@ mod tests {
             declared.validate_payload([&audio_message]).unwrap_err(),
             INPUT_AUDIO
         );
-        let mismatched = Message {
-            role: MessageRole::User,
-            content: vec![ContentPart::Artifact {
-                uri: audio_uri,
-                mime_type: "image/png".to_owned(),
-            }],
-            continuation: None,
-        };
-        assert!(payload_input_modalities([&mismatched]).is_err());
+        assert!(
+            serde_json::from_value::<ContentPart>(serde_json::json!({
+                "type":"artifact", "uri": audio_uri, "mime_type":"image/png"
+            }))
+            .is_err()
+        );
+        assert!(
+            serde_json::from_value::<ContentPart>(serde_json::json!({
+                "type":"artifact", "uri":"https://example.com/a.png"
+            }))
+            .is_err()
+        );
     }
 
     #[test]
@@ -684,28 +675,34 @@ mod tests {
     #[test]
     fn validates_explicit_generation_settings() {
         for effort in ["minimal", "low", "high", "max", "ultra"] {
-            assert!(GenerationParameters {
-                reasoning_effort: Some(effort.into()),
-                ..Default::default()
-            }
-            .validate()
-            .is_ok());
+            assert!(
+                GenerationParameters {
+                    reasoning_effort: Some(effort.into()),
+                    ..Default::default()
+                }
+                .validate()
+                .is_ok()
+            );
         }
         for effort in ["unknown", "none"] {
-            assert!(GenerationParameters {
-                reasoning_effort: Some(effort.into()),
-                ..Default::default()
-            }
-            .validate()
-            .is_err());
+            assert!(
+                GenerationParameters {
+                    reasoning_effort: Some(effort.into()),
+                    ..Default::default()
+                }
+                .validate()
+                .is_err()
+            );
         }
         for temperature in [-1.0, f64::NAN, f64::INFINITY] {
-            assert!(GenerationParameters {
-                temperature: Some(temperature),
-                ..Default::default()
-            }
-            .validate()
-            .is_err());
+            assert!(
+                GenerationParameters {
+                    temperature: Some(temperature),
+                    ..Default::default()
+                }
+                .validate()
+                .is_err()
+            );
         }
     }
 
@@ -928,24 +925,30 @@ mod tests {
 
     #[test]
     fn support_rejects_disable_as_an_intensity_and_unlisted_defaults() {
-        assert!(GenerationSupport {
-            reasoning_efforts: Some(vec!["none".into()]),
-            ..Default::default()
-        }
-        .validate()
-        .is_err());
-        assert!(GenerationSupport {
-            reasoning_effort_default: Some("max".into()),
-            ..switchable()
-        }
-        .validate()
-        .is_err());
-        assert!(GenerationSupport {
-            max_output_tokens: Some(0),
-            ..Default::default()
-        }
-        .validate()
-        .is_err());
+        assert!(
+            GenerationSupport {
+                reasoning_efforts: Some(vec!["none".into()]),
+                ..Default::default()
+            }
+            .validate()
+            .is_err()
+        );
+        assert!(
+            GenerationSupport {
+                reasoning_effort_default: Some("max".into()),
+                ..switchable()
+            }
+            .validate()
+            .is_err()
+        );
+        assert!(
+            GenerationSupport {
+                max_output_tokens: Some(0),
+                ..Default::default()
+            }
+            .validate()
+            .is_err()
+        );
     }
 
     #[test]
@@ -1057,12 +1060,14 @@ mod tests {
         assert_eq!(garbage.thinking, Some(true));
         assert_eq!(garbage.reasoning_effort, None);
         assert_eq!(garbage.temperature, None);
-        assert!(GenerationParameters {
-            reasoning_effort: Some("none".into()),
-            ..Default::default()
-        }
-        .validate()
-        .is_err());
+        assert!(
+            GenerationParameters {
+                reasoning_effort: Some("none".into()),
+                ..Default::default()
+            }
+            .validate()
+            .is_err()
+        );
     }
 
     #[test]

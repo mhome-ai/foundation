@@ -302,8 +302,7 @@
           "additionalProperties": false,
           "required": [
             "type",
-            "uri",
-            "mime_type"
+            "uri"
           ],
           "properties": {
             "type": {
@@ -312,10 +311,6 @@
             "uri": {
               "type": "string",
               "pattern": "^meow-artifact://v1/"
-            },
-            "mime_type": {
-              "type": "string",
-              "minLength": 1
             }
           }
         },
@@ -360,22 +355,6 @@
             "result": true,
             "is_error": {
               "type": "boolean"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "type",
-            "image"
-          ],
-          "properties": {
-            "type": {
-              "const": "image"
-            },
-            "image": {
-              "$ref": "#/$defs/image"
             }
           }
         }
@@ -1852,24 +1831,6 @@
         "payload": true
       }
     },
-    "image": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "url": {
-          "type": "string"
-        },
-        "base64": {
-          "type": "string"
-        },
-        "mimeType": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "integer"
-        }
-      }
-    },
     "llm_generation_support": {
       "type": "object",
       "additionalProperties": false,
@@ -1956,7 +1917,12 @@
               "uniqueItems": true,
               "items": {
                 "type": "string",
-                "enum": ["image", "video", "audio", "file"]
+                "enum": [
+                  "image",
+                  "video",
+                  "audio",
+                  "file"
+                ]
               }
             },
             "tool_calling": {

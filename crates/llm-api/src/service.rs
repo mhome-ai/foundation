@@ -3,64 +3,6 @@ use serde_json::Value;
 
 pub const COMPLETE_TARGET: &str = "/llm/complete";
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
-#[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
-pub struct Image {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub url: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub base64: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mime_type: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub created_at: Option<i64>,
-}
-
-impl Image {
-    #[must_use]
-    pub fn from_base64(base64: impl Into<String>, mime_type: impl Into<String>) -> Self {
-        Self {
-            base64: Some(base64.into()),
-            mime_type: Some(mime_type.into()),
-            ..Self::default()
-        }
-    }
-
-    #[must_use]
-    pub fn from_url(url: impl Into<String>) -> Self {
-        Self {
-            url: Some(url.into()),
-            ..Self::default()
-        }
-    }
-
-    #[must_use]
-    pub fn resolved_mime_type(&self) -> Option<String> {
-        let mime_type = self
-            .mime_type
-            .as_ref()
-            .map(|value| value.trim())
-            .filter(|value| !value.is_empty())?;
-        let normalized = mime_type.to_ascii_lowercase();
-        Some(match normalized.as_str() {
-            "image/jpg" => "image/jpeg".to_string(),
-            _ => normalized,
-        })
-    }
-
-    #[must_use]
-    pub fn is_empty(&self) -> bool {
-        self.url
-            .as_ref()
-            .is_none_or(|value| value.trim().is_empty())
-            && self
-                .base64
-                .as_ref()
-                .is_none_or(|value| value.trim().is_empty())
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LlmGenerationOptions {
@@ -137,4 +79,15 @@ mod tests {
         };
         assert_eq!(response.usage.unwrap().total_tokens(), 5);
     }
+}
+
+/// Finite audio is uploaded to the artifact service before transcription.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AsrRequest {
+    pub audio: artifact_api::MediaReference,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
 }

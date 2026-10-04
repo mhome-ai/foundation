@@ -1011,8 +1011,7 @@ mod tests {
         }
         for part in [
             serde_json::json!({"type": "text", "text": "hello"}),
-            serde_json::json!({"type": "artifact", "uri": "meow-artifact://test", "mime_type": "image/png"}),
-            serde_json::json!({"type": "image", "image": {"url": "https://example.invalid/image.png"}}),
+            serde_json::json!({"type": "artifact", "uri": crate::execution::ArtifactReference::new("tenant-1", "scope-1", "a".repeat(64), crate::execution::ArtifactMetadata::image("image/png", 1, 1, 1).unwrap()).unwrap().uri().unwrap()}),
             serde_json::json!({"type": "tool_call", "id": "call-1", "name": "test", "arguments": {"arbitrary": {"nested": null}}}),
             serde_json::json!({"type": "tool_result", "call_id": "call-1", "result": {"arbitrary": true}, "is_error": false}),
         ] {
