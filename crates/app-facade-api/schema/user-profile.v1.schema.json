@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/user-profile.v1.schema.json",
+  "title": "MeowLink account profile",
+  "description": "Cloud account display name and private avatar. The account stores an object key. Read and upload URLs are short-lived and are not durable links. Request bodies are selected by target and defined alongside the profile.",
+  "$ref": "#/$defs/profile",
+  "$defs": {
+    "profileGetRequest": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "profileUpdateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 40 }
+      }
+    },
+    "prepareAvatarRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contentType"],
+      "properties": {
+        "contentType": {
+          "enum": ["image/jpeg", "image/png", "image/webp"]
+        }
+      }
+    },
+    "commitAvatarRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objectKey"],
+      "properties": {
+        "objectKey": { "type": "string", "minLength": 1, "maxLength": 512 }
+      }
+    },
+    "clearAvatarRequest": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "email"],
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "avatarUrl": { "type": ["string", "null"] },
+        "avatarExpiresAtMs": { "type": ["integer", "null"] }
+      }
+    },
+    "preparedAvatarUpload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objectKey", "uploadUrl", "expiresAtMs", "contentType", "maxBytes"],
+      "properties": {
+        "objectKey": { "type": "string", "minLength": 1 },
+        "uploadUrl": { "type": "string", "minLength": 1 },
+        "expiresAtMs": { "type": "integer" },
+        "contentType": { "enum": ["image/jpeg", "image/png", "image/webp"] },
+        "maxBytes": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

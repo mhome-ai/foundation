@@ -5,6 +5,7 @@ const TARGET_PREFIX: &str = "/app/";
 const CLOUD_PREFIXES: &[&str] = &[
     "/app/scope/",
     "/app/inspire/",
+    "/app/user/",
 ];
 
 /// Exact Cloud-owned operations outside Cloud-owned domains.

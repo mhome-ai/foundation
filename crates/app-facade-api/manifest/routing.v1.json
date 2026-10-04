@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.30.0",
+  "contractVersion": "1.31.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode",
@@ -11,7 +11,8 @@
   "rules": {
     "cloudPrefixes": [
       "/app/scope/",
-      "/app/inspire/"
+      "/app/inspire/",
+      "/app/user/"
     ],
     "cloudTargets": [
       "/app/agent/context/get",

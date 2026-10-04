@@ -777,3 +777,89 @@ fn messaging_identity_codes_reject_the_retired_target_and_confirmation_contract(
     assert!(!MANAGEMENT_TARGETS.contains(&"/app/messaging/actor/link-claim/confirm"));
     assert!(!MANAGEMENT_TARGETS.contains(&"/app/messaging/actor/link-claim/status"));
 }
+
+#[test]
+fn user_profile_is_a_cloud_account_domain() {
+    use app_facade_api::routing::{route_policy_for_target, ExecutionSelector, RelayPolicy};
+    use app_facade_api::user::{
+        CommitAvatarRequest, PrepareAvatarRequest, ProfileUpdateRequest, UserProfile,
+        REQUEST_TARGETS,
+    };
+
+    let manifest: Value =
+        serde_json::from_str(include_str!("../manifest/app-facade.v1.json")).unwrap();
+    let domain = &manifest["domains"]["user"];
+    assert_eq!(domain["contract"], "mhome.user.profile.v1");
+    assert_eq!(domain["owner"], "cloudAccount");
+    assert_eq!(
+        domain["requestTargets"],
+        serde_json::to_value(REQUEST_TARGETS).unwrap()
+    );
+    for target in REQUEST_TARGETS {
+        let policy = route_policy_for_target(target).unwrap();
+        assert_eq!(policy.execution, ExecutionSelector::Cloud, "{target}");
+        assert_eq!(policy.relay, RelayPolicy::DirectOnly, "{target}");
+    }
+
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/user-profile.v1.schema.json")).unwrap();
+    let valid = |definition: &str, value: Value| {
+        jsonschema::validator_for(&schema["$defs"][definition])
+            .unwrap()
+            .is_valid(&value)
+    };
+    let profile = UserProfile {
+        name: "Ada".to_string(),
+        email: "ada@example.com".to_string(),
+        avatar_url: None,
+        avatar_expires_at_ms: None,
+    };
+    assert!(jsonschema::validator_for(&schema)
+        .unwrap()
+        .is_valid(&serde_json::to_value(&profile).unwrap()));
+    assert!(valid("profile", serde_json::to_value(&profile).unwrap()));
+    assert!(valid(
+        "profile",
+        serde_json::json!({
+            "name": "Ada",
+            "email": "ada@example.com",
+            "avatarUrl": null,
+            "avatarExpiresAtMs": null
+        })
+    ));
+    assert!(valid(
+        "profileUpdateRequest",
+        serde_json::to_value(ProfileUpdateRequest {
+            name: "Ada".to_string()
+        })
+        .unwrap()
+    ));
+    assert!(valid(
+        "prepareAvatarRequest",
+        serde_json::to_value(PrepareAvatarRequest {
+            content_type: "image/png".to_string()
+        })
+        .unwrap()
+    ));
+    assert!(valid(
+        "commitAvatarRequest",
+        serde_json::to_value(CommitAvatarRequest {
+            object_key: "users/account/avatar/object".to_string()
+        })
+        .unwrap()
+    ));
+    assert!(valid("profileGetRequest", serde_json::json!({})));
+    assert!(valid("clearAvatarRequest", serde_json::json!({})));
+    assert!(!valid(
+        "prepareAvatarRequest",
+        serde_json::json!({"contentType": "image/gif"})
+    ));
+    assert!(!valid(
+        "profileUpdateRequest",
+        serde_json::json!({"name": "Ada", "email": "extra"})
+    ));
+    assert!(serde_json::from_value::<ProfileUpdateRequest>(
+        serde_json::json!({"name": "Ada", "email": "extra"})
+    )
+    .is_err());
+}

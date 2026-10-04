@@ -23,3 +23,5 @@ pub const PROTOCOL_VERSION: &str = "app-facade.v1";
 pub mod system;
 
 pub mod person;
+
+pub mod user;

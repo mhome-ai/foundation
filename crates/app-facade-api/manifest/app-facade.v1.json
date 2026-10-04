@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.30.0",
+  "contractVersion": "1.31.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -116,6 +116,18 @@
       "managementPermission": "spaceMember",
       "owner": "scopeHub",
       "cloudPersistence": false
+    },
+    "user": {
+      "contract": "mhome.user.profile.v1",
+      "schema": "schema/user-profile.v1.schema.json",
+      "requestTargets": [
+        "/app/user/profile/get",
+        "/app/user/profile/update",
+        "/app/user/profile/avatar/prepare",
+        "/app/user/profile/avatar/commit",
+        "/app/user/profile/avatar/clear"
+      ],
+      "owner": "cloudAccount"
     }
   }
 }
