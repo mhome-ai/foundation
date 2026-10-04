@@ -542,11 +542,9 @@ mod tests {
             structured_output: true,
         };
         assert!(ModelConstraints::default().validate(&supported).is_ok());
-        assert!(
-            ModelConstraints::default()
-                .validate(&ModelCapabilities::default())
-                .is_ok()
-        );
+        assert!(ModelConstraints::default()
+            .validate(&ModelCapabilities::default())
+            .is_ok());
         for constraints in [
             ModelConstraints {
                 input: vec![INPUT_IMAGE.into()],
@@ -621,18 +619,14 @@ mod tests {
             declared.validate_payload([&audio_message]).unwrap_err(),
             INPUT_AUDIO
         );
-        assert!(
-            serde_json::from_value::<ContentPart>(serde_json::json!({
-                "type":"artifact", "uri": audio_uri, "mime_type":"image/png"
-            }))
-            .is_err()
-        );
-        assert!(
-            serde_json::from_value::<ContentPart>(serde_json::json!({
-                "type":"artifact", "uri":"https://example.com/a.png"
-            }))
-            .is_err()
-        );
+        assert!(serde_json::from_value::<ContentPart>(serde_json::json!({
+            "type":"artifact", "uri": audio_uri, "mime_type":"image/png"
+        }))
+        .is_err());
+        assert!(serde_json::from_value::<ContentPart>(serde_json::json!({
+            "type":"artifact", "uri":"https://example.com/a.png"
+        }))
+        .is_err());
     }
 
     #[test]
@@ -675,34 +669,28 @@ mod tests {
     #[test]
     fn validates_explicit_generation_settings() {
         for effort in ["minimal", "low", "high", "max", "ultra"] {
-            assert!(
-                GenerationParameters {
-                    reasoning_effort: Some(effort.into()),
-                    ..Default::default()
-                }
-                .validate()
-                .is_ok()
-            );
+            assert!(GenerationParameters {
+                reasoning_effort: Some(effort.into()),
+                ..Default::default()
+            }
+            .validate()
+            .is_ok());
         }
         for effort in ["unknown", "none"] {
-            assert!(
-                GenerationParameters {
-                    reasoning_effort: Some(effort.into()),
-                    ..Default::default()
-                }
-                .validate()
-                .is_err()
-            );
+            assert!(GenerationParameters {
+                reasoning_effort: Some(effort.into()),
+                ..Default::default()
+            }
+            .validate()
+            .is_err());
         }
         for temperature in [-1.0, f64::NAN, f64::INFINITY] {
-            assert!(
-                GenerationParameters {
-                    temperature: Some(temperature),
-                    ..Default::default()
-                }
-                .validate()
-                .is_err()
-            );
+            assert!(GenerationParameters {
+                temperature: Some(temperature),
+                ..Default::default()
+            }
+            .validate()
+            .is_err());
         }
     }
 
@@ -925,30 +913,24 @@ mod tests {
 
     #[test]
     fn support_rejects_disable_as_an_intensity_and_unlisted_defaults() {
-        assert!(
-            GenerationSupport {
-                reasoning_efforts: Some(vec!["none".into()]),
-                ..Default::default()
-            }
-            .validate()
-            .is_err()
-        );
-        assert!(
-            GenerationSupport {
-                reasoning_effort_default: Some("max".into()),
-                ..switchable()
-            }
-            .validate()
-            .is_err()
-        );
-        assert!(
-            GenerationSupport {
-                max_output_tokens: Some(0),
-                ..Default::default()
-            }
-            .validate()
-            .is_err()
-        );
+        assert!(GenerationSupport {
+            reasoning_efforts: Some(vec!["none".into()]),
+            ..Default::default()
+        }
+        .validate()
+        .is_err());
+        assert!(GenerationSupport {
+            reasoning_effort_default: Some("max".into()),
+            ..switchable()
+        }
+        .validate()
+        .is_err());
+        assert!(GenerationSupport {
+            max_output_tokens: Some(0),
+            ..Default::default()
+        }
+        .validate()
+        .is_err());
     }
 
     #[test]
@@ -1060,14 +1042,12 @@ mod tests {
         assert_eq!(garbage.thinking, Some(true));
         assert_eq!(garbage.reasoning_effort, None);
         assert_eq!(garbage.temperature, None);
-        assert!(
-            GenerationParameters {
-                reasoning_effort: Some("none".into()),
-                ..Default::default()
-            }
-            .validate()
-            .is_err()
-        );
+        assert!(GenerationParameters {
+            reasoning_effort: Some("none".into()),
+            ..Default::default()
+        }
+        .validate()
+        .is_err());
     }
 
     #[test]

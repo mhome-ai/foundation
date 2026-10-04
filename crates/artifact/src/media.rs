@@ -67,27 +67,19 @@ mod tests {
         let media = MediaReference {
             uri: reference.uri().unwrap().parse().unwrap(),
         };
-        assert!(
-            media
-                .validate("tenant", "scope", ArtifactKind::Audio)
-                .is_ok()
-        );
-        assert!(
-            media
-                .validate("tenant", "other", ArtifactKind::Audio)
-                .is_err()
-        );
-        assert!(
-            media
-                .validate("tenant", "scope", ArtifactKind::Image)
-                .is_err()
-        );
-        assert!(
-            serde_json::from_value::<MediaReference>(serde_json::json!({
-                "uri": "https://example.com/a"
-            }))
-            .is_err()
-        );
+        assert!(media
+            .validate("tenant", "scope", ArtifactKind::Audio)
+            .is_ok());
+        assert!(media
+            .validate("tenant", "other", ArtifactKind::Audio)
+            .is_err());
+        assert!(media
+            .validate("tenant", "scope", ArtifactKind::Image)
+            .is_err());
+        assert!(serde_json::from_value::<MediaReference>(serde_json::json!({
+            "uri": "https://example.com/a"
+        }))
+        .is_err());
     }
 }
 
