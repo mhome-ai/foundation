@@ -13,19 +13,11 @@ pub struct PrepareArtifactUploadRequest {
     pub size_bytes: u64,
     pub sha256: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub transform: Option<crate::ImageTransform>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub duration_millis: Option<u64>,
 }
 
 impl PrepareArtifactUploadRequest {
     pub fn validate(&self) -> Result<(), PrepareArtifactUploadValidationError> {
-        if let Some(transform) = &self.transform {
-            if self.kind != ArtifactKind::Image {
-                return Err(invalid("image transform requires IMAGE kind"));
-            }
-            transform.validate().map_err(invalid)?;
-        }
         if self.mime_type.trim() != self.mime_type || self.mime_type.is_empty() {
             return Err(invalid("artifact upload MIME type is invalid"));
         }
@@ -123,7 +115,6 @@ mod tests {
             size_bytes: 42,
             sha256: "a".repeat(64),
             duration_millis: Some(1_500),
-            transform: None,
         };
         assert!(request.validate().is_ok());
     }
@@ -136,7 +127,6 @@ mod tests {
             size_bytes: 42,
             sha256: "A".repeat(64),
             duration_millis: Some(1_500),
-            transform: None,
         };
         assert!(request.validate().is_err());
         request.mime_type = "audio/ogg".to_string();

@@ -41,8 +41,6 @@ pub struct ImportArtifactRequest {
     pub kind: ArtifactKind,
     pub source_url: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub transform: Option<crate::ImageTransform>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mime_type: Option<String>,
 }
 

@@ -12,19 +12,11 @@ pub struct PutArtifactRequest {
     pub mime_type: String,
     pub data_base64: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub transform: Option<crate::ImageTransform>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub duration_millis: Option<u64>,
 }
 
 impl PutArtifactRequest {
     pub fn decode(&self) -> Result<Vec<u8>, PutArtifactValidationError> {
-        if let Some(transform) = &self.transform {
-            if self.kind != ArtifactKind::Image {
-                return Err(invalid("image transform requires IMAGE kind"));
-            }
-            transform.validate().map_err(invalid)?;
-        }
         if self.mime_type.trim() != self.mime_type || self.mime_type.is_empty() {
             return Err(invalid("artifact put MIME type is invalid"));
         }
@@ -124,7 +116,6 @@ mod tests {
             mime_type: "image/png".to_string(),
             data_base64: "eA==".to_string(),
             duration_millis: None,
-            transform: None,
         };
         assert!(request.decode().is_err());
     }

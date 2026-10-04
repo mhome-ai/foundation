@@ -26,8 +26,8 @@ use std::str::FromStr;
 /// Shared MWS transport limits. Both websocket peers must apply these values so
 /// an envelope accepted by one side is never rejected solely due to asymmetric
 /// transport configuration.
-pub const MWS_MAX_MESSAGE_SIZE: usize = 16 * 1024 * 1024;
-pub const MWS_MAX_FRAME_SIZE: usize = 4 * 1024 * 1024;
+pub const MWS_MAX_MESSAGE_SIZE: usize = 2 * 1024 * 1024;
+pub const MWS_MAX_FRAME_SIZE: usize = 2 * 1024 * 1024;
 pub const MWS_MAX_WRITE_BUFFER_SIZE: usize = 32 * 1024 * 1024;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

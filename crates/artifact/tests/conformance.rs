@@ -243,40 +243,10 @@ fn media_and_import_schemas_reject_legacy_shapes() {
 }
 
 #[test]
-fn explicit_image_transforms_match_put_and_import_contracts() {
-    let put_schema: Value =
+fn conversion_fields_are_rejected() {
+    let value = serde_json::json!({"kind":"IMAGE","mimeType":"image/png","dataBase64":"eA==","transform":{"format":"JPEG"}});
+    assert!(serde_json::from_value::<PutArtifactRequest>(value.clone()).is_err());
+    let schema: Value =
         serde_json::from_str(include_str!("../schema/artifact-put.v1.schema.json")).unwrap();
-    let import_schema: Value =
-        serde_json::from_str(include_str!("../schema/artifact-import.v1.schema.json")).unwrap();
-    let put_validator = jsonschema::validator_for(&put_schema).unwrap();
-    let import_validator = jsonschema::validator_for(&import_schema).unwrap();
-    for (transform, valid) in [
-        (
-            serde_json::json!({"format":"JPEG","maxWidth":2048,"quality":85,"background":"#ffffff"}),
-            true,
-        ),
-        (serde_json::json!({"format":"PNG","maxHeight":1024}), true),
-        (serde_json::json!({"format":"PNG","quality":85}), false),
-        (serde_json::json!({"format":"JPEG","maxWidth":0}), false),
-        (serde_json::json!({"format":"JPEG","quality":101}), false),
-        (
-            serde_json::json!({"format":"JPEG","background":"white"}),
-            false,
-        ),
-        (serde_json::json!({"format":"WEBP"}), false),
-        (serde_json::json!({"format":"JPEG","unknown":true}), false),
-    ] {
-        let put = serde_json::json!({"kind":"IMAGE","mimeType":"image/png","dataBase64":"eA==","transform":transform});
-        assert_eq!(put_validator.is_valid(&put), valid, "{put}");
-        let parsed = serde_json::from_value::<PutArtifactRequest>(put).ok();
-        assert_eq!(parsed.and_then(|p| p.decode().ok()).is_some(), valid);
-        let import = serde_json::json!({"kind":"IMAGE","sourceUrl":"https://example.test/a","transform":transform});
-        assert_eq!(import_validator.is_valid(&import), valid);
-    }
-    let audio = serde_json::json!({"kind":"AUDIO","mimeType":"audio/mpeg","dataBase64":"eA==","transform":{"format":"PNG"}});
-    assert!(!put_validator.is_valid(&audio));
-    assert!(serde_json::from_value::<PutArtifactRequest>(audio)
-        .unwrap()
-        .decode()
-        .is_err());
+    assert!(!jsonschema::validator_for(&schema).unwrap().is_valid(&value));
 }

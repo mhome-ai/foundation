@@ -164,7 +164,7 @@ pub struct TtsSynthesizeRequest {
 
 /// Speech synthesis response returned directly by an LLM Node.
 ///
-/// Version 1 transports short audio inline as base64. The effective model,
+/// Audio is committed to the owning Core and returned as an artifact URI. The effective model,
 /// voice, format, and MIME type are returned so callers need not infer which
 /// optional request preferences a backend applied.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -173,7 +173,7 @@ pub struct TtsSynthesizeResponse {
     pub ok: bool,
     pub model: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub audio_base64: Option<String>,
+    pub uri: Option<String>,
     pub mime_type: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub voice: Option<String>,
