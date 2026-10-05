@@ -1595,6 +1595,15 @@
         },
         {
           "$ref": "#/$defs/debugEventFrame"
+        },
+        {
+          "$ref": "#/$defs/controlRequest"
+        },
+        {
+          "$ref": "#/$defs/controlResponse"
+        },
+        {
+          "$ref": "#/$defs/catalogCommandResponse"
         }
       ]
     },
@@ -2058,12 +2067,7 @@
       ],
       "properties": {
         "target": {
-          "enum": [
-            "/chat/thread/list",
-            "/chat/thread/create",
-            "/chat/thread/archive",
-            "/chat/thread/rotate"
-          ]
+          "const": "/chat/thread/list"
         },
         "direction": {
           "const": "response"
@@ -2112,25 +2116,45 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "requestId",
-            "disposition"
+            "receipt",
+            "control"
           ],
           "properties": {
-            "requestId": {
-              "$ref": "#/$defs/id"
+            "receipt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requestId",
+                "disposition"
+              ],
+              "properties": {
+                "requestId": {
+                  "$ref": "#/$defs/id"
+                },
+                "disposition": {
+                  "enum": [
+                    "queued",
+                    "duplicate"
+                  ]
+                },
+                "queueVersion": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "admission": {
+                  "$ref": "#/$defs/requestAdmission"
+                }
+              }
             },
-            "disposition": {
-              "enum": [
-                "queued",
-                "duplicate"
+            "control": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/control"
+                },
+                {
+                  "type": "null"
+                }
               ]
-            },
-            "queueVersion": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "admission": {
-              "$ref": "#/$defs/requestAdmission"
             }
           }
         }
@@ -2155,36 +2179,56 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "requestId",
-            "disposition"
+            "receipt",
+            "control"
           ],
           "properties": {
-            "requestId": {
-              "$ref": "#/$defs/id"
+            "receipt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requestId",
+                "disposition"
+              ],
+              "properties": {
+                "requestId": {
+                  "$ref": "#/$defs/id"
+                },
+                "threadId": {
+                  "$ref": "#/$defs/id"
+                },
+                "disposition": {
+                  "enum": [
+                    "queued",
+                    "duplicate",
+                    "blocked_pending_interaction"
+                  ]
+                },
+                "sessionDisposition": {
+                  "enum": [
+                    "existing",
+                    "created",
+                    "rotated_idle_timeout"
+                  ]
+                },
+                "queueVersion": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "admission": {
+                  "$ref": "#/$defs/requestAdmission"
+                }
+              }
             },
-            "threadId": {
-              "$ref": "#/$defs/id"
-            },
-            "disposition": {
-              "enum": [
-                "queued",
-                "duplicate",
-                "blocked_pending_interaction"
+            "control": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/control"
+                },
+                {
+                  "type": "null"
+                }
               ]
-            },
-            "sessionDisposition": {
-              "enum": [
-                "existing",
-                "created",
-                "rotated_idle_timeout"
-              ]
-            },
-            "queueVersion": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "admission": {
-              "$ref": "#/$defs/requestAdmission"
             }
           }
         }
@@ -2206,7 +2250,27 @@
           "const": "response"
         },
         "body": {
-          "$ref": "#/$defs/queue"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "receipt",
+            "control"
+          ],
+          "properties": {
+            "receipt": {
+              "$ref": "#/$defs/queue"
+            },
+            "control": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/control"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
         }
       }
     },
@@ -2229,34 +2293,54 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "requestId",
-            "phase",
-            "outcome"
+            "receipt",
+            "control"
           ],
           "properties": {
-            "requestId": {
-              "$ref": "#/$defs/id"
+            "receipt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requestId",
+                "phase",
+                "outcome"
+              ],
+              "properties": {
+                "requestId": {
+                  "$ref": "#/$defs/id"
+                },
+                "phase": {
+                  "enum": [
+                    "admission_waiting",
+                    "waiting",
+                    "running"
+                  ]
+                },
+                "outcome": {
+                  "enum": [
+                    "cancelled",
+                    "cancelling"
+                  ]
+                },
+                "queueVersion": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "admissionVersion": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
             },
-            "phase": {
-              "enum": [
-                "admission_waiting",
-                "waiting",
-                "running"
+            "control": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/control"
+                },
+                {
+                  "type": "null"
+                }
               ]
-            },
-            "outcome": {
-              "enum": [
-                "cancelled",
-                "cancelling"
-              ]
-            },
-            "queueVersion": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "admissionVersion": {
-              "type": "integer",
-              "minimum": 0
             }
           }
         }
@@ -2281,15 +2365,35 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "requestId",
-            "disposition"
+            "receipt",
+            "control"
           ],
           "properties": {
-            "requestId": {
-              "$ref": "#/$defs/id"
+            "receipt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requestId",
+                "disposition"
+              ],
+              "properties": {
+                "requestId": {
+                  "$ref": "#/$defs/id"
+                },
+                "disposition": {
+                  "const": "accepted"
+                }
+              }
             },
-            "disposition": {
-              "const": "accepted"
+            "control": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/control"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         }
@@ -2329,6 +2433,9 @@
             },
             {
               "$ref": "#/$defs/liveEvent"
+            },
+            {
+              "$ref": "#/$defs/controlEvent"
             }
           ]
         }
@@ -2406,26 +2513,46 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "operationId",
-            "threadId",
-            "disposition",
-            "catalog"
+            "receipt",
+            "control"
           ],
           "properties": {
-            "operationId": {
-              "$ref": "#/$defs/id"
+            "receipt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "operationId",
+                "threadId",
+                "disposition",
+                "catalog"
+              ],
+              "properties": {
+                "operationId": {
+                  "$ref": "#/$defs/id"
+                },
+                "threadId": {
+                  "$ref": "#/$defs/id"
+                },
+                "disposition": {
+                  "enum": [
+                    "rotated",
+                    "already_applied"
+                  ]
+                },
+                "catalog": {
+                  "$ref": "#/$defs/catalog"
+                }
+              }
             },
-            "threadId": {
-              "$ref": "#/$defs/id"
-            },
-            "disposition": {
-              "enum": [
-                "rotated",
-                "already_applied"
+            "control": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/control"
+                },
+                {
+                  "type": "null"
+                }
               ]
-            },
-            "catalog": {
-              "$ref": "#/$defs/catalog"
             }
           }
         }
@@ -2512,23 +2639,209 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "requestId",
-            "threadId",
-            "disposition"
+            "receipt",
+            "control"
           ],
           "properties": {
-            "requestId": {
-              "$ref": "#/$defs/id"
+            "receipt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requestId",
+                "threadId",
+                "disposition"
+              ],
+              "properties": {
+                "requestId": {
+                  "$ref": "#/$defs/id"
+                },
+                "threadId": {
+                  "$ref": "#/$defs/id"
+                },
+                "disposition": {
+                  "enum": [
+                    "accepted",
+                    "duplicate",
+                    "unavailable",
+                    "expired_session"
+                  ]
+                }
+              }
             },
-            "threadId": {
-              "$ref": "#/$defs/id"
+            "control": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/control"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "surfaceId",
+        "version",
+        "activeThread",
+        "activeRun",
+        "pendingInteraction",
+        "queue",
+        "historyVersion"
+      ],
+      "properties": {
+        "surfaceId": {
+          "$ref": "#/$defs/surfaceId"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]{20}:[0-9]{20}$"
+        },
+        "activeThread": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/threadSummary"
             },
-            "disposition": {
-              "enum": [
-                "accepted",
-                "duplicate",
-                "unavailable",
-                "expired_session"
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "activeRun": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/activeRun"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pendingInteraction": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/pendingInteraction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "queue": {
+          "$ref": "#/$defs/queue"
+        },
+        "historyVersion": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "controlEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "surfaceId",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "const": "control.updated"
+        },
+        "surfaceId": {
+          "$ref": "#/$defs/surfaceId"
+        },
+        "data": {
+          "$ref": "#/$defs/control"
+        }
+      }
+    },
+    "controlRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/control/get"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {}
+        }
+      }
+    },
+    "controlResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/chat/control/get"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/control"
+        }
+      }
+    },
+    "catalogCommandResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "enum": [
+            "/chat/thread/create",
+            "/chat/thread/archive",
+            "/chat/thread/rotate"
+          ]
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "receipt",
+            "control"
+          ],
+          "properties": {
+            "receipt": {
+              "$ref": "#/$defs/catalog"
+            },
+            "control": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/control"
+                },
+                {
+                  "type": "null"
+                }
               ]
             }
           }

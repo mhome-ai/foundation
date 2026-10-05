@@ -1,0 +1,5 @@
+{
+  "target": "/chat/control/get",
+  "direction": "request",
+  "body": {}
+}

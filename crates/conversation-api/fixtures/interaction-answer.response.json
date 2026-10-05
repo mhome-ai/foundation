@@ -2,8 +2,30 @@
   "target": "/chat/interaction/answer",
   "direction": "response",
   "body": {
-    "requestId": "request-1",
-    "threadId": "thread-3",
-    "disposition": "accepted"
+    "receipt": {
+      "requestId": "request-1",
+      "threadId": "thread-3",
+      "disposition": "accepted"
+    },
+    "control": {
+      "surfaceId": "cs1:cp:dXNlcg",
+      "version": "00000000000000000001:00000000000000000001",
+      "activeThread": {
+        "threadId": "thread-2",
+        "title": "New conversation",
+        "state": "active",
+        "createdAt": "2026-08-22T00:00:00Z",
+        "updatedAt": "2026-08-22T00:00:00Z",
+        "archivedAt": null,
+        "purgeAfter": null
+      },
+      "activeRun": null,
+      "pendingInteraction": null,
+      "queue": {
+        "queueVersion": 0,
+        "items": []
+      },
+      "historyVersion": 0
+    }
   }
 }

@@ -1,4 +1,5 @@
 pub const THREAD_LIST_TARGET: &str = "/chat/thread/list";
+pub const CONTROL_GET_TARGET: &str = "/chat/control/get";
 pub const THREAD_CREATE_TARGET: &str = "/chat/thread/create";
 pub const THREAD_ARCHIVE_TARGET: &str = "/chat/thread/archive";
 pub const THREAD_ROTATE_TARGET: &str = "/chat/thread/rotate";
@@ -17,6 +18,7 @@ pub fn is_conversation_request_target(target: &str) -> bool {
     matches!(
         target,
         THREAD_LIST_TARGET
+            | CONTROL_GET_TARGET
             | THREAD_CREATE_TARGET
             | THREAD_ARCHIVE_TARGET
             | THREAD_ROTATE_TARGET

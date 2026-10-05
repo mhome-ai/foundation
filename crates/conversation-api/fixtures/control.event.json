@@ -1,14 +1,10 @@
 {
-  "target": "/chat/request/cancel",
-  "direction": "response",
+  "target": "/chat/event",
+  "direction": "event",
   "body": {
-    "receipt": {
-      "requestId": "request-3",
-      "phase": "admission_waiting",
-      "outcome": "cancelled",
-      "admissionVersion": 8
-    },
-    "control": {
+    "type": "control.updated",
+    "surfaceId": "cs1:cp:dXNlcg",
+    "data": {
       "surfaceId": "cs1:cp:dXNlcg",
       "version": "00000000000000000001:00000000000000000001",
       "activeThread": {

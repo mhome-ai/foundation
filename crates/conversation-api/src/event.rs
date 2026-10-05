@@ -327,6 +327,7 @@ impl LiveConversationEvent {
 #[serde(untagged)]
 #[allow(clippy::large_enum_variant)]
 pub enum ConversationEvent {
+    ControlUpdated(crate::ControlUpdatedEvent),
     SnapshotUpdated(SnapshotUpdatedEvent),
     CatalogChanged(CatalogChangedEvent),
     QueueChanged(QueueChangedEvent),
@@ -340,6 +341,7 @@ pub enum ConversationEvent {
 impl ConversationEvent {
     pub fn surface(&self) -> &ConversationSurface {
         match self {
+            Self::ControlUpdated(event) => &event.surface_id,
             Self::SnapshotUpdated(event) => &event.surface_id,
             Self::CatalogChanged(event) => &event.surface_id,
             Self::QueueChanged(event) => &event.surface_id,
@@ -353,6 +355,7 @@ impl ConversationEvent {
 
     pub fn event_type(&self) -> &'static str {
         match self {
+            Self::ControlUpdated(_) => "control.updated",
             Self::SnapshotUpdated(_) => "snapshot.updated",
             Self::CatalogChanged(_) => "thread.catalog_changed",
             Self::QueueChanged(_) => "queue.changed",

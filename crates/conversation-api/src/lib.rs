@@ -1,6 +1,7 @@
 //! Typed wire contract for mHome conversation surfaces.
 
 mod content;
+mod control;
 mod event;
 mod interaction;
 mod request;
@@ -11,6 +12,7 @@ mod targets;
 mod thread;
 
 pub use content::*;
+pub use control::*;
 pub use event::*;
 pub use interaction::*;
 pub use request::*;

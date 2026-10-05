@@ -15,6 +15,18 @@ use serde_json::Value;
 
 const FIXTURES: &[(&str, &str)] = &[
     (
+        "control-get.request.json",
+        include_str!("../fixtures/control-get.request.json"),
+    ),
+    (
+        "control-get.response.json",
+        include_str!("../fixtures/control-get.response.json"),
+    ),
+    (
+        "control.event.json",
+        include_str!("../fixtures/control.event.json"),
+    ),
+    (
         "catalog.event.json",
         include_str!("../fixtures/catalog.event.json"),
     ),
@@ -184,6 +196,12 @@ fn fixture(name: &str) -> Value {
     serde_json::from_str(raw).unwrap()
 }
 
+fn receipt<T: DeserializeOwned>(name: &str) -> T {
+    let response: conversation_api::ControlledResponse<T> = body(name);
+    assert!(response.control.is_some());
+    response.receipt
+}
+
 fn body<T: DeserializeOwned>(name: &str) -> T {
     serde_json::from_value(fixture(name)["body"].clone()).unwrap()
 }
@@ -220,6 +238,7 @@ fn target_manifest_matches_the_rust_inventory() {
     assert_eq!(
         request_targets,
         vec![
+            conversation_api::CONTROL_GET_TARGET,
             conversation_api::THREAD_LIST_TARGET,
             conversation_api::THREAD_CREATE_TARGET,
             conversation_api::THREAD_ARCHIVE_TARGET,
@@ -251,6 +270,8 @@ fn target_manifest_matches_the_rust_inventory() {
 
 #[test]
 fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
+    body::<conversation_api::ControlGetRequest>("control-get.request.json");
+    body::<conversation_api::ConversationControl>("control-get.response.json");
     body::<ThreadListRequest>("thread-list.request.json");
     body::<ThreadCreateRequest>("thread-create.request.json");
     body::<ThreadLoadRequest>("thread-load.request.json");
@@ -277,24 +298,24 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
     body::<ThreadArchiveRequest>("thread-archive.request.json");
     body::<ThreadRotateRequest>("thread-rotate.request.json");
     body::<ThreadCatalog>("thread-list.response.json");
-    body::<ThreadCatalog>("thread-create.response.json");
-    body::<ThreadCatalog>("thread-archive.response.json");
-    body::<ThreadCatalog>("thread-rotate.response.json");
+    receipt::<ThreadCatalog>("thread-create.response.json");
+    receipt::<ThreadCatalog>("thread-archive.response.json");
+    receipt::<ThreadCatalog>("thread-rotate.response.json");
     body::<ThreadLoadResponse>("thread-load.response.json");
-    let enqueue_response = body::<MessageEnqueueResponse>("enqueue.response.json");
+    let enqueue_response = receipt::<MessageEnqueueResponse>("enqueue.response.json");
     assert_eq!(
         enqueue_response.disposition,
         MessageEnqueueDisposition::Queued
     );
     let turn = body::<TurnSubmitRequest>("turn-submit.request.json");
     assert_eq!(turn.occurred_at_unix_ms, 1_787_587_200_000);
-    let turn_response = body::<TurnSubmitResponse>("turn-submit.response.json");
+    let turn_response = receipt::<TurnSubmitResponse>("turn-submit.response.json");
     assert_eq!(turn_response.disposition, TurnSubmitDisposition::Queued);
     assert_eq!(
         turn_response.session_disposition,
         Some(TurnSessionDisposition::RotatedIdleTimeout)
     );
-    let waiting = body::<TurnSubmitResponse>("turn-submit-waiting.response.json");
+    let waiting = receipt::<TurnSubmitResponse>("turn-submit-waiting.response.json");
     assert_eq!(waiting.thread_id, None);
     assert_eq!(waiting.queue_version, None);
     assert_eq!(
@@ -302,26 +323,27 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
         Some(RequestAdmissionState::WaitingHandoff)
     );
     body::<SessionStartRequest>("session-start.request.json");
-    let session_start = body::<SessionStartResponse>("session-start.response.json");
+    let session_start = receipt::<SessionStartResponse>("session-start.response.json");
     assert_eq!(session_start.disposition, SessionStartDisposition::Rotated);
     body::<InteractionAnswerRequest>("interaction-answer.request.json");
-    let interaction_answer = body::<InteractionAnswerResponse>("interaction-answer.response.json");
+    let interaction_answer =
+        receipt::<InteractionAnswerResponse>("interaction-answer.response.json");
     assert_eq!(
         interaction_answer.disposition,
         InteractionAnswerDisposition::Accepted
     );
-    let cancel_response = body::<RequestCancelResponse>("request-cancel.response.json");
+    let cancel_response = receipt::<RequestCancelResponse>("request-cancel.response.json");
     assert_eq!(cancel_response.phase, RequestCancelPhase::Running);
     assert_eq!(cancel_response.outcome, RequestCancelOutcome::Cancelling);
     let waiting_cancel_response =
-        body::<RequestCancelResponse>("request-cancel-waiting.response.json");
+        receipt::<RequestCancelResponse>("request-cancel-waiting.response.json");
     assert_eq!(
         waiting_cancel_response.phase,
         RequestCancelPhase::AdmissionWaiting
     );
     assert_eq!(waiting_cancel_response.queue_version, None);
-    body::<ConversationQueue>("queue-reorder.response.json");
-    let interaction = body::<InteractionSubmitResponse>("interaction.response.json");
+    receipt::<ConversationQueue>("queue-reorder.response.json");
+    let interaction = receipt::<InteractionSubmitResponse>("interaction.response.json");
     assert_eq!(
         interaction.disposition,
         InteractionSubmitDisposition::Accepted
@@ -331,6 +353,7 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
 #[test]
 fn every_chat_event_deserializes_without_provider_knowledge() {
     for name in [
+        "control.event.json",
         "catalog.event.json",
         "admission.event.json",
         "interaction.event.json",
