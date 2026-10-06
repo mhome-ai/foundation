@@ -131,8 +131,11 @@ Lion HTTPS response. Activation proofs require a synced clock.
 
 ## 5. Lion credential API
 
-All bodies are JSON. Errors use the standard Lion envelope; codes below are the
-`message` discriminators.
+All bodies are JSON. Errors use the standard Lion envelope. Credential failures
+are `UNAUTHORIZED` with one of these `message` values: `pod_credential_invalid`
+(unknown pod, wrong or revoked refresh token), `pod_proof_invalid`,
+`pod_proof_replayed`, `pod_activation_expired`, `pod_not_owned`. A pod treats
+`pod_credential_invalid` and `pod_activation_expired` as revocation.
 
 ### Issue
 
@@ -150,7 +153,8 @@ All bodies are JSON. Errors use the standard Lion envelope; codes below are the
 }
 ```
 
-Lion requires Space membership for `ScopeId`, validates the identity, and
+`deviceId` matches `[A-Za-z0-9._:-]{1,64}`; `model` and `name` are 1–64
+characters. Lion requires Space membership for `ScopeId`, validates the identity, and
 creates a `pending` credential that must activate before `activateBefore`
 (issue time + 10 minutes). Response `{"podId","refreshToken","activateBefore"}`.
 
@@ -160,14 +164,14 @@ creates a `pending` credential that must activate before `activateBefore`
 
 `proof` is a compact ES256 JWS signed by the identity key: header `kid=keyId`;
 claims `iss` and `sub` = `podId`, `aud` = `pod-token-refresh`, `token_hash` =
-standard base64 SHA-256 of the refresh token, `iat`, `exp` with
+unpadded base64url SHA-256 of the UTF-8 refresh token (including `pod-`), `iat`, `exp` with
 `exp - iat ≤ 120 s`, and a unique `jti`. Lion allows 120 s clock skew and rejects
 reused `jti` values for 5 minutes.
 
-The first successful refresh moves `pending` to `active` and revokes any other
-active credential with the same `deviceId`. A `pending` credential past
-`activateBefore` is rejected and deleted. Every refresh checks that the
-credential is active and its user still exists. Response
+The first successful refresh moves `pending` to `active` and revokes the same
+user's other credentials with the same `deviceId`. A `pending` credential past
+`activateBefore` is rejected and deleted. Revoked credentials are deleted, so a
+later refresh fails with `pod_credential_invalid`. Response
 `{"accessToken","expiresIn"}`.
 
 ### Revoke
@@ -175,20 +179,25 @@ credential is active and its user still exists. Response
 `POST /api/v1/pod/credential/revoke`, body `{"podId"}` with the owning user's
 `Authorization`, or `{"podId","refreshToken","proof"}` where the proof uses
 `aud` = `pod-credential-revoke` (pod logout and factory reset). Idempotent.
+Response `{"ok":true}`.
 
 ### List and rename
 
-`POST /api/v1/pod/list` (user) returns the user's active and pending pods
-without secrets. `POST /api/v1/pod/rename` `{"podId","name"}` (user).
+`POST /api/v1/pod/list` (user) returns `{"pods":[…]}`, the user's active pods
+and unexpired pending pods, each
+`{"podId","name","deviceId","model","platform","firmwareVersion","identityFingerprint","status","issuedAt","activatedAt"}`.
+`POST /api/v1/pod/rename` `{"podId","name"}` (user) returns the updated pod.
 
 ### Tokens
 
 - Access: `pod-` + HS256 JWT. Claims: `iss`, `aud`, `sub` = `podId`, `user_id`,
   `tenant_id`, `device_id`, `token_type` = `pod_access`, `iat`, `exp` (3600 s),
-  `jti`. The signing secret is dedicated to pods.
+  `jti`. The signing key is derived from the Hub secret with HMAC-SHA256 over the
+  label `mhome-pod-access-v1`, so Hub and pod tokens never verify as each other.
 - Refresh: `pod-` + 43-character base64url of 32 random bytes. Lion stores only
   its SHA-256. It never rotates; the identity proof binds it to the device.
-- `pod-` is dispatched by prefix before any JWT parsing. Only the cloud WebSocket
+- Pods send `Authorization: Bearer pod-…` (and `"token":"Bearer pod-…"` on the
+  WebSocket). `pod-` is dispatched by prefix before any JWT parsing. Only the cloud WebSocket
   `/auth` and `/api/v1/hub/token/exchange` accept pod access tokens. Every other
   API keeps accepting user tokens only. No target allowlist applies in v1.
 - A pod session acts as its user across all of that user's Spaces. Revocation
@@ -196,8 +205,9 @@ without secrets. `POST /api/v1/pod/rename` `{"podId","name"}` (user).
 
 ## 6. Pod runtime authentication
 
-- Cloud `/auth`: `{"token":"pod-…","devToken":null,"source":"pod","deviceId","activeScope"}`,
-  then `/focus`. The pod refreshes before access expiry.
+- Cloud `/auth`: `{"token":"Bearer pod-…","devToken":null,"source":"pod","deviceId","activeScope"}`,
+  then `/focus`. Lion rejects `source=pod` without a pod token and a pod token
+  with any other source. The pod refreshes before access expiry.
 - Space switching: the pod chooses among the Spaces returned by `/auth` and
   re-sends `/focus`; it keeps one local JWT and Hub key per Hub.
 - Local Hub: fetch the Hub key with the pod access token, prove the Hub
