@@ -73,4 +73,20 @@ fn fixtures_match_types_and_schemas() {
     assert!(!commission.is_valid(&missing_error));
     let session: CommissionSession = serde_json::from_value(missing_error).unwrap();
     assert!(session.validate().is_err());
+
+    let failed: Value =
+        serde_json::from_str(include_str!("../fixtures/pod-commission.failed.json")).unwrap();
+    for (state, code, valid) in [
+        ("awaiting_code", "code_rejected", true),
+        ("awaiting_wifi", "wifi_auth_failed", true),
+        ("awaiting_code", "wifi_failed", false),
+        ("reading_info", "code_rejected", false),
+    ] {
+        let mut retry = failed.clone();
+        retry["state"] = Value::from(state);
+        retry["error"]["code"] = Value::from(code);
+        assert_eq!(commission.is_valid(&retry), valid, "{state} {code}");
+        let session: CommissionSession = serde_json::from_value(retry).unwrap();
+        assert_eq!(session.validate().is_ok(), valid, "{state} {code}");
+    }
 }

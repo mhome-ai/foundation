@@ -105,8 +105,27 @@
   "allOf": [
     {
       "if": { "properties": { "state": { "enum": ["failed", "timed_out"] } } },
-      "then": { "required": ["error"] },
-      "else": { "not": { "required": ["error"] } }
+      "then": { "required": ["error"] }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": { "not": { "enum": ["failed", "timed_out", "awaiting_code", "awaiting_wifi"] } }
+        }
+      },
+      "then": { "not": { "required": ["error"] } }
+    },
+    {
+      "if": { "properties": { "state": { "const": "awaiting_code" } }, "required": ["error"] },
+      "then": { "properties": { "error": { "properties": { "code": { "const": "code_rejected" } } } } }
+    },
+    {
+      "if": { "properties": { "state": { "const": "awaiting_wifi" } }, "required": ["error"] },
+      "then": {
+        "properties": {
+          "error": { "properties": { "code": { "enum": ["wifi_auth_failed", "wifi_not_found", "wifi_failed"] } } }
+        }
+      }
     },
     {
       "if": { "properties": { "state": { "const": "awaiting_authorization" } } },

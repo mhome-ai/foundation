@@ -309,12 +309,26 @@ pub struct CommissionSession {
 
 impl CommissionSession {
     pub fn validate(&self) -> Result<(), &'static str> {
-        let failed = matches!(
-            self.state,
-            CommissionState::Failed | CommissionState::TimedOut
-        );
-        if failed != self.error.is_some() {
-            return Err("error must be present exactly for failed and timed_out sessions");
+        match (self.state, self.error.as_ref().map(|error| error.code)) {
+            (CommissionState::Failed | CommissionState::TimedOut, None) => {
+                return Err("failed and timed_out sessions carry an error");
+            }
+            (CommissionState::Failed | CommissionState::TimedOut, Some(_))
+            | (_, None)
+            | (CommissionState::AwaitingCode, Some(CommissionErrorCode::CodeRejected))
+            | (
+                CommissionState::AwaitingWifi,
+                Some(
+                    CommissionErrorCode::WifiAuthFailed
+                    | CommissionErrorCode::WifiNotFound
+                    | CommissionErrorCode::WifiFailed,
+                ),
+            ) => {}
+            _ => {
+                return Err(
+                    "only failed, timed_out and retryable code or Wi-Fi states carry an error",
+                );
+            }
         }
         if self.state == CommissionState::AwaitingAuthorization && self.authorization.is_none() {
             return Err("awaiting_authorization requires an authorization prompt");

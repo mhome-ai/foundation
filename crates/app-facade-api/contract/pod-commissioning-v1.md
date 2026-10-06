@@ -255,8 +255,10 @@ Session error codes: `bluetooth_unavailable`, `device_busy`, `disconnected`,
 `code_rejected` (retry allowed), `code_locked`, `wifi_auth_failed`,
 `wifi_not_found`, `wifi_failed`, `issue_failed`, `delivery_failed`,
 `activation_failed` (with the pod's activation code in `detail`),
-`session_timeout`. After issue, every terminal state other than `completed`
-revokes the credential.
+`session_timeout`. `failed` and `timed_out` always carry `error`. A rejected
+code returns to `awaiting_code` with `code_rejected`; a failed join returns to
+`awaiting_wifi` with the `wifi_*` code. No other state carries `error`. After
+issue, every terminal state other than `completed` revokes the credential.
 
 The schemas are `schema/pod-discovery.v1.schema.json` and
 `schema/pod-commission.v1.schema.json`.
