@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/pod-discovery.v1.schema.json",
+  "title": "Native-client pod discovery snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["revision", "scanning", "adapter", "candidates"],
+  "properties": {
+    "revision": { "type": "integer", "minimum": 0 },
+    "scanning": { "type": "boolean" },
+    "adapter": { "$ref": "#/$defs/adapter" },
+    "candidates": { "type": "array", "items": { "$ref": "#/$defs/candidate" } }
+  },
+  "$defs": {
+    "adapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": { "enum": ["ready", "poweredOff", "denied", "unavailable"] },
+        "message": { "type": "string" }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidateId",
+        "name",
+        "shortId",
+        "rssi",
+        "commissionable",
+        "wifiConfigured",
+        "lastSeenMs"
+      ],
+      "properties": {
+        "candidateId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "model": { "type": "string" },
+        "shortId": { "type": "string", "pattern": "^[0-9A-F]{8}$" },
+        "rssi": { "type": "integer" },
+        "commissionable": { "type": "boolean" },
+        "wifiConfigured": { "type": "boolean" },
+        "lastSeenMs": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

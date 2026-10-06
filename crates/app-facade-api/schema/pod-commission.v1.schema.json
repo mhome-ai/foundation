@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/pod-commission.v1.schema.json",
+  "title": "Native-client pod commissioning session snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sessionId", "revision", "state", "candidate", "expiresAtMs"],
+  "properties": {
+    "sessionId": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 0 },
+    "state": {
+      "enum": [
+        "connecting",
+        "awaiting_code",
+        "securing",
+        "reading_info",
+        "awaiting_wifi",
+        "joining_wifi",
+        "awaiting_authorization",
+        "issuing",
+        "delivering",
+        "activating",
+        "completed",
+        "failed",
+        "cancelled",
+        "timed_out"
+      ]
+    },
+    "candidate": { "$ref": "pod-discovery.v1.schema.json#/$defs/candidate" },
+    "expiresAtMs": { "type": "integer", "minimum": 0 },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deviceId", "model", "firmwareVersion", "wifiConfigured"],
+      "properties": {
+        "deviceId": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "firmwareVersion": { "type": "string", "minLength": 1 },
+        "wifiConfigured": { "type": "boolean" }
+      }
+    },
+    "networks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ssid", "rssi", "secured"],
+        "properties": {
+          "ssid": { "type": "string", "minLength": 1 },
+          "rssi": { "type": "integer" },
+          "secured": { "type": "boolean" }
+        }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["userId", "userName", "scopes", "defaultScopeId"],
+      "properties": {
+        "userId": { "type": "string", "minLength": 1 },
+        "userName": { "type": "string" },
+        "scopes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scopeId", "name"],
+            "properties": {
+              "scopeId": { "type": "string", "minLength": 1 },
+              "name": { "type": "string" }
+            }
+          }
+        },
+        "defaultScopeId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "podId": { "type": "string", "minLength": 1 },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "enum": [
+            "bluetooth_unavailable",
+            "device_busy",
+            "disconnected",
+            "code_rejected",
+            "code_locked",
+            "wifi_auth_failed",
+            "wifi_not_found",
+            "wifi_failed",
+            "issue_failed",
+            "delivery_failed",
+            "activation_failed",
+            "session_timeout"
+          ]
+        },
+        "message": { "type": "string" },
+        "detail": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "state": { "enum": ["failed", "timed_out"] } } },
+      "then": { "required": ["error"] },
+      "else": { "not": { "required": ["error"] } }
+    },
+    {
+      "if": { "properties": { "state": { "const": "awaiting_authorization" } } },
+      "then": { "required": ["authorization"] }
+    },
+    {
+      "if": { "properties": { "state": { "const": "completed" } } },
+      "then": { "required": ["podId"] }
+    }
+  ]
+}

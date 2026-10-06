@@ -1,0 +1,34 @@
+{
+  "manifest": "mhome.pod.targets.v1",
+  "contractVersion": "1.34.0",
+  "contract": "contract/pod-commissioning-v1.md",
+  "localTargets": [
+    "/local/pod/discovery/start",
+    "/local/pod/discovery/renew",
+    "/local/pod/discovery/stop",
+    "/local/pod/discovery/list",
+    "/local/pod/commission/start",
+    "/local/pod/commission/code",
+    "/local/pod/commission/wifi",
+    "/local/pod/commission/wifi/scan",
+    "/local/pod/commission/authorize",
+    "/local/pod/commission/cancel",
+    "/local/pod/commission/status"
+  ],
+  "eventTargets": [
+    "/local/pod/discovery/changed",
+    "/local/pod/commission/changed"
+  ],
+  "localPayload": "domainInput",
+  "localForwardable": false,
+  "ble": {
+    "serviceUuid": "a17a7ad5-9b2f-4010-9cf0-aa15ac54c40e",
+    "companyId": 65535,
+    "manufacturerMagic": "MW",
+    "advertisingVersion": 1,
+    "kinds": { "pod": 1, "host": 2 },
+    "srpUsername": "meow",
+    "customEndpoints": ["pod-info", "pod-credential"],
+    "customEndpointMaxBytes": 480
+  }
+}

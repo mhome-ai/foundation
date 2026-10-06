@@ -12,6 +12,7 @@ pub mod integration;
 pub mod interaction_flow;
 pub mod messaging;
 pub mod plugin;
+pub mod pod;
 pub mod routing;
 pub mod runtime;
 pub mod topology;

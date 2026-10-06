@@ -1,0 +1,21 @@
+{
+  "sessionId": "pcs-7f3a",
+  "revision": 12,
+  "state": "failed",
+  "candidate": {
+    "candidateId": "ble:1A2B3C4D",
+    "name": "MeowPod S1",
+    "model": "S1",
+    "shortId": "1A2B3C4D",
+    "rssi": -55,
+    "commissionable": true,
+    "wifiConfigured": false,
+    "lastSeenMs": 1791300000000
+  },
+  "expiresAtMs": 1791300600000,
+  "error": {
+    "code": "activation_failed",
+    "message": "The device could not reach the cloud",
+    "detail": "cloud_unreachable"
+  }
+}

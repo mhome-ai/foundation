@@ -39,6 +39,12 @@ domain input and output reuse `mhome-artifact-api`; Node runtimes use the
 separate transport-neutral `/artifact/*` targets and never enter the App
 Facade.
 
+`pod` (1.34.0) defines native-Client pod discovery and commissioning
+(`/local/pod/*`), the shared BLE advertising format and the pod credential
+protocol with Lion. See [the contract](contract/pod-commissioning-v1.md).
+Targets and BLE constants are in `manifest/pod-targets.v1.json`; snapshots use
+`schema/pod-discovery.v1.schema.json` and `schema/pod-commission.v1.schema.json`.
+
 ## Routing contract
 
 `manifest/routing.v1.json` is the canonical client-side routing policy for the

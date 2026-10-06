@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.33.0",
+  "contractVersion": "1.34.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -20,6 +20,10 @@
     },
     "messaging": {
       "targets": "manifest/targets.v1.json"
+    },
+    "pod": {
+      "targets": "manifest/pod-targets.v1.json",
+      "contract": "contract/pod-commissioning-v1.md"
     },
     "plugin": {
       "extensionVersion": "v1",
