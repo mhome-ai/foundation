@@ -62,10 +62,11 @@ named by their Characteristic User Description descriptor (`0x2901`).
 
 | Endpoint | Encrypted | Purpose |
 | --- | --- | --- |
-| `proto-ver` | no | protocomm version JSON; `meow` app info `{"ver":1,"kind":"pod"}` |
+| `proto-ver` | no | protocomm version JSON with app info `"meow":{"ver":"1","cap":["pod"]}` |
 | `prov-session` | handshake | security 2 |
 | `prov-scan` | yes | standard Wi-Fi scan |
 | `prov-config` | yes | standard Wi-Fi set/apply/status |
+| `prov-ctrl` | yes | standard reset after a failed join, before a retry |
 | `pod-info` | yes | device information |
 | `pod-credential` | yes | credential delivery and activation status |
 
@@ -93,16 +94,21 @@ confirming connectivity with `prov-config` status.
 `pod-credential` requests:
 
 - `{"op":"deliver","podId","refreshToken","scopeId","cloudApi","cloudWs"}` →
-  `{"ok":true,"state":"activating"}`. Accepted only in `wifi_connected`.
-- `{"op":"status"}` → `{"state":"activating"|"commissioned"|"failed","error"?:{"code","message"}}`.
+  `{"ok":true,"state":"activating"}`. Accepted only in `wifi_connected`;
+  otherwise `{"ok":false,"state":<current pod state>}`. `cloudApi` is
+  `https://…/api/v1`, `cloudWs` is a `wss://` (or development `ws://`) URL.
+- `{"op":"status"}` → `{"state":<pod state>,"error"?:{"code","message"}}`; `error`
+  is present only in `failed`.
 - `{"op":"finish"}` → `{"ok":true}`; the pod stops BLE. It also stops BLE
   30 seconds after reaching `commissioned` without `finish`.
 
 Activation error codes: `time_sync_failed`, `cloud_unreachable`,
 `refresh_rejected`, `auth_rejected`.
 
-Wi-Fi is applied to RAM only during the session. The pod persists Wi-Fi,
-credential, endpoints and Space in one commit after a successful activation.
+The pod persists Wi-Fi, credential, endpoints and Space in one commit after a
+successful activation. Nothing from an abandoned attempt survives it; an
+implementation whose Wi-Fi driver caches the network on its own (ESP-IDF
+provisioning does) erases that cache when the attempt ends.
 
 ## 4. Pod state machine
 
@@ -110,8 +116,7 @@ credential, endpoints and Space in one commit after a successful activation.
 unprovisioned ──connect──▶ session_open ──handshake──▶ secured
 secured ──prov-config apply──▶ wifi_joining ──▶ wifi_connected | wifi_failed
 wifi_failed ──retry──▶ wifi_joining
-wifi_connected ──time sync──▶ (still wifi_connected; deliver refused until synced)
-wifi_connected ──deliver──▶ activating ──▶ commissioned | failed
+wifi_connected ──deliver──▶ activating ──time sync, refresh, commit──▶ commissioned | failed
 any pre-commit state ──timeout/disconnect/cancel──▶ unprovisioned
 ```
 
@@ -211,8 +216,9 @@ and unexpired pending pods, each
 - Space switching: the pod chooses among the Spaces returned by `/auth` and
   re-sends `/focus`; it keeps one local JWT and Hub key per Hub.
 - Local Hub: fetch the Hub key with the pod access token, prove the Hub
-  identity, then `/auth` with `source=cloud` and the pod access token; store the
-  returned local JWT for that Hub and prefer it afterwards.
+  identity, then `/auth` with `source=cloud`, `clientSource=pod` and the pod
+  access token; store the returned local JWT for that Hub and prefer it
+  afterwards (`source=local`, same `clientSource`).
 
 ## 7. Native Client targets
 
