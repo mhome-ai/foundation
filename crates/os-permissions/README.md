@@ -28,10 +28,14 @@ the caller should resume passive polling. When no new network observation exists
 observation time rather than presenting the last successful probe as a fresh authorization check.
 
 Linux reports `notRequired` / `platform` for native Bluetooth, local networking and microphone
-consent. Permission reports contain authorization only; device/session availability and
+consent. Where a `bluetooth` group exists, BlueZ admits only its members, so a non-root process
+outside that group reports Bluetooth `denied` with the command that fixes it.
+
+Windows desktop apps need no Bluetooth consent: Bluetooth reports `notRequired` / `platform` when
+a radio is present and `unsupported` when there is none. Permission reports contain authorization only; device/session availability and
 business-operation results belong to service diagnostics. A sandbox or portal can impose
 additional restrictions. macOS-specific Reminders and Apple Events report `unsupported` on Linux.
-Other operating systems explicitly report an unimplemented adapter.
+Other permissions and operating systems explicitly report an unimplemented adapter.
 
 For a service with a sidecar, obtain observations in the actual resource executor and relay them
 through the service. Checking the Rust service alone does not establish the sidecar's access.

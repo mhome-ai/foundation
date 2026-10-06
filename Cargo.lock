@@ -897,10 +897,11 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "1.3.2"
+version = "1.3.3"
 dependencies = [
  "cc",
  "mhome-core-api",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

@@ -89,6 +89,56 @@ fn system_authorization(permission: PermissionKey, code: i32) -> PermissionObser
 }
 
 #[cfg(any(target_os = "linux", test))]
+const LINUX_BLUETOOTH_GROUP: &str = "bluetooth";
+
+/// BlueZ grants D-Bus access to members of the `bluetooth` group where that group
+/// exists. `status` is `/proc/self/status`, `groups` is `/etc/group`.
+#[cfg(any(target_os = "linux", test))]
+fn linux_bluetooth_group_missing(status: &str, groups: &str) -> bool {
+    let ids = |key: &str| -> Vec<u32> {
+        status
+            .lines()
+            .find_map(|line| line.strip_prefix(key))
+            .map(|rest| {
+                rest.split_whitespace()
+                    .filter_map(|id| id.parse().ok())
+                    .collect()
+            })
+            .unwrap_or_default()
+    };
+    if ids("Uid:").get(1) == Some(&0) {
+        return false;
+    }
+    let Some(gid) = groups.lines().find_map(|line| {
+        let mut fields = line.split(':');
+        (fields.next() == Some(LINUX_BLUETOOTH_GROUP))
+            .then(|| fields.nth(1).and_then(|gid| gid.parse::<u32>().ok()))
+            .flatten()
+    }) else {
+        return false;
+    };
+    ids("Gid:").get(1) != Some(&gid) && !ids("Groups:").contains(&gid)
+}
+
+#[cfg(target_os = "linux")]
+fn linux_bluetooth_status() -> PermissionObservation {
+    let status = std::fs::read_to_string("/proc/self/status").unwrap_or_default();
+    let groups = std::fs::read_to_string("/etc/group").unwrap_or_default();
+    if linux_bluetooth_group_missing(&status, &groups) {
+        return observation(
+            PermissionKey::Bluetooth {},
+            PermissionState::Denied,
+            PermissionEvidence::Platform,
+            Some(now_ms()),
+            Some(format!(
+                "Add this user to the {LINUX_BLUETOOTH_GROUP} group (sudo usermod -aG {LINUX_BLUETOOTH_GROUP} $USER), then sign out and back in."
+            )),
+        );
+    }
+    linux_status(&PermissionKey::Bluetooth {})
+}
+
+#[cfg(any(target_os = "linux", test))]
 fn linux_status(permission: &PermissionKey) -> PermissionObservation {
     match permission {
         PermissionKey::LocalNetwork {}
@@ -339,15 +389,61 @@ mod platform {
     pub fn status(permission: &PermissionKey) -> PermissionObservation {
         #[cfg(target_os = "linux")]
         {
-            linux_status(permission)
+            match permission {
+                PermissionKey::Bluetooth {} => linux_bluetooth_status(),
+                _ => linux_status(permission),
+            }
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        {
+            match permission {
+                PermissionKey::Bluetooth {} => windows_bluetooth_status(),
+                _ => unsupported(
+                    permission,
+                    "Permission observation is not implemented for this platform.",
+                ),
+            }
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             unsupported(
                 permission,
                 "Permission observation is not implemented for this platform.",
             )
         }
+    }
+
+    /// Desktop apps need no Bluetooth consent on Windows; without a radio the
+    /// permission cannot be used at all.
+    #[cfg(target_os = "windows")]
+    fn windows_bluetooth_status() -> PermissionObservation {
+        use windows_sys::Win32::Devices::Bluetooth::{
+            BluetoothFindFirstRadio, BluetoothFindRadioClose, BLUETOOTH_FIND_RADIO_PARAMS,
+        };
+        use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
+
+        let params = BLUETOOTH_FIND_RADIO_PARAMS {
+            dwSize: std::mem::size_of::<BLUETOOTH_FIND_RADIO_PARAMS>() as u32,
+        };
+        let mut radio: HANDLE = std::ptr::null_mut();
+        let find = unsafe { BluetoothFindFirstRadio(&params, &mut radio) };
+        if find.is_null() {
+            return unsupported(
+                &PermissionKey::Bluetooth {},
+                "No Bluetooth adapter was found.",
+            );
+        }
+        unsafe {
+            CloseHandle(radio);
+            BluetoothFindRadioClose(find);
+        }
+        observation(
+            PermissionKey::Bluetooth {},
+            PermissionState::NotRequired,
+            PermissionEvidence::Platform,
+            Some(now_ms()),
+            None,
+        )
     }
 
     pub fn request(_permission: &PermissionKey) -> Result<(), String> {
@@ -385,6 +481,29 @@ mod tests {
         assert_eq!(unreadable.state, PermissionState::Unknown);
         assert_eq!(unreadable.evidence, PermissionEvidence::Unavailable);
         assert_eq!(granted.process_id, std::process::id());
+    }
+
+    #[test]
+    fn linux_bluetooth_requires_the_bluez_group_only_where_it_exists() {
+        let groups = "root:x:0:\nbluetooth:x:112:alice\n";
+        let user = |gid: u32, extra: &str| {
+            format!("Name:\tmeow\nUid:\t1000\t1000\t1000\t1000\nGid:\t{gid}\t{gid}\t{gid}\t{gid}\nGroups:\t{extra}\n")
+        };
+        assert!(linux_bluetooth_group_missing(
+            &user(1000, "27 1000"),
+            groups
+        ));
+        assert!(!linux_bluetooth_group_missing(
+            &user(1000, "27 112 1000"),
+            groups
+        ));
+        assert!(!linux_bluetooth_group_missing(&user(112, ""), groups));
+        assert!(!linux_bluetooth_group_missing(
+            &user(1000, ""),
+            "root:x:0:\n"
+        ));
+        let root = "Uid:\t0\t0\t0\t0\nGid:\t0\t0\t0\t0\nGroups:\t0\n";
+        assert!(!linux_bluetooth_group_missing(root, groups));
     }
 
     #[test]
