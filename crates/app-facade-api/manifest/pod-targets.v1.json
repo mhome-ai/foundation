@@ -29,6 +29,14 @@
     "kinds": { "pod": 1, "host": 2 },
     "srpUsername": "meow",
     "customEndpoints": ["pod-info", "pod-credential"],
+    "standardEndpointUuids": {
+      "prov-ctrl": 65359,
+      "prov-scan": 65360,
+      "prov-session": 65361,
+      "prov-config": 65362,
+      "proto-ver": 65363
+    },
+    "customEndpointUuids": { "pod-info": 65364, "pod-credential": 65365 },
     "customEndpointMaxBytes": 480
   }
 }

@@ -49,6 +49,20 @@ pub const CUSTOM_ENDPOINT_MAX_BYTES: usize = 480;
 pub const SRP_USERNAME: &str = "meow";
 pub const POD_INFO_ENDPOINT: &str = "pod-info";
 pub const POD_CREDENTIAL_ENDPOINT: &str = "pod-credential";
+/// Characteristic UUIDs used when a device exposes no `0x2901` descriptor: the
+/// service UUID with bytes 2..4 replaced by this value. Custom endpoints take
+/// the values after `proto-ver` in contract order.
+pub const STANDARD_ENDPOINT_UUIDS: &[(&str, u16)] = &[
+    ("prov-ctrl", 0xFF4F),
+    ("prov-scan", 0xFF50),
+    ("prov-session", 0xFF51),
+    ("prov-config", 0xFF52),
+    ("proto-ver", 0xFF53),
+];
+pub const POD_ENDPOINT_UUIDS: &[(&str, u16)] = &[
+    (POD_INFO_ENDPOINT, 0xFF54),
+    (POD_CREDENTIAL_ENDPOINT, 0xFF55),
+];
 
 /// Manufacturer-data payload after the 2-byte company ID.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -142,10 +156,30 @@ pub struct AdapterStatus {
     pub message: Option<String>,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum DeviceKind {
+    Pod,
+    Host,
+}
+
+impl DeviceKind {
+    pub fn from_advertised(kind: u8) -> Option<Self> {
+        match kind {
+            BLE_KIND_POD => Some(Self::Pod),
+            BLE_KIND_HOST => Some(Self::Host),
+            _ => None,
+        }
+    }
+}
+
+/// One nearby commissionable device. Pod commissioning accepts only `pod`;
+/// Host provisioning only `host`.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PodCandidate {
     pub candidate_id: String,
+    pub kind: DeviceKind,
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub model: Option<String>,

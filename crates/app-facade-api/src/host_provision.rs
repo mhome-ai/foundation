@@ -1,0 +1,143 @@
+//! Native-Client provisioning of embedded Hosts over BLE. See
+//! `contract/host-provisioning-v1.md`. Discovery is shared with pods
+//! (`/local/pod/discovery/*`, candidates of kind `host`).
+use serde::{Deserialize, Serialize};
+
+use crate::pod::{CommissionError, CommissionErrorCode, PodCandidate, WifiNetwork};
+
+pub const PROVISION_START_TARGET: &str = "/local/host/provision/start";
+pub const PROVISION_CODE_TARGET: &str = "/local/host/provision/code";
+pub const PROVISION_WIFI_TARGET: &str = "/local/host/provision/wifi";
+pub const PROVISION_WIFI_SCAN_TARGET: &str = "/local/host/provision/wifi/scan";
+pub const PROVISION_CANCEL_TARGET: &str = "/local/host/provision/cancel";
+pub const PROVISION_STATUS_TARGET: &str = "/local/host/provision/status";
+
+pub const PROVISION_CHANGED_EVENT: &str = "/local/host/provision/changed";
+
+pub const LOCAL_TARGETS: &[&str] = &[
+    PROVISION_START_TARGET,
+    PROVISION_CODE_TARGET,
+    PROVISION_WIFI_TARGET,
+    PROVISION_WIFI_SCAN_TARGET,
+    PROVISION_CANCEL_TARGET,
+    PROVISION_STATUS_TARGET,
+];
+pub const EVENT_TARGETS: &[&str] = &[PROVISION_CHANGED_EVENT];
+
+/// App info label and capability in the Host's `proto-ver` response.
+pub const APP_INFO_LABEL: &str = "meow";
+pub const APP_CAPABILITY: &str = "host";
+pub const HOST_INFO_ENDPOINT: &str = "host-info";
+pub const HOST_ENDPOINT_UUIDS: &[(&str, u16)] = &[(HOST_INFO_ENDPOINT, 0xFF54)];
+/// The Host keeps BLE open this long after a successful join without `finish`.
+pub const FINISH_GRACE_MS: i64 = 30_000;
+
+/// Requests reuse the pod request shapes: start takes `candidateId`, code takes
+/// `sessionId` and `code`, Wi-Fi takes `sessionId`, `ssid` and `password`, the
+/// rest take `sessionId` (status takes `{}`).
+pub use crate::pod::{
+    CommissionCodeRequest as ProvisionCodeRequest,
+    CommissionSessionRequest as ProvisionSessionRequest,
+    CommissionStartRequest as ProvisionStartRequest, CommissionWifiRequest as ProvisionWifiRequest,
+};
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ProvisionState {
+    Connecting,
+    AwaitingCode,
+    Securing,
+    ReadingInfo,
+    AwaitingWifi,
+    JoiningWifi,
+    Completed,
+    Failed,
+    Cancelled,
+    TimedOut,
+}
+
+impl ProvisionState {
+    pub fn is_terminal(self) -> bool {
+        matches!(
+            self,
+            Self::Completed | Self::Failed | Self::Cancelled | Self::TimedOut
+        )
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HostDeviceInfo {
+    pub host_id: String,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    pub firmware_version: String,
+    pub fingerprint: String,
+    pub wifi_configured: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProvisionSession {
+    pub session_id: String,
+    pub revision: u64,
+    pub state: ProvisionState,
+    pub candidate: PodCandidate,
+    pub expires_at_ms: i64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host: Option<HostDeviceInfo>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub networks: Vec<WifiNetwork>,
+    /// LAN addresses reported by the Host once it joined.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub addresses: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<CommissionError>,
+}
+
+impl ProvisionSession {
+    pub fn validate(&self) -> Result<(), &'static str> {
+        match (self.state, self.error.as_ref().map(|error| error.code)) {
+            (ProvisionState::Failed | ProvisionState::TimedOut, None) => {
+                return Err("failed and timed_out sessions carry an error");
+            }
+            (ProvisionState::Failed | ProvisionState::TimedOut, Some(_))
+            | (_, None)
+            | (ProvisionState::AwaitingCode, Some(CommissionErrorCode::CodeRejected))
+            | (
+                ProvisionState::AwaitingWifi,
+                Some(
+                    CommissionErrorCode::WifiAuthFailed
+                    | CommissionErrorCode::WifiNotFound
+                    | CommissionErrorCode::WifiFailed,
+                ),
+            ) => {}
+            _ => {
+                return Err(
+                    "only failed, timed_out and retryable code or Wi-Fi states carry an error",
+                );
+            }
+        }
+        if let Some(code) = self.error.as_ref().map(|error| error.code) {
+            if matches!(
+                code,
+                CommissionErrorCode::IssueFailed
+                    | CommissionErrorCode::DeliveryFailed
+                    | CommissionErrorCode::ActivationFailed
+            ) {
+                return Err("credential error codes do not apply to Host provisioning");
+            }
+        }
+        if self.state == ProvisionState::Completed && self.host.is_none() {
+            return Err("completed sessions carry the Host information");
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProvisionStatus {
+    pub session: Option<ProvisionSession>,
+}

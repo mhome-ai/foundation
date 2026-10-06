@@ -25,6 +25,10 @@
       "targets": "manifest/pod-targets.v1.json",
       "contract": "contract/pod-commissioning-v1.md"
     },
+    "hostProvision": {
+      "targets": "manifest/host-provision-targets.v1.json",
+      "contract": "contract/host-provisioning-v1.md"
+    },
     "plugin": {
       "extensionVersion": "v1",
       "targetPrefix": "/app/plugin",

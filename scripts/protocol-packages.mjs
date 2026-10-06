@@ -43,6 +43,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "manifest/hub-targets.v1.json",
       "manifest/pod-targets.v1.json",
       "contract/pod-commissioning-v1.md",
+      "manifest/host-provision-targets.v1.json",
+      "contract/host-provisioning-v1.md",
     ]),
     schemas: Object.freeze({
       capabilityDescriptor: "schema/capability-descriptor.v1.schema.json",
@@ -54,6 +56,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       localHubState: "schema/local-hub-state.v1.schema.json",
       podDiscovery: "schema/pod-discovery.v1.schema.json",
       podCommission: "schema/pod-commission.v1.schema.json",
+      hostProvision: "schema/host-provision.v1.schema.json",
       systemClients: "schema/system-clients.v1.schema.json",
       systemHosts: "schema/system-hosts.v1.schema.json",
       systemHostsRuntime: "schema/system-hosts-runtime.v1.schema.json",

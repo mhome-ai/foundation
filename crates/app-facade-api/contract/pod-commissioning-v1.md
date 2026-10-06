@@ -35,7 +35,7 @@ revocation, or inside a re-provision window. A commissioned pod does not adverti
   | 0 | 2 | Company ID, little-endian. Development value `0xFFFF` |
   | 2 | 2 | Magic `0x4D 0x57` (`MW`) |
   | 4 | 1 | Advertising format version, `1` |
-  | 5 | 1 | Device kind: `1` pod, `2` Host (reserved) |
+  | 5 | 1 | Device kind: `1` pod, `2` Host (see `host-provisioning-v1.md`) |
   | 6 | 1 | Flags: bit 0 commissionable, bit 1 Wi-Fi configured |
   | 7 | 4 | `shortId` bytes |
 
@@ -47,7 +47,12 @@ revocation, or inside a re-provision window. A commissioned pod does not adverti
 ## 3. Secure session
 
 Transport is ESP protocomm over BLE GATT. Endpoints are GATT characteristics
-named by their Characteristic User Description descriptor (`0x2901`).
+named by their Characteristic User Description descriptor (`0x2901`). A
+commissioner that cannot read descriptors falls back to fixed UUIDs: the service
+UUID with bytes 2–3 replaced by `prov-ctrl` `0xFF4F`, `prov-scan` `0xFF50`,
+`prov-session` `0xFF51`, `prov-config` `0xFF52`, `proto-ver` `0xFF53`, then the
+custom endpoints in table order from `0xFF54` (`pod-info` `0xFF54`,
+`pod-credential` `0xFF55`).
 
 - Security: protocomm security 2 (SRP6a 3072-bit with SHA-512, then AES-256-GCM).
   Username `meow`. Password: a 6-digit decimal code.
@@ -240,9 +245,13 @@ domain input JSON. Clients without a usable Bluetooth adapter report
 | `/local/pod/commission/cancel` | `{"sessionId"}` | session snapshot |
 | `/local/pod/commission/status` | `{}` | `{"session": snapshot or null}` |
 
+Discovery is shared by every MeowLink device kind: each candidate carries
+`kind` (`pod` or `host`). `/local/pod/commission/start` accepts only `pod`
+candidates; Host candidates go to `/local/host/provision/*`.
+
 Events: `/local/pod/discovery/changed` carries a discovery snapshot;
 `/local/pod/commission/changed` carries a session snapshot. Scanning runs only
-while at least one lease is live and stops while a session is connecting.
+while at least one lease is live and pauses while a pod or Host session runs.
 Candidates unseen for 10 s are removed. One session per native Client.
 
 Session states, in order: `connecting`, `awaiting_code`, `securing`,

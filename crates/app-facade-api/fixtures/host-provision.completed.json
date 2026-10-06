@@ -1,0 +1,25 @@
+{
+  "sessionId": "hps-41c2",
+  "revision": 9,
+  "state": "completed",
+  "candidate": {
+    "candidateId": "ble:5E6F7A8B",
+    "kind": "host",
+    "name": "Kitchen Host",
+    "shortId": "5E6F7A8B",
+    "rssi": -61,
+    "commissionable": true,
+    "wifiConfigured": false,
+    "lastSeenMs": 1791300000000
+  },
+  "expiresAtMs": 1791300600000,
+  "host": {
+    "hostId": "host-0f3c9a",
+    "name": "Kitchen Host",
+    "productId": "camera",
+    "firmwareVersion": "0.9.0",
+    "fingerprint": "5e6f7a8b0c1d2e3f405162738495a6b7c8d9eaf0123456789abcdef012345678",
+    "wifiConfigured": false
+  },
+  "addresses": ["192.168.1.42"]
+}

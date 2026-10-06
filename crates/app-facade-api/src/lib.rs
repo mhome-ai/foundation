@@ -7,6 +7,7 @@
 
 pub mod artifact;
 pub mod call;
+pub mod host_provision;
 pub mod hub;
 pub mod integration;
 pub mod interaction_flow;

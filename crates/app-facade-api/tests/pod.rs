@@ -1,6 +1,7 @@
 use app_facade_api::pod::{
-    CommissionSession, CommissionState, DiscoverySnapshot, BLE_COMPANY_ID, BLE_SERVICE_UUID,
-    CUSTOM_ENDPOINT_MAX_BYTES, EVENT_TARGETS, LOCAL_TARGETS, SRP_USERNAME,
+    CommissionSession, CommissionState, DeviceKind, DiscoverySnapshot, BLE_COMPANY_ID,
+    BLE_SERVICE_UUID, CUSTOM_ENDPOINT_MAX_BYTES, EVENT_TARGETS, LOCAL_TARGETS, POD_ENDPOINT_UUIDS,
+    SRP_USERNAME, STANDARD_ENDPOINT_UUIDS,
 };
 use serde_json::Value;
 
@@ -26,6 +27,12 @@ fn manifest_matches_the_rust_contract() {
     assert_eq!(ble["companyId"], BLE_COMPANY_ID);
     assert_eq!(ble["srpUsername"], SRP_USERNAME);
     assert_eq!(ble["customEndpointMaxBytes"], CUSTOM_ENDPOINT_MAX_BYTES);
+    for (name, uuid) in STANDARD_ENDPOINT_UUIDS {
+        assert_eq!(ble["standardEndpointUuids"][name], *uuid, "{name}");
+    }
+    for (name, uuid) in POD_ENDPOINT_UUIDS {
+        assert_eq!(ble["customEndpointUuids"][name], *uuid, "{name}");
+    }
     assert!(include_str!("../contract/pod-commissioning-v1.md").contains(BLE_SERVICE_UUID));
 }
 
@@ -49,6 +56,7 @@ fn fixtures_match_types_and_schemas() {
     assert!(discovery.is_valid(&raw));
     let snapshot: DiscoverySnapshot = serde_json::from_value(raw).unwrap();
     assert_eq!(snapshot.candidates[0].short_id, "1A2B3C4D");
+    assert_eq!(snapshot.candidates[0].kind, DeviceKind::Pod);
 
     for (fixture, state) in [
         (

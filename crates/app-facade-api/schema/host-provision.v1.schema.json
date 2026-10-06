@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/host-provision.v1.schema.json",
+  "title": "Native-client Host provisioning session snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sessionId", "revision", "state", "candidate", "expiresAtMs"],
+  "properties": {
+    "sessionId": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 0 },
+    "state": {
+      "enum": [
+        "connecting",
+        "awaiting_code",
+        "securing",
+        "reading_info",
+        "awaiting_wifi",
+        "joining_wifi",
+        "completed",
+        "failed",
+        "cancelled",
+        "timed_out"
+      ]
+    },
+    "candidate": { "$ref": "pod-discovery.v1.schema.json#/$defs/candidate" },
+    "expiresAtMs": { "type": "integer", "minimum": 0 },
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hostId", "name", "firmwareVersion", "fingerprint", "wifiConfigured"],
+      "properties": {
+        "hostId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "productId": { "type": "string" },
+        "firmwareVersion": { "type": "string", "minLength": 1 },
+        "fingerprint": { "type": "string", "minLength": 1 },
+        "wifiConfigured": { "type": "boolean" }
+      }
+    },
+    "networks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ssid", "rssi", "secured"],
+        "properties": {
+          "ssid": { "type": "string", "minLength": 1 },
+          "rssi": { "type": "integer" },
+          "secured": { "type": "boolean" }
+        }
+      }
+    },
+    "addresses": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "enum": [
+            "bluetooth_unavailable",
+            "device_busy",
+            "disconnected",
+            "code_rejected",
+            "code_locked",
+            "wifi_auth_failed",
+            "wifi_not_found",
+            "wifi_failed",
+            "session_timeout"
+          ]
+        },
+        "message": { "type": "string" },
+        "detail": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "state": { "enum": ["failed", "timed_out"] } } },
+      "then": { "required": ["error"] }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": { "not": { "enum": ["failed", "timed_out", "awaiting_code", "awaiting_wifi"] } }
+        }
+      },
+      "then": { "not": { "required": ["error"] } }
+    },
+    {
+      "if": { "properties": { "state": { "const": "awaiting_code" } }, "required": ["error"] },
+      "then": { "properties": { "error": { "properties": { "code": { "const": "code_rejected" } } } } }
+    },
+    {
+      "if": { "properties": { "state": { "const": "awaiting_wifi" } }, "required": ["error"] },
+      "then": {
+        "properties": {
+          "error": {
+            "properties": {
+              "code": { "enum": ["wifi_auth_failed", "wifi_not_found", "wifi_failed"] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "state": { "const": "completed" } } },
+      "then": { "required": ["host"] }
+    }
+  ]
+}

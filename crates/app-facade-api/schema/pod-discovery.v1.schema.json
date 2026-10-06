@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.mhome.ai/app-facade/pod-discovery.v1.schema.json",
-  "title": "Native-client pod discovery snapshot",
+  "title": "Native-client BLE discovery snapshot (pods and Hosts)",
   "type": "object",
   "additionalProperties": false,
   "required": ["revision", "scanning", "adapter", "candidates"],
@@ -26,6 +26,7 @@
       "additionalProperties": false,
       "required": [
         "candidateId",
+        "kind",
         "name",
         "shortId",
         "rssi",
@@ -35,6 +36,7 @@
       ],
       "properties": {
         "candidateId": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["pod", "host"] },
         "name": { "type": "string", "minLength": 1 },
         "model": { "type": "string" },
         "shortId": { "type": "string", "pattern": "^[0-9A-F]{8}$" },

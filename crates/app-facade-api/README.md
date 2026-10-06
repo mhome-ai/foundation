@@ -45,6 +45,12 @@ protocol with Lion. See [the contract](contract/pod-commissioning-v1.md).
 Targets and BLE constants are in `manifest/pod-targets.v1.json`; snapshots use
 `schema/pod-discovery.v1.schema.json` and `schema/pod-commission.v1.schema.json`.
 
+`host_provision` (1.34.0) defines BLE Wi-Fi provisioning of embedded Hosts
+(`/local/host/provision/*`) on the same BLE layer; discovery candidates carry
+`kind`. See [the contract](contract/host-provisioning-v1.md), the targets in
+`manifest/host-provision-targets.v1.json` and
+`schema/host-provision.v1.schema.json`.
+
 ## Routing contract
 
 `manifest/routing.v1.json` is the canonical client-side routing policy for the

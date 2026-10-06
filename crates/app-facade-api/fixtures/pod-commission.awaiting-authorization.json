@@ -4,6 +4,7 @@
   "state": "awaiting_authorization",
   "candidate": {
     "candidateId": "ble:1A2B3C4D",
+    "kind": "pod",
     "name": "MeowPod S1",
     "model": "S1",
     "shortId": "1A2B3C4D",
