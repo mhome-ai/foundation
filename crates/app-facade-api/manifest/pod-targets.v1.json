@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.pod.targets.v1",
-  "contractVersion": "1.35.0",
+  "contractVersion": "1.36.0",
   "contract": "contract/pod-commissioning-v1.md",
   "localTargets": [
     "/local/pod/discovery/start",
@@ -67,7 +67,6 @@
   "cloud": {
     "issue": "pod/credential/issue",
     "status": "pod/credential/status",
-    "revoke": "pod/credential/revoke",
     "statusSchema": "schema/pod-credential-status.v1.schema.json"
   },
   "activationErrorCodes": [

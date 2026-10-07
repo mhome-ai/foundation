@@ -69,8 +69,8 @@ pub struct Account {
     pub scopes: Vec<AuthorizationScope>,
     pub active_scope_id: Option<String>,
     /// Opaque to the core and handed back on every cloud call made for this
-    /// account (for example a token generation), so a credential is revoked
-    /// with the account that issued it.
+    /// account (for example a token generation), so credential issuance stays
+    /// bound to the account that authorized commissioning.
     pub context: String,
 }
 

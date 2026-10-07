@@ -37,9 +37,6 @@ const REPROVISION_POLLS: u32 = 30;
 struct Credential {
     pod_id: String,
     activate_before: i64,
-    context: String,
-    /// The device confirmed durable commissioning: nothing to revoke.
-    settled: bool,
 }
 
 pub(crate) struct Actor {
@@ -746,8 +743,6 @@ impl Actor {
         self.credential = Some(Credential {
             pod_id: issued.pod_id.clone(),
             activate_before: issued.activate_before,
-            context: account.context,
-            settled: false,
         });
         let deadline = issued.activate_before + ACTIVATION_GRACE_MS;
         if !self.update(|live| {
@@ -854,9 +849,6 @@ impl Actor {
         if !completed {
             return;
         }
-        if let Some(credential) = self.credential.as_mut() {
-            credential.settled = true;
-        }
         if let Some(client) = self.client() {
             self.finish_pod(&client).await;
         }
@@ -867,16 +859,6 @@ impl Actor {
             device.link.disconnect().await;
         }
         self.engine.release(self.kind, &self.id);
-        let Some(credential) = self
-            .credential
-            .take()
-            .filter(|credential| !credential.settled)
-        else {
-            return;
-        };
-        let cloud = self.engine.platform.cloud.clone();
-        if let Err(failure) = cloud::revoke(&cloud, &credential.context, &credential.pod_id).await {
-            warn!(%failure, "revoking an unused pod credential failed");
-        }
+        self.credential = None;
     }
 }

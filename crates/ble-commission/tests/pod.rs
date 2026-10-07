@@ -404,7 +404,7 @@ async fn lost_device_confirmation_fails_even_when_cloud_is_active() {
         let failed = harness.wait_state(POD, "failed").await;
         assert!(failed.get("podId").is_none());
         tokio::time::sleep(Duration::from_secs(2)).await;
-        assert_eq!(harness.cloud.revokes().len(), 1);
+        assert!(harness.cloud.revokes().is_empty());
         assert!(!harness
             .cloud
             .paths()
@@ -414,7 +414,7 @@ async fn lost_device_confirmation_fails_even_when_cloud_is_active() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn a_pod_activation_failure_revokes_with_the_issuing_account() {
+async fn a_pod_activation_failure_does_not_revoke_from_the_app() {
     let harness = Harness::new();
     let mut script = Script::pod();
     script.activation = Activation::Failed("time_sync_failed");
@@ -426,13 +426,11 @@ async fn a_pod_activation_failure_revokes_with_the_issuing_account() {
     assert_eq!(failed["error"]["code"], "activation_failed");
     assert_eq!(failed["error"]["detail"], "time_sync_failed");
     tokio::time::sleep(Duration::from_secs(1)).await;
-    let revokes = harness.cloud.revokes();
-    assert_eq!(revokes.len(), 1);
-    assert_eq!(revokes[0].context, "ctx-1");
+    assert!(harness.cloud.revokes().is_empty());
 }
 
 #[tokio::test(start_paused = true)]
-async fn a_refused_delivery_revokes() {
+async fn a_refused_delivery_fails_without_revoking() {
     let harness = Harness::new();
     let mut script = Script::pod();
     script.deliver_ok = false;
@@ -443,7 +441,7 @@ async fn a_refused_delivery_revokes() {
     assert_eq!(failed["error"]["code"], "delivery_failed");
     assert_eq!(failed["error"]["detail"], "wrong_state");
     tokio::time::sleep(Duration::from_secs(1)).await;
-    assert_eq!(harness.cloud.revokes().len(), 1);
+    assert!(harness.cloud.revokes().is_empty());
 }
 
 async fn reprovision(harness: &Harness) -> String {
@@ -555,7 +553,7 @@ async fn sessions_run_without_ui_renewal_and_reject_cancel() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn activation_timeout_revokes_and_releases_the_radio() {
+async fn activation_timeout_releases_the_radio_without_revoking() {
     let harness = Harness::new();
     let mut script = Script::pod();
     script.activation = Activation::Never;
@@ -569,7 +567,7 @@ async fn activation_timeout_revokes_and_releases_the_radio() {
         .await;
     assert!(ended.get("error").is_some());
     tokio::time::sleep(Duration::from_secs(2)).await;
-    assert_eq!(harness.cloud.revokes().len(), 1);
+    assert!(harness.cloud.revokes().is_empty());
     harness.add_device("pod-a", Script::pod());
     let fresh = start(&harness).await;
     assert_ne!(fresh, id);
@@ -645,7 +643,7 @@ async fn a_dropped_link_while_waiting_fails_the_session() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn a_refused_issue_fails_without_a_credential_to_revoke() {
+async fn a_refused_issue_fails_without_any_cleanup_call() {
     let harness = Harness::new();
     harness.add_device("pod-a", Script::pod());
     harness.cloud.fail_issue.store(true, Ordering::SeqCst);

@@ -3,10 +3,7 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
 use std::time::Duration;
 
-use app_facade_api::pod::{
-    CredentialIssueRequest, CredentialIssueResponse, CredentialPodRequest, CREDENTIAL_ISSUE_PATH,
-    CREDENTIAL_REVOKE_PATH,
-};
+use app_facade_api::pod::{CredentialIssueRequest, CredentialIssueResponse, CREDENTIAL_ISSUE_PATH};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
@@ -76,22 +73,6 @@ pub(crate) async fn issue(
         request,
     )
     .await
-}
-
-pub(crate) async fn revoke(
-    cloud: &Arc<dyn Cloud>,
-    context: &str,
-    pod_id: &str,
-) -> Result<(), CallError> {
-    let request = CredentialPodRequest {
-        pod_id: pod_id.to_string(),
-    };
-    let response: Value = post(cloud, context, CREDENTIAL_REVOKE_PATH, None, &request).await?;
-    if response.get("ok").and_then(Value::as_bool) == Some(true) {
-        Ok(())
-    } else {
-        Err(CallError::Unreadable(response.to_string()))
-    }
 }
 
 /// Whether the host of `url` is `localhost`, in `127.0.0.0/8` or `::1`.

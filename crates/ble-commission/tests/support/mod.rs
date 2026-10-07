@@ -705,7 +705,6 @@ impl Cloud for FakeCloud {
                 }
                 json!({ "podId": "pod-1", "status": status })
             }
-            "pod/credential/revoke" => json!({ "ok": true }),
             _ => json!({}),
         };
         Ok(CloudResponse {

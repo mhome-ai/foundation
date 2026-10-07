@@ -8,7 +8,8 @@ call the `/local/pod/*` targets of their native Client.
 
 Commissioning order is fixed: secure BLE session, Wi-Fi joined, user
 authorization, credential issue, delivery, activation. A credential is issued only
-after the pod reports a joined network. Any failure after issue revokes it.
+after the pod reports a joined network. Failed setup releases the connection;
+pending cloud credentials expire, and a fresh successful claim cleans up old credentials.
 
 ## 1. Device identity
 
@@ -24,7 +25,7 @@ after the pod reports a joined network. Any failure after issue revokes it.
 ## 2. BLE advertising
 
 Pods advertise only while unprovisioned, while re-commissioning after logout or
-revocation, or inside a re-provision window. A commissioned pod does not advertise.
+credential invalidation, or inside a re-provision window. A commissioned pod does not advertise.
 
 - Service UUID (128-bit, shared by every MeowLink commissionable device):
   `a17a7ad5-9b2f-4010-9cf0-aa15ac54c40e`.
@@ -176,8 +177,9 @@ Runtime states after commit:
 - `needs_recommission`: logout, or refresh rejected because the credential was
   revoked or the user no longer exists. Credential and local JWTs are erased,
   Wi-Fi is kept, advertising resumes with the Wi-Fi-configured flag.
-- `factory_resetting`: best-effort self-revoke, erase all persisted data
-  including the identity key, reboot to `unprovisioned`.
+- `factory_resetting`: purely offline, erase all persisted data including the
+  identity key and cached Hub tokens, reboot to `unprovisioned`. No cloud
+  request is needed. Logout also clears local credentials without cloud revocation.
 
 Time sync uses SNTP; if NTP is unreachable the pod may use the `Date` header of a
 Lion HTTPS response. Activation proofs require a synced clock.
@@ -227,7 +229,7 @@ claims `iss` and `sub` = `podId`, a single-valued `aud` = `pod-token-refresh`,
 proof can be accepted; a reused `jti` in that window fails with
 `pod_proof_replayed`.
 
-The first successful refresh moves `pending` to `active` and revokes every other
+Before the first successful refresh moves `pending` to `active`, Lion deletes every other
 credential with the same `identity.keyId` (whichever user holds it) and the same
 user's other credentials with the same `deviceId`. A `pending` credential past
 `activateBefore` is rejected and deleted. Revoked credentials are deleted, so a
@@ -241,17 +243,16 @@ later refresh fails with `pod_credential_invalid`. Response
 `absent` (schema `schema/pod-credential-status.v1.schema.json`). `absent`
 covers no such credential, revoked, pending past `activateBefore`, and a
 credential owned by another user, so the answer never reveals other users'
-pods. `activatedAt` (epoch ms) is present when `active`. Commissioners use it to
-decide the outcome of an activation they could not observe (section 7).
+pods. `activatedAt` (epoch ms) is present when `active`. It is informational;
+commissioning success requires the device confirmation described in section 7.
 
-### Revoke
+### Reset and cleanup
 
-`POST /api/v1/pod/credential/revoke`, body `{"podId"}` with the owning user's
-`Authorization`, or `{"podId","refreshToken","proof"}` where the proof uses
-`aud` = `pod-credential-revoke` (pod logout and factory reset). Idempotent:
-revoking a pod that does not exist or that the caller does not own is a no-op
-that also answers `{"ok":true}`, so the answer never reveals other users' pods.
-Response `{"ok":true}`.
+There is no public Pod credential revocation endpoint and no App action that
+withdraws a Pod's access without contacting the device. Factory reset executes
+on the Pod itself. Remote reset, when provided, must reach an online Pod; a
+cloud-side deletion is not a successful reset. This contract currently exposes
+no remote reset target. Each setup creates a new Pod credential.
 
 ### List and rename
 
@@ -284,15 +285,9 @@ and unexpired pending pods, each
 - `/api/v1/hub/token/exchange` with a pod access token returns a Hub JWT with
   `clientKind` = `pod` and `podId` claims and the same lifetime as a Hub JWT
   for a user token.
-- Revoking a pod credential, by any path, also revokes the pod on the Hubs of
-  its user's local Spaces. Before committing the revocation Lion marks the
-  `scope.pods` resource dirty for each such Space; after it commits, Lion
-  notifies the Hub through the pull-sync contract. A Hub that is offline pulls
-  the marker when its bridge reconnects. `scope.pods` is a snapshot
-  `{"podIds":[…]}` of the active pods of the Space's members. The Hub revokes
-  the local tokens it issued to any other pod before the pull, disables the
-  local auth of that pod's app client once no active token is left, and refuses
-  and stops renewing that pod's local connections.
+- Pod and ordinary Client local Hub JWTs have the same 100-year lifetime
+  (100 * 365 days). There is no per-Pod Hub revocation list or cloud-to-Hub
+  revocation sync. Local tokens are cleared on the Pod by reset/logout.
 
 ## 6. Pod runtime authentication
 
@@ -418,8 +413,8 @@ attempt. The commissioner does not recover interrupted setup through Lion's
 credential status. The user resets the device and starts a fresh attempt.
 
 A refused `deliver` fails with `delivery_failed` carrying the pod's `reason`
-(`invalid_payload` or `wrong_state`) in `detail`, and revokes. When the pod
-itself reports `failed`, the commissioner revokes and fails with
+(`invalid_payload` or `wrong_state`) in `detail`. When the pod
+itself reports `failed`, the commissioner fails with
 `activation_failed` carrying the pod's code. `activation_failed` without a pod
 code carries `not_activated`. The commissioner records `completed` before
 sending `finish`. Native Clients keep a non-terminal session running while the
@@ -433,9 +428,9 @@ Session error codes: `bluetooth_unavailable`, `device_busy`, `disconnected`,
 `detail`), `session_timeout`. `code_locked` is terminal: the device shows a new
 code once it accepts handshakes again. `failed` and `timed_out` always carry `error`. A rejected
 code returns to `awaiting_code` with `code_rejected`; a failed join returns to
-`awaiting_wifi` with the `wifi_*` code. No other state carries `error`. After
-issue, every terminal state other than `completed` attempts to revoke the credential; the revoke uses the account that issued the
-credential.
+`awaiting_wifi` with the `wifi_*` code. No other state carries `error`. Terminal states release the link and radio
+without revoking credentials. Reset the Pod and start over after an uncertain
+activation outcome; unused pending cloud credentials expire automatically.
 
 The schemas are `schema/pod-discovery.v1.schema.json` and
 `schema/pod-commission.v1.schema.json`.

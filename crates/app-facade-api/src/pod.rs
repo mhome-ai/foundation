@@ -71,7 +71,6 @@ pub const CREDENTIAL_STATUS_POLL_MS: i64 = 5_000;
 /// Lion paths, relative to `cloudApi` (`https://…/api/v1`).
 pub const CREDENTIAL_ISSUE_PATH: &str = "pod/credential/issue";
 pub const CREDENTIAL_STATUS_PATH: &str = "pod/credential/status";
-pub const CREDENTIAL_REVOKE_PATH: &str = "pod/credential/revoke";
 
 /// Activation error codes a pod reports in `failed`.
 pub const ACTIVATION_ERROR_CODES: &[&str] = &[
@@ -553,7 +552,7 @@ pub struct CredentialIssueResponse {
     pub activate_before: i64,
 }
 
-/// Body of the owner's `credential/revoke` and `credential/status` calls.
+/// Body of the owner's `credential/status` call.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CredentialPodRequest {
@@ -565,7 +564,7 @@ pub struct CredentialPodRequest {
 pub enum CredentialStatus {
     Pending,
     Active,
-    /// No such credential for this user: never issued, revoked, expired while
+    /// No such credential for this user: never issued, cleaned up, expired while
     /// pending, or owned by someone else.
     Absent,
 }

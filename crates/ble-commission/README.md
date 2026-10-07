@@ -77,7 +77,7 @@ trait EventSink {
 - `Cloud::post_json` posts to a path under the cloud API base with the account
   identified by `account_context`, scoped to the Space `scope_id` when given. It
   returns `CloudError::AccountChanged` when that account is no longer signed in,
-  so a revoke after sign-out is never sent with another account.
+  so credential issuance is never sent with another account.
 - `cloud_endpoints` are the API and WebSocket bases the pod will use; loopback
   addresses are refused with `cloud_unreachable_for_device`.
 - `EventSink::publish` is called in order from the blocking pool with the
@@ -92,8 +92,9 @@ may hold the radio: starting either while the other is still running (or still
 disconnecting) is refused with `session_active` or `busy`. The native core owns a session until success, failure or its finite deadline;
 leaving a page does not cancel it and callers do not renew it. There is no
 user cancellation endpoint. Only the device's `commissioned` response confirms
-success. Lost delivery/activation confirmation fails; any issued credential
-is then revoked with the account that issued it. Reset the device to retry.
+success. Lost delivery/activation confirmation fails and releases the link.
+There is no cloud revocation call; unused pending credentials expire. Reset
+the device and start a fresh attempt to retry.
 
 
 A pod whose `pod-info` reports `"mode":"reprovision"` is in a Wi-Fi change
