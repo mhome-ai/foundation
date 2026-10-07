@@ -282,8 +282,17 @@ and unexpired pending pods, each
   channel. Either close only ends that connection; whether the pod is revoked
   is decided by its next refresh.
 - `/api/v1/hub/token/exchange` with a pod access token returns a Hub JWT with
-  `clientKind` = `pod` and `podId` claims and a 24-hour lifetime. Hub JWTs for
-  user tokens are unchanged.
+  `clientKind` = `pod` and `podId` claims and the same lifetime as a Hub JWT
+  for a user token.
+- Revoking a pod credential, by any path, also revokes the pod on the Hubs of
+  its user's local Spaces. Before committing the revocation Lion marks the
+  `scope.pods` resource dirty for each such Space; after it commits, Lion
+  notifies the Hub through the pull-sync contract. A Hub that is offline pulls
+  the marker when its bridge reconnects. `scope.pods` is a snapshot
+  `{"podIds":[…]}` of the active pods of the Space's members. The Hub revokes
+  the local tokens it issued to any other pod before the pull, disables the
+  local auth of that pod's app client once no active token is left, and refuses
+  and stops renewing that pod's local connections.
 
 ## 6. Pod runtime authentication
 
@@ -299,11 +308,14 @@ and unexpired pending pods, each
   re-sends `/focus`; it keeps one Hub JWT and Hub key per Hub and Space.
 - Local Hub: the Hub identity endpoint `POST /api/v1/hub/identity/get`
   (`{"hubId","tenantId","scopeId"}`) is public and needs no token. The pod
-  proves the Hub identity, obtains a Hub JWT from `/api/v1/hub/token/exchange`
-  over HTTPS with its pod access token and `ScopeId`, and authenticates to the
-  local Hub only with that Hub JWT (`source=local`, `clientSource=pod`). The
-  cloud access token is never sent over the local link. The pod exchanges a new
-  Hub JWT before the current one expires and after a local rejection.
+  proves the Hub identity, then authenticates to the local Hub the way a Client
+  does: the first local `/auth` carries its pod access token with
+  `source=cloud` (`clientSource=pod`, `deviceId`, `tenantId`, `scopeId`,
+  `hubId`). The Hub exchanges that token with the cloud and returns a
+  long-lived local Hub JWT in `jwtToken`, which the pod stores per Hub. Later
+  local `/auth` requests use only that JWT with `source=local`. When the stored
+  JWT is about to expire or the Hub rejects it, the pod discards it and
+  authenticates with `source=cloud` again.
 
 ## 7. Native Client targets
 

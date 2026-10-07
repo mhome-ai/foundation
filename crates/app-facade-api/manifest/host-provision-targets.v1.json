@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.host-provision.targets.v1",
-  "contractVersion": "1.34.0",
+  "contractVersion": "1.34.1",
   "contract": "contract/host-provisioning-v1.md",
   "localTargets": [
     "/local/host/provision/start",
