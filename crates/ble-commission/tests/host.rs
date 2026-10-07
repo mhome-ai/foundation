@@ -32,7 +32,7 @@ async fn to_wifi(harness: &Harness) -> String {
         )
         .await;
     let session = harness
-        .wait(HOST, true, |session| {
+        .wait(HOST, |session| {
             session["state"] == "awaiting_wifi" && session["networks"].is_array()
         })
         .await;
@@ -122,7 +122,7 @@ async fn a_failed_join_offers_wifi_again_and_resets_first() {
     let id = to_wifi(&harness).await;
     join(&harness, &id).await;
     let offered = harness
-        .wait(HOST, true, |session| {
+        .wait(HOST, |session| {
             session["state"] == "awaiting_wifi" && session.get("error").is_some()
         })
         .await;
@@ -154,7 +154,7 @@ async fn a_join_that_never_settles_fails_as_wifi_failed() {
     let id = to_wifi(&harness).await;
     join(&harness, &id).await;
     let offered = harness
-        .wait(HOST, true, |session| session.get("error").is_some())
+        .wait(HOST, |session| session.get("error").is_some())
         .await;
     assert_eq!(offered["state"], "awaiting_wifi");
     assert_eq!(offered["error"]["code"], "wifi_failed");
@@ -163,7 +163,7 @@ async fn a_join_that_never_settles_fails_as_wifi_failed() {
 #[tokio::test(start_paused = true)]
 async fn pod_and_host_sessions_are_kept_apart() {
     let harness = Harness::new();
-    harness.add_device("pod-a", Script::pod());
+    let device = harness.add_device("pod-a", Script::pod());
     harness.add_device("host-a", Script::host());
     let pod = session_id(
         &harness
@@ -173,16 +173,15 @@ async fn pod_and_host_sessions_are_kept_apart() {
             )
             .await,
     );
-    harness
-        .ok("/local/pod/commission/cancel", json!({ "sessionId": pod }))
-        .await;
+    harness.wait_state(DeviceKind::Pod, "awaiting_code").await;
+    device.drop_link();
     tokio::time::sleep(Duration::from_secs(1)).await;
     let host = start(&harness).await;
     harness.wait_state(HOST, "awaiting_code").await;
 
     let pod_status = harness.ok("/local/pod/commission/status", json!({})).await;
     assert_eq!(pod_status["session"]["sessionId"], pod);
-    assert_eq!(pod_status["session"]["state"], "cancelled");
+    assert_eq!(pod_status["session"]["state"], "failed");
     assert_eq!(
         harness
             .reason(
@@ -204,14 +203,15 @@ async fn pod_and_host_sessions_are_kept_apart() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn host_lease_expiry_cancels() {
+async fn host_without_ui_expires_only_at_its_deadline() {
     let harness = Harness::new();
     harness.add_device("host-a", Script::host());
     start(&harness).await;
-    let cancelled = harness
-        .wait(HOST, false, |session| session["state"] == "cancelled")
+    let timed_out = harness
+        .wait(HOST, |session| session["state"] == "timed_out")
         .await;
-    valid(&cancelled);
+    valid(&timed_out);
+    tokio::time::sleep(Duration::from_secs(1)).await;
     assert!(harness
         .journal()
         .contains(&"device:disconnected".to_string()));

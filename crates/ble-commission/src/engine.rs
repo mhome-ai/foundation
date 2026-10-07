@@ -255,7 +255,7 @@ impl Engine {
         }
     }
 
-    /// Ends sessions whose owner lease or lifetime ran out.
+    /// Ends sessions when their finite lifetime runs out, independently of the UI.
     pub fn spawn_watchdog(self: &Arc<Self>, kind: DeviceKind, id: String) {
         let engine = Arc::downgrade(self);
         tokio::spawn(async move {
@@ -268,8 +268,6 @@ impl Engine {
                 let step = engine.mutate(kind, &id, |live| {
                     if live.phase.is_terminal() {
                         Watch::Stop
-                    } else if live.phase.runs_to_conclusion() {
-                        Watch::Wait
                     } else if now >= live.expires_at_ms {
                         Watch::End(
                             Phase::TimedOut,
@@ -279,8 +277,6 @@ impl Engine {
                                 None,
                             )),
                         )
-                    } else if now >= live.lease_expires_ms {
-                        Watch::End(Phase::Cancelled, None)
                     } else {
                         Watch::Wait
                     }

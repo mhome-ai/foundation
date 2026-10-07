@@ -91,9 +91,9 @@ async fn discovery_events_are_coalesced_to_one_per_second() {
 async fn a_session_pauses_scanning_until_it_is_released() {
     let harness = Harness::new();
     let lease_id = lease(&harness).await;
-    harness.add_device("pod-a", Script::pod());
+    let device = harness.add_device("pod-a", Script::pod());
     settle().await;
-    let session = harness
+    harness
         .ok(
             "/local/pod/commission/start",
             json!({ "candidateId": "pod-a" }),
@@ -104,12 +104,8 @@ async fn a_session_pauses_scanning_until_it_is_released() {
         .await;
     settle().await;
     assert_eq!(scans(&harness), [true, false]);
-    harness
-        .ok(
-            "/local/pod/commission/cancel",
-            json!({ "sessionId": session["sessionId"] }),
-        )
-        .await;
+    harness.wait_state(DeviceKind::Pod, "awaiting_code").await;
+    device.drop_link();
     tokio::time::sleep(Duration::from_secs(2)).await;
     assert_eq!(scans(&harness), [true, false, true]);
 }

@@ -11,8 +11,6 @@ pub const COMMISSION_CODE_TARGET: &str = "/local/pod/commission/code";
 pub const COMMISSION_WIFI_TARGET: &str = "/local/pod/commission/wifi";
 pub const COMMISSION_WIFI_SCAN_TARGET: &str = "/local/pod/commission/wifi/scan";
 pub const COMMISSION_AUTHORIZE_TARGET: &str = "/local/pod/commission/authorize";
-pub const COMMISSION_CANCEL_TARGET: &str = "/local/pod/commission/cancel";
-pub const COMMISSION_RENEW_TARGET: &str = "/local/pod/commission/renew";
 pub const COMMISSION_STATUS_TARGET: &str = "/local/pod/commission/status";
 pub const BLUETOOTH_SETTINGS_TARGET: &str = "/local/pod/bluetooth/settings";
 
@@ -29,8 +27,6 @@ pub const LOCAL_TARGETS: &[&str] = &[
     COMMISSION_WIFI_TARGET,
     COMMISSION_WIFI_SCAN_TARGET,
     COMMISSION_AUTHORIZE_TARGET,
-    COMMISSION_CANCEL_TARGET,
-    COMMISSION_RENEW_TARGET,
     COMMISSION_STATUS_TARGET,
     BLUETOOTH_SETTINGS_TARGET,
 ];
@@ -68,9 +64,6 @@ pub const CODE_ATTEMPTS: u32 = 5;
 
 /// Session deadline before credential delivery starts.
 pub const SESSION_LIFETIME_MS: i64 = 600_000;
-/// Owner lease of a pod or Host session, renewed through the `renew` target.
-pub const SESSION_LEASE_MS: i64 = 30_000;
-pub const SESSION_RENEW_INTERVAL_MS: i64 = 10_000;
 /// After `activateBefore` the commissioner waits this long before giving up.
 pub const ACTIVATION_GRACE_MS: i64 = 30_000;
 pub const CREDENTIAL_STATUS_POLL_MS: i64 = 5_000;
@@ -297,16 +290,12 @@ pub enum CommissionState {
     Activating,
     Completed,
     Failed,
-    Cancelled,
     TimedOut,
 }
 
 impl CommissionState {
     pub fn is_terminal(self) -> bool {
-        matches!(
-            self,
-            Self::Completed | Self::Failed | Self::Cancelled | Self::TimedOut
-        )
+        matches!(self, Self::Completed | Self::Failed | Self::TimedOut)
     }
 }
 

@@ -7,10 +7,9 @@ use std::time::Duration;
 
 use app_facade_api::host_provision::{is_claim_token, HostFinishResponse, HOST_INFO_ENDPOINT};
 use app_facade_api::pod::{
-    AuthorizationPrompt, CommissionError, CommissionErrorCode, CredentialIssueRequest,
-    CredentialStatus, DeviceKind, PodInfo, SessionMode, ACTIVATION_GRACE_MS, CODE_ATTEMPTS,
-    CREDENTIAL_STATUS_POLL_MS, NOT_ACTIVATED_DETAIL, POD_CREDENTIAL_ENDPOINT, POD_INFO_ENDPOINT,
-    SRP_USERNAME,
+    AuthorizationPrompt, CommissionError, CommissionErrorCode, CredentialIssueRequest, DeviceKind,
+    PodInfo, SessionMode, ACTIVATION_GRACE_MS, CODE_ATTEMPTS, NOT_ACTIVATED_DETAIL,
+    POD_CREDENTIAL_ENDPOINT, POD_INFO_ENDPOINT, SRP_USERNAME,
 };
 use protocomm::{ProtocommError, WifiFailure, WifiStatus};
 use serde_json::{json, Value};
@@ -39,7 +38,7 @@ struct Credential {
     pod_id: String,
     activate_before: i64,
     context: String,
-    /// `completed`, or Lion reported it absent: nothing to revoke.
+    /// The device confirmed durable commissioning: nothing to revoke.
     settled: bool,
 }
 
@@ -181,13 +180,14 @@ impl Actor {
     }
 
     async fn open(&mut self) -> Option<bool> {
-        let opened = self
-            .race(device::open(
-                &self.engine.platform.central,
-                &self.peripheral_id,
-                self.kind,
-            ))
-            .await?;
+        // Keep ownership through connection/version setup, even if the session
+        // deadline expires. Cleanup must receive and close a late native link.
+        let opened = device::open(
+            &self.engine.platform.central,
+            &self.peripheral_id,
+            self.kind,
+        )
+        .await;
         match opened {
             Ok(opened) => {
                 let locked = opened.locked;
@@ -781,10 +781,11 @@ impl Actor {
                     .map(str::to_string),
             )),
             Err(failure) => {
-                warn!(%failure, "credential delivery lost; asking MeowLink");
-                if !self.over() {
-                    self.settle_with_cloud().await;
-                }
+                self.fail(error(
+                    CommissionErrorCode::DeliveryFailed,
+                    "The pod did not confirm delivery. Reset it and start setup again.",
+                    Some(failure.to_string()),
+                ));
             }
         }
     }
@@ -798,7 +799,7 @@ impl Actor {
     async fn activate(&mut self, client: Arc<device::Client>) {
         loop {
             if self.engine.now_ms() >= self.deadline() {
-                return self.settle_with_cloud().await;
+                return self.activation_failed(NOT_ACTIVATED_DETAIL.into());
             }
             if self.sleep(TICK).await.is_none() {
                 return;
@@ -812,8 +813,7 @@ impl Actor {
             let status = match status {
                 Ok(status) => status,
                 Err(failure) => {
-                    warn!(%failure, "pod activation status lost; asking MeowLink");
-                    return self.settle_with_cloud().await;
+                    return self.fail_disconnected(failure);
                 }
             };
             match status.get("state").and_then(Value::as_str) {
@@ -837,40 +837,6 @@ impl Actor {
             "The pod could not connect to MeowLink.",
             Some(detail),
         ));
-    }
-
-    async fn settle_with_cloud(&mut self) {
-        let cloud = self.engine.platform.cloud.clone();
-        let Some((pod_id, context)) = self
-            .credential
-            .as_ref()
-            .map(|credential| (credential.pod_id.clone(), credential.context.clone()))
-        else {
-            return;
-        };
-        loop {
-            let Some(status) = self.race(cloud::status(&cloud, &context, &pod_id)).await else {
-                return;
-            };
-            match status.map(|status| status.status) {
-                Ok(CredentialStatus::Active) => return self.complete_pod().await,
-                Ok(CredentialStatus::Absent) => {
-                    if let Some(credential) = self.credential.as_mut() {
-                        credential.settled = true;
-                    }
-                    return self.activation_failed(NOT_ACTIVATED_DETAIL.into());
-                }
-                Ok(CredentialStatus::Pending) => {}
-                Err(failure) => warn!(%failure, "credential status unavailable"),
-            }
-            if self.engine.now_ms() >= self.deadline() {
-                return self.activation_failed(NOT_ACTIVATED_DETAIL.into());
-            }
-            let poll = Duration::from_millis(CREDENTIAL_STATUS_POLL_MS as u64);
-            if self.sleep(poll).await.is_none() {
-                return;
-            }
-        }
     }
 
     async fn complete_pod(&mut self) {

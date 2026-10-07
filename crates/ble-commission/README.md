@@ -89,11 +89,12 @@ trait EventSink {
 
 At most one pod session and one Host session are kept, and only one of them
 may hold the radio: starting either while the other is still running (or still
-disconnecting) is refused with `session_active` or `busy`. A session ends
-`cancelled` when its owner lease is not renewed and `timed_out` after its
-lifetime, except while a credential is being delivered or activated, which run
-to a conclusion. A pod credential that was issued but did not end up active is
-revoked with the account that issued it.
+disconnecting) is refused with `session_active` or `busy`. The native core owns a session until success, failure or its finite deadline;
+leaving a page does not cancel it and callers do not renew it. There is no
+user cancellation endpoint. Only the device's `commissioned` response confirms
+success. Lost delivery/activation confirmation fails; any issued credential
+is then revoked with the account that issued it. Reset the device to retry.
+
 
 A pod whose `pod-info` reports `"mode":"reprovision"` is in a Wi-Fi change
 window: the session only joins the new network, waits for the pod to save it,

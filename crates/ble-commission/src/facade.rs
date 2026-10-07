@@ -6,7 +6,7 @@ use app_facade_api::pod::{
     self, AdapterState, BluetoothSettingsResponse, CommissionAuthorizeRequest,
     CommissionCodeRequest, CommissionSessionRequest, CommissionStartRequest, CommissionStatus,
     CommissionWifiRequest, DeviceKind, DiscoveryLease, EmptyRequest, LeaseRequest,
-    RequestErrorReason, DISCOVERY_LEASE_MS, SESSION_LEASE_MS, SESSION_LIFETIME_MS,
+    RequestErrorReason, DISCOVERY_LEASE_MS, SESSION_LIFETIME_MS,
 };
 use core_api::ErrorResponse;
 use serde::de::DeserializeOwned;
@@ -144,10 +144,6 @@ pub(crate) async fn dispatch(
         pod::COMMISSION_WIFI_SCAN_TARGET => wifi_scan(engine, Pod, parse(payload)?).await,
         host::PROVISION_WIFI_SCAN_TARGET => wifi_scan(engine, Host, parse(payload)?).await,
         pod::COMMISSION_AUTHORIZE_TARGET => authorize(engine, parse(payload)?).await,
-        pod::COMMISSION_CANCEL_TARGET => cancel(engine, Pod, parse(payload)?),
-        host::PROVISION_CANCEL_TARGET => cancel(engine, Host, parse(payload)?),
-        pod::COMMISSION_RENEW_TARGET => renew(engine, Pod, parse(payload)?),
-        host::PROVISION_RENEW_TARGET => renew(engine, Host, parse(payload)?),
         _ => {
             return Err(ErrorResponse::new(
                 "UNSUPPORTED",
@@ -257,7 +253,6 @@ async fn start(
             phase: Phase::Connecting,
             candidate,
             expires_at_ms: now + SESSION_LIFETIME_MS,
-            lease_expires_ms: now + SESSION_LEASE_MS,
             networks: Vec::new(),
             error: None,
             device: None,
@@ -426,33 +421,4 @@ async fn authorize(
         }))
     })
     .await
-}
-
-fn cancel(
-    engine: &Arc<Engine>,
-    kind: DeviceKind,
-    request: CommissionSessionRequest,
-) -> Result<Value, RequestError> {
-    engine.terminate(kind, &request.session_id, Phase::Cancelled, None);
-    let mut sessions = engine.sessions.lock().unwrap();
-    let live = sessions
-        .current(kind, &request.session_id)
-        .ok_or_else(|| unknown(kind))?;
-    Ok(live.snapshot())
-}
-
-fn renew(
-    engine: &Arc<Engine>,
-    kind: DeviceKind,
-    request: CommissionSessionRequest,
-) -> Result<Value, RequestError> {
-    let now = engine.now_ms();
-    let mut sessions = engine.sessions.lock().unwrap();
-    let live = sessions
-        .current(kind, &request.session_id)
-        .ok_or_else(|| unknown(kind))?;
-    if !live.phase.is_terminal() {
-        live.lease_expires_ms = now + SESSION_LEASE_MS;
-    }
-    Ok(live.snapshot())
 }

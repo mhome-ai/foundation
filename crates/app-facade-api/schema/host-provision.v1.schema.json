@@ -18,7 +18,6 @@
         "joining_wifi",
         "completed",
         "failed",
-        "cancelled",
         "timed_out"
       ]
     },

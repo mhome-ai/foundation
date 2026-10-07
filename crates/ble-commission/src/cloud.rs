@@ -4,9 +4,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use app_facade_api::pod::{
-    CredentialIssueRequest, CredentialIssueResponse, CredentialPodRequest,
-    CredentialStatusResponse, CREDENTIAL_ISSUE_PATH, CREDENTIAL_REVOKE_PATH,
-    CREDENTIAL_STATUS_PATH,
+    CredentialIssueRequest, CredentialIssueResponse, CredentialPodRequest, CREDENTIAL_ISSUE_PATH,
+    CREDENTIAL_REVOKE_PATH,
 };
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -77,17 +76,6 @@ pub(crate) async fn issue(
         request,
     )
     .await
-}
-
-pub(crate) async fn status(
-    cloud: &Arc<dyn Cloud>,
-    context: &str,
-    pod_id: &str,
-) -> Result<CredentialStatusResponse, CallError> {
-    let request = CredentialPodRequest {
-        pod_id: pod_id.to_string(),
-    };
-    post(cloud, context, CREDENTIAL_STATUS_PATH, None, &request).await
 }
 
 pub(crate) async fn revoke(

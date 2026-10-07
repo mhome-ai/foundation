@@ -36,7 +36,7 @@ async fn to_authorization(harness: &Harness) -> String {
     let id = start(harness).await;
     secure(harness, &id).await;
     let session = harness
-        .wait(POD, true, |session| {
+        .wait(POD, |session| {
             session["state"] == "awaiting_wifi" && session["networks"].is_array()
         })
         .await;
@@ -257,14 +257,17 @@ async fn start_checks_account_device_and_radio() {
     );
     assert_eq!(
         harness
-            .reason("/local/host/provision/cancel", json!({ "sessionId": id }))
+            .reason(
+                "/local/host/provision/wifi/scan",
+                json!({ "sessionId": id })
+            )
             .await,
         "unknown_session"
     );
     assert_eq!(
         harness
             .reason(
-                "/local/pod/commission/renew",
+                "/local/pod/commission/wifi/scan",
                 json!({ "sessionId": "nope" })
             )
             .await,
@@ -388,66 +391,26 @@ async fn a_loopback_cloud_is_refused_before_issuing() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn a_lost_link_while_activating_asks_lion() {
-    let harness = Harness::new();
-    let mut script = Script::pod();
-    script.activation = Activation::Never;
-    script.drop_after_op = Some("status");
-    harness.add_device("pod-a", script);
-    *harness.cloud.statuses.lock().unwrap() = ["unreachable", "pending", "pending"].into();
-    *harness.cloud.status.lock().unwrap() = "active";
-    let id = to_authorization(&harness).await;
-    authorize(&harness, &id).await;
-    let done = harness
-        .wait(POD, false, |session| session["state"] == "completed")
-        .await;
-    assert_eq!(done["podId"], "pod-1");
-    assert!(harness.cloud.revokes().is_empty());
-    let statuses = harness
-        .cloud
-        .paths()
-        .iter()
-        .filter(|path| *path == "pod/credential/status")
-        .count();
-    assert_eq!(statuses, 4);
-}
-
-#[tokio::test(start_paused = true)]
-async fn a_lost_delivery_that_lion_never_saw_fails_without_revoking() {
-    let harness = Harness::new();
-    let mut script = Script::pod();
-    script.drop_after_op = Some("deliver");
-    harness.add_device("pod-a", script);
-    *harness.cloud.status.lock().unwrap() = "absent";
-    let id = to_authorization(&harness).await;
-    authorize(&harness, &id).await;
-    let failed = harness.wait_state(POD, "failed").await;
-    assert_eq!(failed["error"]["code"], "activation_failed");
-    assert_eq!(failed["error"]["detail"], "not_activated");
-    tokio::time::sleep(Duration::from_secs(1)).await;
-    assert!(harness.cloud.revokes().is_empty());
-}
-
-#[tokio::test(start_paused = true)]
-async fn a_credential_still_pending_after_its_window_is_revoked() {
-    let harness = Harness::new();
-    let mut script = Script::pod();
-    script.drop_after_op = Some("deliver");
-    harness.add_device("pod-a", script);
-    let id = to_authorization(&harness).await;
-    let issued_at = tokio::time::Instant::now();
-    authorize(&harness, &id).await;
-    let failed = harness
-        .wait(POD, false, |session| session["state"] == "failed")
-        .await;
-    assert!(issued_at.elapsed() >= Duration::from_secs(630));
-    assert_eq!(failed["error"]["code"], "activation_failed");
-    assert_eq!(failed["error"]["detail"], "not_activated");
-    tokio::time::sleep(Duration::from_secs(1)).await;
-    let revokes = harness.cloud.revokes();
-    assert_eq!(revokes.len(), 1);
-    assert_eq!(revokes[0].body["podId"], "pod-1");
-    assert_eq!(revokes[0].context, "ctx-1");
+async fn lost_device_confirmation_fails_even_when_cloud_is_active() {
+    for op in ["deliver", "status"] {
+        let harness = Harness::new();
+        let mut script = Script::pod();
+        script.activation = Activation::Never;
+        script.drop_after_op = Some(op);
+        harness.add_device("pod-a", script);
+        *harness.cloud.status.lock().unwrap() = "active";
+        let id = to_authorization(&harness).await;
+        authorize(&harness, &id).await;
+        let failed = harness.wait_state(POD, "failed").await;
+        assert!(failed.get("podId").is_none());
+        tokio::time::sleep(Duration::from_secs(2)).await;
+        assert_eq!(harness.cloud.revokes().len(), 1);
+        assert!(!harness
+            .cloud
+            .paths()
+            .iter()
+            .any(|path| path == "pod/credential/status"));
+    }
 }
 
 #[tokio::test(start_paused = true)]
@@ -487,7 +450,7 @@ async fn reprovision(harness: &Harness) -> String {
     let id = start(harness).await;
     secure(harness, &id).await;
     let session = harness
-        .wait(POD, true, |session| {
+        .wait(POD, |session| {
             session["state"] == "awaiting_wifi" && session["networks"].is_array()
         })
         .await;
@@ -550,68 +513,66 @@ async fn a_wifi_change_the_pod_cannot_save_fails_with_its_code() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn an_unrenewed_session_is_cancelled_but_activation_runs_on() {
-    let harness = Harness::new();
-    harness.add_device("pod-a", Script::pod());
-    start(&harness).await;
-    let cancelled = harness
-        .wait(POD, false, |session| session["state"] == "cancelled")
-        .await;
-    assert!(cancelled.get("error").is_none());
-
+async fn sessions_run_without_ui_renewal_and_reject_cancel() {
     let harness = Harness::new();
     let mut script = Script::pod();
     script.activation = Activation::Commissioned { after_polls: 50 };
     harness.add_device("pod-a", script);
-    let id = to_authorization(&harness).await;
-    authorize(&harness, &id).await;
-    let done = harness
-        .wait(POD, false, |session| {
-            matches!(session["state"].as_str(), Some("completed" | "cancelled"))
-        })
+    let id = start(&harness).await;
+    harness.wait_state(POD, "awaiting_code").await;
+    tokio::time::sleep(Duration::from_secs(45)).await;
+    assert_eq!(
+        harness.ok("/local/pod/commission/status", json!({})).await["session"]["state"],
+        "awaiting_code"
+    );
+    for target in [
+        "/local/pod/commission/cancel",
+        "/local/pod/commission/renew",
+        "/local/host/provision/cancel",
+        "/local/host/provision/renew",
+    ] {
+        assert!(!ble_commission::is_target(target));
+        assert_eq!(
+            harness
+                .call(target, json!({ "sessionId": id }))
+                .await
+                .unwrap_err()
+                .error,
+            "UNSUPPORTED"
+        );
+    }
+    secure(&harness, &id).await;
+    harness.wait_state(POD, "awaiting_wifi").await;
+    harness
+        .ok(
+            "/local/pod/commission/wifi",
+            json!({ "sessionId": id, "ssid": "home", "password": "correct horse" }),
+        )
         .await;
-    assert_eq!(done["state"], "completed");
+    harness.wait_state(POD, "awaiting_authorization").await;
+    authorize(&harness, &id).await;
+    harness.wait_state(POD, "completed").await;
 }
 
 #[tokio::test(start_paused = true)]
-async fn cancelling_while_issuing_revokes_the_late_credential() {
-    let harness = Harness::new();
-    harness.add_device("pod-a", Script::pod());
-    *harness.cloud.issue_delay.lock().unwrap() = Duration::from_secs(3);
-    let id = to_authorization(&harness).await;
-    let (issued, cancelled) = tokio::join!(authorize(&harness, &id), async {
-        tokio::time::sleep(Duration::from_secs(1)).await;
-        harness
-            .ok("/local/pod/commission/cancel", json!({ "sessionId": id }))
-            .await
-    });
-    assert_eq!(cancelled["state"], "cancelled");
-    assert_eq!(issued["state"], "cancelled");
-    tokio::time::sleep(Duration::from_secs(5)).await;
-    assert_eq!(harness.cloud.revokes().len(), 1);
-    let status = harness.ok("/local/pod/commission/status", json!({})).await;
-    assert_eq!(status["session"]["state"], "cancelled");
-}
-
-#[tokio::test(start_paused = true)]
-async fn cancelling_while_activating_revokes() {
+async fn activation_timeout_revokes_and_releases_the_radio() {
     let harness = Harness::new();
     let mut script = Script::pod();
     script.activation = Activation::Never;
     harness.add_device("pod-a", script);
     let id = to_authorization(&harness).await;
     authorize(&harness, &id).await;
-    harness.wait_state(POD, "activating").await;
-    let cancelled = harness
-        .ok("/local/pod/commission/cancel", json!({ "sessionId": id }))
+    let ended = harness
+        .wait(POD, |s| {
+            matches!(s["state"].as_str(), Some("failed" | "timed_out"))
+        })
         .await;
-    assert_eq!(cancelled["state"], "cancelled");
+    assert!(ended.get("error").is_some());
     tokio::time::sleep(Duration::from_secs(2)).await;
     assert_eq!(harness.cloud.revokes().len(), 1);
-    let again = harness
-        .ok("/local/pod/commission/cancel", json!({ "sessionId": id }))
-        .await;
-    assert_eq!(again["revision"], cancelled["revision"]);
+    harness.add_device("pod-a", Script::pod());
+    let fresh = start(&harness).await;
+    assert_ne!(fresh, id);
 }
 
 #[tokio::test(start_paused = true)]

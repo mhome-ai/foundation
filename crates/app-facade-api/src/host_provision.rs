@@ -9,8 +9,6 @@ pub const PROVISION_START_TARGET: &str = "/local/host/provision/start";
 pub const PROVISION_CODE_TARGET: &str = "/local/host/provision/code";
 pub const PROVISION_WIFI_TARGET: &str = "/local/host/provision/wifi";
 pub const PROVISION_WIFI_SCAN_TARGET: &str = "/local/host/provision/wifi/scan";
-pub const PROVISION_CANCEL_TARGET: &str = "/local/host/provision/cancel";
-pub const PROVISION_RENEW_TARGET: &str = "/local/host/provision/renew";
 pub const PROVISION_STATUS_TARGET: &str = "/local/host/provision/status";
 
 pub const PROVISION_CHANGED_EVENT: &str = "/local/host/provision/changed";
@@ -20,8 +18,6 @@ pub const LOCAL_TARGETS: &[&str] = &[
     PROVISION_CODE_TARGET,
     PROVISION_WIFI_TARGET,
     PROVISION_WIFI_SCAN_TARGET,
-    PROVISION_CANCEL_TARGET,
-    PROVISION_RENEW_TARGET,
     PROVISION_STATUS_TARGET,
 ];
 pub const EVENT_TARGETS: &[&str] = &[PROVISION_CHANGED_EVENT];
@@ -71,16 +67,12 @@ pub enum ProvisionState {
     JoiningWifi,
     Completed,
     Failed,
-    Cancelled,
     TimedOut,
 }
 
 impl ProvisionState {
     pub fn is_terminal(self) -> bool {
-        matches!(
-            self,
-            Self::Completed | Self::Failed | Self::Cancelled | Self::TimedOut
-        )
+        matches!(self, Self::Completed | Self::Failed | Self::TimedOut)
     }
 }
 

@@ -835,32 +835,16 @@ impl Harness {
         }
     }
 
-    /// Polls `status` (renewing the owner lease when `renew`) until `done`.
-    pub async fn wait(
-        &self,
-        kind: DeviceKind,
-        renew: bool,
-        done: impl Fn(&Value) -> bool,
-    ) -> Value {
-        let (status, renew_target) = match kind {
-            DeviceKind::Pod => (
-                "/local/pod/commission/status",
-                "/local/pod/commission/renew",
-            ),
-            DeviceKind::Host => (
-                "/local/host/provision/status",
-                "/local/host/provision/renew",
-            ),
+    /// Polls the core-owned session until `done`.
+    pub async fn wait(&self, kind: DeviceKind, done: impl Fn(&Value) -> bool) -> Value {
+        let status = match kind {
+            DeviceKind::Pod => "/local/pod/commission/status",
+            DeviceKind::Host => "/local/host/provision/status",
         };
         for _ in 0..20_000 {
             let session = self.ok(status, json!({})).await["session"].clone();
             if done(&session) {
                 return session;
-            }
-            if renew {
-                if let Some(id) = session["sessionId"].as_str() {
-                    let _ = self.call(renew_target, json!({ "sessionId": id })).await;
-                }
             }
             tokio::time::sleep(Duration::from_millis(200)).await;
         }
@@ -868,8 +852,7 @@ impl Harness {
     }
 
     pub async fn wait_state(&self, kind: DeviceKind, state: &str) -> Value {
-        self.wait(kind, true, |session| session["state"] == state)
-            .await
+        self.wait(kind, |session| session["state"] == state).await
     }
 
     pub fn journal(&self) -> Vec<String> {

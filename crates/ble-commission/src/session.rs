@@ -24,22 +24,12 @@ pub(crate) enum Phase {
     Activating,
     Completed,
     Failed,
-    Cancelled,
     TimedOut,
 }
 
 impl Phase {
     pub fn is_terminal(self) -> bool {
-        matches!(
-            self,
-            Self::Completed | Self::Failed | Self::Cancelled | Self::TimedOut
-        )
-    }
-
-    /// From delivery on, Lion decides the outcome; neither the owner lease nor
-    /// the session lifetime ends the session.
-    pub fn runs_to_conclusion(self) -> bool {
-        matches!(self, Self::Delivering | Self::Activating)
+        matches!(self, Self::Completed | Self::Failed | Self::TimedOut)
     }
 
     /// The link is idle and must stay connected.
@@ -64,7 +54,6 @@ impl Phase {
             Self::Activating => CommissionState::Activating,
             Self::Completed => CommissionState::Completed,
             Self::Failed => CommissionState::Failed,
-            Self::Cancelled => CommissionState::Cancelled,
             Self::TimedOut => CommissionState::TimedOut,
         }
     }
@@ -79,7 +68,6 @@ impl Phase {
             Self::JoiningWifi => ProvisionState::JoiningWifi,
             Self::Completed => ProvisionState::Completed,
             Self::Failed => ProvisionState::Failed,
-            Self::Cancelled => ProvisionState::Cancelled,
             Self::TimedOut => ProvisionState::TimedOut,
             Self::AwaitingAuthorization | Self::Issuing | Self::Delivering | Self::Activating => {
                 unreachable!("Host sessions have no credential phases")
@@ -116,7 +104,6 @@ pub(crate) struct Live {
     pub phase: Phase,
     pub candidate: PodCandidate,
     pub expires_at_ms: i64,
-    pub lease_expires_ms: i64,
     pub networks: Vec<WifiNetwork>,
     pub error: Option<CommissionError>,
     pub device: Option<PodDeviceInfo>,

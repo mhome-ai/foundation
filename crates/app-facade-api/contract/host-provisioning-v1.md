@@ -119,20 +119,18 @@ Candidates come from the shared discovery (`/local/pod/discovery/*`) with
 | `/local/host/provision/code` | `{"sessionId","code"}` | session snapshot |
 | `/local/host/provision/wifi` | `{"sessionId","ssid","password"?}` | session snapshot |
 | `/local/host/provision/wifi/scan` | `{"sessionId"}` | session snapshot |
-| `/local/host/provision/cancel` | `{"sessionId"}` | session snapshot |
-| `/local/host/provision/renew` | `{"sessionId"}` | session snapshot |
 | `/local/host/provision/status` | `{}` | `{"session": snapshot or null}` |
 
 Event `/local/host/provision/changed` carries a session snapshot. One session
 per native Client, and none while a pod session is active; discovery scanning
 pauses during either. Rejected requests use the error envelope and the stable
 `details.reason` values of `pod-commissioning-v1.md` section 7. The session is
-owned through the same 30-second lease, renewed with
-`/local/host/provision/renew` every 10 seconds; an expired lease cancels it.
+owned by the native core until success, failure or the session deadline.
+There is no cancellation or renewal endpoint; leaving the UI does not end it.
 
 Session states, in order: `connecting`, `awaiting_code`, `securing`,
 `reading_info`, `awaiting_wifi`, `joining_wifi`, `completed`; terminal `failed`,
-`cancelled`, `timed_out`. `completed` carries `host`, the reported `addresses`
+`timed_out`. `completed` carries `host`, the reported `addresses`
 (IPv4 only, possibly empty) and `claimToken` from the `finish` response; the
 commissioner sends `finish` (up to 3 times while the secure session lasts)
 before reporting it. `claimToken` is absent when `finish` could not be

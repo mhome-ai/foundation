@@ -73,13 +73,23 @@ pub(crate) async fn open(
     peripheral_id: &str,
     kind: DeviceKind,
 ) -> Result<Opened, OpenError> {
-    let link =
-        match tokio::time::timeout(CONNECT_TIMEOUT, central.connect(peripheral_id, kind)).await {
-            Err(_) => return Err(OpenError::Link("connection timed out".into())),
-            Ok(Err(LinkError::Unavailable(detail))) => return Err(OpenError::Unavailable(detail)),
-            Ok(Err(error)) => return Err(OpenError::Link(error.to_string())),
-            Ok(Ok(link)) => link,
-        };
+    let connecting = central.clone();
+    let id = peripheral_id.to_owned();
+    let mut task = tokio::spawn(async move { connecting.connect(&id, kind).await });
+    let link = match tokio::time::timeout(CONNECT_TIMEOUT, &mut task).await {
+        Err(_) => {
+            // Platform connects have their own bounded timeout. Do not abandon
+            // one: a late connection must be closed before releasing the radio.
+            if let Ok(Ok(link)) = task.await {
+                link.disconnect().await;
+            }
+            return Err(OpenError::Link("connection timed out".into()));
+        }
+        Ok(Err(error)) => return Err(OpenError::Link(error.to_string())),
+        Ok(Ok(Err(LinkError::Unavailable(detail)))) => return Err(OpenError::Unavailable(detail)),
+        Ok(Ok(Err(error))) => return Err(OpenError::Link(error.to_string())),
+        Ok(Ok(Ok(link))) => link,
+    };
     let client = Arc::new(ProtocommClient::new(LinkTransport { link: link.clone() }));
     let version = match client.version().await {
         Ok(version) => version,

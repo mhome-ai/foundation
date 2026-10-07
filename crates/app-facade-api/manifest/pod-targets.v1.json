@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.pod.targets.v1",
-  "contractVersion": "1.34.2",
+  "contractVersion": "1.35.0",
   "contract": "contract/pod-commissioning-v1.md",
   "localTargets": [
     "/local/pod/discovery/start",
@@ -12,8 +12,6 @@
     "/local/pod/commission/wifi",
     "/local/pod/commission/wifi/scan",
     "/local/pod/commission/authorize",
-    "/local/pod/commission/cancel",
-    "/local/pod/commission/renew",
     "/local/pod/commission/status",
     "/local/pod/bluetooth/settings"
   ],
@@ -63,8 +61,6 @@
   },
   "session": {
     "lifetimeMs": 600000,
-    "leaseMs": 30000,
-    "renewIntervalMs": 10000,
     "activationGraceMs": 30000,
     "credentialStatusPollMs": 5000
   },

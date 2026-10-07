@@ -6,8 +6,8 @@ use app_facade_api::pod::{
     CREDENTIAL_REFUSAL_REASONS, CREDENTIAL_REVOKE_PATH, CREDENTIAL_STATUS_PATH,
     CREDENTIAL_STATUS_POLL_MS, CUSTOM_ENDPOINT_MAX_BYTES, DISCOVERY_EVENT_INTERVAL_MS,
     DISCOVERY_LEASE_MS, EVENT_TARGETS, LOCAL_TARGETS, NOT_ACTIVATED_DETAIL, POD_ENDPOINT_UUIDS,
-    POD_MODE_REPROVISION, SECURITY_VERSION, SESSION_LEASE_MS, SESSION_LIFETIME_MS,
-    SESSION_RENEW_INTERVAL_MS, SRP_USERNAME, STANDARD_ENDPOINT_UUIDS,
+    POD_MODE_REPROVISION, SECURITY_VERSION, SESSION_LIFETIME_MS, SRP_USERNAME,
+    STANDARD_ENDPOINT_UUIDS,
 };
 use serde_json::Value;
 
@@ -53,8 +53,6 @@ fn manifest_matches_the_rust_contract() {
     );
     let session = &manifest["session"];
     assert_eq!(session["lifetimeMs"], SESSION_LIFETIME_MS);
-    assert_eq!(session["leaseMs"], SESSION_LEASE_MS);
-    assert_eq!(session["renewIntervalMs"], SESSION_RENEW_INTERVAL_MS);
     assert_eq!(session["activationGraceMs"], ACTIVATION_GRACE_MS);
     assert_eq!(session["credentialStatusPollMs"], CREDENTIAL_STATUS_POLL_MS);
     assert_eq!(manifest["cloud"]["issue"], CREDENTIAL_ISSUE_PATH);

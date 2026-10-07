@@ -22,7 +22,6 @@
         "activating",
         "completed",
         "failed",
-        "cancelled",
         "timed_out"
       ]
     },

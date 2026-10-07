@@ -157,7 +157,7 @@ unprovisioned ──connect──▶ session_open ──handshake──▶ secur
 secured ──prov-config apply──▶ wifi_joining ──▶ wifi_connected | wifi_failed
 wifi_failed ──retry──▶ wifi_joining
 wifi_connected ──deliver──▶ activating ──time sync, refresh, commit──▶ commissioned | failed
-any pre-commit state ──timeout/disconnect/cancel──▶ unprovisioned
+any pre-commit state ──timeout/disconnect──▶ unprovisioned
 ```
 
 Runtime states after commit:
@@ -358,8 +358,6 @@ never show these values or `message` verbatim.
 | `/local/pod/commission/wifi` | `{"sessionId","ssid","password"?}` | session snapshot |
 | `/local/pod/commission/wifi/scan` | `{"sessionId"}` | session snapshot |
 | `/local/pod/commission/authorize` | `{"sessionId","scopeId"}` | session snapshot |
-| `/local/pod/commission/cancel` | `{"sessionId"}` | session snapshot |
-| `/local/pod/commission/renew` | `{"sessionId"}` | session snapshot |
 | `/local/pod/commission/status` | `{}` | `{"session": snapshot or null}` |
 | `/local/pod/bluetooth/settings` | `{}` | `{"opened"}` |
 
@@ -381,10 +379,10 @@ UIs reconcile with `status` and discovery `list` on start, resume, reconnect and
 when they become visible, and a snapshot with a lower `revision` than one
 already seen for the same session is stale.
 
-The session that `start` creates is owned through a 30-second lease. The
-caller renews it with `/local/pod/commission/renew` every 10 seconds while it
-shows the session. An expired lease cancels the session, except in `delivering`
-and `activating`, which run to their conclusion.
+The native core owns the session until success or failure, bounded by
+`expiresAtMs`. There is no user cancellation or session renewal. Leaving the
+page does not end setup; returning to it reads `status`. Waiting for user input
+also counts toward the deadline. Discovery leases still control scanning.
 
 Sign-in and Spaces are checked at `start` (`not_signed_in`,
 `scope_not_offered`) and again when the authorization prompt is built.
@@ -403,7 +401,7 @@ pod's Wi-Fi rather than adding a pod.
 Session states, in order: `connecting`, `awaiting_code`, `securing`,
 `reading_info`, `awaiting_wifi`, `joining_wifi`, `awaiting_authorization`,
 `issuing`, `delivering`, `activating`, `completed`; terminal `failed`,
-`cancelled`, `timed_out`. Wi-Fi states are skipped when the pod reports a
+`timed_out`. Wi-Fi states are skipped when the pod reports a
 configured network and `prov-config` status reports it connected; while that
 status is `connecting` the commissioner keeps polling, and only after a failure
 does it reset Wi-Fi (`prov-ctrl`) and offer new credentials. The commissioner
@@ -413,14 +411,11 @@ scan runs waits for it. `revision` increases on every observable change.
 `expiresAtMs` is 10 minutes after `start` until delivery starts; from
 `delivering` on it is `activateBefore` plus 30 seconds.
 
-Lion decides the outcome of activation. In `delivering` and `activating`, a
-lost BLE link, a failed status exchange or the deadline does not revoke by
-itself; the commissioner asks `/api/v1/pod/credential/status`:
-
-- `active`: `completed` with `podId`.
-- `pending`: ask again every 5 seconds until `activateBefore` plus 30 seconds,
-  then revoke and fail with `activation_failed`.
-- `absent`: fail with `activation_failed`.
+Only the device's durable `commissioned` response confirms successful setup.
+Lost BLE delivery confirmation or activation status fails the attempt, even
+when Lion has already activated its credential. Expiry fails or times out the
+attempt. The commissioner does not recover interrupted setup through Lion's
+credential status. The user resets the device and starts a fresh attempt.
 
 A refused `deliver` fails with `delivery_failed` carrying the pod's `reason`
 (`invalid_payload` or `wrong_state`) in `detail`, and revokes. When the pod
@@ -439,8 +434,7 @@ Session error codes: `bluetooth_unavailable`, `device_busy`, `disconnected`,
 code once it accepts handshakes again. `failed` and `timed_out` always carry `error`. A rejected
 code returns to `awaiting_code` with `code_rejected`; a failed join returns to
 `awaiting_wifi` with the `wifi_*` code. No other state carries `error`. After
-issue, every terminal state other than `completed` revokes the credential unless
-Lion already reported it `absent`; the revoke uses the account that issued the
+issue, every terminal state other than `completed` attempts to revoke the credential; the revoke uses the account that issued the
 credential.
 
 The schemas are `schema/pod-discovery.v1.schema.json` and
