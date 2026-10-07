@@ -131,6 +131,8 @@ pub enum AdmissionDisposition {
 /// Routed best-effort observation sent outside the durable event outbox.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ObservationMessage {
+    /// Monotonic within the bound execution; gaps are allowed and never replayed.
+    pub sequence: u64,
     /// Authenticated invocation and routing context.
     pub context: InvocationContext,
     /// Request-scoped progress payload.
@@ -362,6 +364,11 @@ impl Envelope {
             return Err(ProtocolError::MissingIdentifier("correlation_id"));
         }
         validate_dispatch(&self.metadata.dispatch)?;
+        if matches!(&self.payload, Payload::Observation(message) if message.sequence == 0) {
+            return Err(ProtocolError::InvalidBinding(
+                "observation sequence must be positive".into(),
+            ));
+        }
         if let Some(context) = self.context() {
             validate_context(context)?;
         }

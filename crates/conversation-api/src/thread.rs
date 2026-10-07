@@ -116,12 +116,3 @@ pub struct ThreadSnapshot {
     pub pending_interaction: Option<PendingInteraction>,
     pub run_outcomes: Vec<RunOutcome>,
 }
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct LiveSnapshot {
-    pub base_snapshot_version: u64,
-    pub last_offset: u64,
-    #[serde(default)]
-    pub events: Vec<crate::LiveConversationEvent>,
-}

@@ -397,11 +397,30 @@ fn conversation_events_reject_unknown_types_and_invalid_live_payloads() {
     assert!(serde_json::from_value::<ConversationEvent>(invalid_progress).is_err());
 
     let mut legacy_preview = fixture("live.event.json")["body"].clone();
-    legacy_preview["data"]
+    legacy_preview["data"]["append"] = Value::Bool(true);
+    assert!(serde_json::from_value::<ConversationEvent>(legacy_preview).is_err());
+}
+
+#[test]
+fn presentation_contract_rejects_replay_append_and_zero_sequence() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/conversation-frame.v2.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    let mut reply = fixture("thread-load.response.json");
+    reply["body"]["live"] =
+        serde_json::json!({"baseSnapshotVersion": 0, "lastOffset": 0, "events": []});
+    assert!(!validator.is_valid(&reply));
+    let mut preview = fixture("live.event.json");
+    preview["body"]["data"]["append"] = Value::Bool(true);
+    assert!(!validator.is_valid(&preview));
+    preview["body"]["data"]
         .as_object_mut()
         .unwrap()
         .remove("append");
-    assert!(serde_json::from_value::<ConversationEvent>(legacy_preview).is_err());
+    preview["body"]["sequence"] = Value::from(0);
+    assert!(!validator.is_valid(&preview));
+    preview["body"]["sequence"] = Value::from(50);
+    assert!(validator.is_valid(&preview));
 }
 
 #[test]

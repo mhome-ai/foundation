@@ -58,8 +58,6 @@ pub enum AgentObservation {
     CompanionText {
         /// Text shown while work continues.
         content: String,
-        /// Whether a client should append rather than replace.
-        append: bool,
     },
     /// A tool attempt is starting.
     ToolStarted {

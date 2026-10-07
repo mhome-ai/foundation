@@ -163,7 +163,8 @@ pub struct AssistantPreviewEvent {
     pub thread_id: String,
     pub request_id: String,
     pub base_snapshot_version: u64,
-    pub offset: u64,
+    /// Source-owned ordering within this snapshot generation. Missing numbers are allowed.
+    pub sequence: u64,
     pub occurred_at: String,
     pub data: AssistantPreviewData,
 }
@@ -172,7 +173,6 @@ pub struct AssistantPreviewEvent {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AssistantPreviewData {
     pub text: String,
-    pub append: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -184,7 +184,8 @@ pub struct RunProgressEvent {
     pub thread_id: String,
     pub request_id: String,
     pub base_snapshot_version: u64,
-    pub offset: u64,
+    /// Source-owned ordering within this snapshot generation. Missing numbers are allowed.
+    pub sequence: u64,
     pub occurred_at: String,
     pub data: RunProgressData,
 }
@@ -213,7 +214,8 @@ pub struct RunSystemFailedEvent {
     pub thread_id: String,
     pub request_id: String,
     pub base_snapshot_version: u64,
-    pub offset: u64,
+    /// Source-owned ordering within this snapshot generation. Missing numbers are allowed.
+    pub sequence: u64,
     pub occurred_at: String,
     pub data: RunSystemFailedData,
 }
@@ -239,7 +241,8 @@ pub struct LiveEventMetadata {
     pub thread_id: String,
     pub request_id: String,
     pub base_snapshot_version: u64,
-    pub offset: u64,
+    /// Source-owned ordering within this snapshot generation. Missing numbers are allowed.
+    pub sequence: u64,
     pub occurred_at: String,
 }
 
@@ -260,7 +263,7 @@ impl LiveConversationEvent {
                     thread_id: metadata.thread_id,
                     request_id: metadata.request_id,
                     base_snapshot_version: metadata.base_snapshot_version,
-                    offset: metadata.offset,
+                    sequence: metadata.sequence,
                     occurred_at: metadata.occurred_at,
                     data,
                 })
@@ -271,7 +274,7 @@ impl LiveConversationEvent {
                 thread_id: metadata.thread_id,
                 request_id: metadata.request_id,
                 base_snapshot_version: metadata.base_snapshot_version,
-                offset: metadata.offset,
+                sequence: metadata.sequence,
                 occurred_at: metadata.occurred_at,
                 data,
             }),
@@ -282,7 +285,7 @@ impl LiveConversationEvent {
                     thread_id: metadata.thread_id,
                     request_id: metadata.request_id,
                     base_snapshot_version: metadata.base_snapshot_version,
-                    offset: metadata.offset,
+                    sequence: metadata.sequence,
                     occurred_at: metadata.occurred_at,
                     data,
                 })
@@ -314,11 +317,11 @@ impl LiveConversationEvent {
         }
     }
 
-    pub fn offset(&self) -> u64 {
+    pub fn sequence(&self) -> u64 {
         match self {
-            Self::AssistantPreview(event) => event.offset,
-            Self::RunProgress(event) => event.offset,
-            Self::RunSystemFailed(event) => event.offset,
+            Self::AssistantPreview(event) => event.sequence,
+            Self::RunProgress(event) => event.sequence,
+            Self::RunSystemFailed(event) => event.sequence,
         }
     }
 }

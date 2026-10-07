@@ -1115,8 +1115,7 @@
           "additionalProperties": false,
           "required": [
             "type",
-            "content",
-            "append"
+            "content"
           ],
           "properties": {
             "type": {
@@ -1124,9 +1123,6 @@
             },
             "content": {
               "type": "string"
-            },
-            "append": {
-              "type": "boolean"
             }
           }
         },
@@ -1237,7 +1233,8 @@
       "additionalProperties": false,
       "required": [
         "context",
-        "observation"
+        "observation",
+        "sequence"
       ],
       "properties": {
         "context": {
@@ -1245,6 +1242,10 @@
         },
         "observation": {
           "$ref": "#/$defs/agent_observation"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },

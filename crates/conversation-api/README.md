@@ -50,3 +50,23 @@ adopted by Lion and Cloud together before deployment.
 ### Strict execution envelope decoding
 
 Execution commands, events, facade responses and their typed nested objects reject undeclared fields, including null-valued unknown fields. Opaque JSON inputs/results and model continuation payloads remain extensible; known optional null fields remain accepted. Enforcement lives on the typed DTOs as well as the wire entry point because Serde's internally tagged enum buffering bypasses an outer `serde_ignored` observer. Tagged unit variants explicitly require an empty remaining map. This restores the existing wire-v1 contract without changing its message shape or major version.
+
+## Disposable execution presentation
+
+`assistant.preview`, `run.progress`, and `run.system_failed` are best-effort live
+presentation. They are not replayed by `thread/load`, which has no `live` field.
+Each event replaces its display slot completely; preview text never appends and
+is capped by the host at 8,192 Unicode characters. Clients retain at most one
+event per slot, scoped to the active request and `baseSnapshotVersion`.
+
+`sequence` is assigned by the execution owner, may contain gaps, and only rejects
+older or duplicate events in the same slot. A missing presentation event must not
+trigger history resynchronization. A new snapshot generation resets ordering;
+terminal or pending-interaction control clears presentation. Joining or reconnecting
+starts from durable history/control and future live events, with a generic running
+indicator until a new presentation arrives.
+
+Final replies, failures, cancellations, queue state, and actionable user
+confirmations remain durable. Snapshot deltas keep their existing contiguous
+version/recovery rules. Agent checkpoints and billing are independent of live
+presentation delivery.

@@ -31,9 +31,9 @@
       },
       "observation": {
         "type": "companion_text",
-        "content": "I will check that now.",
-        "append": false
-      }
+        "content": "I will check that now."
+      },
+      "sequence": 1
     }
   }
 }

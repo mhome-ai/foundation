@@ -1,4 +1,4 @@
-use crate::{ConversationQueue, LiveSnapshot, ThreadSnapshot, ThreadSummary};
+use crate::{ConversationQueue, ThreadSnapshot, ThreadSummary};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -29,7 +29,6 @@ pub struct ThreadLoadResponse {
     pub thread: ThreadSummary,
     pub session: ThreadSession,
     pub sync: ThreadSync,
-    pub live: LiveSnapshot,
     pub queue: ConversationQueue,
 }
 

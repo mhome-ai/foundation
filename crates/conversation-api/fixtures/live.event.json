@@ -7,8 +7,10 @@
     "threadId": "thread-1",
     "requestId": "request-1",
     "baseSnapshotVersion": 3,
-    "offset": 1,
     "occurredAt": "2026-08-22T00:00:00Z",
-    "data": { "text": "Working", "append": true }
+    "data": {
+      "text": "Working"
+    },
+    "sequence": 1
   }
 }
