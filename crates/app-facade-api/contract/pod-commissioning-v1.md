@@ -285,7 +285,8 @@ domain input JSON. Clients without a usable Bluetooth adapter report
 A rejected request uses the facade error envelope
 `{"error","message","details":{"reason"}}`: `error` is `BAD_REQUEST` for an
 unreadable body, `UNSUPPORTED` for an unknown target and `PRECONDITION_FAIL`
-otherwise; `details.reason` is one of the stable values below. User interfaces
+otherwise. `PRECONDITION_FAIL` errors carry `details.reason`, one of the stable
+values below. User interfaces
 map the reason (and the session `error.code` and `detail`) to their own copy and
 never show these values or `message` verbatim.
 
@@ -319,6 +320,12 @@ never show these values or `message` verbatim.
 | `/local/pod/commission/cancel` | `{"sessionId"}` | session snapshot |
 | `/local/pod/commission/renew` | `{"sessionId"}` | session snapshot |
 | `/local/pod/commission/status` | `{}` | `{"session": snapshot or null}` |
+| `/local/pod/bluetooth/settings` | `{}` | `{"opened"}` |
+
+`/local/pod/bluetooth/settings` opens the system settings that fix the
+current adapter state (enable Bluetooth or Location, or the app's permission
+page) and answers whether it did; a platform without such a page answers
+`{"opened":false}`.
 
 Discovery is shared by every MeowLink device kind: each candidate carries
 `kind` (`pod` or `host`). `/local/pod/commission/start` accepts only `pod`

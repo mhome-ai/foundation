@@ -14,6 +14,7 @@ pub const COMMISSION_AUTHORIZE_TARGET: &str = "/local/pod/commission/authorize";
 pub const COMMISSION_CANCEL_TARGET: &str = "/local/pod/commission/cancel";
 pub const COMMISSION_RENEW_TARGET: &str = "/local/pod/commission/renew";
 pub const COMMISSION_STATUS_TARGET: &str = "/local/pod/commission/status";
+pub const BLUETOOTH_SETTINGS_TARGET: &str = "/local/pod/bluetooth/settings";
 
 pub const DISCOVERY_CHANGED_EVENT: &str = "/local/pod/discovery/changed";
 pub const COMMISSION_CHANGED_EVENT: &str = "/local/pod/commission/changed";
@@ -31,6 +32,7 @@ pub const LOCAL_TARGETS: &[&str] = &[
     COMMISSION_CANCEL_TARGET,
     COMMISSION_RENEW_TARGET,
     COMMISSION_STATUS_TARGET,
+    BLUETOOTH_SETTINGS_TARGET,
 ];
 pub const EVENT_TARGETS: &[&str] = &[DISCOVERY_CHANGED_EVENT, COMMISSION_CHANGED_EVENT];
 
@@ -411,6 +413,14 @@ impl CommissionSession {
         }
         Ok(())
     }
+}
+
+/// `/local/pod/bluetooth/settings` response: whether the platform opened the
+/// settings that fix the current adapter state.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BluetoothSettingsResponse {
+    pub opened: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

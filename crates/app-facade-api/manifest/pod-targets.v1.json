@@ -14,7 +14,8 @@
     "/local/pod/commission/authorize",
     "/local/pod/commission/cancel",
     "/local/pod/commission/renew",
-    "/local/pod/commission/status"
+    "/local/pod/commission/status",
+    "/local/pod/bluetooth/settings"
   ],
   "eventTargets": [
     "/local/pod/discovery/changed",
