@@ -427,18 +427,22 @@ impl<T: Transport> ProtocommClient<T> {
                 )
                 .await?;
             ok(result.status)?;
-            if let Some(Payload::RespScanResult(result)) = result.payload {
-                entries.extend(result.entries.into_iter().map(|entry| {
-                    ScanEntry {
-                        ssid: String::from_utf8_lossy(&entry.ssid).into_owned(),
-                        rssi: entry.rssi,
-                        channel: entry.channel,
-                        auth: proto::WifiAuthMode::try_from(entry.auth)
-                            .unwrap_or(proto::WifiAuthMode::Wpa2Psk),
-                    }
-                }));
+            let Some(Payload::RespScanResult(result)) = result.payload else {
+                break;
+            };
+            if result.entries.is_empty() {
+                break;
             }
-            index += page;
+            index += result.entries.len() as u32;
+            entries.extend(result.entries.into_iter().map(|entry| {
+                ScanEntry {
+                    ssid: String::from_utf8_lossy(&entry.ssid).into_owned(),
+                    rssi: entry.rssi,
+                    channel: entry.channel,
+                    auth: proto::WifiAuthMode::try_from(entry.auth)
+                        .unwrap_or(proto::WifiAuthMode::Wpa2Psk),
+                }
+            }));
         }
         Ok(entries)
     }

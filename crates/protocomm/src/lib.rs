@@ -24,6 +24,59 @@ mod tests {
     struct Device {
         session: Mutex<SessionResponder>,
         drop_next_echo: AtomicBool,
+        networks: usize,
+        /// Host-style paging: at most this many entries per result page.
+        page_cap: Option<usize>,
+    }
+
+    impl Device {
+        fn scan(&self, plain: &[u8]) -> Vec<u8> {
+            use prost::Message;
+            use proto::wifi_scan_payload::Payload;
+            let request = proto::WiFiScanPayload::decode(plain).unwrap();
+            let (status, payload) = match request.payload {
+                Some(Payload::CmdScanStart(_)) => (
+                    proto::Status::Success,
+                    Payload::RespScanStart(proto::RespScanStart {}),
+                ),
+                Some(Payload::CmdScanStatus(_)) => (
+                    proto::Status::Success,
+                    Payload::RespScanStatus(proto::RespScanStatus {
+                        scan_finished: true,
+                        result_count: self.networks as u32,
+                    }),
+                ),
+                Some(Payload::CmdScanResult(page)) => {
+                    let (start, count) = (page.start_index as usize, page.count as usize);
+                    if self.page_cap.is_none() && start + count > self.networks {
+                        (
+                            proto::Status::InvalidArgument,
+                            Payload::RespScanResult(proto::RespScanResult::default()),
+                        )
+                    } else {
+                        let take = count.min(self.page_cap.unwrap_or(count));
+                        let entries = (start..self.networks.min(start + take))
+                            .map(|index| proto::WiFiScanResult {
+                                ssid: format!("net-{index}").into_bytes(),
+                                rssi: -40 - index as i32,
+                                ..Default::default()
+                            })
+                            .collect();
+                        (
+                            proto::Status::Success,
+                            Payload::RespScanResult(proto::RespScanResult { entries }),
+                        )
+                    }
+                }
+                _ => unreachable!(),
+            };
+            proto::WiFiScanPayload {
+                msg: 0,
+                status: status as i32,
+                payload: Some(payload),
+            }
+            .encode_to_vec()
+        }
     }
 
     #[async_trait]
@@ -46,6 +99,9 @@ mod tests {
                     }
                     Ok(response)
                 }
+                client::WIFI_SCAN_ENDPOINT => session
+                    .respond(request, |plain| self.scan(plain))
+                    .map_err(rejected),
                 _ => Err(TransportError::Rejected(format!("no endpoint {endpoint}"))),
             }
         }
@@ -56,6 +112,23 @@ mod tests {
         Device {
             session: Mutex::new(SessionResponder::new("meow", salt, verifier)),
             drop_next_echo: AtomicBool::new(false),
+            networks: 0,
+            page_cap: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn scan_results_follow_short_pages_and_strict_counts() {
+        for page_cap in [None, Some(2), Some(1)] {
+            let mut device = device("123456");
+            device.networks = 7;
+            device.page_cap = page_cap;
+            let client = ProtocommClient::new(device);
+            client.establish_sec2("meow", "123456", 1).await.unwrap();
+            let entries = client.wifi_scan().await.unwrap();
+            let ssids: Vec<String> = entries.into_iter().map(|entry| entry.ssid).collect();
+            let expected: Vec<String> = (0..7).map(|index| format!("net-{index}")).collect();
+            assert_eq!(ssids, expected, "{page_cap:?}");
         }
     }
 
