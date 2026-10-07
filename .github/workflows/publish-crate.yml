@@ -15,6 +15,8 @@ on:
       - "mhome-playground-models-v*"
       - "mhome-runtime-paths-v*"
       - "mhome-conversation-api-v*"
+      - "mhome-protocomm-v*"
+      - "mhome-ble-commission-v*"
 
 permissions:
   contents: read

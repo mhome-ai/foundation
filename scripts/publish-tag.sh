@@ -75,6 +75,16 @@ case "${tag}" in
     manifest="crates/os-permissions/Cargo.toml"
     version="${tag#mhome-os-permissions-v}"
     ;;
+  mhome-protocomm-v*)
+    package="mhome-protocomm"
+    manifest="crates/protocomm/Cargo.toml"
+    version="${tag#mhome-protocomm-v}"
+    ;;
+  mhome-ble-commission-v*)
+    package="mhome-ble-commission"
+    manifest="crates/ble-commission/Cargo.toml"
+    version="${tag#mhome-ble-commission-v}"
+    ;;
   *)
     echo "unsupported release tag: ${tag}" >&2
     exit 2
