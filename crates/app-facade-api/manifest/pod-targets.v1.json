@@ -37,6 +37,7 @@
     "appInfoLabel": "meow",
     "appCapability": "pod",
     "appInfoLocked": "locked",
+    "appInfoLockedForMs": "lockedForMs",
     "codeAttempts": 5,
     "customEndpoints": [
       "pod-info",
@@ -81,6 +82,8 @@
     "storage_failed"
   ],
   "notActivatedDetail": "not_activated",
+  "credentialRefusalReasons": ["invalid_payload", "wrong_state"],
+  "reprovisionMode": "reprovision",
   "requestErrorReasons": [
     "session_active",
     "device_gone",

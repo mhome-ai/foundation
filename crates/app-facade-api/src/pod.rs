@@ -60,6 +60,9 @@ pub const APP_CAPABILITY: &str = "pod";
 /// `proto-ver` app info flag, `true` while the device refuses handshakes after
 /// repeated wrong codes.
 pub const APP_INFO_LOCKED: &str = "locked";
+/// `proto-ver` app info field with the remaining lockout in milliseconds,
+/// present only while the device refuses handshakes.
+pub const APP_INFO_LOCKED_FOR_MS: &str = "lockedForMs";
 /// A session fails with `code_locked` after this many rejected codes.
 pub const CODE_ATTEMPTS: u32 = 5;
 
@@ -85,6 +88,10 @@ pub const ACTIVATION_ERROR_CODES: &[&str] = &[
     "auth_rejected",
     "storage_failed",
 ];
+/// `reason` of a refused `deliver` or `finish` reply.
+pub const CREDENTIAL_REFUSAL_REASONS: &[&str] = &["invalid_payload", "wrong_state"];
+/// `pod-info` `mode` inside a Wi-Fi change window.
+pub const POD_MODE_REPROVISION: &str = "reprovision";
 /// `activation_failed` detail when the commissioner lost the pod and Lion
 /// never saw the credential activate.
 pub const NOT_ACTIVATED_DETAIL: &str = "not_activated";
@@ -378,8 +385,18 @@ pub struct CommissionSession {
     pub authorization: Option<AuthorizationPrompt>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pod_id: Option<String>,
+    /// Set once the pod reports a Wi-Fi change window: the session replaces
+    /// the pod's network and issues no credential.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<SessionMode>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub error: Option<CommissionError>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum SessionMode {
+    Reprovision,
 }
 
 impl CommissionSession {
@@ -408,7 +425,11 @@ impl CommissionSession {
         if self.state == CommissionState::AwaitingAuthorization && self.authorization.is_none() {
             return Err("awaiting_authorization requires an authorization prompt");
         }
-        if self.state == CommissionState::Completed && self.pod_id.is_none() {
+        if self.mode == Some(SessionMode::Reprovision) {
+            if self.authorization.is_some() || self.pod_id.is_some() {
+                return Err("reprovision sessions issue no credential");
+            }
+        } else if self.state == CommissionState::Completed && self.pod_id.is_none() {
             return Err("completed sessions carry the issued podId");
         }
         Ok(())
@@ -510,6 +531,15 @@ pub struct PodInfo {
     pub wifi_configured: bool,
     #[serde(default)]
     pub state: String,
+    /// `reprovision` inside a Wi-Fi change window; absent otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<String>,
+}
+
+impl PodInfo {
+    pub fn reprovision(&self) -> bool {
+        self.mode.as_deref() == Some(POD_MODE_REPROVISION)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

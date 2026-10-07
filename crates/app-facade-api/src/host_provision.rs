@@ -28,7 +28,11 @@ pub const EVENT_TARGETS: &[&str] = &[PROVISION_CHANGED_EVENT];
 
 /// App info capability in the Host's `proto-ver` response.
 pub const APP_CAPABILITY: &str = "host";
-pub use crate::pod::{APP_INFO_LABEL, APP_INFO_LOCKED};
+pub use crate::pod::{APP_INFO_LABEL, APP_INFO_LOCKED, APP_INFO_LOCKED_FOR_MS};
+/// Largest request and encrypted response value; scan results are paged to fit.
+pub const MAX_ATTRIBUTE_BYTES: usize = 512;
+/// The Host answers `prov-scan` start within this long.
+pub const SCAN_TIMEOUT_MS: i64 = 12_000;
 pub const HOST_INFO_ENDPOINT: &str = "host-info";
 pub const HOST_ENDPOINT_UUIDS: &[(&str, u16)] = &[(HOST_INFO_ENDPOINT, 0xFF54)];
 /// The Host keeps BLE open this long after a successful join without `finish`.

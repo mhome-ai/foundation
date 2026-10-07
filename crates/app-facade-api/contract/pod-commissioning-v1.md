@@ -73,10 +73,15 @@ custom endpoints in table order from `0xFF54` (`pod-info` `0xFF54`,
   patch versions 0 and 1 only. A lost or failed exchange leaves the two counters
   unknown, so the commissioner abandons the secure session after any transport or
   decryption failure. A new `SessionCmd0` restarts the handshake on the same link.
-- While a device refuses handshakes after repeated wrong codes it reports
-  `"locked":true` in its `proto-ver` app info and clears the commissionable
-  advertising flag. The commissioner then fails the session with `code_locked`,
-  and does the same after the fifth rejected code in one session.
+- While a device refuses handshakes after repeated wrong codes it clears the
+  commissionable advertising flag and reports the lockout in its `proto-ver`
+  app info, as `"lockedForMs":<remaining ms>` (Hosts) or `"locked":true`. A
+  handshake while locked is refused the same way as a wrong code (an ATT error
+  such as Insufficient Authorization), so after every rejected handshake the
+  commissioner reads `proto-ver` again and fails the session with `code_locked`
+  when either field is present. A pod session also fails with `code_locked` after
+  the fifth rejected code. ESP pods restart with a new code after 5 failed
+  handshakes instead of reporting a lockout.
 - One BLE connection at a time; a second central receives a disconnect.
 - Session deadline: 10 minutes from connect, or 2 minutes waiting for a
   handshake. On expiry the pod discards all unpersisted state.
@@ -110,13 +115,17 @@ Custom endpoint bodies are UTF-8 JSON, at most 480 bytes in each direction.
 
 `platform` is diagnostic only. `wifiConfigured` is true when the pod kept a
 working network across logout; the commissioner then skips the Wi-Fi steps after
-confirming connectivity with `prov-config` status.
+confirming connectivity with `prov-config` status. Inside a Wi-Fi change window
+the response also carries `"mode":"reprovision"` and `wifiConfigured` is false
+(section 4).
 
 `pod-credential` requests:
 
 - `{"op":"deliver","podId","refreshToken","scopeId","cloudApi","cloudWs"}` →
-  `{"ok":true,"state":"activating"}`. Accepted only in `wifi_connected`;
-  otherwise `{"ok":false,"state":<current pod state>}`. `cloudApi` is
+  `{"ok":true,"state":"activating"}`. Accepted only in `wifi_connected` outside a
+  Wi-Fi change window; otherwise `{"ok":false,"state":<current pod state>,"reason"}`
+  with `reason` `invalid_payload` (a missing or malformed field, including a
+  scheme this firmware does not accept) or `wrong_state`. `cloudApi` is
   `https://…/api/v1`, `cloudWs` is a `wss://` URL. Production firmware accepts
   only these schemes; development firmware built with insecure cloud access
   enabled (ESP: `MEOW_POD_ALLOW_INSECURE_CLOUD`, default off) also accepts
@@ -126,13 +135,15 @@ confirming connectivity with `prov-config` status.
   reason `cloud_unreachable_for_device`.
 - `{"op":"status"}` → `{"state":<pod state>,"error"?:{"code","message"}}`; `error`
   is present only in `failed`.
-- `{"op":"finish"}` → `{"ok":true}`; the pod stops BLE. It also stops BLE
-  30 seconds after reaching `commissioned` without `finish`. `finish` is
+- `{"op":"finish"}` → `{"ok":true}` in `commissioned`; the pod stops BLE and
+  restarts into normal operation. In any other state it answers
+  `{"ok":false,"state":<current pod state>,"reason":"wrong_state"}`. The pod also
+  stops BLE 30 seconds after reaching `commissioned` without `finish`. `finish` is
   best-effort: the commissioner records `completed` before sending it.
 
 Activation error codes: `time_sync_failed`, `cloud_unreachable`,
-`refresh_rejected`, `auth_rejected`, `storage_failed` (the final commit
-failed).
+`refresh_rejected`, `auth_rejected`, `storage_failed` (the final commit, or in a
+Wi-Fi change window saving the new network, failed).
 
 The pod persists Wi-Fi, credential, endpoints and Space in one commit after a
 successful activation. Nothing from an abandoned attempt survives it; an
@@ -152,8 +163,16 @@ any pre-commit state ──timeout/disconnect/cancel──▶ unprovisioned
 Runtime states after commit:
 
 - `commissioned`: normal operation.
-- `reprovision_window`: Wi-Fi replacement only; the credential is kept and the
-  previous network stays persisted until the new one connects.
+- `reprovision_window`: Wi-Fi replacement only, opened from the pod's own
+  settings; the pod restarts and advertises for 10 minutes from boot with a new
+  code. The credential is kept and the previous network stays persisted until
+  the new one connects. `pod-info` reports `"mode":"reprovision"` and
+  `wifiConfigured: false`, and only the Wi-Fi endpoints and `pod-credential`
+  `status` and `finish` are accepted (`deliver` answers `wrong_state`). After
+  `prov-config` apply the pod joins the new network, saves it, and reports
+  `commissioned`, or `failed` with `storage_failed` if saving failed; it then
+  restarts on `finish`, 30 seconds later, or at the end of the window. A failed
+  join or an expired window restarts with the previous network.
 - `needs_recommission`: logout, or refresh rejected because the credential was
   revoked or the user no longer exists. Credential and local JWTs are erased,
   Wi-Fi is kept, advertising resumes with the Wi-Fi-configured flag.
@@ -165,11 +184,14 @@ Lion HTTPS response. Activation proofs require a synced clock.
 
 ## 5. Lion credential API
 
-All bodies are JSON. Errors use the standard Lion envelope. Credential failures
-are `UNAUTHORIZED` with one of these `message` values: `pod_credential_invalid`
-(unknown pod, wrong or revoked refresh token), `pod_proof_invalid`,
-`pod_proof_replayed`, `pod_activation_expired`, `pod_not_owned`. A pod treats
-`pod_credential_invalid` and `pod_activation_expired` as revocation.
+All bodies are JSON. Errors use the standard Lion envelope
+`{"error","message","details"?}`. Credential failures are `UNAUTHORIZED` with one
+of these `message` values: `pod_credential_invalid` (unknown pod, wrong or
+revoked refresh token, or an owner account that no longer exists),
+`pod_proof_invalid`, `pod_proof_replayed`, `pod_activation_expired`. A pod treats
+`pod_credential_invalid` and `pod_activation_expired` as revocation. Renaming a
+pod the caller does not own, or that does not exist, is `NOT_FOUND` with
+`pod_not_found`.
 
 ### Issue
 
@@ -188,7 +210,7 @@ are `UNAUTHORIZED` with one of these `message` values: `pod_credential_invalid`
 ```
 
 `deviceId` matches `[A-Za-z0-9._:-]{1,64}`; `model` and `name` are 1–64
-characters. Lion requires Space membership for `ScopeId`, validates the identity, and
+characters, `platform` and `firmwareVersion` at most 64, `clientId` at most 128. Lion requires Space membership for `ScopeId`, validates the identity, and
 creates a `pending` credential that must activate before `activateBefore`
 (issue time + 10 minutes). Response `{"podId","refreshToken","activateBefore"}`.
 
@@ -197,13 +219,13 @@ creates a `pending` credential that must activate before `activateBefore`
 `POST /api/v1/pod/token/refresh`, body `{"podId","refreshToken","proof"}`.
 
 `proof` is a compact ES256 JWS signed by the identity key: header `kid=keyId`;
-claims `iss` and `sub` = `podId`, `aud` = `pod-token-refresh`, `token_hash` =
-unpadded base64url SHA-256 of the UTF-8 refresh token (including `pod-`), `iat`, `exp` with
-`exp - iat ≤ 120 s`, and a unique `jti`. Lion allows 120 s clock skew and rejects
-a reused `jti` for as long as its proof could still be accepted: until the
-proof's `exp` plus the skew. That replay window is separate from, and at least
-as long as, the proof lifetime (up to 6 minutes from the earliest acceptable
-`iat`).
+claims `iss` and `sub` = `podId`, a single-valued `aud` = `pod-token-refresh`,
+`token_hash` = unpadded base64url SHA-256 of the UTF-8 refresh token (including
+`pod-`), `iat`, `exp` with `0 ≤ exp - iat ≤ 120 s`, and a unique `jti` of at most
+128 characters. Lion allows 120 s clock skew and remembers each `jti` for
+7 minutes (proof lifetime plus twice the skew, plus a minute), longer than any
+proof can be accepted; a reused `jti` in that window fails with
+`pod_proof_replayed`.
 
 The first successful refresh moves `pending` to `active` and revokes every other
 credential with the same `identity.keyId` (whichever user holds it) and the same
@@ -226,7 +248,9 @@ decide the outcome of an activation they could not observe (section 7).
 
 `POST /api/v1/pod/credential/revoke`, body `{"podId"}` with the owning user's
 `Authorization`, or `{"podId","refreshToken","proof"}` where the proof uses
-`aud` = `pod-credential-revoke` (pod logout and factory reset). Idempotent.
+`aud` = `pod-credential-revoke` (pod logout and factory reset). Idempotent:
+revoking a pod that does not exist or that the caller does not own is a no-op
+that also answers `{"ok":true}`, so the answer never reveals other users' pods.
 Response `{"ok":true}`.
 
 ### List and rename
@@ -248,11 +272,15 @@ and unexpired pending pods, each
   WebSocket). `pod-` is dispatched by prefix before any JWT parsing. Only the cloud WebSocket
   `/auth` and `/api/v1/hub/token/exchange` accept pod access tokens. Every other
   API keeps accepting user tokens only. No target allowlist applies in v1.
+- Lion checks an access token against the stored credential on every use, so a
+  revoked or superseded credential stops working before its `exp`.
 - A pod session acts as its user across all of that user's Spaces. A cloud
   WebSocket session authenticated with a pod access token remembers the `podId`
-  and the token `exp`, and Lion closes it at `exp`. Revoking a pod closes its
-  live sessions: across instances where Lion has a shared event channel,
-  otherwise on the instance handling the revoke, with `exp` bounding the rest.
+  and the token `exp`. Lion closes it with a policy-violation close whose reason
+  is `POD_TOKEN_EXPIRED` at `exp` and `POD_REVOKED` when the pod is revoked;
+  revocations reach sessions on every Lion instance through a shared event
+  channel. Either close only ends that connection; whether the pod is revoked
+  is decided by its next refresh.
 - `/api/v1/hub/token/exchange` with a pod access token returns a Hub JWT with
   `clientKind` = `pod` and `podId` claims and a 24-hour lifetime. Hub JWTs for
   user tokens are unchanged.
@@ -260,8 +288,9 @@ and unexpired pending pods, each
 ## 6. Pod runtime authentication
 
 - Cloud `/auth`: `{"token":"Bearer pod-…","devToken":null,"source":"pod","deviceId","activeScope"}`,
-  then `/focus`. Lion rejects `source=pod` without a pod token and a pod token
-  with any other source.
+  then `/focus`. Lion rejects `source=pod` without a pod token, a pod token
+  with any other source, and a `deviceId` other than the one the credential was
+  issued to.
 - The pod refreshes its access token proactively, 2 minutes before `exp`, and
   re-authenticates the cloud session with the new token. A refresh rejected
   with `pod_credential_invalid` or `pod_activation_expired` moves the pod to
@@ -348,6 +377,17 @@ and `activating`, which run to their conclusion.
 Sign-in and Spaces are checked at `start` (`not_signed_in`,
 `scope_not_offered`) and again when the authorization prompt is built.
 
+A pod inside a Wi-Fi change window (`pod-info` `"mode":"reprovision"`) gets a
+Wi-Fi-only session. From `reading_info` on, its snapshots carry
+`"mode":"reprovision"`; the commissioner always offers Wi-Fi, and after the pod
+joins it polls `pod-credential` `status` (still `joining_wifi`) until the pod
+reports `commissioned`, then records `completed` and sends `finish`. No
+authorization prompt is shown, no credential is issued and `completed` carries
+no `podId`; the pod keeps its existing credential and Space. A pod that reports
+`failed` ends the session with `wifi_failed` carrying the pod's code (for
+example `storage_failed`) in `detail`. UIs show such a session as changing the
+pod's Wi-Fi rather than adding a pod.
+
 Session states, in order: `connecting`, `awaiting_code`, `securing`,
 `reading_info`, `awaiting_wifi`, `joining_wifi`, `awaiting_authorization`,
 `issuing`, `delivering`, `activating`, `completed`; terminal `failed`,
@@ -370,7 +410,9 @@ itself; the commissioner asks `/api/v1/pod/credential/status`:
   then revoke and fail with `activation_failed`.
 - `absent`: fail with `activation_failed`.
 
-When the pod itself reports `failed`, the commissioner revokes and fails with
+A refused `deliver` fails with `delivery_failed` carrying the pod's `reason`
+(`invalid_payload` or `wrong_state`) in `detail`, and revokes. When the pod
+itself reports `failed`, the commissioner revokes and fails with
 `activation_failed` carrying the pod's code. `activation_failed` without a pod
 code carries `not_activated`. The commissioner records `completed` before
 sending `finish`. Native Clients keep a non-terminal session running while the

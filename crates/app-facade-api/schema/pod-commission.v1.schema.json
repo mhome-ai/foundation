@@ -76,6 +76,7 @@
       }
     },
     "podId": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["reprovision"] },
     "error": {
       "type": "object",
       "additionalProperties": false,
@@ -132,8 +133,12 @@
       "then": { "required": ["authorization"] }
     },
     {
-      "if": { "properties": { "state": { "const": "completed" } } },
+      "if": { "properties": { "state": { "const": "completed" } }, "not": { "required": ["mode"] } },
       "then": { "required": ["podId"] }
+    },
+    {
+      "if": { "required": ["mode"] },
+      "then": { "not": { "anyOf": [{ "required": ["podId"] }, { "required": ["authorization"] }] } }
     }
   ]
 }

@@ -1,12 +1,13 @@
 use app_facade_api::pod::{
     CommissionSession, CommissionState, CredentialStatus, CredentialStatusResponse, DeviceKind,
     DiscoverySnapshot, RequestErrorReason, ACTIVATION_ERROR_CODES, ACTIVATION_GRACE_MS,
-    APP_CAPABILITY, APP_INFO_LABEL, APP_INFO_LOCKED, BLE_COMPANY_ID, BLE_SERVICE_UUID,
-    CANDIDATE_TTL_MS, CODE_ATTEMPTS, CREDENTIAL_ISSUE_PATH, CREDENTIAL_REVOKE_PATH,
-    CREDENTIAL_STATUS_PATH, CREDENTIAL_STATUS_POLL_MS, CUSTOM_ENDPOINT_MAX_BYTES,
-    DISCOVERY_EVENT_INTERVAL_MS, DISCOVERY_LEASE_MS, EVENT_TARGETS, LOCAL_TARGETS,
-    NOT_ACTIVATED_DETAIL, POD_ENDPOINT_UUIDS, SECURITY_VERSION, SESSION_LEASE_MS,
-    SESSION_LIFETIME_MS, SESSION_RENEW_INTERVAL_MS, SRP_USERNAME, STANDARD_ENDPOINT_UUIDS,
+    APP_CAPABILITY, APP_INFO_LABEL, APP_INFO_LOCKED, APP_INFO_LOCKED_FOR_MS, BLE_COMPANY_ID,
+    BLE_SERVICE_UUID, CANDIDATE_TTL_MS, CODE_ATTEMPTS, CREDENTIAL_ISSUE_PATH,
+    CREDENTIAL_REFUSAL_REASONS, CREDENTIAL_REVOKE_PATH, CREDENTIAL_STATUS_PATH,
+    CREDENTIAL_STATUS_POLL_MS, CUSTOM_ENDPOINT_MAX_BYTES, DISCOVERY_EVENT_INTERVAL_MS,
+    DISCOVERY_LEASE_MS, EVENT_TARGETS, LOCAL_TARGETS, NOT_ACTIVATED_DETAIL, POD_ENDPOINT_UUIDS,
+    POD_MODE_REPROVISION, SECURITY_VERSION, SESSION_LEASE_MS, SESSION_LIFETIME_MS,
+    SESSION_RENEW_INTERVAL_MS, SRP_USERNAME, STANDARD_ENDPOINT_UUIDS,
 };
 use serde_json::Value;
 
@@ -42,6 +43,7 @@ fn manifest_matches_the_rust_contract() {
     assert_eq!(ble["appInfoLabel"], APP_INFO_LABEL);
     assert_eq!(ble["appCapability"], APP_CAPABILITY);
     assert_eq!(ble["appInfoLocked"], APP_INFO_LOCKED);
+    assert_eq!(ble["appInfoLockedForMs"], APP_INFO_LOCKED_FOR_MS);
     assert_eq!(ble["codeAttempts"], CODE_ATTEMPTS);
     assert_eq!(manifest["discovery"]["leaseMs"], DISCOVERY_LEASE_MS);
     assert_eq!(manifest["discovery"]["candidateTtlMs"], CANDIDATE_TTL_MS);
@@ -64,6 +66,11 @@ fn manifest_matches_the_rust_contract() {
     );
     assert_eq!(manifest["notActivatedDetail"], NOT_ACTIVATED_DETAIL);
     assert_eq!(
+        strings(&manifest["credentialRefusalReasons"]),
+        CREDENTIAL_REFUSAL_REASONS
+    );
+    assert_eq!(manifest["reprovisionMode"], POD_MODE_REPROVISION);
+    assert_eq!(
         strings(&manifest["requestErrorReasons"]),
         RequestErrorReason::ALL
             .iter()
@@ -78,7 +85,11 @@ fn manifest_matches_the_rust_contract() {
     for reason in RequestErrorReason::ALL {
         assert!(contract.contains(reason.as_str()), "{reason:?}");
     }
-    for code in ACTIVATION_ERROR_CODES {
+    for code in ACTIVATION_ERROR_CODES
+        .iter()
+        .chain(CREDENTIAL_REFUSAL_REASONS)
+        .chain([&APP_INFO_LOCKED_FOR_MS, &POD_MODE_REPROVISION])
+    {
         assert!(contract.contains(code), "{code}");
     }
     assert!(contract.contains(CREDENTIAL_STATUS_PATH));
@@ -144,6 +155,10 @@ fn fixtures_match_types_and_schemas() {
             include_str!("../fixtures/pod-commission.failed.json"),
             CommissionState::Failed,
         ),
+        (
+            include_str!("../fixtures/pod-commission.reprovision-completed.json"),
+            CommissionState::Completed,
+        ),
     ] {
         let raw: Value = serde_json::from_str(fixture).unwrap();
         assert!(commission.is_valid(&raw), "{raw}");
@@ -174,4 +189,23 @@ fn fixtures_match_types_and_schemas() {
         let session: CommissionSession = serde_json::from_value(retry).unwrap();
         assert_eq!(session.validate().is_ok(), valid, "{state} {code}");
     }
+
+    let reprovisioned: Value = serde_json::from_str(include_str!(
+        "../fixtures/pod-commission.reprovision-completed.json"
+    ))
+    .unwrap();
+    let mut plain = reprovisioned.clone();
+    plain.as_object_mut().unwrap().remove("mode");
+    assert!(!commission.is_valid(&plain));
+    assert!(serde_json::from_value::<CommissionSession>(plain)
+        .unwrap()
+        .validate()
+        .is_err());
+    let mut issued = reprovisioned;
+    issued["podId"] = Value::from("pod-1");
+    assert!(!commission.is_valid(&issued));
+    assert!(serde_json::from_value::<CommissionSession>(issued)
+        .unwrap()
+        .validate()
+        .is_err());
 }

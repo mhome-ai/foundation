@@ -36,11 +36,18 @@ Hosts that support BLE provisioning have a display or a local console.
 - Lockout: each rotation caused by 5 failed handshakes is followed by 30 seconds
   in which the Host refuses every handshake, doubling for each consecutive such
   rotation up to 10 minutes; a successful handshake resets the backoff. While
-  locked the Host advertises with the commissionable flag cleared and reports
-  `"locked":true` in its `proto-ver` app info. A commissioner that sees the flag
-  (or a refused handshake with that flag) fails the session with `code_locked`.
-- One BLE connection at a time. A session ends 10 minutes after connect, or
-  2 minutes after connect without a handshake.
+  locked the Host advertises with the commissionable flag cleared, its
+  `proto-ver` app info is `"meow":{"ver":"1","cap":["host"],"lockedForMs":N}`
+  with the remaining lockout, and every handshake is refused with ATT
+  Insufficient Authorization, like a wrong code. The commissioner reads
+  `proto-ver` after each refused handshake and fails the session with
+  `code_locked` when `lockedForMs` is present. The Host's local status reports
+  the lockout end as `lockedUntilMs`.
+- One BLE connection at a time: a second central is disconnected, and only the
+  central that owns the setup session may write. Request and response buffers
+  are kept per central.
+- A session ends 10 minutes after connect, or 2 minutes after connect without
+  a handshake.
 
 ## 3. Endpoints
 
@@ -74,12 +81,25 @@ Fallback characteristic UUIDs: the standard endpoints as for pods, `host-info`
 
   `productId` is optional.
 - `{"op":"finish"}` → `{"ok":true,"claimToken":"…"}`. After a successful join
-  the response carries the claim token: 32 random bytes as 43 unpadded base64url
-  characters, generated once per successful provisioning. The Host then closes
+  during first provisioning the response carries the claim token: 32 random
+  bytes as 43 unpadded base64url characters. It is created when the join
+  succeeds, the same token is returned by every `finish` until the Host closes
+  BLE, and it is absent when no join succeeded and in a re-provision window
+  (the Host already has an owner). The Host then closes
   BLE and continues its lifecycle (starts managed services, announces itself
   over mDNS). Without `finish` the Host closes BLE 30 seconds after a successful
   join, or when the central disconnects; the commissioner retries `finish`
   within that window.
+
+Every request and every encrypted response is at most 512 bytes; the response
+is read with offset reads. `prov-scan` start blocks while the Host scans and
+answers within 12 seconds, so commissioners give that exchange a longer timeout
+(the shared core uses 30 seconds). Scan result requests return as many of the
+requested entries as fit one encrypted 512-byte value, possibly fewer than
+`count`; commissioners advance `start_index` by the number of entries returned
+and stop at `result_count` or on an empty page. This also works with ESP-IDF
+devices, which return exactly the requested entries (commissioners ask for at
+most 4 at a time).
 
 `prov-config` status reports `connected` with the IPv4 address once the Host is
 on the LAN (the address may be empty when the Host has none yet); `connection_failed` with `auth_error` or `network_not_found` when
@@ -114,13 +134,18 @@ Session states, in order: `connecting`, `awaiting_code`, `securing`,
 `reading_info`, `awaiting_wifi`, `joining_wifi`, `completed`; terminal `failed`,
 `cancelled`, `timed_out`. `completed` carries `host`, the reported `addresses`
 (IPv4 only, possibly empty) and `claimToken` from the `finish` response; the
-commissioner sends `finish` before reporting it. `claimToken` is absent only
-when `finish` could not be delivered. No other state carries `claimToken`.
+commissioner sends `finish` (up to 3 times while the secure session lasts)
+before reporting it. `claimToken` is absent when `finish` could not be
+delivered, in a re-provision window, and with Hosts that predate claim tokens.
+No other state carries `claimToken`.
 
 The first claim (TOFU) of a Host that was provisioned over BLE must present this
-token: `/app/system/hosts/claim` takes `{"hostId","claimToken"}` and the native
-`host.claim` passes it through. The Host refuses that first claim without the
-matching token. The token stays valid until a claim succeeds or the Host is
+token: `/app/system/hosts/claim` takes `{"hostId","claimToken"?}` and the native
+`host.claim` passes it through to the Host's offline claim, `POST /v1/auth/claim`
+`{"proof","claimToken"?}` (`core-api` `host::auth::ClaimRequest`). Clients send
+`claimToken` only when they have one, because older Hosts reject unknown fields.
+While a token is outstanding the Host answers a claim without it, or with a
+different one, with 403 `{"code":"HOST_CLAIM_TOKEN_REQUIRED"}`. The token stays valid until a claim succeeds or the Host is
 factory reset; the UI claims automatically with it after `completed`. Hosts
 that were never provisioned over BLE keep the plain first claim.
 

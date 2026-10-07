@@ -1,0 +1,24 @@
+{
+  "sessionId": "pcs-81d0",
+  "revision": 10,
+  "state": "completed",
+  "candidate": {
+    "candidateId": "ble:1A2B3C4D",
+    "kind": "pod",
+    "name": "MeowPod S1",
+    "model": "S1",
+    "shortId": "1A2B3C4D",
+    "rssi": -55,
+    "commissionable": true,
+    "wifiConfigured": false,
+    "lastSeenMs": 1791300000000
+  },
+  "expiresAtMs": 1791300600000,
+  "device": {
+    "deviceId": "a0b1c2d3e4f5",
+    "model": "S1",
+    "firmwareVersion": "0.3.0",
+    "wifiConfigured": false
+  },
+  "mode": "reprovision"
+}

@@ -21,6 +21,9 @@
     "appInfoLabel": "meow",
     "appCapability": "host",
     "appInfoLocked": "locked",
+    "appInfoLockedForMs": "lockedForMs",
+    "maxAttributeBytes": 512,
+    "scanTimeoutMs": 12000,
     "customEndpoints": [
       "host-info"
     ],

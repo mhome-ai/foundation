@@ -1,7 +1,7 @@
 use app_facade_api::host_provision::{
     HostFinishResponse, ProvisionSession, ProvisionState, APP_CAPABILITY, APP_INFO_LABEL,
-    APP_INFO_LOCKED, CLAIM_TOKEN_LEN, CODE_LOCKOUT_MAX_MS, CODE_LOCKOUT_MS, EVENT_TARGETS,
-    HOST_ENDPOINT_UUIDS, LOCAL_TARGETS,
+    APP_INFO_LOCKED, APP_INFO_LOCKED_FOR_MS, CLAIM_TOKEN_LEN, CODE_LOCKOUT_MAX_MS, CODE_LOCKOUT_MS,
+    EVENT_TARGETS, HOST_ENDPOINT_UUIDS, LOCAL_TARGETS, MAX_ATTRIBUTE_BYTES, SCAN_TIMEOUT_MS,
 };
 use app_facade_api::pod::{DeviceKind, BLE_KIND_HOST};
 use serde_json::Value;
@@ -33,6 +33,12 @@ fn manifest_matches_the_rust_contract() {
     assert_eq!(manifest["ble"]["appInfoLabel"], APP_INFO_LABEL);
     assert_eq!(manifest["ble"]["appCapability"], APP_CAPABILITY);
     assert_eq!(manifest["ble"]["appInfoLocked"], APP_INFO_LOCKED);
+    assert_eq!(
+        manifest["ble"]["appInfoLockedForMs"],
+        APP_INFO_LOCKED_FOR_MS
+    );
+    assert_eq!(manifest["ble"]["maxAttributeBytes"], MAX_ATTRIBUTE_BYTES);
+    assert_eq!(manifest["ble"]["scanTimeoutMs"], SCAN_TIMEOUT_MS);
     assert_eq!(manifest["codeLockout"]["initialMs"], CODE_LOCKOUT_MS);
     assert_eq!(manifest["codeLockout"]["maxMs"], CODE_LOCKOUT_MAX_MS);
     assert_eq!(manifest["claimTokenLength"], CLAIM_TOKEN_LEN);
