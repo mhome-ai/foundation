@@ -8,15 +8,29 @@
     "/local/host/provision/wifi",
     "/local/host/provision/wifi/scan",
     "/local/host/provision/cancel",
+    "/local/host/provision/renew",
     "/local/host/provision/status"
   ],
-  "eventTargets": ["/local/host/provision/changed"],
+  "eventTargets": [
+    "/local/host/provision/changed"
+  ],
   "localPayload": "domainInput",
   "localForwardable": false,
   "ble": {
     "kind": 2,
+    "appInfoLabel": "meow",
     "appCapability": "host",
-    "customEndpoints": ["host-info"],
-    "customEndpointUuids": { "host-info": 65364 }
-  }
+    "appInfoLocked": "locked",
+    "customEndpoints": [
+      "host-info"
+    ],
+    "customEndpointUuids": {
+      "host-info": 65364
+    }
+  },
+  "codeLockout": {
+    "initialMs": 30000,
+    "maxMs": 600000
+  },
+  "claimTokenLength": 43
 }

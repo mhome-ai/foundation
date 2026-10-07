@@ -21,5 +21,6 @@
     "fingerprint": "5e6f7a8b0c1d2e3f405162738495a6b7c8d9eaf0123456789abcdef012345678",
     "wifiConfigured": false
   },
-  "addresses": ["192.168.1.42"]
+  "addresses": ["192.168.1.42"],
+  "claimToken": "q3hX0v2c1mJb9yQe7tL4nK8sP5wR6uA0zD1fG2hI3jM"
 }

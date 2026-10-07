@@ -13,6 +13,7 @@
     "/local/pod/commission/wifi/scan",
     "/local/pod/commission/authorize",
     "/local/pod/commission/cancel",
+    "/local/pod/commission/renew",
     "/local/pod/commission/status"
   ],
   "eventTargets": [
@@ -26,9 +27,20 @@
     "companyId": 65535,
     "manufacturerMagic": "MW",
     "advertisingVersion": 1,
-    "kinds": { "pod": 1, "host": 2 },
+    "kinds": {
+      "pod": 1,
+      "host": 2
+    },
     "srpUsername": "meow",
-    "customEndpoints": ["pod-info", "pod-credential"],
+    "securityVersion": 2,
+    "appInfoLabel": "meow",
+    "appCapability": "pod",
+    "appInfoLocked": "locked",
+    "codeAttempts": 5,
+    "customEndpoints": [
+      "pod-info",
+      "pod-credential"
+    ],
     "standardEndpointUuids": {
       "prov-ctrl": 65359,
       "prov-scan": 65360,
@@ -36,7 +48,51 @@
       "prov-config": 65362,
       "proto-ver": 65363
     },
-    "customEndpointUuids": { "pod-info": 65364, "pod-credential": 65365 },
+    "customEndpointUuids": {
+      "pod-info": 65364,
+      "pod-credential": 65365
+    },
     "customEndpointMaxBytes": 480
-  }
+  },
+  "discovery": {
+    "leaseMs": 30000,
+    "candidateTtlMs": 10000,
+    "eventIntervalMs": 1000
+  },
+  "session": {
+    "lifetimeMs": 600000,
+    "leaseMs": 30000,
+    "renewIntervalMs": 10000,
+    "activationGraceMs": 30000,
+    "credentialStatusPollMs": 5000
+  },
+  "cloud": {
+    "issue": "pod/credential/issue",
+    "status": "pod/credential/status",
+    "revoke": "pod/credential/revoke",
+    "statusSchema": "schema/pod-credential-status.v1.schema.json"
+  },
+  "activationErrorCodes": [
+    "time_sync_failed",
+    "cloud_unreachable",
+    "refresh_rejected",
+    "auth_rejected",
+    "storage_failed"
+  ],
+  "notActivatedDetail": "not_activated",
+  "requestErrorReasons": [
+    "session_active",
+    "device_gone",
+    "not_commissionable",
+    "wrong_kind",
+    "unknown_session",
+    "wrong_state",
+    "invalid_code",
+    "invalid_wifi",
+    "bluetooth_unavailable",
+    "not_signed_in",
+    "scope_not_offered",
+    "cloud_unreachable_for_device",
+    "busy"
+  ]
 }

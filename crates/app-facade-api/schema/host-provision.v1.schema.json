@@ -50,7 +50,16 @@
         }
       }
     },
-    "addresses": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "addresses": {
+      "description": "IPv4 LAN addresses reported by the Host; may be empty",
+      "type": "array",
+      "items": { "type": "string", "format": "ipv4" }
+    },
+    "claimToken": {
+      "description": "One-time token for the first claim of this Host",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    },
     "error": {
       "type": "object",
       "additionalProperties": false,
@@ -105,7 +114,8 @@
     },
     {
       "if": { "properties": { "state": { "const": "completed" } } },
-      "then": { "required": ["host"] }
+      "then": { "required": ["host"] },
+      "else": { "not": { "required": ["claimToken"] } }
     }
   ]
 }

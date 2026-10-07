@@ -143,6 +143,9 @@ pub struct HostsRuntime {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostsClaimRequest {
     pub host_id: String,
+    /// Required for the first claim of a Host provisioned over BLE.
+    #[serde(default)]
+    pub claim_token: Option<String>,
 }
 /// Hub-vantage first-claim of an unused LAN Host for the current Space member.
 #[derive(Debug, Serialize, Deserialize)]

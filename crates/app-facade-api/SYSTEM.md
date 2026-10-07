@@ -22,7 +22,8 @@
   One-click uses empty ACL; cloud refusal is an error after the click, not a
   separate UI state.
 - Inventory takes empty input. Runtime takes the native Host management request
-  (`hostId` plus `action`). Claim takes `{ hostId }`. All require Space
+  (`hostId` plus `action`). Claim takes `{ hostId, claimToken? }`; the first claim of a Host provisioned
+  over BLE needs the `claimToken` from that provisioning session. All require Space
   membership and run on the Space Hub with cloud relay permitted. They are only
   available for a local Space with a connected Hub. Host discovery does not
   filter Space instances.

@@ -12,6 +12,7 @@ pub const COMMISSION_WIFI_TARGET: &str = "/local/pod/commission/wifi";
 pub const COMMISSION_WIFI_SCAN_TARGET: &str = "/local/pod/commission/wifi/scan";
 pub const COMMISSION_AUTHORIZE_TARGET: &str = "/local/pod/commission/authorize";
 pub const COMMISSION_CANCEL_TARGET: &str = "/local/pod/commission/cancel";
+pub const COMMISSION_RENEW_TARGET: &str = "/local/pod/commission/renew";
 pub const COMMISSION_STATUS_TARGET: &str = "/local/pod/commission/status";
 
 pub const DISCOVERY_CHANGED_EVENT: &str = "/local/pod/discovery/changed";
@@ -28,6 +29,7 @@ pub const LOCAL_TARGETS: &[&str] = &[
     COMMISSION_WIFI_SCAN_TARGET,
     COMMISSION_AUTHORIZE_TARGET,
     COMMISSION_CANCEL_TARGET,
+    COMMISSION_RENEW_TARGET,
     COMMISSION_STATUS_TARGET,
 ];
 pub const EVENT_TARGETS: &[&str] = &[DISCOVERY_CHANGED_EVENT, COMMISSION_CHANGED_EVENT];
@@ -45,8 +47,45 @@ pub const BLE_FLAG_WIFI_CONFIGURED: u8 = 0x02;
 
 pub const DISCOVERY_LEASE_MS: i64 = 30_000;
 pub const CANDIDATE_TTL_MS: i64 = 10_000;
+/// Discovery change events are published at most this often.
+pub const DISCOVERY_EVENT_INTERVAL_MS: i64 = 1_000;
 pub const CUSTOM_ENDPOINT_MAX_BYTES: usize = 480;
+pub const SECURITY_VERSION: u64 = 2;
 pub const SRP_USERNAME: &str = "meow";
+/// App info label and capability in the pod's `proto-ver` response.
+pub const APP_INFO_LABEL: &str = "meow";
+pub const APP_CAPABILITY: &str = "pod";
+/// `proto-ver` app info flag, `true` while the device refuses handshakes after
+/// repeated wrong codes.
+pub const APP_INFO_LOCKED: &str = "locked";
+/// A session fails with `code_locked` after this many rejected codes.
+pub const CODE_ATTEMPTS: u32 = 5;
+
+/// Session deadline before credential delivery starts.
+pub const SESSION_LIFETIME_MS: i64 = 600_000;
+/// Owner lease of a pod or Host session, renewed through the `renew` target.
+pub const SESSION_LEASE_MS: i64 = 30_000;
+pub const SESSION_RENEW_INTERVAL_MS: i64 = 10_000;
+/// After `activateBefore` the commissioner waits this long before giving up.
+pub const ACTIVATION_GRACE_MS: i64 = 30_000;
+pub const CREDENTIAL_STATUS_POLL_MS: i64 = 5_000;
+
+/// Lion paths, relative to `cloudApi` (`https://…/api/v1`).
+pub const CREDENTIAL_ISSUE_PATH: &str = "pod/credential/issue";
+pub const CREDENTIAL_STATUS_PATH: &str = "pod/credential/status";
+pub const CREDENTIAL_REVOKE_PATH: &str = "pod/credential/revoke";
+
+/// Activation error codes a pod reports in `failed`.
+pub const ACTIVATION_ERROR_CODES: &[&str] = &[
+    "time_sync_failed",
+    "cloud_unreachable",
+    "refresh_rejected",
+    "auth_rejected",
+    "storage_failed",
+];
+/// `activation_failed` detail when the commissioner lost the pod and Lion
+/// never saw the credential activate.
+pub const NOT_ACTIVATED_DETAIL: &str = "not_activated";
 pub const POD_INFO_ENDPOINT: &str = "pod-info";
 pub const POD_CREDENTIAL_ENDPOINT: &str = "pod-credential";
 /// Characteristic UUIDs used when a device exposes no `0x2901` descriptor: the
@@ -380,6 +419,138 @@ pub struct CommissionStatus {
     pub session: Option<CommissionSession>,
 }
 
+/// Stable cause of a rejected `/local/pod/*` or `/local/host/provision/*`
+/// request, carried as `details.reason` of the error envelope.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(rename_all = "snake_case")]
+pub enum RequestErrorReason {
+    SessionActive,
+    DeviceGone,
+    NotCommissionable,
+    WrongKind,
+    UnknownSession,
+    WrongState,
+    InvalidCode,
+    InvalidWifi,
+    BluetoothUnavailable,
+    NotSignedIn,
+    ScopeNotOffered,
+    CloudUnreachableForDevice,
+    Busy,
+}
+
+impl RequestErrorReason {
+    pub const ALL: &'static [Self] = &[
+        Self::SessionActive,
+        Self::DeviceGone,
+        Self::NotCommissionable,
+        Self::WrongKind,
+        Self::UnknownSession,
+        Self::WrongState,
+        Self::InvalidCode,
+        Self::InvalidWifi,
+        Self::BluetoothUnavailable,
+        Self::NotSignedIn,
+        Self::ScopeNotOffered,
+        Self::CloudUnreachableForDevice,
+        Self::Busy,
+    ];
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::SessionActive => "session_active",
+            Self::DeviceGone => "device_gone",
+            Self::NotCommissionable => "not_commissionable",
+            Self::WrongKind => "wrong_kind",
+            Self::UnknownSession => "unknown_session",
+            Self::WrongState => "wrong_state",
+            Self::InvalidCode => "invalid_code",
+            Self::InvalidWifi => "invalid_wifi",
+            Self::BluetoothUnavailable => "bluetooth_unavailable",
+            Self::NotSignedIn => "not_signed_in",
+            Self::ScopeNotOffered => "scope_not_offered",
+            Self::CloudUnreachableForDevice => "cloud_unreachable_for_device",
+            Self::Busy => "busy",
+        }
+    }
+}
+
+/// The pod's identity as reported by `pod-info` and sent to Lion on issue.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PodIdentity {
+    pub key_id: String,
+    pub alg: String,
+    pub x: String,
+    pub y: String,
+    pub fingerprint: String,
+}
+
+/// `pod-info` response.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PodInfo {
+    pub protocol: u32,
+    pub device_id: String,
+    pub model: String,
+    #[serde(default)]
+    pub platform: String,
+    pub firmware_version: String,
+    pub identity: PodIdentity,
+    pub wifi_configured: bool,
+    #[serde(default)]
+    pub state: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CredentialIssueRequest {
+    pub device_id: String,
+    pub model: String,
+    pub platform: String,
+    pub firmware_version: String,
+    pub name: String,
+    pub identity: PodIdentity,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub client_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CredentialIssueResponse {
+    pub pod_id: String,
+    pub refresh_token: String,
+    /// Epoch milliseconds.
+    pub activate_before: i64,
+}
+
+/// Body of the owner's `credential/revoke` and `credential/status` calls.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CredentialPodRequest {
+    pub pod_id: String,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum CredentialStatus {
+    Pending,
+    Active,
+    /// No such credential for this user: never issued, revoked, expired while
+    /// pending, or owned by someone else.
+    Absent,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CredentialStatusResponse {
+    pub pod_id: String,
+    pub status: CredentialStatus,
+    /// Epoch milliseconds, present when `active`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub activated_at: Option<i64>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -400,5 +571,15 @@ mod tests {
         other[2] = 2;
         assert_eq!(BleAdvertisement::decode(&other), None);
         assert_eq!(BleAdvertisement::decode(&bytes[..8]), None);
+    }
+
+    #[test]
+    fn request_reasons_serialize_as_their_names() {
+        for reason in RequestErrorReason::ALL {
+            assert_eq!(
+                serde_json::to_value(reason).unwrap(),
+                serde_json::Value::from(reason.as_str())
+            );
+        }
     }
 }

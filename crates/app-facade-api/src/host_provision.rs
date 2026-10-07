@@ -10,6 +10,7 @@ pub const PROVISION_CODE_TARGET: &str = "/local/host/provision/code";
 pub const PROVISION_WIFI_TARGET: &str = "/local/host/provision/wifi";
 pub const PROVISION_WIFI_SCAN_TARGET: &str = "/local/host/provision/wifi/scan";
 pub const PROVISION_CANCEL_TARGET: &str = "/local/host/provision/cancel";
+pub const PROVISION_RENEW_TARGET: &str = "/local/host/provision/renew";
 pub const PROVISION_STATUS_TARGET: &str = "/local/host/provision/status";
 
 pub const PROVISION_CHANGED_EVENT: &str = "/local/host/provision/changed";
@@ -20,17 +21,31 @@ pub const LOCAL_TARGETS: &[&str] = &[
     PROVISION_WIFI_TARGET,
     PROVISION_WIFI_SCAN_TARGET,
     PROVISION_CANCEL_TARGET,
+    PROVISION_RENEW_TARGET,
     PROVISION_STATUS_TARGET,
 ];
 pub const EVENT_TARGETS: &[&str] = &[PROVISION_CHANGED_EVENT];
 
-/// App info label and capability in the Host's `proto-ver` response.
-pub const APP_INFO_LABEL: &str = "meow";
+/// App info capability in the Host's `proto-ver` response.
 pub const APP_CAPABILITY: &str = "host";
+pub use crate::pod::{APP_INFO_LABEL, APP_INFO_LOCKED};
 pub const HOST_INFO_ENDPOINT: &str = "host-info";
 pub const HOST_ENDPOINT_UUIDS: &[(&str, u16)] = &[(HOST_INFO_ENDPOINT, 0xFF54)];
 /// The Host keeps BLE open this long after a successful join without `finish`.
 pub const FINISH_GRACE_MS: i64 = 30_000;
+/// Handshakes are refused this long after each code rotation caused by failed
+/// handshakes, doubling per consecutive rotation up to `CODE_LOCKOUT_MAX_MS`.
+pub const CODE_LOCKOUT_MS: i64 = 30_000;
+pub const CODE_LOCKOUT_MAX_MS: i64 = 600_000;
+/// Unpadded base64url of 32 random bytes.
+pub const CLAIM_TOKEN_LEN: usize = 43;
+
+pub fn is_claim_token(token: &str) -> bool {
+    token.len() == CLAIM_TOKEN_LEN
+        && token
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_')
+}
 
 /// Requests reuse the pod request shapes: start takes `candidateId`, code takes
 /// `sessionId` and `code`, Wi-Fi takes `sessionId`, `ssid` and `password`, the
@@ -89,9 +104,12 @@ pub struct ProvisionSession {
     pub host: Option<HostDeviceInfo>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub networks: Vec<WifiNetwork>,
-    /// LAN addresses reported by the Host once it joined.
+    /// IPv4 LAN addresses reported by the Host once it joined; may be empty.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub addresses: Vec<String>,
+    /// One-time token for the first claim of this Host, from `finish`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub claim_token: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub error: Option<CommissionError>,
 }
@@ -132,6 +150,15 @@ impl ProvisionSession {
         if self.state == ProvisionState::Completed && self.host.is_none() {
             return Err("completed sessions carry the Host information");
         }
+        match self.claim_token.as_deref() {
+            Some(_) if self.state != ProvisionState::Completed => {
+                return Err("only completed sessions carry a claim token");
+            }
+            Some(token) if !is_claim_token(token) => {
+                return Err("claim tokens are 43 base64url characters");
+            }
+            _ => {}
+        }
         Ok(())
     }
 }
@@ -140,4 +167,14 @@ impl ProvisionSession {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ProvisionStatus {
     pub session: Option<ProvisionSession>,
+}
+
+/// `host-info` `{"op":"finish"}` response. `claimToken` is present after a
+/// successful join.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct HostFinishResponse {
+    pub ok: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub claim_token: Option<String>,
 }

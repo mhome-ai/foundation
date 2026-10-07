@@ -41,13 +41,17 @@ Facade.
 
 `pod` (1.34.0) defines native-Client pod discovery and commissioning
 (`/local/pod/*`), the shared BLE advertising format and the pod credential
-protocol with Lion. See [the contract](contract/pod-commissioning-v1.md).
-Targets and BLE constants are in `manifest/pod-targets.v1.json`; snapshots use
-`schema/pod-discovery.v1.schema.json` and `schema/pod-commission.v1.schema.json`.
+protocol with Lion. Sessions are owned through a renewed lease, and rejected
+requests carry a stable `details.reason`. See
+[the contract](contract/pod-commissioning-v1.md). Targets, BLE constants, session
+timings and request reasons are in `manifest/pod-targets.v1.json`; snapshots use
+`schema/pod-discovery.v1.schema.json` and `schema/pod-commission.v1.schema.json`;
+the owner's credential status is `schema/pod-credential-status.v1.schema.json`.
 
 `host_provision` (1.34.0) defines BLE Wi-Fi provisioning of embedded Hosts
 (`/local/host/provision/*`) on the same BLE layer; discovery candidates carry
-`kind`. See [the contract](contract/host-provisioning-v1.md), the targets in
+`kind`. A completed session carries the one-time `claimToken` that the first
+claim of that Host requires. See [the contract](contract/host-provisioning-v1.md), the targets in
 `manifest/host-provision-targets.v1.json` and
 `schema/host-provision.v1.schema.json`.
 

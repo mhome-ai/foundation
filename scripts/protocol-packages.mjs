@@ -56,6 +56,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       localHubState: "schema/local-hub-state.v1.schema.json",
       podDiscovery: "schema/pod-discovery.v1.schema.json",
       podCommission: "schema/pod-commission.v1.schema.json",
+      podCredentialStatus: "schema/pod-credential-status.v1.schema.json",
       hostProvision: "schema/host-provision.v1.schema.json",
       systemClients: "schema/system-clients.v1.schema.json",
       systemHosts: "schema/system-hosts.v1.schema.json",
