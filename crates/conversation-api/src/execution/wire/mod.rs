@@ -9,7 +9,7 @@ pub const ENQUEUE_FIXTURE: &str = include_str!("../../../fixtures/execution/enqu
 use crate::execution::{
     AgentCommand, AgentObservation, ContextGeneration, ConversationSurface, DurableEvent, EventId,
     FacadeRequest, FacadeResult, InvocationContext, ModelMode, PreparedAction, Revision, RunId,
-    Scope, ThreadId, UseCase,
+    Scope, ThreadId,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -218,33 +218,13 @@ pub struct LlmRoute {
     pub model_snapshot: LlmModelSnapshot,
 }
 
-/// One logical selector and its concrete deployment route.
+/// One resolved model configuration frozen for the entire admitted run.
+/// `model_mode` records the entry-point selection; internal calls do not re-resolve it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct LlmRouteBinding {
-    pub use_case: UseCase,
+pub struct LlmExecutionPlan {
     pub model_mode: ModelMode,
     pub revision: Option<String>,
     pub route: LlmRoute,
-}
-
-/// Complete deployment-resolved LLM route set bound immutably to one admitted run.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct LlmExecutionPlan {
-    pub routes: Vec<LlmRouteBinding>,
-}
-
-impl LlmExecutionPlan {
-    /// Selects the exact frozen route for one provider-neutral Runtime request.
-    #[must_use]
-    pub fn route_for(
-        &self,
-        use_case: &UseCase,
-        model_mode: &ModelMode,
-    ) -> Option<&LlmRouteBinding> {
-        self.routes
-            .iter()
-            .find(|item| item.use_case == *use_case && item.model_mode == *model_mode)
-    }
 }
 
 /// Transport admission request. Environment bindings are consumed by the composition root and do
@@ -545,12 +525,9 @@ fn validate_command_binding(request: &CommandRequest) -> Result<(), ProtocolErro
     match (&request.command, &request.llm_plan) {
         (AgentCommand::Enqueue { options, .. }, Some(plan)) => {
             validate_llm_plan(plan)?;
-            if plan
-                .route_for(&options.use_case, &options.model_mode)
-                .is_none()
-            {
+            if plan.model_mode != options.model_mode {
                 return Err(ProtocolError::InvalidBinding(
-                    "LLM plan does not contain the command's primary selector".to_owned(),
+                    "LLM plan mode differs from the command's selected mode".to_owned(),
                 ));
             }
             Ok(())
@@ -570,61 +547,47 @@ fn validate_command_binding(request: &CommandRequest) -> Result<(), ProtocolErro
 }
 
 fn validate_llm_plan(plan: &LlmExecutionPlan) -> Result<(), ProtocolError> {
-    if plan.routes.is_empty() {
-        return Err(ProtocolError::InvalidBinding(
-            "LLM plan must contain at least one route".to_owned(),
-        ));
-    }
-    let mut selectors = std::collections::HashSet::new();
-    for binding in &plan.routes {
-        let route = &binding.route;
-        route
-            .model_snapshot
-            .generation_support
-            .validate()
-            .map_err(|error| ProtocolError::InvalidBinding(error.into()))?;
-        llm_api::GenerationParameters {
-            temperature: route.temperature,
-            reasoning_effort: route.reasoning_effort.clone(),
-            thinking: route.thinking,
-            fast_mode: route.fast_mode,
-        }
+    let route = &plan.route;
+    route
+        .model_snapshot
+        .generation_support
         .validate()
         .map_err(|error| ProtocolError::InvalidBinding(error.into()))?;
-        if binding.use_case.0.trim().is_empty()
-            || binding.model_mode.0.trim().is_empty()
-            || route.backend.trim().is_empty()
-            || route.profile.trim().is_empty()
-            || route.model.trim().is_empty()
-        {
-            return Err(ProtocolError::InvalidBinding(
-                "LLM use case, model mode, backend, profile, and model are required".to_owned(),
-            ));
-        }
-        if !selectors.insert((binding.use_case.0.as_str(), binding.model_mode.0.as_str())) {
-            return Err(ProtocolError::InvalidBinding(
-                "LLM plan contains a duplicate selector".to_owned(),
-            ));
-        }
-        if binding
-            .revision
+    llm_api::GenerationParameters {
+        temperature: route.temperature,
+        reasoning_effort: route.reasoning_effort.clone(),
+        thinking: route.thinking,
+        fast_mode: route.fast_mode,
+    }
+    .validate()
+    .map_err(|error| ProtocolError::InvalidBinding(error.into()))?;
+    if plan.model_mode.0.trim().is_empty()
+        || route.backend.trim().is_empty()
+        || route.profile.trim().is_empty()
+        || route.model.trim().is_empty()
+    {
+        return Err(ProtocolError::InvalidBinding(
+            "LLM model mode, backend, profile, and model are required".to_owned(),
+        ));
+    }
+    if plan
+        .revision
+        .as_ref()
+        .is_some_and(|value| value.trim().is_empty())
+        || route
+            .provider_preferences
+            .iter()
+            .any(|value| value.trim().is_empty())
+        || route
+            .reasoning_effort
             .as_ref()
             .is_some_and(|value| value.trim().is_empty())
-            || route
-                .provider_preferences
-                .iter()
-                .any(|value| value.trim().is_empty())
-            || route
-                .reasoning_effort
-                .as_ref()
-                .is_some_and(|value| value.trim().is_empty())
-            || route.temperature.is_some_and(|value| !value.is_finite())
-            || route.context_window_tokens <= 20_000
-        {
-            return Err(ProtocolError::InvalidBinding(
-                "LLM route contains invalid optional settings".to_owned(),
-            ));
-        }
+        || route.temperature.is_some_and(|value| !value.is_finite())
+        || route.context_window_tokens <= 20_000
+    {
+        return Err(ProtocolError::InvalidBinding(
+            "LLM route contains invalid optional settings".to_owned(),
+        ));
     }
     Ok(())
 }
@@ -808,50 +771,35 @@ mod tests {
                     scope_integrations: "scope-integrations-1".to_owned(),
                 }),
                 llm_plan: Some(LlmExecutionPlan {
-                    routes: [
-                        "chat",
-                        "agent_info_merge",
-                        "automation_judge",
-                        "automation_diagnose",
-                        "app_guide",
-                        "workflow.action_operate",
-                        "workflow.automation_generate",
-                        "workflow.description_generate",
-                    ]
-                    .into_iter()
-                    .map(|use_case| LlmRouteBinding {
-                        use_case: UseCase(use_case.to_owned()),
-                        model_mode: ModelMode("auto".to_owned()),
-                        revision: Some("1700000000000".to_owned()),
-                        route: LlmRoute {
-                            backend: "openrouter".to_owned(),
-                            profile: "cloud_openrouter".to_owned(),
-                            model: "openai/gpt-5.4-mini".to_owned(),
-                            provider_preferences: vec!["OpenAI".to_owned()],
-                            temperature: Some(0.5),
-                            cache_control: Some(true),
-                            reasoning_effort: None,
-                            thinking: None,
-                            fast_mode: None,
-                            context_window_tokens: 128_000,
-                            model_snapshot: LlmModelSnapshot {
-                                capabilities: llm_api::ModelCapabilities {
-                                    input: vec!["image".to_owned()],
-                                    tool_calling: true,
-                                    structured_output: true,
-                                },
-                                generation_support: LlmGenerationSupport {
-                                    temperature: Some(true),
-                                    max_tokens: Some(true),
-                                    thinking: Some(true),
-                                    reasoning_efforts: Some(vec!["high".into()]),
-                                    temperature_with_reasoning: Some(true),
-                                    ..LlmGenerationSupport::default()
-                                },
+                    model_mode: ModelMode("auto".to_owned()),
+                    revision: Some("1700000000000".to_owned()),
+                    route: LlmRoute {
+                        backend: "openrouter".to_owned(),
+                        profile: "cloud_openrouter".to_owned(),
+                        model: "openai/gpt-5.4-mini".to_owned(),
+                        provider_preferences: vec!["OpenAI".to_owned()],
+                        temperature: Some(0.5),
+                        cache_control: Some(true),
+                        reasoning_effort: None,
+                        thinking: None,
+                        fast_mode: None,
+                        context_window_tokens: 128_000,
+                        model_snapshot: LlmModelSnapshot {
+                            capabilities: llm_api::ModelCapabilities {
+                                input: vec!["image".to_owned()],
+                                tool_calling: true,
+                                structured_output: true,
+                            },
+                            generation_support: LlmGenerationSupport {
+                                temperature: Some(true),
+                                max_tokens: Some(true),
+                                thinking: Some(true),
+                                reasoning_efforts: Some(vec!["high".into()]),
+                                temperature_with_reasoning: Some(true),
+                                ..LlmGenerationSupport::default()
                             },
                         },
-                    })
-                    .collect(),
+                    },
                 }),
                 base_checkpoint: None,
                 abandoned_run_id: None,
@@ -867,7 +815,7 @@ mod tests {
     #[test]
     fn snapshot_is_required_and_support_metadata_is_strict() {
         let mut fixture: serde_json::Value = serde_json::from_str(ENQUEUE_FIXTURE).unwrap();
-        fixture["payload"]["payload"]["llm_plan"]["routes"][0]["route"]
+        fixture["payload"]["payload"]["llm_plan"]["route"]
             .as_object_mut()
             .unwrap()
             .remove("model_snapshot");
@@ -876,7 +824,10 @@ mod tests {
         let Payload::Command(command) = &mut envelope.payload else {
             panic!("command");
         };
-        command.llm_plan.as_mut().unwrap().routes[0]
+        command
+            .llm_plan
+            .as_mut()
+            .unwrap()
             .route
             .model_snapshot
             .generation_support
@@ -1119,6 +1070,23 @@ mod tests {
     }
 
     #[test]
+    fn admission_requires_one_model_matching_the_selected_mode() {
+        let mut input: serde_json::Value =
+            serde_json::from_str(include_str!("../../../fixtures/execution/enqueue.v1.json"))
+                .unwrap();
+        input["payload"]["payload"]["llm_plan"]["model_mode"] = "smart".into();
+        assert!(matches!(
+            Envelope::decode_json(&input.to_string()),
+            Err(ProtocolError::InvalidBinding(_))
+        ));
+        input["payload"]["payload"]["command"]["options"]["model_mode"] = "smart".into();
+        assert!(Envelope::decode_json(&input.to_string()).is_ok());
+        let plan = input["payload"]["payload"]["llm_plan"].take();
+        input["payload"]["payload"]["llm_plan"] = serde_json::json!({"routes": [plan]});
+        assert!(Envelope::decode_json(&input.to_string()).is_err());
+    }
+
+    #[test]
     fn strict_decoder_rejects_unknown_nested_fields() {
         let fixture = include_str!("../../../fixtures/execution/enqueue.v1.json");
         let input = fixture.replacen(
@@ -1143,20 +1111,18 @@ mod tests {
     fn strict_decoder_treats_skip_optional_nulls_as_absent() {
         let fixture = include_str!("../../../fixtures/execution/enqueue.v1.json");
         let mut input: serde_json::Value = serde_json::from_str(fixture).expect("fixture JSON");
-        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["fast_mode"] =
-            serde_json::Value::Null;
-        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["thinking"] =
-            serde_json::Value::Null;
-        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]["generation_support"]
+        input["payload"]["payload"]["llm_plan"]["route"]["fast_mode"] = serde_json::Value::Null;
+        input["payload"]["payload"]["llm_plan"]["route"]["thinking"] = serde_json::Value::Null;
+        input["payload"]["payload"]["llm_plan"]["route"]["model_snapshot"]["generation_support"]
             ["fastMode"] = serde_json::Value::Null;
-        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]["generation_support"]
+        input["payload"]["payload"]["llm_plan"]["route"]["model_snapshot"]["generation_support"]
             ["reasoningEffortDefault"] = serde_json::Value::Null;
         input["payload"]["payload"]["command"]["message"]["continuation"] = serde_json::Value::Null;
 
         let envelope = Envelope::decode_json(&input.to_string())
             .expect("null on skip-optional fields deserializes as absent");
         let canonical = serde_json::to_value(&envelope).expect("serializes");
-        let canonical_route = &canonical["payload"]["payload"]["llm_plan"]["routes"][0]["route"];
+        let canonical_route = &canonical["payload"]["payload"]["llm_plan"]["route"];
         assert!(canonical_route.get("fast_mode").is_none());
         assert!(canonical_route.get("thinking").is_none());
         let canonical_support = &canonical_route["model_snapshot"]["generation_support"];
@@ -1194,7 +1160,7 @@ mod tests {
         );
 
         let mut support_null = golden.clone();
-        support_null["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["model_snapshot"]["generation_support"]
+        support_null["payload"]["payload"]["llm_plan"]["route"]["model_snapshot"]["generation_support"]
             ["fastMode"] = serde_json::Value::Null;
         assert!(
             validator.validate(&support_null).is_err(),
@@ -1214,8 +1180,7 @@ mod tests {
     fn strict_decoder_still_rejects_unknown_null_fields() {
         let fixture = include_str!("../../../fixtures/execution/enqueue.v1.json");
         let mut input: serde_json::Value = serde_json::from_str(fixture).expect("fixture JSON");
-        input["payload"]["payload"]["llm_plan"]["routes"][0]["route"]["unexpected"] =
-            serde_json::Value::Null;
+        input["payload"]["payload"]["llm_plan"]["route"]["unexpected"] = serde_json::Value::Null;
         assert!(matches!(
             Envelope::decode_json(&input.to_string()),
             Err(ProtocolError::UnknownField { .. })
