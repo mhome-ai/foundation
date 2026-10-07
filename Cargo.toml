@@ -14,6 +14,7 @@ members = [
   "crates/runtime-paths",
   "crates/os-permissions",
   "crates/protocomm",
+  "crates/ble-commission",
 ]
 
 [workspace.package]
