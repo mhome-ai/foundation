@@ -98,9 +98,12 @@ pub(crate) async fn revoke(
     let request = CredentialPodRequest {
         pod_id: pod_id.to_string(),
     };
-    post::<Value>(cloud, context, CREDENTIAL_REVOKE_PATH, None, &request)
-        .await
-        .map(|_| ())
+    let response: Value = post(cloud, context, CREDENTIAL_REVOKE_PATH, None, &request).await?;
+    if response.get("ok").and_then(Value::as_bool) == Some(true) {
+        Ok(())
+    } else {
+        Err(CallError::Unreadable(response.to_string()))
+    }
 }
 
 /// Whether the host of `url` is `localhost`, in `127.0.0.0/8` or `::1`.

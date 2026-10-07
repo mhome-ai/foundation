@@ -80,6 +80,11 @@ pub struct Script {
     pub drop_after_op: Option<&'static str>,
     pub lock_after_rejections: Option<u32>,
     pub claim_token: Option<&'static str>,
+    /// Host-style paging: at most this many scan results per page.
+    pub scan_page_cap: Option<usize>,
+    /// Inside a Wi-Fi change window, with the pod code saving the new network
+    /// reports (`None` saves it).
+    pub reprovision: Option<Option<&'static str>>,
 }
 
 impl Script {
@@ -97,6 +102,8 @@ impl Script {
             drop_after_op: None,
             lock_after_rejections: None,
             claim_token: None,
+            scan_page_cap: None,
+            reprovision: None,
         }
     }
 
@@ -105,6 +112,7 @@ impl Script {
             kind: DeviceKind::Host,
             claim_token: Some(CLAIM_TOKEN),
             lock_after_rejections: Some(5),
+            scan_page_cap: Some(2),
             ..Self::pod()
         }
     }
@@ -179,9 +187,16 @@ impl FakeDevice {
             DeviceKind::Pod => "pod",
             DeviceKind::Host => "host",
         };
+        let mut app = json!({ "ver": "1", "cap": [cap] });
+        if self.locked.load(Ordering::SeqCst) {
+            match script.kind {
+                DeviceKind::Pod => app["locked"] = json!(true),
+                DeviceKind::Host => app["lockedForMs"] = json!(30_000),
+            }
+        }
         json!({
             "prov": { "ver": "v1.1", "sec_ver": 2, "sec_patch_ver": 1, "cap": ["wifi_scan"] },
-            "meow": { "ver": "1", "cap": [cap], "locked": self.locked.load(Ordering::SeqCst) },
+            "meow": app,
         })
     }
 
@@ -207,6 +222,7 @@ impl FakeDevice {
 
     fn scan(&self, request: &[u8]) -> Vec<u8> {
         use proto::wifi_scan_payload::Payload;
+        let cap = self.script.lock().unwrap().scan_page_cap;
         let request = proto::WiFiScanPayload::decode(request).unwrap();
         let entry = |ssid: &str, rssi: i32, auth: proto::WifiAuthMode| proto::WiFiScanResult {
             ssid: ssid.as_bytes().to_vec(),
@@ -215,6 +231,18 @@ impl FakeDevice {
             bssid: vec![0; 6],
             auth: auth as i32,
         };
+        let mut entries = vec![
+            entry("home", -50, proto::WifiAuthMode::Wpa2Psk),
+            entry("cafe", -70, proto::WifiAuthMode::Open),
+        ];
+        entries.extend((0..5).map(|index| {
+            entry(
+                &format!("far-{index}"),
+                -80 - index,
+                proto::WifiAuthMode::Wpa2Psk,
+            )
+        }));
+        let mut status = Status::Success;
         let payload = match request.payload {
             Some(Payload::CmdScanStart(_)) => {
                 self.scans.fetch_add(1, Ordering::SeqCst);
@@ -223,18 +251,31 @@ impl FakeDevice {
             }
             Some(Payload::CmdScanStatus(_)) => Payload::RespScanStatus(proto::RespScanStatus {
                 scan_finished: true,
-                result_count: 2,
+                result_count: entries.len() as u32,
             }),
-            _ => Payload::RespScanResult(proto::RespScanResult {
-                entries: vec![
-                    entry("home", -50, proto::WifiAuthMode::Wpa2Psk),
-                    entry("cafe", -70, proto::WifiAuthMode::Open),
-                ],
-            }),
+            Some(Payload::CmdScanResult(page)) => {
+                let (start, count) = (page.start_index as usize, page.count as usize);
+                let entries = match cap {
+                    Some(cap) => entries
+                        .into_iter()
+                        .skip(start)
+                        .take(count.min(cap))
+                        .collect(),
+                    None if start + count <= entries.len() => {
+                        entries.into_iter().skip(start).take(count).collect()
+                    }
+                    None => {
+                        status = Status::InvalidArgument;
+                        Vec::new()
+                    }
+                };
+                Payload::RespScanResult(proto::RespScanResult { entries })
+            }
+            _ => unreachable!(),
         };
         proto::WiFiScanPayload {
             msg: 0,
-            status: Status::Success as i32,
+            status: status as i32,
             payload: Some(payload),
         }
         .encode_to_vec()
@@ -272,7 +313,11 @@ impl FakeDevice {
             ),
         };
         if sta_state == proto::WifiStationState::Connected {
-            state.pod_state = "wifi_connected";
+            state.pod_state = match script.reprovision {
+                None => "wifi_connected",
+                Some(None) => "commissioned",
+                Some(Some(_)) => "failed",
+            };
         }
         proto::RespGetStatus {
             status: Status::Success as i32,
@@ -341,15 +386,16 @@ impl FakeDevice {
                 "platform": "esp32c5",
                 "firmwareVersion": "0.3.0",
                 "identity": { "keyId": "p256:abc", "alg": "ES256", "x": "x", "y": "y", "fingerprint": "f" },
-                "wifiConfigured": script.wifi_configured,
+                "wifiConfigured": script.wifi_configured && script.reprovision.is_none(),
                 "state": "secured",
+                "mode": script.reprovision.map(|_| "reprovision"),
             }),
             ("pod-credential", "deliver") => {
-                if script.deliver_ok {
+                if script.deliver_ok && script.reprovision.is_none() {
                     state.pod_state = "activating";
                     json!({ "ok": true, "state": "activating" })
                 } else {
-                    json!({ "ok": false, "state": state.pod_state })
+                    json!({ "ok": false, "state": state.pod_state, "reason": "wrong_state" })
                 }
             }
             ("pod-credential", "status") => {
@@ -377,7 +423,13 @@ impl FakeDevice {
                         _ => {}
                     }
                 }
-                json!({ "state": state.pod_state })
+                match script.reprovision {
+                    Some(Some(code)) if state.pod_state == "failed" => json!({
+                        "state": "failed",
+                        "error": { "code": code, "message": "x" },
+                    }),
+                    _ => json!({ "state": state.pod_state }),
+                }
             }
             ("host-info", "info") => json!({
                 "protocol": 1,
@@ -653,6 +705,7 @@ impl Cloud for FakeCloud {
                 }
                 json!({ "podId": "pod-1", "status": status })
             }
+            "pod/credential/revoke" => json!({ "ok": true }),
             _ => json!({}),
         };
         Ok(CloudResponse {

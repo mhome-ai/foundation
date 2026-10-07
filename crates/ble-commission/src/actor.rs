@@ -8,7 +8,7 @@ use std::time::Duration;
 use app_facade_api::host_provision::{is_claim_token, HostFinishResponse, HOST_INFO_ENDPOINT};
 use app_facade_api::pod::{
     AuthorizationPrompt, CommissionError, CommissionErrorCode, CredentialIssueRequest,
-    CredentialStatus, DeviceKind, PodInfo, ACTIVATION_GRACE_MS, CODE_ATTEMPTS,
+    CredentialStatus, DeviceKind, PodInfo, SessionMode, ACTIVATION_GRACE_MS, CODE_ATTEMPTS,
     CREDENTIAL_STATUS_POLL_MS, NOT_ACTIVATED_DETAIL, POD_CREDENTIAL_ENDPOINT, POD_INFO_ENDPOINT,
     SRP_USERNAME,
 };
@@ -31,6 +31,9 @@ const HOST_JOIN_POLLS: u32 = 75;
 /// commissioner offers new Wi-Fi credentials.
 const KEPT_WIFI_POLLS: u32 = 30;
 const FINISH_ATTEMPTS: u32 = 3;
+/// How long a pod in a Wi-Fi change window may take to save the new network
+/// after joining it.
+const REPROVISION_POLLS: u32 = 30;
 
 struct Credential {
     pod_id: String,
@@ -366,9 +369,13 @@ impl Actor {
                 let Some((pod_info, device)) = device::pod_info(&info) else {
                     return self.fail(incomplete());
                 };
-                let kept_wifi = device.wifi_configured;
+                let reprovision = pod_info.reprovision();
+                let kept_wifi = device.wifi_configured && !reprovision;
                 self.pod_info = Some(pod_info);
-                if !self.update(|live| live.device = Some(device)) {
+                if !self.update(|live| {
+                    live.device = Some(device);
+                    live.mode = reprovision.then_some(SessionMode::Reprovision);
+                }) {
                     return;
                 }
                 if kept_wifi {
@@ -524,6 +531,9 @@ impl Actor {
                 Ok(WifiStatus::Connecting) => {}
                 Ok(WifiStatus::Connected { ip4_addr }) => {
                     return match self.kind {
+                        DeviceKind::Pod if self.reprovision() => {
+                            self.confirm_new_network(client).await
+                        }
                         DeviceKind::Pod => self.prompt_authorization().await,
                         DeviceKind::Host => self.complete_host(client, ip4_addr).await,
                     };
@@ -545,6 +555,67 @@ impl Actor {
                 None,
             )),
         );
+    }
+
+    fn reprovision(&self) -> bool {
+        self.pod_info.as_ref().is_some_and(PodInfo::reprovision)
+    }
+
+    /// A pod in a Wi-Fi change window saves the joined network, then reports
+    /// `commissioned`; it keeps its credential.
+    async fn confirm_new_network(&mut self, client: Arc<device::Client>) {
+        for _ in 0..REPROVISION_POLLS {
+            let Some(status) = self
+                .race(client.call_json(POD_CREDENTIAL_ENDPOINT, &json!({ "op": "status" })))
+                .await
+            else {
+                return;
+            };
+            match status {
+                Ok(status) => match status.get("state").and_then(Value::as_str) {
+                    Some("commissioned") => {
+                        if self.enter(Phase::Completed, None) {
+                            self.finish_pod(&client).await;
+                        }
+                        return;
+                    }
+                    Some("failed") => {
+                        let code = status
+                            .pointer("/error/code")
+                            .and_then(Value::as_str)
+                            .map(str::to_string);
+                        return self.fail(error(
+                            CommissionErrorCode::WifiFailed,
+                            "The pod could not save the new Wi-Fi network.",
+                            code,
+                        ));
+                    }
+                    _ => {}
+                },
+                Err(failure) => {
+                    if !self.survived(&client, &failure).await {
+                        return self.fail_disconnected(failure);
+                    }
+                }
+            }
+            if self.sleep(TICK).await.is_none() {
+                return;
+            }
+        }
+        self.fail(error(
+            CommissionErrorCode::WifiFailed,
+            "The pod did not confirm the new Wi-Fi network.",
+            None,
+        ));
+    }
+
+    async fn finish_pod(&self, client: &device::Client) {
+        if let Err(failure) = client
+            .call_json(POD_CREDENTIAL_ENDPOINT, &json!({ "op": "finish" }))
+            .await
+        {
+            info!(%failure, "pod finish was not delivered");
+        }
     }
 
     async fn complete_host(&mut self, client: Arc<device::Client>, ip4_addr: String) {
@@ -704,7 +775,8 @@ impl Actor {
                 CommissionErrorCode::DeliveryFailed,
                 "The pod did not accept the credential.",
                 response
-                    .get("state")
+                    .get("reason")
+                    .or_else(|| response.get("state"))
                     .and_then(Value::as_str)
                     .map(str::to_string),
             )),
@@ -820,12 +892,7 @@ impl Actor {
             credential.settled = true;
         }
         if let Some(client) = self.client() {
-            if let Err(failure) = client
-                .call_json(POD_CREDENTIAL_ENDPOINT, &json!({ "op": "finish" }))
-                .await
-            {
-                info!(%failure, "pod finish was not delivered");
-            }
+            self.finish_pod(&client).await;
         }
     }
 

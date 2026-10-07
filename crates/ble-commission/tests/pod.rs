@@ -77,6 +77,8 @@ async fn commissions_a_pod_end_to_end() {
     assert_eq!(issued["state"], "delivering");
     let done = harness.wait_state(POD, "completed").await;
     assert_eq!(done["podId"], "pod-1");
+    assert_eq!(done["networks"].as_array().unwrap().len(), 7);
+    assert!(done.get("mode").is_none());
     valid(&done);
 
     assert_eq!(device.scans.load(Ordering::SeqCst), 1);
@@ -476,8 +478,75 @@ async fn a_refused_delivery_revokes() {
     authorize(&harness, &id).await;
     let failed = harness.wait_state(POD, "failed").await;
     assert_eq!(failed["error"]["code"], "delivery_failed");
+    assert_eq!(failed["error"]["detail"], "wrong_state");
     tokio::time::sleep(Duration::from_secs(1)).await;
     assert_eq!(harness.cloud.revokes().len(), 1);
+}
+
+async fn reprovision(harness: &Harness) -> String {
+    let id = start(harness).await;
+    secure(harness, &id).await;
+    let session = harness
+        .wait(POD, true, |session| {
+            session["state"] == "awaiting_wifi" && session["networks"].is_array()
+        })
+        .await;
+    assert_eq!(session["mode"], "reprovision");
+    valid(&session);
+    harness
+        .ok(
+            "/local/pod/commission/wifi",
+            json!({ "sessionId": id, "ssid": "home", "password": "correct horse" }),
+        )
+        .await;
+    id
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_wifi_change_window_only_moves_the_pod_to_the_new_network() {
+    let harness = Harness::new();
+    let mut script = Script::pod();
+    script.wifi_configured = true;
+    script.reprovision = Some(None);
+    harness.add_device("pod-a", script);
+    let id = reprovision(&harness).await;
+    let done = harness.wait_state(POD, "completed").await;
+    assert_eq!(done["mode"], "reprovision");
+    assert!(done.get("podId").is_none());
+    assert!(done.get("authorization").is_none());
+    valid(&done);
+    assert!(harness
+        .call(
+            "/local/pod/commission/authorize",
+            json!({ "sessionId": id, "scopeId": "scope-a" }),
+        )
+        .await
+        .is_err());
+    tokio::time::sleep(Duration::from_secs(2)).await;
+    assert!(harness.position("event:completed") < harness.position("device:pod-credential:finish"));
+    assert!(!harness
+        .journal()
+        .contains(&"device:pod-credential:deliver".to_string()));
+    assert!(harness.cloud.calls.lock().unwrap().is_empty());
+    harness
+        .events(COMMISSION_CHANGED_EVENT)
+        .iter()
+        .for_each(valid);
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_wifi_change_the_pod_cannot_save_fails_with_its_code() {
+    let harness = Harness::new();
+    let mut script = Script::pod();
+    script.reprovision = Some(Some("storage_failed"));
+    harness.add_device("pod-a", script);
+    reprovision(&harness).await;
+    let failed = harness.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["code"], "wifi_failed");
+    assert_eq!(failed["error"]["detail"], "storage_failed");
+    assert_eq!(failed["mode"], "reprovision");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    assert!(harness.cloud.calls.lock().unwrap().is_empty());
 }
 
 #[tokio::test(start_paused = true)]

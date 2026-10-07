@@ -61,6 +61,7 @@ async fn provisions_a_host_and_hands_back_its_claim_token() {
     let id = to_wifi(&harness).await;
     join(&harness, &id).await;
     let done = harness.wait_state(HOST, "completed").await;
+    assert_eq!(done["networks"].as_array().unwrap().len(), 7);
     assert_eq!(done["addresses"], json!(["192.168.0.50"]));
     assert_eq!(done["claimToken"], CLAIM_TOKEN);
     valid(&done);

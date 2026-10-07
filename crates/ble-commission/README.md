@@ -69,8 +69,11 @@ trait EventSink {
   user descriptions; `fallback_endpoint_uuids(kind)` lists the UUIDs to use
   when a device has none. `Link::exchange` writes then reads one
   endpoint.
+- `Link::exchange` must use long (offset) reads: a Host answer can fill the
+  512-byte attribute.
 - `LinkError::Rejected` means the device answered the write with an error (an
-  ATT error from ESP-IDF); any other variant means the link is unusable.
+  ATT error, including the Insufficient Authorization a locked Host returns);
+  any other variant means the link is unusable.
 - `Cloud::post_json` posts to a path under the cloud API base with the account
   identified by `account_context`, scoped to the Space `scope_id` when given. It
   returns `CloudError::AccountChanged` when that account is no longer signed in,
@@ -91,3 +94,8 @@ disconnecting) is refused with `session_active` or `busy`. A session ends
 lifetime, except while a credential is being delivered or activated, which run
 to a conclusion. A pod credential that was issued but did not end up active is
 revoked with the account that issued it.
+
+A pod whose `pod-info` reports `"mode":"reprovision"` is in a Wi-Fi change
+window: the session only joins the new network, waits for the pod to save it,
+then completes with `"mode":"reprovision"` and no `podId`. No credential is
+issued and the cloud is not called.

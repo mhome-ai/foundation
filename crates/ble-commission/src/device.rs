@@ -6,13 +6,13 @@ use std::time::Duration;
 use app_facade_api::host_provision::HostDeviceInfo;
 use app_facade_api::pod::{
     DeviceKind, PodDeviceInfo, PodInfo, WifiNetwork, APP_INFO_LABEL, APP_INFO_LOCKED,
-    SECURITY_VERSION,
+    APP_INFO_LOCKED_FOR_MS, SECURITY_VERSION,
 };
 use async_trait::async_trait;
 use protocomm::client::WIFI_SCAN_ENDPOINT;
 use protocomm::proto::WifiAuthMode;
 use protocomm::sec2::MAX_PATCH_VERSION;
-use protocomm::{ProtocommClient, ScanEntry, Transport, TransportError};
+use protocomm::{ProtocommClient, ScanEntry, Transport, TransportError, VersionInfo};
 use serde_json::Value;
 
 use crate::platform::{Central, Link, LinkError};
@@ -100,17 +100,22 @@ pub(crate) async fn open(
         client,
         link,
         patch_version,
-        locked: version.app_flag(APP_INFO_LABEL, APP_INFO_LOCKED),
+        locked: locked(&version),
     })
+}
+
+fn locked(version: &VersionInfo) -> bool {
+    version.app_flag(APP_INFO_LABEL, APP_INFO_LOCKED)
+        || version
+            .raw
+            .get(APP_INFO_LABEL)
+            .and_then(|app| app.get(APP_INFO_LOCKED_FOR_MS))
+            .is_some_and(Value::is_u64)
 }
 
 /// `None` when the version could not be read.
 pub(crate) async fn is_locked(client: &Client) -> Option<bool> {
-    client
-        .version()
-        .await
-        .ok()
-        .map(|version| version.app_flag(APP_INFO_LABEL, APP_INFO_LOCKED))
+    client.version().await.ok().map(|version| locked(&version))
 }
 
 pub(crate) fn pod_info(info: &Value) -> Option<(PodInfo, PodDeviceInfo)> {
