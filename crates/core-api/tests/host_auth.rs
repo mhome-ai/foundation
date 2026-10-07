@@ -100,3 +100,22 @@ fn wire_reauth_code_is_specific_and_space_free() {
     assert_eq!(json["code"], "HOST_REAUTH_REQUIRED");
     assert!(json.get("spaceId").is_none());
 }
+#[test]
+fn a_claim_carries_the_bluetooth_token_only_when_there_is_one() {
+    let plain = ClaimRequest {
+        proof: "grant".into(),
+        claim_token: None,
+    };
+    assert_eq!(
+        serde_json::to_value(plain).unwrap(),
+        serde_json::json!({ "proof": "grant" })
+    );
+    let request: ClaimRequest =
+        serde_json::from_value(serde_json::json!({ "proof": "grant", "claimToken": "t" })).unwrap();
+    assert_eq!(request.claim_token.as_deref(), Some("t"));
+    assert!(serde_json::from_value::<ClaimRequest>(
+        serde_json::json!({ "proof": "grant", "hostId": "h" })
+    )
+    .is_err());
+    assert_eq!(CLAIM_TOKEN_REQUIRED, "HOST_CLAIM_TOKEN_REQUIRED");
+}

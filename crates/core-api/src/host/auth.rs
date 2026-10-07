@@ -203,6 +203,18 @@ pub struct Grant {
     pub challenge: String,
     pub boot_id: Option<String>,
 }
+/// `POST /v1/auth/claim`. A Host provisioned over Bluetooth refuses a claim
+/// without the token it handed out at setup with 403 `HOST_CLAIM_TOKEN_REQUIRED`.
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ClaimRequest {
+    pub proof: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub claim_token: Option<String>,
+}
+
+pub const CLAIM_TOKEN_REQUIRED: &str = "HOST_CLAIM_TOKEN_REQUIRED";
+
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LocalAuthorization {

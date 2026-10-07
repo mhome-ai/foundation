@@ -33,7 +33,10 @@ A learned disablement prevents affected bindings from managing Host until a fres
 
 Bootstrap endpoints (POST):
 - `/v1/auth/claim/challenge`: probeId → Host-signed TOFU challenge and claimed ACL bit.
-- `/v1/auth/claim`: cloud first-claim grant → durable user ACL and Host-signed receipt.
+- `/v1/auth/claim`: `{"proof","claimToken"?}` (cloud first-claim grant, plus the token a Host
+  handed out during Bluetooth setup) → durable user ACL and Host-signed receipt. While such a
+  token is outstanding, a claim without it or with another one is refused with 403
+  `{"code":"HOST_CLAIM_TOKEN_REQUIRED"}`; `claimToken` is omitted otherwise.
 - `/v1/auth/context`: random probeId → Host-signed context (protocol, hostId, bootId, probeId, serverTime).
 - `/v1/auth/enroll/challenge`: user/Client P-256 key/probe → Host-signed short-lived challenge.
 - `/v1/auth/enroll`: cloud enrollment proof + Client signature of its digest → durable registration.
@@ -111,7 +114,9 @@ proof failure alone does not prove that the key was lost.
 
 ## Android native first-claim bridge
 
-The native Host-management contract declares `hostClaim({hostId})`. It takes neither
+The native Host-management contract declares `hostClaim({hostId, claimToken?})`; the
+optional `claimToken` comes from a completed Bluetooth setup and is forwarded to the Host
+unchanged. It takes neither
 Space nor a caller-provided URL; the native Client resolves the Host on its current LAN.
 Success requires Host persistence and a confirmed cloud `commit-claim`, not just a grant.
 `claimable` comes from a fresh verified empty-ACL challenge. `claimed` in that challenge

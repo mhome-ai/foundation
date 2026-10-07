@@ -78,7 +78,8 @@
     "mutationsAutomaticallyRetried": false
   },
   "claimRequest": {
-    "hostId": "non-empty string; no scope or endpoint accepted"
+    "hostId": "non-empty string; no scope or endpoint accepted",
+    "claimToken": "optional string from a completed Bluetooth setup; forwarded to the Host claim unchanged"
   },
   "claimResponse": {
     "claimed": "true only after Host persistence and cloud receipt commit",
