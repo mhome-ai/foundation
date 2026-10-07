@@ -91,10 +91,31 @@ fn system_authorization(permission: PermissionKey, code: i32) -> PermissionObser
 #[cfg(any(target_os = "linux", test))]
 const LINUX_BLUETOOTH_GROUP: &str = "bluetooth";
 
-/// BlueZ grants D-Bus access to members of the `bluetooth` group where that group
-/// exists. `status` is `/proc/self/status`, `groups` is `/etc/group`.
+/// Guidance for a Bluetooth request that BlueZ refused with `AccessDenied` or
+/// `NotAuthorized`. Only call it after such a refusal: BlueZ policy decides
+/// access, and group membership alone does not predict it. `None` when the
+/// group cannot explain the refusal or off Linux.
+pub fn bluetooth_access_denied_hint() -> Option<String> {
+    #[cfg(target_os = "linux")]
+    {
+        let read = |path: &str| std::fs::read_to_string(path).unwrap_or_default();
+        linux_bluetooth_hint(
+            &read("/proc/self/status"),
+            &read("/etc/group"),
+            &read("/etc/passwd"),
+        )
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        None
+    }
+}
+
+/// `status` is `/proc/self/status`; `groups` and `passwd` are `/etc/group` and
+/// `/etc/passwd`. A systemd user manager keeps the groups it started with, so a
+/// service under it gains a new group only after that manager restarts.
 #[cfg(any(target_os = "linux", test))]
-fn linux_bluetooth_group_missing(status: &str, groups: &str) -> bool {
+fn linux_bluetooth_hint(status: &str, groups: &str, passwd: &str) -> Option<String> {
     let ids = |key: &str| -> Vec<u32> {
         status
             .lines()
@@ -106,36 +127,33 @@ fn linux_bluetooth_group_missing(status: &str, groups: &str) -> bool {
             })
             .unwrap_or_default()
     };
-    if ids("Uid:").get(1) == Some(&0) {
-        return false;
+    let uid = *ids("Uid:").get(1)?;
+    if uid == 0 {
+        return None;
     }
-    let Some(gid) = groups.lines().find_map(|line| {
-        let mut fields = line.split(':');
-        (fields.next() == Some(LINUX_BLUETOOTH_GROUP))
-            .then(|| fields.nth(1).and_then(|gid| gid.parse::<u32>().ok()))
+    let (gid, members) = groups.lines().find_map(|line| {
+        let fields: Vec<&str> = line.split(':').collect();
+        (fields.len() >= 4 && fields[0] == LINUX_BLUETOOTH_GROUP)
+            .then(|| fields[2].parse::<u32>().ok().map(|gid| (gid, fields[3])))
             .flatten()
-    }) else {
-        return false;
-    };
-    ids("Gid:").get(1) != Some(&gid) && !ids("Groups:").contains(&gid)
-}
-
-#[cfg(target_os = "linux")]
-fn linux_bluetooth_status() -> PermissionObservation {
-    let status = std::fs::read_to_string("/proc/self/status").unwrap_or_default();
-    let groups = std::fs::read_to_string("/etc/group").unwrap_or_default();
-    if linux_bluetooth_group_missing(&status, &groups) {
-        return observation(
-            PermissionKey::Bluetooth {},
-            PermissionState::Denied,
-            PermissionEvidence::Platform,
-            Some(now_ms()),
-            Some(format!(
-                "Add this user to the {LINUX_BLUETOOTH_GROUP} group (sudo usermod -aG {LINUX_BLUETOOTH_GROUP} $USER), then sign out and back in."
-            )),
-        );
+    })?;
+    if ids("Gid:").get(1) == Some(&gid) || ids("Groups:").contains(&gid) {
+        return None;
     }
-    linux_status(&PermissionKey::Bluetooth {})
+    let user = passwd.lines().find_map(|line| {
+        let fields: Vec<&str> = line.split(':').collect();
+        (fields.len() >= 3 && fields[2].parse::<u32>().ok() == Some(uid)).then_some(fields[0])
+    });
+    let restart = format!(
+        "restart the user service manager (sudo systemctl restart user@{uid}.service) or reboot; signing out is not enough while another session or lingering keeps it running."
+    );
+    let listed = user.is_some_and(|user| members.split(',').any(|member| member == user));
+    Some(if listed {
+        format!("This user is in the {LINUX_BLUETOOTH_GROUP} group, but this process started before it was added. To apply it, {restart}")
+    } else {
+        let user = user.map_or_else(|| "$USER".to_string(), str::to_string);
+        format!("Add this user to the {LINUX_BLUETOOTH_GROUP} group (sudo usermod -aG {LINUX_BLUETOOTH_GROUP} {user}), then {restart}")
+    })
 }
 
 #[cfg(any(target_os = "linux", test))]
@@ -389,10 +407,7 @@ mod platform {
     pub fn status(permission: &PermissionKey) -> PermissionObservation {
         #[cfg(target_os = "linux")]
         {
-            match permission {
-                PermissionKey::Bluetooth {} => linux_bluetooth_status(),
-                _ => linux_status(permission),
-            }
+            linux_status(permission)
         }
         #[cfg(target_os = "windows")]
         {
@@ -484,26 +499,24 @@ mod tests {
     }
 
     #[test]
-    fn linux_bluetooth_requires_the_bluez_group_only_where_it_exists() {
+    fn linux_bluetooth_hints_follow_group_membership() {
         let groups = "root:x:0:\nbluetooth:x:112:alice\n";
-        let user = |gid: u32, extra: &str| {
-            format!("Name:\tmeow\nUid:\t1000\t1000\t1000\t1000\nGid:\t{gid}\t{gid}\t{gid}\t{gid}\nGroups:\t{extra}\n")
+        let passwd = "root:x:0:0::/root:/bin/sh\nmeow:x:1000:1000::/home/meow:/bin/sh\nalice:x:1001:1001::/home/alice:/bin/sh\n";
+        let user = |uid: u32, gid: u32, extra: &str| {
+            format!("Name:\tmeow\nUid:\t{uid}\t{uid}\t{uid}\t{uid}\nGid:\t{gid}\t{gid}\t{gid}\t{gid}\nGroups:\t{extra}\n")
         };
-        assert!(linux_bluetooth_group_missing(
-            &user(1000, "27 1000"),
-            groups
-        ));
-        assert!(!linux_bluetooth_group_missing(
-            &user(1000, "27 112 1000"),
-            groups
-        ));
-        assert!(!linux_bluetooth_group_missing(&user(112, ""), groups));
-        assert!(!linux_bluetooth_group_missing(
-            &user(1000, ""),
-            "root:x:0:\n"
-        ));
-        let root = "Uid:\t0\t0\t0\t0\nGid:\t0\t0\t0\t0\nGroups:\t0\n";
-        assert!(!linux_bluetooth_group_missing(root, groups));
+        let missing = linux_bluetooth_hint(&user(1000, 1000, "27 1000"), groups, passwd).unwrap();
+        assert!(missing.contains("sudo usermod -aG bluetooth meow"));
+        assert!(missing.contains("user@1000.service"));
+        let stale = linux_bluetooth_hint(&user(1001, 1001, "1001"), groups, passwd).unwrap();
+        assert!(stale.contains("started before it was added"));
+        assert!(stale.contains("user@1001.service"));
+        assert!(linux_bluetooth_hint(&user(1000, 1000, "27 112 1000"), groups, passwd).is_none());
+        assert!(linux_bluetooth_hint(&user(1000, 112, ""), groups, passwd).is_none());
+        assert!(linux_bluetooth_hint(&user(1000, 1000, ""), "root:x:0:\n", passwd).is_none());
+        assert!(linux_bluetooth_hint(&user(0, 0, "0"), groups, passwd).is_none());
+        let unnamed = linux_bluetooth_hint(&user(1500, 1500, ""), groups, passwd).unwrap();
+        assert!(unnamed.contains("sudo usermod -aG bluetooth $USER"));
     }
 
     #[test]

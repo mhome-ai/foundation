@@ -28,8 +28,11 @@ the caller should resume passive polling. When no new network observation exists
 observation time rather than presenting the last successful probe as a fresh authorization check.
 
 Linux reports `notRequired` / `platform` for native Bluetooth, local networking and microphone
-consent. Where a `bluetooth` group exists, BlueZ admits only its members, so a non-root process
-outside that group reports Bluetooth `denied` with the command that fixes it.
+consent. Bluetooth stays `notRequired` whatever the process groups are, because BlueZ policy,
+not group membership, decides access. After BlueZ refuses a request (`AccessDenied` /
+`NotAuthorized`), `bluetooth_access_denied_hint()` explains a missing `bluetooth` group: how to add
+the user, and that a systemd user service only gains the group after the user service manager
+restarts (`sudo systemctl restart user@<uid>.service`) or a reboot.
 
 Windows desktop apps need no Bluetooth consent: Bluetooth reports `notRequired` / `platform` when
 a radio is present and `unsupported` when there is none. Permission reports contain authorization only; device/session availability and
