@@ -148,12 +148,23 @@ pub struct CleanupWsStateRequest {
 pub struct UpdateCallbackBaseRequest {
     /// Host observation, never an independently discovered or fallback address.
     pub network: crate::host::network::HostNetworkSnapshot,
-    /// Actual bound HTTP listener port. Zero means the listener is not ready.
+    /// Actual bound native HTTPS listener port. Zero means it is not ready.
     pub port: u16,
+    /// Restricted third-party HTTP listener. Zero disables compatibility URLs.
+    #[serde(default)]
+    pub third_party_port: u16,
 }
 
 impl UpdateCallbackBaseRequest {
     pub fn callback_base(&self, now_ms: i64) -> Option<String> {
+        if self.third_party_port == 0 {
+            return None;
+        }
+        self.network
+            .available_ipv4(now_ms)
+            .map(|ip| format!("http://{ip}:{}", self.third_party_port))
+    }
+    pub fn native_base(&self, now_ms: i64) -> Option<String> {
         if self.port == 0 {
             return None;
         }
@@ -330,6 +341,9 @@ pub struct ExternalArtifactUploadDescriptor {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArtifactDeliveryProjectionRequest {
+    /// Explicit compatibility request; native traffic must remain HTTPS.
+    #[serde(default)]
+    pub third_party: bool,
     pub grant: String,
     pub expires_at_unix_ms: u64,
     pub client_id: String,
@@ -469,6 +483,7 @@ mod tests {
     #[test]
     fn callback_address_requires_a_fresh_host_observation_and_bound_port() {
         let mut request = UpdateCallbackBaseRequest {
+            third_party_port: 0,
             network: crate::host::network::HostNetworkSnapshot {
                 lan_ipv4: Some("192.168.1.5".parse().unwrap()),
                 observed_at_ms: 100_000,
@@ -476,17 +491,24 @@ mod tests {
             port: 3210,
         };
         assert_eq!(
-            request.callback_base(100_000).as_deref(),
+            request.native_base(100_000).as_deref(),
             Some("https://192.168.1.5:3210")
         );
         let roundtrip: UpdateCallbackBaseRequest =
             serde_json::from_value(serde_json::to_value(&request).unwrap()).unwrap();
         assert_eq!(request, roundtrip);
-        assert_eq!(request.callback_base(145_000), None);
-        request.port = 0;
         assert_eq!(request.callback_base(100_000), None);
+        request.third_party_port = 3211;
         assert_eq!(
-            UpdateCallbackBaseRequest::default().callback_base(100_000),
+            request.callback_base(100_000).as_deref(),
+            Some("http://192.168.1.5:3211")
+        );
+        assert_eq!(request.callback_base(145_000), None);
+        assert_eq!(request.native_base(145_000), None);
+        request.port = 0;
+        assert_eq!(request.native_base(100_000), None);
+        assert_eq!(
+            UpdateCallbackBaseRequest::default().native_base(100_000),
             None
         );
     }
@@ -569,6 +591,7 @@ mod tests {
         assert!(value.get("width").is_none());
 
         let request = ArtifactDeliveryProjectionRequest {
+            third_party: false,
             grant: "payload.signature".to_string(),
             expires_at_unix_ms: 123,
             client_id: "L:client".to_string(),

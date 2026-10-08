@@ -1,6 +1,6 @@
 [package]
 name = "mhome-ble-commission"
-version = "0.3.1"
+version = "0.3.2"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -14,9 +14,9 @@ include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
 name = "ble_commission"
 
 [dependencies]
-app-facade-api = { package = "mhome-app-facade-api", version = "=1.37.0", path = "../app-facade-api" }
+app-facade-api = { package = "mhome-app-facade-api", version = "=1.37.1", path = "../app-facade-api" }
 async-trait = "0.1"
-core-api = { package = "mhome-core-api", version = "=1.27.1", path = "../core-api" }
+core-api = { package = "mhome-core-api", version = "=1.28.0", path = "../core-api" }
 protocomm = { package = "mhome-protocomm", version = "=0.1.0", path = "../protocomm" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
