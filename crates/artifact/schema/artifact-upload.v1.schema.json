@@ -78,6 +78,38 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 9007199254740991
+        },
+        "hostIdentity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hostId",
+            "publicKey"
+          ],
+          "properties": {
+            "hostId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "publicKey": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "x",
+                "y"
+              ],
+              "properties": {
+                "x": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{43}$"
+                },
+                "y": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{43}$"
+                }
+              }
+            }
+          }
         }
       }
     }

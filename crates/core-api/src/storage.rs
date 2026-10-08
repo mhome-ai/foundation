@@ -132,6 +132,8 @@ pub struct StorageNamespaceList {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageSession {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_identity: Option<artifact_api::HostTlsIdentity>,
     pub protocol_version: String,
     pub repository_id: String,
     pub namespace: StorageNamespace,

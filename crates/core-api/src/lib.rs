@@ -770,6 +770,9 @@ pub struct NodeChallengeEvidence {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeChallengePayload {
+    /// TLS key of the Host running this Node, covered by the Node signature.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_public_key: Option<host::auth::PublicKey>,
     pub protocol: String,
     pub aud: String,
     pub nonce: String,
@@ -1290,4 +1293,19 @@ mod tests {
         });
         assert!(serde_json::from_value::<NodeOnboardingStartRequest>(invalid).is_err());
     }
+}
+
+/// Binds an unconfigured Core's commission identity to its Host TLS key.
+/// The non-UTF8 domain prefix cannot be requested through the legacy nonce signer.
+pub fn hub_commission_tls_payload(
+    nonce: &str,
+    host_id: &str,
+    key: &host::auth::PublicKey,
+) -> Vec<u8> {
+    let mut out = b"\xffmeow-hub-tls-v1\0".to_vec();
+    for field in [nonce, host_id, key.x.as_str(), key.y.as_str()] {
+        out.extend_from_slice(&(field.len() as u64).to_be_bytes());
+        out.extend_from_slice(field.as_bytes());
+    }
+    out
 }

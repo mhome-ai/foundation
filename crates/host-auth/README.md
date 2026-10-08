@@ -1,8 +1,8 @@
 # mhome-host-auth
 
 Shared Rust implementation of the existing `core_api::host::auth` protocol. This
-crate has no HTTP client, database, filesystem, login flow, or Space dependency.
-It does not add an API endpoint or merge Client identities.
+crate keeps login, authorization persistence and Space policy in its adapters.
+Optional TLS/file features provide shared transport; Client identities remain separate.
 
 - `signatures`: P-256 keys, compact bootstrap JWS, request/response HTTP message
   signatures, and request-bound response verification.
@@ -40,3 +40,28 @@ Run `cargo test -p mhome-host-auth`. Release with `mhome-host-auth-v<version>`
 after publishing its Foundation dependencies. JavaScript/Android/iOS wire
 contracts remain in Core API; mobile native transports do not automatically
 link this Rust library.
+
+## Host TLS and native files
+
+`tls` exports a self-signed server certificate from the existing Host P-256 identity.
+The Host prepares `identity.json`, `host-key.pem` and `host-cert.pem` under
+`<workdir>/security/host/` before starting independently listening services.
+Production uses `~/.meow/security/host/`; development and E2E retain their isolated
+workdirs. Hub business signing keys and Client signing keys remain independent.
+
+`PeerPin::trusted` verifies the authenticated Host public key and TLS handshake
+signature. It does not depend on a LAN DNS name, public CA or offline device clock.
+Only explicit first setup/public challenge operations use a temporary bootstrap pin.
+A signed challenge or authenticated cloud response must establish the key before
+sending credentials. Never substitute a new key after a mismatch or fall back to HTTP.
+`tls-server` adds the bounded, concurrent Axum TLS listener. Certificates are prepared
+on startup; changing identity requires restarting the owning services.
+
+`file-gateway` provides a loopback-only, random capability URL for native WebViews.
+It pins the upstream HTTPS key from the authenticated artifact/Storage response,
+streams data with Range support, forbids redirects and bounds active transfers.
+The native login owner clears capabilities and cancels transfers on logout.
+Storage sessions explicitly grant a same-origin `/storage/v1` prefix; ordinary file
+grants allow only GET/HEAD of their exact URL. Cloud file URLs keep normal CA trust.
+
+Run `cargo test -p mhome-host-auth --features file-gateway` for transport tests.

@@ -66,6 +66,8 @@ impl PrepareArtifactUploadRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PrepareArtifactUploadResponse {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_identity: Option<crate::HostTlsIdentity>,
     pub upload_id: String,
     pub url: String,
     #[serde(default)]

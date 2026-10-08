@@ -548,3 +548,18 @@ mod tests {
         assert!(ArtifactMetadata::file("Application/PDF", 100).is_err());
     }
 }
+
+/// TLS identity of a local file endpoint, delivered over the authenticated business channel.
+/// It grants no Host management authority. Public cloud URLs omit this field.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HostTlsIdentity {
+    pub host_id: String,
+    pub public_key: HostTlsPublicKey,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HostTlsPublicKey {
+    pub x: String,
+    pub y: String,
+}

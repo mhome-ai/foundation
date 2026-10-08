@@ -1,11 +1,11 @@
 [package]
 name = "mhome-host-auth"
-version = "1.1.6"
+version = "1.2.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "Transport-independent Host authentication and Client session rules"
+description = "Host authentication, Client sessions, and optional pinned LAN TLS"
 readme = "README.md"
 publish = ["crates-io"]
 include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
@@ -23,3 +23,73 @@ rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
+
+[features]
+file-gateway = ["tls-server", "dep:reqwest", "dep:tokio-util", "dep:futures-util", "dep:async-stream"]
+tls-server = ["tls", "dep:axum"]
+tls = ["dep:fs2", "dep:tempfile", "dep:rustls", "dep:rustls-pemfile", "dep:rcgen", "dep:x509-parser", "dep:tokio-rustls", "dep:tokio"]
+
+[dependencies.rustls]
+version = "0.23"
+default-features = false
+features = ["ring", "std", "tls12"]
+optional = true
+
+[dependencies.tokio-rustls]
+version = "0.26"
+default-features = false
+features = ["ring", "tls12"]
+optional = true
+
+[dependencies.tokio]
+version = "1"
+features = ["net", "time"]
+optional = true
+
+[dependencies.rustls-pemfile]
+version = "2"
+optional = true
+
+[dependencies.rcgen]
+version = "0.13"
+optional = true
+
+[dependencies.x509-parser]
+version = "0.16"
+optional = true
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-util"] }
+
+[dependencies.axum]
+version = "0.8"
+default-features = false
+features = ["tokio", "http1"]
+optional = true
+
+[dependencies.fs2]
+version = "0.4"
+optional = true
+
+[dependencies.tempfile]
+version = "3"
+optional = true
+
+[dependencies.reqwest]
+version = "0.12"
+default-features = false
+features = ["rustls-tls", "stream"]
+optional = true
+
+[dependencies.tokio-util]
+version = "0.7"
+features = ["rt"]
+optional = true
+
+[dependencies.futures-util]
+version = "0.3"
+optional = true
+
+[dependencies.async-stream]
+version = "0.3"
+optional = true

@@ -33,6 +33,8 @@ pub enum ArtifactDelivery {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ResolveArtifactResponse {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_identity: Option<crate::HostTlsIdentity>,
     pub uri: String,
     pub kind: ArtifactKind,
     pub mime_type: String,
@@ -108,6 +110,7 @@ mod tests {
     #[test]
     fn validates_response_against_reference() {
         let response = ResolveArtifactResponse {
+            host_identity: None,
             uri: FILE_URI.to_string(),
             kind: ArtifactKind::File,
             mime_type: "application/pdf".to_string(),
@@ -127,6 +130,7 @@ mod tests {
     #[test]
     fn rejects_response_metadata_drift() {
         let response = ResolveArtifactResponse {
+            host_identity: None,
             uri: FILE_URI.to_string(),
             kind: ArtifactKind::File,
             mime_type: "text/plain".to_string(),

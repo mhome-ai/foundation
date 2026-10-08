@@ -159,7 +159,7 @@ impl UpdateCallbackBaseRequest {
         }
         self.network
             .available_ipv4(now_ms)
-            .map(|ip| format!("http://{ip}:{}", self.port))
+            .map(|ip| format!("https://{ip}:{}", self.port))
     }
 }
 
@@ -338,6 +338,8 @@ pub struct ArtifactDeliveryProjectionRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArtifactDeliveryProjectionResponse {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_identity: Option<artifact_api::HostTlsIdentity>,
     pub url: String,
 }
 
@@ -352,6 +354,8 @@ pub struct ArtifactUploadProjectionRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArtifactUploadProjectionResponse {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_identity: Option<artifact_api::HostTlsIdentity>,
     pub url: String,
 }
 
@@ -377,6 +381,8 @@ pub struct ExternalServiceAppFacadeRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExternalHostRuntimeRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_public_key: Option<crate::host::auth::PublicKey>,
     pub method: ExternalHostRuntimeMethod,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub candidate_id: Option<String>,
@@ -471,7 +477,7 @@ mod tests {
         };
         assert_eq!(
             request.callback_base(100_000).as_deref(),
-            Some("http://192.168.1.5:3210")
+            Some("https://192.168.1.5:3210")
         );
         let roundtrip: UpdateCallbackBaseRequest =
             serde_json::from_value(serde_json::to_value(&request).unwrap()).unwrap();

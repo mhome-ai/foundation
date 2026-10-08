@@ -14,7 +14,7 @@ include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
 name = "ble_commission"
 
 [dependencies]
-app-facade-api = { package = "mhome-app-facade-api", version = "=1.36.1", path = "../app-facade-api" }
+app-facade-api = { package = "mhome-app-facade-api", version = "=1.37.0", path = "../app-facade-api" }
 async-trait = "0.1"
 core-api = { package = "mhome-core-api", version = "=1.27.0", path = "../core-api" }
 protocomm = { package = "mhome-protocomm", version = "=0.1.0", path = "../protocomm" }

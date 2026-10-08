@@ -16,3 +16,19 @@ Scope: health, challenge, prepare, status, accept. All Node implementations adop
 - Hub identity caches use the verified Hub/tenant/scope tuple, have bounded capacity and at most the five-minute transaction TTL, and do not replace JWT signature, expiry or challenge verification.
 
 Core does not automatically retry commissioning requests. Pending readiness may be polled within a fixed deadline. A failed/cancelled session and revocation of its provisional credentials commit together in Core local storage. Node clears stale identities only following authenticated Hub rejection or expiry, and checks persistence failures before declaring cleanup complete. Removal compares the exact old credentials. A new add may be refused while an old binding cannot yet be verified/cleared.
+
+## Host TLS binding
+
+Each service keeps its own HTTPS port and uses its owning Host's P-256 TLS key.
+The signed `NodeChallengePayload.hostPublicKey` binds that TLS key to the selected
+Node commission identity, nonce, Host, scope and node type. Only the public challenge
+request may bootstrap TLS. Core verifies the existing Node evidence before passing
+that proven key to the platform transport for prepare/status/accept. These token-bearing
+requests require strict HTTPS pinning and cannot fall back to discovery-provided keys
+or HTTP. The key is scoped to the attempt; no new long-lived candidate cache is needed.
+
+Unconfigured Core setup retains its distinct commission key. Its challenge also carries
+`hostId`, `hostPublicKey`, and `hostTlsSignature` over `hub_commission_tls_payload`.
+The binary domain prefix cannot be supplied to the legacy UTF-8 nonce signer.
+Core's temporary commission key is process-scoped: a restart ends the setup attempt;
+permanent Host and Hub identities have their own durable stores.

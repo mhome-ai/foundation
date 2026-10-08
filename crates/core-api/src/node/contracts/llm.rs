@@ -99,6 +99,8 @@ pub struct ModelImportSnapshot {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModelImportUploadGrant {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_identity: Option<artifact_api::HostTlsIdentity>,
     pub bearer_token: String,
     pub chunk_size_bytes: u64,
     pub expires_at_epoch_ms: i64,
