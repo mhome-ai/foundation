@@ -168,11 +168,11 @@ async fn serve_file(State(state): State<Arc<GatewayState>>, request: Request) ->
         "access-control-allow-methods",
         HeaderValue::from_static("GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS"),
     );
-    headers.insert("access-control-allow-headers", HeaderValue::from_static("Authorization, Content-Type, Range, If-Range, If-Match, If-None-Match, Content-Encoding"));
+    headers.insert("access-control-allow-headers", HeaderValue::from_static("Authorization, Content-Type, Range, If-Range, If-Match, If-None-Match, Content-Encoding, X-Meow-Content-Sha256"));
     headers.insert(
         "access-control-expose-headers",
         HeaderValue::from_static(
-            "Content-Length, Content-Type, Content-Range, Accept-Ranges, ETag, Last-Modified",
+            "Content-Length, Content-Type, Content-Range, Accept-Ranges, ETag, Last-Modified, X-Meow-Object-Id, X-Meow-Content-Sha256",
         ),
     );
     headers.insert("cache-control", HeaderValue::from_static("no-store"));
@@ -248,6 +248,7 @@ async fn transfer(state: Arc<GatewayState>, request: Request) -> Result<Response
         "content-type",
         "content-length",
         "content-encoding",
+        "x-meow-content-sha256",
     ] {
         if let Some(value) = request.headers().get(name) {
             outgoing = outgoing.header(name, value);
@@ -266,6 +267,8 @@ async fn transfer(state: Arc<GatewayState>, request: Request) -> Result<Response
         "last-modified",
         "content-encoding",
         "content-disposition",
+        "x-meow-object-id",
+        "x-meow-content-sha256",
     ] {
         if let Some(value) = response.headers().get(name) {
             result = result.header(name, value);
@@ -328,6 +331,101 @@ mod tests {
             storage_prefix: false,
             headers: Default::default(),
         }
+    }
+
+    #[tokio::test]
+    async fn storage_checksum_and_metadata_survive_the_native_gateway() {
+        use sha2::{Digest, Sha256};
+
+        // Exercise an authenticated Storage upload contract over real pinned TLS.
+        // Missing/incorrect checksums must not become successful uploads in transit.
+        async fn upload(headers: HeaderMap, body: axum::body::Bytes) -> Response {
+            assert_eq!(headers["authorization"], "Bearer session-token");
+            assert!(!headers.contains_key("x-unrelated-header"));
+            let digest = format!("{:x}", Sha256::digest(&body));
+            if headers
+                .get("x-meow-content-sha256")
+                .and_then(|h| h.to_str().ok())
+                != Some(digest.as_str())
+            {
+                return (StatusCode::BAD_REQUEST, "content SHA-256 mismatch").into_response();
+            }
+            Response::builder()
+                .status(StatusCode::CREATED)
+                .header("x-meow-object-id", "object-1")
+                .header("x-meow-content-sha256", digest)
+                .body(Body::from("stored"))
+                .unwrap()
+        }
+
+        let key = new_key();
+        let pin = public_key(key.verifying_key());
+        let (cert, private) = tls::certificate(&key).unwrap();
+        let tcp = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let endpoint = format!("https://{}/storage/v1", tcp.local_addr().unwrap());
+        let listener = tls::Listener::new(
+            tcp,
+            tls::server_config(cert.as_bytes(), private.as_bytes()).unwrap(),
+        );
+        let app = Router::new().route("/storage/v1/objects/file", axum::routing::put(upload));
+        let server = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+        let gateway = FileGateway::start().await.unwrap();
+        let mut grant = grant(endpoint, pin);
+        grant.storage_prefix = true;
+        grant
+            .headers
+            .insert("Authorization".into(), "Bearer session-token".into());
+        let local = format!("{}/objects/file", gateway.register(grant).await.unwrap());
+        let client = reqwest::Client::builder().no_proxy().build().unwrap();
+        let preflight = client
+            .request(Method::OPTIONS, &local)
+            .header("Origin", "http://localhost")
+            .header("Access-Control-Request-Method", "PUT")
+            .header("Access-Control-Request-Headers", "x-meow-content-sha256")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(preflight.status(), StatusCode::NO_CONTENT);
+        assert!(preflight.headers()["access-control-allow-headers"]
+            .to_str()
+            .unwrap()
+            .split(',')
+            .any(|h| h.trim().eq_ignore_ascii_case("x-meow-content-sha256")));
+
+        let digest = format!("{:x}", Sha256::digest(b"data"));
+        let response = client
+            .put(&local)
+            .header("x-meow-content-sha256", &digest)
+            .header("Authorization", "Bearer must-not-override-session")
+            .header("x-unrelated-header", "must-not-pass")
+            .body("data")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::CREATED);
+        assert_eq!(response.headers()["x-meow-object-id"], "object-1");
+        assert_eq!(response.headers()["x-meow-content-sha256"], digest);
+        for name in ["x-meow-object-id", "x-meow-content-sha256"] {
+            assert!(response.headers()["access-control-expose-headers"]
+                .to_str()
+                .unwrap()
+                .split(',')
+                .any(|h| h.trim().eq_ignore_ascii_case(name)));
+        }
+        assert_eq!(response.text().await.unwrap(), "stored");
+
+        let rejected = client
+            .put(&local)
+            .header("x-meow-content-sha256", "0".repeat(64))
+            .body("data")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(rejected.status(), StatusCode::BAD_REQUEST);
+        assert_eq!(rejected.text().await.unwrap(), "content SHA-256 mismatch");
+        gateway.stop().await;
+        server.abort();
+        let _ = server.await;
     }
     #[tokio::test]
     async fn range_uses_pinned_tls_and_logout_retires_ticket() {
