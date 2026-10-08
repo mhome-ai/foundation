@@ -10,8 +10,8 @@ explicit logout deletes the native Client's local private key. Hub-held Client i
 are retired when the corresponding Space membership is removed.
 
 An unused Host supports first-claim by the first signed-in LAN user (TOFU). Once its
-ACL is occupied, another user cannot claim it; additional users and explicit identity
-recovery use protected local administrator IPC. An existing authorized user may retry
+ACL is occupied, another user cannot claim it; additional users require protected local
+administrator IPC. Explicit setup after a reset can also use the native App (see below). An existing authorized user may retry
 an interrupted first-claim. TOFU does not allow silently replacing a trusted Host key.
 
 Client registrations expire after 30 days of inactivity, independently of the user ACL.
@@ -112,14 +112,26 @@ registration. This path never retries an earlier install/restart. Normal known-H
 inventory does not fetch cloud identity. A stopped Host remains a connectivity error;
 proof failure alone does not prove that the key was lost.
 
-## Android native first-claim bridge
+## Native first-claim bridge
 
-The native Host-management contract declares `hostClaim({hostId, claimToken?})`; the
+The native Host-management contract declares `hostClaim({hostId, claimToken?, recoverIdentity?})`; the
 optional `claimToken` comes from a completed Bluetooth setup and is forwarded to the Host
 unchanged. It takes neither
 Space nor a caller-provided URL; the native Client resolves the Host on its current LAN.
 Success requires Host persistence and a confirmed cloud `commit-claim`, not just a grant.
 `claimable` comes from a fresh verified empty-ACL challenge. `claimed` in that challenge
 does not imply authorization for the current user. No new Host or cloud endpoint is added.
-Android and desktop advertise native claim; iOS native first claim remains separate work.
+Android, iOS and desktop advertise native claim.
 Ordinary UI management still prefers Core; the native first-claim path bootstraps without it.
+
+### Explicit setup after factory reset
+
+A reset Host may retain its hardware ID while generating a new key. Ordinary claims,
+background connections and automatic Bluetooth claims must not replace a trusted key.
+`recoverIdentity: true` is allowed only after an explicit user reauthorization action.
+The native Client uses the signed-in user's cloud authorization, fixes one candidate
+key for this operation, verifies the Host receipt, and persists the new pin only after
+the cloud directory commit. Clear only that Host's old connection/enrollment state.
+`HOST_IDENTITY_CHANGED` requires that explicit action; it is not a retry hint.
+Hub-only claims cannot approve key replacement. Host ACL and Bluetooth claim-token
+checks still apply, so this operation cannot add an unauthorized second user.

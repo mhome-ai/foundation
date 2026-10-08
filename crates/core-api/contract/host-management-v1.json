@@ -66,7 +66,7 @@
     "info": "HostInfo or null",
     "infoError": "string or null",
     "claimable": "boolean; verified empty-ACL challenge, not a permission result",
-    "identityUnverified": "boolean; blocks TOFU and management after verification failure"
+    "identityUnverified": "boolean; blocks automatic TOFU and management; an explicit native reauthorization may start a new claim"
   },
   "runtimeResponse": {
     "metrics": "HostMetrics",
@@ -79,10 +79,12 @@
   },
   "claimRequest": {
     "hostId": "non-empty string; no scope or endpoint accepted",
-    "claimToken": "optional string from a completed Bluetooth setup; forwarded to the Host claim unchanged"
+    "claimToken": "optional string from a completed Bluetooth setup; forwarded to the Host claim unchanged",
+    "recoverIdentity": "optional boolean, default false; only an explicit user reauthorization may replace this account’s old Host key; never enable for background/Bluetooth automatic claim"
   },
   "claimResponse": {
     "claimed": "true only after Host persistence and cloud receipt commit",
-    "hostId": "requested Host identity when supplied"
+    "hostId": "requested Host identity when supplied",
+    "identityConflict": "HOST_IDENTITY_CHANGED requires explicit reauthorization; failure never changes the trusted key"
   }
 }
