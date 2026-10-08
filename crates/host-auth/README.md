@@ -60,7 +60,14 @@ on startup; changing identity requires restarting the owning services.
 `file-gateway` provides a loopback-only, random capability URL for native WebViews.
 It pins the upstream HTTPS key from the authenticated artifact/Storage response,
 streams data with Range support, forbids redirects and bounds active transfers.
-The native login owner clears capabilities and cancels transfers on logout.
+Each native login holds a `FileOwner`, with child owners for WebView pages.
+Retire the login synchronously before publishing its replacement; retire a page
+on unload. Retirement cancels that owner and its descendants, including in-flight
+transfers. Delayed tasks must retain their captured owner, never clear global state.
+`register(&owner, grant)` rejects retired owners. Call `release(&owner, url)`
+when a download finishes or its consumer retires; it releases only that owner’s
+exact ticket and is idempotent. Keep media tickets for Range rereads until playback
+consumers retire, and Storage tickets until session release or expiry.
 Storage sessions explicitly grant a same-origin `/storage/v1` prefix; ordinary file
 grants allow only GET/HEAD of their exact URL. Cloud file URLs keep normal CA trust.
 

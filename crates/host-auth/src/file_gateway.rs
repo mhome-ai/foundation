@@ -14,10 +14,10 @@ use futures_util::StreamExt;
 use serde::Deserialize;
 use std::{
     collections::HashMap,
-    sync::Arc,
+    sync::{Arc, Mutex},
     time::{SystemTime, UNIX_EPOCH},
 };
-use tokio::sync::{Mutex, Semaphore};
+use tokio::sync::Semaphore;
 use tokio_util::sync::CancellationToken;
 
 #[derive(Deserialize)]
@@ -31,7 +31,48 @@ pub struct FileGrant {
     #[serde(default)]
     pub headers: std::collections::BTreeMap<String, String>,
 }
+/// A session or page owns its authorizations. Children retire with their parent;
+/// retiring an old owner can never invalidate a replacement owner.
+#[derive(Clone)]
+pub struct FileOwner(Arc<Owner>);
+struct Owner {
+    id: String,
+    cancel: CancellationToken,
+    state: Arc<GatewayState>,
+}
+impl Owner {
+    fn retire(&self) {
+        self.cancel.cancel();
+        self.state
+            .tickets
+            .lock()
+            .expect("file tickets")
+            .retain(|_, ticket| !ticket.cancel.is_cancelled());
+    }
+}
+impl Drop for Owner {
+    fn drop(&mut self) {
+        self.retire();
+    }
+}
+impl FileOwner {
+    pub fn child(&self) -> Self {
+        Self(Arc::new(Owner {
+            id: crate::signatures::random_id(),
+            cancel: self.0.cancel.child_token(),
+            state: self.0.state.clone(),
+        }))
+    }
+    pub fn retire(&self) {
+        self.0.retire();
+    }
+    pub fn is_retired(&self) -> bool {
+        self.0.cancel.is_cancelled()
+    }
+}
+
 struct Ticket {
+    owner_id: String,
     url: reqwest::Url,
     client: reqwest::Client,
     expires: u64,
@@ -83,7 +124,18 @@ impl FileGateway {
             shutdown,
         })
     }
-    pub async fn register(&self, grant: FileGrant) -> Result<String> {
+    pub fn owner(&self) -> FileOwner {
+        FileOwner(Arc::new(Owner {
+            id: crate::signatures::random_id(),
+            cancel: self.shutdown.child_token(),
+            state: self.state.clone(),
+        }))
+    }
+    pub async fn register(&self, owner: &FileOwner, grant: FileGrant) -> Result<String> {
+        ensure!(
+            Arc::ptr_eq(&owner.0.state, &self.state) && !owner.is_retired(),
+            "File owner retired"
+        );
         let url = reqwest::Url::parse(&grant.url)?;
         ensure!(
             url.scheme() == "https"
@@ -124,9 +176,10 @@ impl FileGateway {
             .default_headers(headers)
             .build()?;
         let id = crate::signatures::random_id();
-        let mut tickets = self.state.tickets.lock().await;
+        let mut tickets = self.state.tickets.lock().expect("file tickets");
+        ensure!(!owner.is_retired(), "File owner retired");
         tickets.retain(|_, t| {
-            let keep = t.expires > now();
+            let keep = t.expires > now() && !t.cancel.is_cancelled();
             if !keep {
                 t.cancel.cancel();
             }
@@ -136,26 +189,34 @@ impl FileGateway {
         tickets.insert(
             id.clone(),
             Arc::new(Ticket {
+                owner_id: owner.0.id.clone(),
                 url,
                 client,
                 expires: grant.expires_at_unix_ms,
                 prefix: grant.storage_prefix,
-                cancel: CancellationToken::new(),
+                cancel: owner.0.cancel.child_token(),
             }),
         );
         Ok(format!("{}{id}", self.base))
     }
-    /// Called on logout/page retirement; also stops in-flight upload/download streams.
-    pub async fn clear(&self) {
-        let mut tickets = self.state.tickets.lock().await;
-        for ticket in tickets.values() {
-            ticket.cancel.cancel();
+    /// Release exactly one capability owned by the caller (idempotent).
+    pub fn release(&self, owner: &FileOwner, url: &str) {
+        let Some(id) = url.strip_prefix(&self.base) else {
+            return;
+        };
+        let mut tickets = self.state.tickets.lock().expect("file tickets");
+        if tickets
+            .get(id)
+            .is_some_and(|ticket| ticket.owner_id == owner.0.id)
+        {
+            if let Some(ticket) = tickets.remove(id) {
+                ticket.cancel.cancel();
+            }
         }
-        tickets.clear();
     }
     pub async fn stop(&self) {
-        self.clear().await;
         self.shutdown.cancel();
+        self.state.tickets.lock().expect("file tickets").clear();
     }
 }
 async fn serve_file(State(state): State<Arc<GatewayState>>, request: Request) -> Response {
@@ -190,7 +251,7 @@ async fn transfer(state: Arc<GatewayState>, request: Request) -> Result<Response
     let ticket = state
         .tickets
         .lock()
-        .await
+        .expect("file tickets")
         .get(id)
         .cloned()
         .context("Unknown file ticket")?;
@@ -334,6 +395,83 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn released_files_do_not_exhaust_capacity_and_retired_owners_cannot_touch_replacements() {
+        let (url, key, server) = fixture().await;
+        let gateway = FileGateway::start().await.unwrap();
+        let session_a = gateway.owner();
+        let page_a = session_a.child();
+        for _ in 0..512 {
+            let local = gateway
+                .register(&page_a, grant(url.clone(), key.clone()))
+                .await
+                .unwrap();
+            gateway.release(&page_a, &local);
+        }
+        assert!(gateway.state.tickets.lock().unwrap().is_empty());
+        let old = gateway
+            .register(&page_a, grant(url.clone(), key.clone()))
+            .await
+            .unwrap();
+        session_a.retire();
+        let session_b = gateway.owner();
+        let page_b = session_b.child();
+        let current = gateway
+            .register(&page_b, grant(url.clone(), key.clone()))
+            .await
+            .unwrap();
+        assert!(gateway.register(&page_a, grant(url, key)).await.is_err());
+        // Late A callbacks cannot delete B, even if accidentally handed B's URL.
+        gateway.release(&page_a, &current);
+        page_a.retire();
+        let client = reqwest::Client::builder().no_proxy().build().unwrap();
+        assert!(!client.get(old).send().await.unwrap().status().is_success());
+        assert!(client
+            .get(&current)
+            .header("range", "bytes=5-9")
+            .send()
+            .await
+            .unwrap()
+            .status()
+            .is_success());
+        page_b.retire();
+        assert!(gateway.state.tickets.lock().unwrap().is_empty());
+        assert!(!client
+            .get(current)
+            .send()
+            .await
+            .unwrap()
+            .status()
+            .is_success());
+        gateway.stop().await;
+        server.abort();
+        let _ = server.await;
+    }
+
+    #[tokio::test]
+    async fn dropping_one_page_keeps_its_sibling_alive_but_session_retirement_cancels_both() {
+        let gateway = FileGateway::start().await.unwrap();
+        let session = gateway.owner();
+        let first = session.child();
+        let second = session.child();
+        let key = public_key(new_key().verifying_key());
+        gateway
+            .register(&first, grant("https://127.0.0.1/file".into(), key.clone()))
+            .await
+            .unwrap();
+        gateway
+            .register(&second, grant("https://127.0.0.1/file".into(), key))
+            .await
+            .unwrap();
+        drop(first);
+        assert!(!second.is_retired());
+        assert_eq!(gateway.state.tickets.lock().unwrap().len(), 1);
+        session.retire();
+        assert!(second.is_retired());
+        assert!(gateway.state.tickets.lock().unwrap().is_empty());
+        gateway.stop().await;
+    }
+
+    #[tokio::test]
     async fn storage_checksum_and_metadata_survive_the_native_gateway() {
         use sha2::{Digest, Sha256};
 
@@ -370,12 +508,16 @@ mod tests {
         let app = Router::new().route("/storage/v1/objects/file", axum::routing::put(upload));
         let server = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
         let gateway = FileGateway::start().await.unwrap();
+        let owner = gateway.owner();
         let mut grant = grant(endpoint, pin);
         grant.storage_prefix = true;
         grant
             .headers
             .insert("Authorization".into(), "Bearer session-token".into());
-        let local = format!("{}/objects/file", gateway.register(grant).await.unwrap());
+        let local = format!(
+            "{}/objects/file",
+            gateway.register(&owner, grant).await.unwrap()
+        );
         let client = reqwest::Client::builder().no_proxy().build().unwrap();
         let preflight = client
             .request(Method::OPTIONS, &local)
@@ -431,7 +573,8 @@ mod tests {
     async fn range_uses_pinned_tls_and_logout_retires_ticket() {
         let (url, key, server) = fixture().await;
         let gateway = FileGateway::start().await.unwrap();
-        let local = gateway.register(grant(url, key)).await.unwrap();
+        let owner = gateway.owner();
+        let local = gateway.register(&owner, grant(url, key)).await.unwrap();
         let client = reqwest::Client::new();
         let response = client
             .get(&local)
@@ -452,7 +595,7 @@ mod tests {
                 .status(),
             StatusCode::BAD_GATEWAY
         );
-        gateway.clear().await;
+        owner.retire();
         assert_eq!(
             client.get(local).send().await.unwrap().status(),
             StatusCode::BAD_GATEWAY
@@ -465,9 +608,10 @@ mod tests {
     async fn wrong_host_key_and_plaintext_are_rejected() {
         let (url, _, server) = fixture().await;
         let gateway = FileGateway::start().await.unwrap();
+        let owner = gateway.owner();
         let key = public_key(new_key().verifying_key());
         assert!(gateway
-            .register(grant(url.replace("https:", "http:"), key.clone()))
+            .register(&owner, grant(url.replace("https:", "http:"), key.clone()))
             .await
             .is_err());
         let direct = reqwest::Client::builder()
@@ -479,7 +623,7 @@ mod tests {
             tls::is_identity_error(&failure),
             "certificate rejection lost its classification: {failure:?}"
         );
-        let local = gateway.register(grant(url, key)).await.unwrap();
+        let local = gateway.register(&owner, grant(url, key)).await.unwrap();
         let response = reqwest::get(local).await.unwrap();
         assert_eq!(response.status(), StatusCode::BAD_GATEWAY);
         gateway.stop().await;
