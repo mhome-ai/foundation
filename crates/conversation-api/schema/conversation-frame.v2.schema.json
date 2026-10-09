@@ -382,6 +382,9 @@
               "type": "null"
             }
           ]
+        },
+        "origin": {
+          "$ref": "#/$defs/threadOrigin"
         }
       }
     },
@@ -2817,6 +2820,42 @@
           }
         }
       }
+    },
+    "threadOrigin": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "requestId"
+          ],
+          "properties": {
+            "type": {
+              "const": "turn"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "operationId"
+          ],
+          "properties": {
+            "type": {
+              "const": "operation"
+            },
+            "operationId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
     }
   }
 }

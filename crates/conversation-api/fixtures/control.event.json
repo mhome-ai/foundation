@@ -14,7 +14,11 @@
         "createdAt": "2026-08-22T00:00:00Z",
         "updatedAt": "2026-08-22T00:00:00Z",
         "archivedAt": null,
-        "purgeAfter": null
+        "purgeAfter": null,
+        "origin": {
+          "type": "turn",
+          "requestId": "turn-create-2"
+        }
       },
       "activeRun": null,
       "pendingInteraction": null,

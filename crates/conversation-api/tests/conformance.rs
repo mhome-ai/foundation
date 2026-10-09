@@ -439,3 +439,50 @@ fn command_only_enums_reject_internal_state_values() {
             .is_valid(&enqueue)
     );
 }
+
+#[test]
+fn thread_origins_are_typed_and_match_the_frame_schema() {
+    use conversation_api::{ConversationControl, ThreadOrigin};
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/conversation-frame.v2.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    for (origin, expected) in [
+        (
+            serde_json::json!({"type":"turn", "requestId":"request-2"}),
+            ThreadOrigin::Turn {
+                request_id: "request-2".into(),
+            },
+        ),
+        (
+            serde_json::json!({"type":"operation", "operationId":"session-2"}),
+            ThreadOrigin::Operation {
+                operation_id: "session-2".into(),
+            },
+        ),
+    ] {
+        let mut frame = fixture("control-get.response.json");
+        frame["body"]["activeThread"]["origin"] = origin;
+        assert!(validator.is_valid(&frame));
+        let decoded: ConversationControl = serde_json::from_value(frame["body"].clone()).unwrap();
+        assert_eq!(decoded.active_thread.unwrap().origin, Some(expected));
+    }
+    for origin in [
+        serde_json::json!({"type":"turn"}),
+        serde_json::json!({"type":"operation", "requestId":"request-2"}),
+        serde_json::json!({"type":"turn", "requestId":"request-2", "operationId":"session-2"}),
+        serde_json::json!({"type":"unknown", "requestId":"request-2"}),
+    ] {
+        let mut frame = fixture("control-get.response.json");
+        frame["body"]["activeThread"]["origin"] = origin;
+        assert!(!validator.is_valid(&frame));
+        assert!(serde_json::from_value::<ConversationControl>(frame["body"].clone()).is_err());
+    }
+    let mut frame = fixture("control-get.response.json");
+    frame["body"]["activeThread"]
+        .as_object_mut()
+        .unwrap()
+        .remove("origin");
+    assert!(validator.is_valid(&frame));
+    let decoded: ConversationControl = serde_json::from_value(frame["body"].clone()).unwrap();
+    assert!(decoded.active_thread.unwrap().origin.is_none());
+}

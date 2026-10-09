@@ -16,10 +16,28 @@ pub enum ThreadArchiveReason {
     Replaced,
 }
 
+/// Durable cause of this thread's creation, assigned by the conversation owner.
+/// This is independent of turn admission: model preparation may fail after creation.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
+pub enum ThreadOrigin {
+    Turn {
+        #[serde(rename = "requestId")]
+        request_id: String,
+    },
+    Operation {
+        #[serde(rename = "operationId")]
+        operation_id: String,
+    },
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ThreadSummary {
     pub thread_id: String,
+    /// Absent only for threads persisted before origin tracking was introduced.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<ThreadOrigin>,
     pub title: String,
     pub state: ThreadState,
     pub created_at: String,

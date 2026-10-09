@@ -11,6 +11,16 @@ contains no Agent runtime, persistence, transport implementation, or messaging-p
 threads themselves. The Conversation implementation owns active-thread creation, idle rotation,
 pending-interaction policy, idempotency, and enqueueing for that operation.
 
+Each newly created `ThreadSummary` carries a durable `origin`: either
+`{ "type": "turn", "requestId": "…" }` for creation/idle rotation caused by
+`turn/submit`, or `{ "type": "operation", "operationId": "…" }` for an explicit
+thread/session operation. The owner assigns it when committing creation; callers
+cannot supply it as request metadata. It is immutable and appears in control,
+catalog and thread-load projections, including queries after reconnection.
+It identifies creation, not turn admission or execution. Origin can be absent
+for records written before tracking was introduced; clients must not infer a
+cause from operation-ID spelling, timing or the presence of an unbound send.
+
 The canonical `cs1` surface families are client personal (`cp`), client group (`cg`), messaging
 personal (`mp`), and messaging group (`mg`). Messaging surfaces include provider, provider account,
 external conversation, and an optional lane. A lane isolates a provider sub-conversation such as a
