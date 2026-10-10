@@ -130,8 +130,25 @@ mod access_mode_tests {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct QueueReorderRequest {
     pub thread_id: String,
-    pub expected_queue_version: u64,
-    pub ordered_request_ids: Vec<String>,
+    pub request_id: String,
+    pub operation_id: String,
+    /// Move this waiting request immediately before the anchor, or to the tail when null.
+    pub before_request_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct QueueUpdateRequest {
+    pub thread_id: String,
+    pub request_id: String,
+    pub operation_id: String,
+    pub content: MessageContent,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RequestStatusRequest {
+    pub request_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

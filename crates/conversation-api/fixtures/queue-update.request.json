@@ -1,0 +1,17 @@
+{
+  "target": "/chat/queue/update",
+  "direction": "request",
+  "body": {
+    "threadId": "thread-2",
+    "requestId": "request-2",
+    "operationId": "edit-1",
+    "content": {
+      "parts": [
+        {
+          "type": "text",
+          "text": "Updated instruction"
+        }
+      ]
+    }
+  }
+}

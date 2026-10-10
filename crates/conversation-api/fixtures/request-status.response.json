@@ -1,0 +1,14 @@
+{
+  "target": "/chat/request/status",
+  "direction": "response",
+  "body": {
+    "requestId": "request-2",
+    "admission": {
+      "state": "cancelled",
+      "admissionVersion": 2,
+      "reason": "cancelled",
+      "threadId": "thread-2",
+      "queueVersion": 5
+    }
+  }
+}

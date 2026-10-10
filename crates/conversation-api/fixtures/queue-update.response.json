@@ -1,9 +1,9 @@
 {
-  "target": "/chat/queue/reorder",
+  "target": "/chat/queue/update",
   "direction": "response",
   "body": {
     "receipt": {
-      "operationId": "move-1",
+      "operationId": "edit-1",
       "requestId": "request-2",
       "queueVersion": 4,
       "disposition": "applied"

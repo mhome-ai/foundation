@@ -186,6 +186,22 @@ const FIXTURES: &[(&str, &str)] = &[
         "thread-rotate.response.json",
         include_str!("../fixtures/thread-rotate.response.json"),
     ),
+    (
+        "queue-update.request.json",
+        include_str!("../fixtures/queue-update.request.json"),
+    ),
+    (
+        "queue-update.response.json",
+        include_str!("../fixtures/queue-update.response.json"),
+    ),
+    (
+        "request-status.request.json",
+        include_str!("../fixtures/request-status.request.json"),
+    ),
+    (
+        "request-status.response.json",
+        include_str!("../fixtures/request-status.response.json"),
+    ),
 ];
 
 fn fixture(name: &str) -> Value {
@@ -251,6 +267,8 @@ fn target_manifest_matches_the_rust_inventory() {
             conversation_api::QUEUE_REORDER_TARGET,
             conversation_api::REQUEST_CANCEL_TARGET,
             conversation_api::INTERACTION_SUBMIT_TARGET,
+            conversation_api::QUEUE_UPDATE_TARGET,
+            conversation_api::REQUEST_STATUS_TARGET,
         ]
     );
     let event_targets = manifest["eventTargets"]
@@ -276,6 +294,12 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
     body::<ThreadCreateRequest>("thread-create.request.json");
     body::<ThreadLoadRequest>("thread-load.request.json");
     body::<QueueReorderRequest>("queue-reorder.request.json");
+    body::<conversation_api::QueueUpdateRequest>("queue-update.request.json");
+    body::<conversation_api::RequestStatusRequest>("request-status.request.json");
+    body::<conversation_api::RequestStatusResponse>("request-status.response.json");
+    body::<conversation_api::ControlledResponse<conversation_api::QueueMutationResponse>>(
+        "queue-update.response.json",
+    );
     body::<RequestCancelRequest>("request-cancel.request.json");
     let waiting_cancel = body::<RequestCancelRequest>("request-cancel-waiting.request.json");
     assert_eq!(waiting_cancel.thread_id, None);

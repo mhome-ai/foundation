@@ -9,6 +9,8 @@ pub const TURN_SUBMIT_TARGET: &str = "/chat/turn/submit";
 pub const SESSION_START_TARGET: &str = "/chat/session/start";
 pub const INTERACTION_ANSWER_TARGET: &str = "/chat/interaction/answer";
 pub const QUEUE_REORDER_TARGET: &str = "/chat/queue/reorder";
+pub const QUEUE_UPDATE_TARGET: &str = "/chat/queue/update";
+pub const REQUEST_STATUS_TARGET: &str = "/chat/request/status";
 pub const REQUEST_CANCEL_TARGET: &str = "/chat/request/cancel";
 pub const INTERACTION_SUBMIT_TARGET: &str = "/chat/interaction/submit";
 pub const CHAT_EVENT_TARGET: &str = "/chat/event";
@@ -28,6 +30,8 @@ pub fn is_conversation_request_target(target: &str) -> bool {
             | SESSION_START_TARGET
             | INTERACTION_ANSWER_TARGET
             | QUEUE_REORDER_TARGET
+            | QUEUE_UPDATE_TARGET
+            | REQUEST_STATUS_TARGET
             | REQUEST_CANCEL_TARGET
             | INTERACTION_SUBMIT_TARGET
     )

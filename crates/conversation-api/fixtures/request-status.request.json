@@ -1,0 +1,7 @@
+{
+  "target": "/chat/request/status",
+  "direction": "request",
+  "body": {
+    "requestId": "request-2"
+  }
+}

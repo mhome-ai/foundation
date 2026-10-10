@@ -3,7 +3,8 @@
   "direction": "request",
   "body": {
     "threadId": "thread-2",
-    "expectedQueueVersion": 3,
-    "orderedRequestIds": ["request-2", "request-1"]
+    "requestId": "request-2",
+    "operationId": "move-1",
+    "beforeRequestId": "request-1"
   }
 }

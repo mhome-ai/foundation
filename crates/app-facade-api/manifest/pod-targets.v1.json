@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.pod.targets.v1",
-  "contractVersion": "1.37.2",
+  "contractVersion": "1.37.3",
   "contract": "contract/pod-commissioning-v1.md",
   "localTargets": [
     "/local/pod/discovery/start",
@@ -77,7 +77,10 @@
     "storage_failed"
   ],
   "notActivatedDetail": "not_activated",
-  "credentialRefusalReasons": ["invalid_payload", "wrong_state"],
+  "credentialRefusalReasons": [
+    "invalid_payload",
+    "wrong_state"
+  ],
   "reprovisionMode": "reprovision",
   "requestErrorReasons": [
     "session_active",

@@ -3,6 +3,29 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+pub struct QueueMutationResponse {
+    pub operation_id: String,
+    pub request_id: String,
+    pub queue_version: u64,
+    pub disposition: QueueMutationDisposition,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum QueueMutationDisposition {
+    Applied,
+    AlreadyApplied,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RequestStatusResponse {
+    pub request_id: String,
+    pub admission: Option<RequestAdmission>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct ThreadSession {
     pub activity_at_unix_ms: i64,
 }

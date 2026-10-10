@@ -1,6 +1,6 @@
 # mhome-conversation-api
 
-Typed, transport-neutral DTOs and canonical surface identities for the mHome conversation API.
+Typed, transport-neutral DTOs and canonical surface identities for the MeowLink conversation API.
 
 This crate owns wire targets, request and response bodies, user-visible message content, and
 conversation events. `ConversationSurface` is a canonical value object whose string form is the
@@ -80,3 +80,30 @@ Final replies, failures, cancellations, queue state, and actionable user
 confirmations remain durable. Snapshot deltas keep their existing contiguous
 version/recovery rules. Agent checkpoints and billing are independent of live
 presentation delivery.
+
+## Waiting queue operations
+
+`/chat/queue/update` replaces the complete content of one waiting request. Its
+request ID, original admission fingerprint, author, and frozen execution settings
+remain unchanged. Concurrent edits use the last successful server commit; client
+clocks are irrelevant. Claiming the request for execution and editing it share the
+same transactional boundary, so an edit cannot succeed after execution begins.
+
+`/chat/queue/reorder` moves `requestId` before `beforeRequestId`; a null anchor
+moves it to the tail. The server applies the move to its current queue, preserving
+new arrivals and unrelated moves. A missing request or anchor is a conflict; a
+client must never replace the whole queue from its stale local list.
+
+Both operations require an `operationId`, scoped to the surface and request ID.
+An exact retry returns `already_applied` and the original operation's queue version,
+without replaying its changes. Reusing it with another payload is a conflict.
+Command responses still carry a fresh authoritative control projection; clients
+apply control versions monotonically rather than treating a mutation receipt as
+a queue snapshot. Events and command responses use the same control versions.
+
+Cancellation, including archive cleanup, retains a durable terminal admission
+receipt independently of transcript retention. `/chat/request/status` reads that
+receipt by request ID, returning null admission for an unknown request. It recovers
+missed `admission.changed` events without reenqueuing or guessing from an empty
+queue. Retry of the original submission still checks its original content, even
+when the queued execution content was later edited.

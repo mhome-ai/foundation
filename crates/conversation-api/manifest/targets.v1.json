@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.conversation.targets.v1",
-  "contractVersion": "3.7.0",
+  "contractVersion": "3.8.0",
   "requestTargets": [
     "/chat/control/get",
     "/chat/thread/list",
@@ -14,7 +14,9 @@
     "/chat/interaction/answer",
     "/chat/queue/reorder",
     "/chat/request/cancel",
-    "/chat/interaction/submit"
+    "/chat/interaction/submit",
+    "/chat/queue/update",
+    "/chat/request/status"
   ],
   "eventTargets": [
     "/chat/event",
