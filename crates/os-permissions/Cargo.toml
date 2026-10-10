@@ -14,7 +14,7 @@ include = ["src/**", "native/**", "build.rs", "Cargo.toml", "README.md", "LICENS
 name = "os_permissions"
 
 [dependencies]
-core-api = { package = "mhome-core-api", version = "=1.28.2", path = "../core-api" }
+core-api = { package = "mhome-core-api", version = "=1.29.0", path = "../core-api" }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Devices_Bluetooth", "Win32_Foundation"] }

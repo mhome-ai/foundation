@@ -1,0 +1,10 @@
+{
+  "request": {
+    "protocol": "meow.hub.connection.proof.v1",
+    "hubId": "hub-1",
+    "tenantId": "tenant-1",
+    "scopeId": "scope-1",
+    "nonce": "nonce-1"
+  },
+  "prodSigningPayloadHex": "000000000000001c6d656f772e6875622e636f6e6e656374696f6e2e70726f6f662e763100000000000000056875622d31000000000000000874656e616e742d31000000000000000773636f70652d3100000000000000076e6f6e63652d31"
+}

@@ -76,7 +76,8 @@ impl Sessions {
             "Stale Host context publication"
         );
         ensure!(
-            context.host_id == host_id
+            context.env == core_api::RuntimeEnv::current()
+                && context.host_id == host_id
                 && context.protocol == PROTOCOL
                 && !context.boot_id.is_empty(),
             "Host context identity mismatch"
@@ -121,7 +122,8 @@ pub fn verify_context(
 ) -> Result<HostContext> {
     let context: HostContext = verify_jws(&verifying_key(host_key)?, "meow-host-context", proof)?;
     ensure!(
-        context.host_id == host_id
+        context.env == core_api::RuntimeEnv::current()
+            && context.host_id == host_id
             && context.probe_id == probe_id
             && context.protocol == PROTOCOL
             && !context.boot_id.is_empty(),
@@ -144,7 +146,8 @@ pub fn verify_enrollment_challenge(
         proof,
     )?;
     ensure!(
-        challenge.host_id == host_id
+        challenge.env == core_api::RuntimeEnv::current()
+            && challenge.host_id == host_id
             && challenge.user_id == user_id
             && &challenge.client_public_key == client_key
             && challenge.probe_id == probe_id
@@ -214,6 +217,7 @@ impl Exchange {
     ) -> Result<Self> {
         let created = session.server_time()?;
         let identity = RequestIdentity {
+            env: session.context.env,
             user_id: user_id.into(),
             host_id: session.context.host_id.clone(),
             client_key_id: key_id(key.verifying_key()),

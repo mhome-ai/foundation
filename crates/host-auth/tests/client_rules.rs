@@ -4,6 +4,7 @@ use http::{HeaderMap, StatusCode};
 
 fn context(host: &str, boot: &str) -> HostContext {
     HostContext {
+        env: Default::default(),
         protocol: PROTOCOL.into(),
         host_id: host.into(),
         boot_id: boot.into(),
@@ -145,6 +146,7 @@ fn cloud_confirmed_registration_binds_host_user_client_and_challenge() {
     let host = new_key();
     let client = public_key(new_key().verifying_key());
     let challenge = EnrollmentChallenge {
+        env: Default::default(),
         host_id: "h".into(),
         boot_id: "b".into(),
         user_id: "alice".into(),
@@ -180,4 +182,14 @@ fn cloud_confirmed_registration_binds_host_user_client_and_challenge() {
     assert!(cloud_confirmed_enrollment(&wrong, &signed, "h", "alice", &client, "p").is_err());
     let forged = sign_jws(&new_key(), "meow-host-enrollment-challenge", &challenge).unwrap();
     assert!(cloud_confirmed_enrollment(&proof, &forged, "h", "alice", &client, "p").is_err());
+}
+
+#[test]
+fn authentic_host_context_from_other_environment_cannot_be_cached_or_used() {
+    let host = new_key();
+    let mut other = context("a", "boot");
+    other.env = core_api::RuntimeEnv::Dev;
+    let signed = sign_jws(&host, "meow-host-context", &other).unwrap();
+    assert!(verify_context(&signed, &public_key(host.verifying_key()), "a", "probe").is_err());
+    assert!(Sessions::default().publish("a", 0, other, true).is_err());
 }

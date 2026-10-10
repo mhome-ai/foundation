@@ -20,6 +20,7 @@ pub use node_service::*;
 pub use recipient::*;
 pub use storage::*;
 
+pub use runtime_paths::RuntimeEnv;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
@@ -719,6 +720,8 @@ pub struct NodeOnboardingStartResponse {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct HubConnectionProofRequest {
+    #[serde(default, skip_serializing_if = "RuntimeEnv::is_prod")]
+    pub env: RuntimeEnv,
     pub protocol: String,
     pub hub_id: String,
     pub tenant_id: String,
@@ -729,6 +732,8 @@ pub struct HubConnectionProofRequest {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct HubConnectionProofResponse {
+    #[serde(default, skip_serializing_if = "RuntimeEnv::is_prod")]
+    pub env: RuntimeEnv,
     pub protocol: String,
     pub hub_id: String,
     pub tenant_id: String,
@@ -753,6 +758,11 @@ pub fn hub_connection_proof_signing_payload(request: &HubConnectionProofRequest)
         payload.extend_from_slice(&(field.len() as u64).to_be_bytes());
         payload.extend_from_slice(field.as_bytes());
     }
+    if !request.env.is_prod() {
+        let field = request.env.as_str();
+        payload.extend_from_slice(&(field.len() as u64).to_be_bytes());
+        payload.extend_from_slice(field.as_bytes());
+    }
     payload
 }
 
@@ -770,6 +780,8 @@ pub struct NodeChallengeEvidence {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeChallengePayload {
+    #[serde(default, skip_serializing_if = "RuntimeEnv::is_prod")]
+    pub env: RuntimeEnv,
     /// TLS key of the Host running this Node, covered by the Node signature.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub host_public_key: Option<host::auth::PublicKey>,
@@ -1246,6 +1258,21 @@ pub fn hub_commission_tls_payload(
     out
 }
 
+pub fn hub_commission_tls_payload_for_env(
+    nonce: &str,
+    host_id: &str,
+    key: &host::auth::PublicKey,
+    env: RuntimeEnv,
+) -> Vec<u8> {
+    let mut out = hub_commission_tls_payload(nonce, host_id, key);
+    if !env.is_prod() {
+        let field = env.as_str();
+        out.extend_from_slice(&(field.len() as u64).to_be_bytes());
+        out.extend_from_slice(field.as_bytes());
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
@@ -1256,6 +1283,7 @@ mod tests {
     #[test]
     fn hub_connection_proof_payload_is_unambiguous_and_nonce_bound() {
         let request = HubConnectionProofRequest {
+            env: Default::default(),
             protocol: HUB_CONNECTION_PROOF_PROTOCOL.to_string(),
             hub_id: "hub-1".to_string(),
             tenant_id: "tenant-1".to_string(),

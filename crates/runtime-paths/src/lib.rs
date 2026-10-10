@@ -1,4 +1,6 @@
 mod endpoint;
+mod env;
+pub use env::{env_for_workdir, RuntimeEnv};
 #[cfg(unix)]
 mod unix_process;
 #[cfg(windows)]
@@ -87,7 +89,7 @@ pub fn owned_meowclient_pid(expected_binary: &Path) -> Result<Option<u32>, Strin
     owned_daemon_pid_from_file(&runtime_paths().meowclient_pid_file(), expected_binary)
 }
 
-static RUNTIME_WORKDIR: OnceLock<PathBuf> = OnceLock::new();
+static RUNTIME_WORKDIR: OnceLock<(PathBuf, RuntimeEnv)> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 pub struct RuntimePaths {
@@ -239,15 +241,16 @@ fn normalized_service_log_name(service_id: &str) -> String {
 }
 
 pub fn set_runtime_workdir(workdir: PathBuf) -> anyhow::Result<()> {
+    let env = env_for_workdir(&workdir, &default_runtime_root()?)?;
     match RUNTIME_WORKDIR.get() {
-        Some(existing) if existing == &workdir => Ok(()),
-        Some(existing) => Err(anyhow::anyhow!(
-            "runtime workdir already set to {}, cannot change to {}",
+        Some((existing, existing_env)) if existing == &workdir && *existing_env == env => Ok(()),
+        Some((existing, _)) => Err(anyhow::anyhow!(
+            "runtime workdir/environment already set to {}, cannot change to {}",
             existing.display(),
             workdir.display()
         )),
         None => RUNTIME_WORKDIR
-            .set(workdir)
+            .set((workdir, env))
             .map_err(|_| anyhow::anyhow!("failed to set runtime workdir")),
     }
 }
@@ -256,7 +259,17 @@ pub fn runtime_workdir() -> PathBuf {
     RUNTIME_WORKDIR
         .get()
         .expect("runtime workdir is not initialized at process startup")
+        .0
         .clone()
+}
+
+/// Libraries used before runtime startup retain the historical production default.
+/// Running processes set their immutable workdir before accepting any requests.
+pub fn runtime_env() -> RuntimeEnv {
+    RUNTIME_WORKDIR
+        .get()
+        .map(|(_, env)| *env)
+        .unwrap_or_default()
 }
 
 pub fn runtime_paths() -> RuntimePaths {

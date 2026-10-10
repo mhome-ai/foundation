@@ -32,3 +32,11 @@ Unconfigured Core setup retains its distinct commission key. Its challenge also 
 The binary domain prefix cannot be supplied to the legacy UTF-8 nonce signer.
 Core's temporary commission key is process-scoped: a restart ends the setup attempt;
 permanent Host and Hub identities have their own durable stores.
+
+## Runtime environment
+
+The signed challenge and Node JWT carry `env` for non-prod runtimes. An absent
+field is prod; malformed fields fail parsing. Core, Node and authenticated Hub
+connections require matching environments before commissioning or admission.
+See [Local runtime environment](runtime-environment.md) for discovery namespaces,
+legacy prod compatibility, restored credentials and the cloud management boundary.

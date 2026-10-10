@@ -103,6 +103,7 @@ fn wire_reauth_code_is_specific_and_space_free() {
 #[test]
 fn a_claim_carries_the_bluetooth_token_only_when_there_is_one() {
     let plain = ClaimRequest {
+        env: core_api::RuntimeEnv::Prod,
         proof: "grant".into(),
         claim_token: None,
     };

@@ -146,6 +146,8 @@ pub struct ContextRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostContext {
+    #[serde(default, skip_serializing_if = "crate::RuntimeEnv::is_prod")]
+    pub env: crate::RuntimeEnv,
     pub protocol: String,
     pub host_id: String,
     pub boot_id: String,
@@ -171,6 +173,8 @@ pub struct EnrollmentChallengeRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EnrollmentChallenge {
+    #[serde(default, skip_serializing_if = "crate::RuntimeEnv::is_prod")]
+    pub env: crate::RuntimeEnv,
     pub host_id: String,
     pub boot_id: String,
     pub user_id: String,
@@ -208,6 +212,8 @@ pub struct Grant {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ClaimRequest {
+    #[serde(default, skip_serializing_if = "crate::RuntimeEnv::is_prod")]
+    pub env: crate::RuntimeEnv,
     pub proof: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub claim_token: Option<String>,
@@ -227,6 +233,8 @@ pub struct LocalAuthorization {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Possession {
+    #[serde(default, skip_serializing_if = "crate::RuntimeEnv::is_prod")]
+    pub env: crate::RuntimeEnv,
     pub proof_digest: String,
 }
 #[derive(Serialize, Deserialize)]

@@ -62,6 +62,8 @@ pub fn digest(body: &[u8]) -> String {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RequestIdentity {
+    #[serde(default, skip_serializing_if = "core_api::RuntimeEnv::is_prod")]
+    pub env: core_api::RuntimeEnv,
     pub user_id: String,
     pub host_id: String,
     pub client_key_id: String,
@@ -272,6 +274,7 @@ mod tests {
     use super::*;
     fn identity(key: &SigningKey) -> RequestIdentity {
         RequestIdentity {
+            env: Default::default(),
             user_id: "alice".into(),
             host_id: "host".into(),
             client_key_id: key_id(key.verifying_key()),
