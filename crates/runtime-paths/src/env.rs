@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{path::Path, str::FromStr};
+use std::{fmt, str::FromStr};
 
 /// A local runtime environment, independent of build profile and cloud destination.
 /// Only an absent wire field defaults to production; invalid values fail decoding.
@@ -83,32 +83,9 @@ impl FromStr for RuntimeEnv {
     }
 }
 
-pub fn env_for_workdir(workdir: &Path, runtime_root: &Path) -> anyhow::Result<RuntimeEnv> {
-    let root = runtime_root
-        .canonicalize()
-        .unwrap_or_else(|_| runtime_root.to_path_buf());
-    let resolved = workdir
-        .canonicalize()
-        .unwrap_or_else(|_| workdir.to_path_buf());
-    if let Some(name) = workdir.file_name().filter(|n| *n == "dev" || *n == "e2e") {
-        if workdir
-            .parent()
-            .map(|p| p.canonicalize().unwrap_or_else(|_| p.to_path_buf()))
-            .as_ref()
-            == Some(&root)
-        {
-            anyhow::ensure!(
-                resolved == root.join(name),
-                "Dev/E2E workdir must not redirect to another environment"
-            );
-        }
-    }
-    if resolved == root.join("dev") {
-        Ok(RuntimeEnv::Dev)
-    } else if resolved == root.join("e2e") {
-        Ok(RuntimeEnv::E2e)
-    } else {
-        Ok(RuntimeEnv::Prod)
+impl fmt::Display for RuntimeEnv {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.as_str())
     }
 }
 
@@ -139,22 +116,6 @@ mod tests {
         ] {
             assert!(RuntimeEnv::from_txt(Some(value)).is_err());
         }
-    }
-    #[test]
-    fn standard_roots_and_custom_directories() {
-        let root = Path::new("/tmp/env-test/.meow");
-        for env in [RuntimeEnv::Prod, RuntimeEnv::Dev, RuntimeEnv::E2e] {
-            let dir = if env.is_prod() {
-                root.to_path_buf()
-            } else {
-                root.join(env.as_str())
-            };
-            assert_eq!(env_for_workdir(&dir, root).unwrap(), env);
-        }
-        assert_eq!(
-            env_for_workdir(Path::new("/tmp/custom/dev"), root).unwrap(),
-            RuntimeEnv::Prod
-        );
     }
     #[test]
     fn production_routes_and_discovery_are_compatible() {

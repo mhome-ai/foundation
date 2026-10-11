@@ -1,6 +1,6 @@
 mod endpoint;
 mod env;
-pub use env::{env_for_workdir, RuntimeEnv};
+pub use env::RuntimeEnv;
 #[cfg(unix)]
 mod unix_process;
 #[cfg(windows)]
@@ -240,8 +240,16 @@ fn normalized_service_log_name(service_id: &str) -> String {
     }
 }
 
+/// Initialize an embedded production runtime with an explicit workdir.
+/// Non-production callers must use `set_runtime_context` with their startup env.
 pub fn set_runtime_workdir(workdir: PathBuf) -> anyhow::Result<()> {
-    let env = env_for_workdir(&workdir, &default_runtime_root()?)?;
+    set_runtime_context(workdir, RuntimeEnv::Prod)
+}
+
+/// Freeze the environment and workdir supplied by the owning startup entrypoint.
+/// This does not consult HOME, build profiles, configuration, or directory names.
+pub fn set_runtime_context(workdir: PathBuf, env: RuntimeEnv) -> anyhow::Result<()> {
+    anyhow::ensure!(workdir.is_absolute(), "runtime workdir must be absolute");
     match RUNTIME_WORKDIR.get() {
         Some((existing, existing_env)) if existing == &workdir && *existing_env == env => Ok(()),
         Some((existing, _)) => Err(anyhow::anyhow!(
@@ -276,13 +284,43 @@ pub fn runtime_paths() -> RuntimePaths {
     RuntimePaths::new(runtime_workdir())
 }
 
-pub fn resolve_workdir(dev: bool) -> PathBuf {
-    let root = default_runtime_root().expect("failed to resolve default runtime workdir");
-    if dev {
-        root.join("dev")
+/// Resolve the runtime workdir from an explicit base home and startup env.
+/// The platform user home is needed only when no runtime home was supplied.
+pub fn resolve_runtime_workdir(home: Option<&Path>, env: RuntimeEnv) -> anyhow::Result<PathBuf> {
+    let home = match home {
+        Some(home) => home.to_path_buf(),
+        None => default_runtime_root()?,
+    };
+    anyhow::ensure!(home.is_absolute(), "runtime home must be absolute");
+    let workdir = if env.is_prod() {
+        home.clone()
     } else {
-        root
+        home.join(env.as_str())
+    };
+    if !env.is_prod() {
+        match std::fs::symlink_metadata(&workdir) {
+            Ok(metadata) => anyhow::ensure!(
+                !metadata.file_type().is_symlink(),
+                "Dev/E2E workdir must not redirect to another environment"
+            ),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
     }
+    Ok(workdir)
+}
+
+/// Compatibility helper for callers that only select production or development.
+pub fn resolve_workdir(dev: bool) -> PathBuf {
+    resolve_runtime_workdir(
+        None,
+        if dev {
+            RuntimeEnv::Dev
+        } else {
+            RuntimeEnv::Prod
+        },
+    )
+    .expect("failed to resolve default runtime workdir")
 }
 
 pub fn default_runtime_root() -> anyhow::Result<PathBuf> {

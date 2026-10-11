@@ -18,16 +18,12 @@ pub struct MachineIdentity {
 }
 
 pub fn get_or_create_identity_at(path: &Path) -> anyhow::Result<MachineIdentity> {
-    identity_at(
-        path,
-        &runtime_paths::default_runtime_root()?,
-        build_machine_id,
-    )
+    identity_at(path, runtime_paths::RuntimeEnv::current(), build_machine_id)
 }
 
 fn identity_at(
     path: &Path,
-    runtime_root: &Path,
+    env: runtime_paths::RuntimeEnv,
     build_id: impl FnOnce() -> String,
 ) -> anyhow::Result<MachineIdentity> {
     let parent = path
@@ -44,7 +40,11 @@ fn identity_at(
         .truncate(false)
         .open(path.with_extension("lock"))?;
     fs2::FileExt::lock_exclusive(&lock).context("failed to lock shared device identity")?;
-    let suffix = environment_suffix(path, runtime_root)?;
+    let suffix = match env {
+        runtime_paths::RuntimeEnv::Prod => "",
+        runtime_paths::RuntimeEnv::Dev => "-dev",
+        runtime_paths::RuntimeEnv::E2e => "-e2e",
+    };
     let (mut identity, mut changed) = match fs::read_to_string(path) {
         Ok(raw) => {
             let parsed: MachineIdentity =
@@ -62,17 +62,19 @@ fn identity_at(
         }
         Err(error) => return Err(error).context("failed to read shared device identity"),
     };
-    if !suffix.is_empty() {
-        let base = hash_string(identity.machine_id.trim());
-        let scoped = format!("{base}{suffix}");
-        anyhow::ensure!(
-            identity.host_id == base || identity.host_id == scoped,
-            "device identity belongs to a different environment; reconfigure this installation"
-        );
-        if identity.host_id != scoped {
-            identity.host_id = scoped;
-            changed = true;
-        }
+    let base = hash_string(identity.machine_id.trim());
+    let scoped = format!("{base}{suffix}");
+    anyhow::ensure!(
+        if env.is_prod() {
+            identity.host_id != format!("{base}-dev") && identity.host_id != format!("{base}-e2e")
+        } else {
+            identity.host_id == scoped || identity.host_id == base
+        },
+        "device identity belongs to a different environment; reconfigure this installation"
+    );
+    if !env.is_prod() && identity.host_id != scoped {
+        identity.host_id = scoped;
+        changed = true;
     }
     if changed {
         let mut file = tempfile::NamedTempFile::new_in(parent)?;
@@ -82,48 +84,6 @@ fn identity_at(
             .context("failed to persist shared device identity")?;
     }
     Ok(identity)
-}
-
-fn environment_suffix(path: &Path, runtime_root: &Path) -> anyhow::Result<&'static str> {
-    // These are the public Harness workdirs, regardless of release/debug build
-    // or cloud destination. An unrelated directory named "dev" is not Dev.
-    let Some(system) = path
-        .parent()
-        .filter(|p| p.file_name().is_some_and(|n| n == "system"))
-    else {
-        return Ok("");
-    };
-    if path.file_name().is_none_or(|n| n != "device_identity.json") {
-        return Ok("");
-    }
-    let workdir = system.parent().unwrap_or(Path::new("."));
-    let Ok(root) = runtime_root.canonicalize() else {
-        return Ok("");
-    };
-    let resolved = workdir
-        .canonicalize()
-        .context("failed to resolve identity workdir")?;
-    if let Some(name) = workdir.file_name().filter(|n| *n == "dev" || *n == "e2e") {
-        if workdir
-            .parent()
-            .and_then(|p| p.canonicalize().ok())
-            .as_ref()
-            == Some(&root)
-        {
-            anyhow::ensure!(
-                resolved == root.join(name),
-                "Dev/E2E workdir must not redirect to another environment"
-            );
-        }
-    }
-    let workdir = resolved;
-    if workdir == root.join("dev") {
-        return Ok("-dev");
-    }
-    if workdir == root.join("e2e") {
-        return Ok("-e2e");
-    }
-    Ok("")
 }
 
 pub fn derive_identity_from_raw_machine_id(
@@ -281,8 +241,8 @@ mod tests {
         Arc,
     };
 
-    fn load(path: &Path, root: &Path) -> MachineIdentity {
-        identity_at(path, root, || "same-physical-machine".into()).unwrap()
+    fn load(path: &Path, env: runtime_paths::RuntimeEnv) -> MachineIdentity {
+        identity_at(path, env, || "same-physical-machine".into()).unwrap()
     }
 
     #[test]
@@ -290,14 +250,17 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let root = dir.path().join(".meow");
         let base = derive_identity_from_raw_machine_id("same-physical-machine").unwrap();
-        for (environment, suffix) in [("", ""), ("dev", "-dev"), ("e2e", "-e2e")] {
+        for (env, environment, suffix) in [
+            (runtime_paths::RuntimeEnv::Prod, "", ""),
+            (runtime_paths::RuntimeEnv::Dev, "dev", "-dev"),
+            (runtime_paths::RuntimeEnv::E2e, "e2e", "-e2e"),
+        ] {
             let path = root.join(environment).join("system/device_identity.json");
-            let first = load(&path, &root);
+            let first = load(&path, env);
             assert_eq!(first.host_id, format!("{}{suffix}", base.host_id));
             assert_eq!(first.machine_id, base.machine_id);
             assert_eq!(first.device_suffix, base.device_suffix);
-            let again =
-                identity_at(&path, &root, || panic!("must use persisted identity")).unwrap();
+            let again = identity_at(&path, env, || panic!("must use persisted identity")).unwrap();
             assert_eq!(again.host_id, first.host_id);
             let stored: MachineIdentity = serde_json::from_slice(&fs::read(path).unwrap()).unwrap();
             assert_eq!(stored.host_id, first.host_id);
@@ -312,10 +275,13 @@ mod tests {
         fs::create_dir_all(path.parent().unwrap()).unwrap();
         let old = derive_identity_from_raw_machine_id("saved-hardware-fallback").unwrap();
         fs::write(&path, serde_json::to_vec(&old).unwrap()).unwrap();
-        let first = load(&path, root);
+        let first = load(&path, runtime_paths::RuntimeEnv::Dev);
         assert_eq!(first.host_id, format!("{}-dev", old.host_id));
         assert_eq!(first.machine_id, old.machine_id);
-        assert_eq!(load(&path, root).host_id, first.host_id);
+        assert_eq!(
+            load(&path, runtime_paths::RuntimeEnv::Dev).host_id,
+            first.host_id
+        );
     }
 
     #[test]
@@ -323,21 +289,25 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("system/device_identity.json");
         fs::create_dir_all(path.parent().unwrap()).unwrap();
-        let old = derive_identity_from_raw_machine_id("existing-production-machine").unwrap();
+        let mut old = derive_identity_from_raw_machine_id("existing-production-machine").unwrap();
+        old.host_id = "historical-production-host-id".into();
         let bytes = serde_json::to_vec(&old).unwrap();
         fs::write(&path, &bytes).unwrap();
-        assert_eq!(load(&path, dir.path()).host_id, old.host_id);
+        assert_eq!(
+            load(&path, runtime_paths::RuntimeEnv::Prod).host_id,
+            old.host_id
+        );
         assert_eq!(fs::read(path).unwrap(), bytes);
     }
 
     #[test]
-    fn custom_directory_named_dev_does_not_select_harness_environment() {
+    fn directory_names_do_not_select_the_environment() {
         let dir = tempfile::tempdir().unwrap();
         let root = dir.path().join(".meow");
         fs::create_dir_all(&root).unwrap();
         let path = dir.path().join("custom/dev/system/device_identity.json");
         assert_eq!(
-            load(&path, &root).host_id,
+            load(&path, runtime_paths::RuntimeEnv::Prod).host_id,
             hash_string("same-physical-machine")
         );
     }
@@ -353,13 +323,21 @@ mod tests {
         ] {
             fs::write(&path, bytes).unwrap();
             assert!(
-                identity_at(&path, dir.path(), || panic!("must not replace identity")).is_err()
+                identity_at(&path, runtime_paths::RuntimeEnv::Prod, || panic!(
+                    "must not replace identity"
+                ))
+                .is_err()
             );
             assert_eq!(fs::read(&path).unwrap(), bytes);
         }
         fs::remove_file(&path).unwrap();
         fs::create_dir(&path).unwrap();
-        assert!(identity_at(&path, dir.path(), || panic!("must not replace identity")).is_err());
+        assert!(
+            identity_at(&path, runtime_paths::RuntimeEnv::Prod, || panic!(
+                "must not replace identity"
+            ))
+            .is_err()
+        );
         assert!(path.is_dir());
     }
 
@@ -368,10 +346,13 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let dev = dir.path().join("dev/system/device_identity.json");
         let e2e = dir.path().join("e2e/system/device_identity.json");
-        load(&dev, dir.path());
+        load(&dev, runtime_paths::RuntimeEnv::Dev);
         fs::create_dir_all(e2e.parent().unwrap()).unwrap();
         fs::copy(&dev, &e2e).unwrap();
-        assert!(identity_at(&e2e, dir.path(), || panic!("must not replace identity")).is_err());
+        assert!(identity_at(&e2e, runtime_paths::RuntimeEnv::E2e, || panic!(
+            "must not replace identity"
+        ))
+        .is_err());
     }
 
     #[test]
@@ -383,9 +364,11 @@ mod tests {
                 let root = dir.path().to_path_buf();
                 let count = count.clone();
                 std::thread::spawn(move || {
-                    identity_at(&root.join("dev/system/device_identity.json"), &root, || {
-                        format!("fallback-{}", count.fetch_add(1, Ordering::SeqCst))
-                    })
+                    identity_at(
+                        &root.join("dev/system/device_identity.json"),
+                        runtime_paths::RuntimeEnv::Dev,
+                        || format!("fallback-{}", count.fetch_add(1, Ordering::SeqCst)),
+                    )
                     .unwrap()
                     .host_id
                 })
@@ -396,13 +379,26 @@ mod tests {
         assert_eq!(count.load(Ordering::SeqCst), 1);
     }
 
-    #[cfg(unix)]
     #[test]
-    fn development_symlink_cannot_reuse_production_storage() {
+    fn explicit_env_applies_to_custom_identity_paths() {
         let dir = tempfile::tempdir().unwrap();
-        std::os::unix::fs::symlink(dir.path(), dir.path().join("dev")).unwrap();
-        let path = dir.path().join("dev/system/device_identity.json");
-        assert!(identity_at(&path, dir.path(), || panic!("must not create identity")).is_err());
-        assert!(!path.exists());
+        let path = dir.path().join("arbitrary/identity.json");
+        assert_eq!(
+            load(&path, runtime_paths::RuntimeEnv::Dev).host_id,
+            format!("{}-dev", hash_string("same-physical-machine"))
+        );
+    }
+
+    #[test]
+    fn copied_development_identity_is_rejected_in_production() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("system/device_identity.json");
+        load(&path, runtime_paths::RuntimeEnv::Dev);
+        assert!(
+            identity_at(&path, runtime_paths::RuntimeEnv::Prod, || panic!(
+                "must not replace identity"
+            ))
+            .is_err()
+        );
     }
 }
