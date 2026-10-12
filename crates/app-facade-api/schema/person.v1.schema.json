@@ -195,6 +195,58 @@
         "id",
         "representativeSampleId"
       ]
+    },
+    "SummaryImagesInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(person|cluster):.+$"
+          }
+        }
+      },
+      "required": [
+        "ids"
+      ]
+    },
+    "SummaryImagesOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "uri": {
+                "type": "string",
+                "pattern": "^meow-artifact://"
+              }
+            },
+            "required": [
+              "id",
+              "uri"
+            ]
+          }
+        },
+        "missingIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "items",
+        "missingIds"
+      ]
     }
   }
 }

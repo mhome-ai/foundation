@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.37.4",
+  "contractVersion": "1.38.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -119,7 +119,8 @@
         "/app/person/list",
         "/app/person/reset",
         "/app/person/clusters/image",
-        "/app/person/status"
+        "/app/person/status",
+        "/app/person/summary-images/batch-get"
       ],
       "managementPermission": "spaceMember",
       "owner": "scopeHub",
