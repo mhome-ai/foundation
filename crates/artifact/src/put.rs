@@ -8,6 +8,8 @@ use crate::{ArtifactKind, ArtifactReference};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PutArtifactRequest {
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub temporary: bool,
     pub kind: ArtifactKind,
     pub mime_type: String,
     pub data_base64: String,
@@ -58,6 +60,10 @@ impl PutArtifactRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PutArtifactResponse {
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub temporary: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expires_at_unix_ms: Option<u64>,
     pub uri: String,
     pub kind: ArtifactKind,
     pub mime_type: String,
@@ -72,6 +78,10 @@ pub struct PutArtifactResponse {
 
 impl PutArtifactResponse {
     pub fn validate(&self) -> Result<ArtifactReference, PutArtifactValidationError> {
+        if self.temporary != self.expires_at_unix_ms.is_some() || self.expires_at_unix_ms == Some(0)
+        {
+            return Err(invalid("artifact lifetime and expiration are inconsistent"));
+        }
         let reference = ArtifactReference::parse(&self.uri)
             .map_err(|_| invalid("artifact put URI is invalid"))?;
         let metadata = reference.metadata();
@@ -112,11 +122,32 @@ mod tests {
     #[test]
     fn request_rejects_kind_mime_mismatch() {
         let request = PutArtifactRequest {
+            temporary: false,
             kind: ArtifactKind::Audio,
             mime_type: "image/png".to_string(),
             data_base64: "eA==".to_string(),
             duration_millis: None,
         };
         assert!(request.decode().is_err());
+    }
+}
+
+#[cfg(test)]
+mod lifecycle_tests {
+    use super::*;
+    #[test]
+    fn default_ingress_is_durable_and_temporary_is_explicit() {
+        let mut input: serde_json::Value =
+            serde_json::json!({"kind":"FILE","mimeType":"text/plain","dataBase64":"eA=="});
+        let durable: PutArtifactRequest = serde_json::from_value(input.clone()).unwrap();
+        assert!(!durable.temporary);
+        assert!(serde_json::to_value(&durable)
+            .unwrap()
+            .get("temporary")
+            .is_none());
+        input["temporary"] = true.into();
+        let temporary: PutArtifactRequest = serde_json::from_value(input).unwrap();
+        assert!(temporary.temporary);
+        assert_eq!(temporary.decode().unwrap(), b"x");
     }
 }

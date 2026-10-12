@@ -10,7 +10,9 @@
       "requestTargets": [
         "/app/artifact/resolve",
         "/app/artifact/put",
-        "/app/artifact/import"
+        "/app/artifact/import",
+        "/app/artifact/persist",
+        "/app/artifact/delete"
       ]
     },
     "hub": {

@@ -58,8 +58,42 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 9007199254740991
+        },
+        "temporary": {
+          "type": "boolean",
+          "default": false
+        },
+        "expiresAtUnixMs": {
+          "type": "integer",
+          "minimum": 1
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "temporary": {
+                "const": true
+              }
+            },
+            "required": [
+              "temporary"
+            ]
+          },
+          "then": {
+            "required": [
+              "expiresAtUnixMs"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "expiresAtUnixMs"
+              ]
+            }
+          }
+        }
+      ]
     },
     "request": {
       "type": "object",
@@ -93,6 +127,10 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 9007199254740991
+        },
+        "temporary": {
+          "type": "boolean",
+          "default": false
         }
       }
     },

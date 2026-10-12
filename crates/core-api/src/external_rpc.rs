@@ -305,12 +305,18 @@ pub struct ExternalAuthorizeArtifactUploadRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExternalCommitArtifactUploadRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub data_base64: Option<String>,
     pub grant: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExternalArtifactReadDescriptor {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub data_base64: Option<String>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub temporary: bool,
     pub path: String,
     pub kind: artifact_api::ArtifactKind,
     pub mime_type: String,
@@ -327,6 +333,8 @@ pub struct ExternalArtifactReadDescriptor {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExternalArtifactUploadDescriptor {
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub temporary: bool,
     pub upload_id: String,
     pub path: String,
     pub kind: artifact_api::ArtifactKind,
@@ -575,6 +583,8 @@ mod tests {
     #[test]
     fn artifact_host_contract_uses_canonical_wire_types() {
         let descriptor = ExternalArtifactReadDescriptor {
+            temporary: false,
+            data_base64: None,
             path: "/runtime/artifacts/blob".to_string(),
             kind: artifact_api::ArtifactKind::Audio,
             mime_type: "audio/ogg".to_string(),
@@ -611,5 +621,35 @@ mod tests {
             ))
             .is_err()
         );
+    }
+}
+
+impl ExternalArtifactReadDescriptor {
+    /// Decode the bounded inline variant. File descriptors return None.
+    pub fn inline_content(&self) -> Result<Option<Vec<u8>>, String> {
+        use base64::Engine as _;
+        use sha2::{Digest, Sha256};
+        let Some(encoded) = &self.data_base64 else {
+            return if self.path.is_empty() {
+                Err("artifact descriptor has no content".into())
+            } else {
+                Ok(None)
+            };
+        };
+        if !self.path.is_empty()
+            || self.size_bytes > artifact_api::MAX_MEMORY_ARTIFACT_BYTES as u64
+            || encoded.len() > (artifact_api::MAX_MEMORY_ARTIFACT_BYTES + 2) / 3 * 4
+        {
+            return Err("invalid inline artifact descriptor".into());
+        }
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(encoded)
+            .map_err(|_| "invalid inline artifact base64")?;
+        if bytes.len() as u64 != self.size_bytes
+            || format!("{:x}", Sha256::digest(&bytes)) != self.sha256
+        {
+            return Err("inline artifact failed its integrity check".into());
+        }
+        Ok(Some(bytes))
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "mhome-core-api"
-version = "1.29.1"
+version = "1.30.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -15,11 +15,11 @@ name = "core_api"
 
 [dependencies]
 runtime-paths = { package = "mhome-runtime-paths", version = "=1.2.0", path = "../runtime-paths" }
-llm-api = { package = "mhome-llm-api", version = "=3.2.1", path = "../llm-api" }
+llm-api = { package = "mhome-llm-api", version = "=3.2.2", path = "../llm-api" }
 base64 = "0.22"
 sha2 = "0.10"
-artifact-api = { package = "mhome-artifact-api", version = "=1.7.0", path = "../artifact" }
-conversation-api = { package = "mhome-conversation-api", version = "=3.8.0", path = "../conversation-api" }
+artifact-api = { package = "mhome-artifact-api", version = "=1.8.0", path = "../artifact" }
+conversation-api = { package = "mhome-conversation-api", version = "=3.8.1", path = "../conversation-api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 

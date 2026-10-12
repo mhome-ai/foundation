@@ -8,6 +8,8 @@ use crate::ArtifactKind;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PrepareArtifactUploadRequest {
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub temporary: bool,
     pub kind: ArtifactKind,
     pub mime_type: String,
     pub size_bytes: u64,
@@ -112,6 +114,7 @@ mod tests {
     #[test]
     fn validates_upload_metadata() {
         let request = PrepareArtifactUploadRequest {
+            temporary: false,
             kind: ArtifactKind::Audio,
             mime_type: "audio/ogg".to_string(),
             size_bytes: 42,
@@ -124,6 +127,7 @@ mod tests {
     #[test]
     fn rejects_malformed_hashes_and_kind_mismatch() {
         let mut request = PrepareArtifactUploadRequest {
+            temporary: false,
             kind: ArtifactKind::Audio,
             mime_type: "image/png".to_string(),
             size_bytes: 42,

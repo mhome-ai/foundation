@@ -33,6 +33,10 @@ pub enum ArtifactDelivery {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ResolveArtifactResponse {
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub temporary: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expires_at_unix_ms: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub host_identity: Option<crate::HostTlsIdentity>,
     pub uri: String,
@@ -50,6 +54,10 @@ pub struct ResolveArtifactResponse {
 
 impl ResolveArtifactResponse {
     pub fn validate(&self) -> Result<ArtifactReference, ResolveArtifactResponseError> {
+        if self.temporary != self.expires_at_unix_ms.is_some() || self.expires_at_unix_ms == Some(0)
+        {
+            return Err(invalid("artifact lifetime and expiration are inconsistent"));
+        }
         let reference = ArtifactReference::parse(&self.uri)
             .map_err(|_| invalid("artifact resolve URI is invalid"))?;
         let metadata = reference.metadata();
@@ -110,6 +118,8 @@ mod tests {
     #[test]
     fn validates_response_against_reference() {
         let response = ResolveArtifactResponse {
+            temporary: false,
+            expires_at_unix_ms: None,
             host_identity: None,
             uri: FILE_URI.to_string(),
             kind: ArtifactKind::File,
@@ -130,6 +140,8 @@ mod tests {
     #[test]
     fn rejects_response_metadata_drift() {
         let response = ResolveArtifactResponse {
+            temporary: false,
+            expires_at_unix_ms: None,
             host_identity: None,
             uri: FILE_URI.to_string(),
             kind: ArtifactKind::File,

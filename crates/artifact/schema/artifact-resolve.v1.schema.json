@@ -149,8 +149,42 @@
               }
             }
           }
+        },
+        "temporary": {
+          "type": "boolean",
+          "default": false
+        },
+        "expiresAtUnixMs": {
+          "type": "integer",
+          "minimum": 1
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "temporary": {
+                "const": true
+              }
+            },
+            "required": [
+              "temporary"
+            ]
+          },
+          "then": {
+            "required": [
+              "expiresAtUnixMs"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "expiresAtUnixMs"
+              ]
+            }
+          }
+        }
+      ]
     }
   }
 }

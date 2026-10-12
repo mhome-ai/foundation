@@ -1205,7 +1205,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-artifact-api"
-version = "1.7.0"
+version = "1.8.0"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
@@ -1232,7 +1232,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-conversation-api"
-version = "3.8.0"
+version = "3.8.1"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -1247,7 +1247,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.29.1"
+version = "1.30.0"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
@@ -1269,7 +1269,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "1.5.0"
+version = "1.5.1"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1297,7 +1297,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-llm-api"
-version = "3.2.1"
+version = "3.2.2"
 dependencies = [
  "mhome-artifact-api",
  "serde",
@@ -1322,7 +1322,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "1.4.7"
+version = "1.4.8"
 dependencies = [
  "cc",
  "mhome-core-api",

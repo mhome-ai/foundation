@@ -38,6 +38,8 @@ impl MediaReference {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ImportArtifactRequest {
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub temporary: bool,
     pub kind: ArtifactKind,
     pub source_url: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
