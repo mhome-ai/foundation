@@ -17,8 +17,18 @@
         "id": "event-1",
         "sequence": 2,
         "context": {
-          "scope": { "tenant_id": "tenant-1", "scope_id": "scope-1" },
-          "actor": { "user_id": "user-1", "client_id": "client-1" },
+          "scope": {
+            "tenant_id": "tenant-1",
+            "scope_id": "scope-1"
+          },
+          "actor": {
+            "principal": {
+              "kind": "user",
+              "userId": "user-1"
+            },
+            "client_id": "client-1",
+            "credential_id": null
+          },
           "thread_id": "thread-1",
           "run_id": "run-1",
           "operation_id": "operation-1",
@@ -42,7 +52,9 @@
                 "proceedLabel": "Delete",
                 "rejectLabel": "Cancel"
               },
-              "payload": { "canvasId": "canvas-1" },
+              "payload": {
+                "canvasId": "canvas-1"
+              },
               "revision": 1,
               "approval": "when_interactive",
               "interaction_kind": "approval"

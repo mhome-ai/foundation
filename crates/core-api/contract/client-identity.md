@@ -27,11 +27,20 @@ Keep the original identity across cloud relay, Core dispatch and queued work.
 
 ## Implementation boundary
 
-This additive module is an identity foundation, not an ingress cutover. Existing
-`AuthenticatedSession`, MWS bridge metadata and `ServiceCoreInput::ClientRequest`
-still use the previous user-based contracts. No runtime entrypoint accepts Space
-Client credentials merely because these types exist. Replace the contracts and
-all their producers/consumers together with the Space Client operation policy.
+The conversation execution contract carries a typed principal through admission,
+queues, checkpoints, interaction audit, usage and Cloud/Core relay. It rejects
+the previous user-only Actor shape; this is a coordinated protocol cutover, not
+a backward-compatible extension. Conversation catalog ownership does not imply
+business operation authority.
+
+Credential issuance and general business ingress are a separate cutover. Existing
+`AuthenticatedSession`, ordinary MWS bridge metadata and
+`ServiceCoreInput::ClientRequest` still use user-based contracts. No runtime
+entrypoint accepts Space Client credentials merely because these types exist.
+Until business contexts, prepared actions and per-operation policies carry the
+principal, their user-only adapters must reject Space actors. Local direct Space
+Client event delivery also requires the corresponding authenticated presence
+registry; Cloud group delivery alone does not provide offline operation.
 There is no intended legacy-user fallback for a Space principal.
 
 Host policy is already decided: Space Clients cannot manage Admin Hosts; they
@@ -61,3 +70,22 @@ for Space Clients, personal Pod identity, rejection of mixed/unknown principal
 fields, missing enrollment, connection-ID confusion and credential replacement.
 These are structural contract tests; they do not establish signature validation,
 operation authorization, lifecycle safety or end-to-end runtime behavior.
+
+## Shared Space Client conversations
+
+Conversation selection is derived by trusted ingress from the verified principal.
+The complete catalog key is `(tenantId, scopeId, surfaceId)`. A User selects its
+existing personal surface. Every Space Client enrolled in one Space selects
+`cs1:cg:c3BhY2UtY2xpZW50cw` (`ClientGroup("space-clients")`). The same surface
+string in a different tenant/Space is a different catalog. It is not a Messaging
+route and does not merge any external group or personal user's history.
+
+`appClientId` and `credentialId` authenticate and audit each device independently;
+neither partitions the group. Factory reset clears a device's credentials and
+local state, not the Space's conversation catalog. A newly authorized enrollment
+in the same Space can read the retained group. Unenrolled devices cannot do so.
+
+Agent execution carries the same `ClientPrincipal`, plus originating Client and
+enrollment metadata. The Space owner may pay for model calls without becoming
+the actor. Sharing a group or responding to an interaction never raises the
+original operation's authority. Business authorization remains mandatory.

@@ -76,6 +76,20 @@ impl ConversationSurface {
         })
     }
 
+    /// One Client Group per tenant/Space. Device and enrollment IDs never partition it.
+    /// All storage and delivery must also retain the enclosing tenant and scope.
+    #[must_use]
+    pub fn space_clients() -> Self {
+        Self::ClientGroup {
+            group_id: "space-clients".to_owned(),
+        }
+    }
+
+    #[must_use]
+    pub fn is_space_clients(&self) -> bool {
+        self == &Self::space_clients()
+    }
+
     pub fn messaging_personal(
         provider: impl Into<String>,
         account_id: impl Into<String>,

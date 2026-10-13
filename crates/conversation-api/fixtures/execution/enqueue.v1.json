@@ -21,8 +21,12 @@
             "scope_id": "scope-1"
           },
           "actor": {
-            "user_id": "user-1",
-            "client_id": "client-1"
+            "principal": {
+              "kind": "user",
+              "userId": "user-1"
+            },
+            "client_id": "client-1",
+            "credential_id": null
           },
           "thread_id": "thread-1",
           "run_id": "run-1",

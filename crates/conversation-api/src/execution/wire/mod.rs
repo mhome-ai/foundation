@@ -602,7 +602,6 @@ fn validate_llm_plan(plan: &LlmExecutionPlan) -> Result<(), ProtocolError> {
 fn validate_context(context: &InvocationContext) -> Result<(), ProtocolError> {
     validate_scope(&context.scope)?;
     for (name, value) in [
-        ("user_id", context.actor.user_id.as_str()),
         ("thread_id", context.thread_id.as_str()),
         ("run_id", context.run_id.as_str()),
         ("operation_id", context.operation_id.as_str()),
@@ -611,13 +610,10 @@ fn validate_context(context: &InvocationContext) -> Result<(), ProtocolError> {
             return Err(ProtocolError::MissingIdentifier(name));
         }
     }
-    if context
-        .actor
-        .client_id
-        .as_ref()
-        .is_some_and(|client| client.as_str().trim().is_empty())
-    {
-        return Err(ProtocolError::MissingIdentifier("client_id"));
+    if !context.actor.valid_for(&context.scope, &context.surface_id) {
+        return Err(ProtocolError::InvalidBinding(
+            "Actor does not match the conversation scope and surface".into(),
+        ));
     }
     Ok(())
 }
@@ -695,10 +691,10 @@ mod tests {
                             tenant_id: None,
                             scope_id: ScopeId::from("scope-1"),
                         },
-                        actor: Actor {
-                            user_id: UserId::from("user-1"),
-                            client_id: Some(ClientId::from("client-1")),
-                        },
+                        actor: Actor::user(
+                            UserId::from("user-1"),
+                            Some(ClientId::from("client-1")),
+                        ),
                         surface_id: ConversationSurface::client_personal("user-1").unwrap(),
                         thread_id: ThreadId::from("thread-1"),
                         run_id: RunId::from("run-1"),
@@ -741,10 +737,10 @@ mod tests {
                             tenant_id: Some(TenantId::from("tenant-1")),
                             scope_id: ScopeId::from("scope-1"),
                         },
-                        actor: Actor {
-                            user_id: UserId::from("user-1"),
-                            client_id: Some(ClientId::from("client-1")),
-                        },
+                        actor: Actor::user(
+                            UserId::from("user-1"),
+                            Some(ClientId::from("client-1")),
+                        ),
                         surface_id: ConversationSurface::client_personal("user-1").unwrap(),
                         thread_id: ThreadId::from("thread-1"),
                         run_id: RunId::from("run-1"),

@@ -119,3 +119,52 @@ fn empty_user_or_credential_never_becomes_an_anonymous_or_internal_actor() {
         Err(ClientIdentityError::InvalidIdentifier)
     );
 }
+
+#[test]
+fn space_catalog_survives_new_devices_and_re_enrollment() {
+    let first = space_client();
+    let mut second = first.clone();
+    second.app_client_id = "a:device-2".into();
+    second.credential_id = Some("another-enrollment".into());
+    assert_eq!(
+        first.conversation_surface("tenant", "space"),
+        second.conversation_surface("tenant", "space")
+    );
+    second.credential_id = Some("after-factory-reset".into());
+    assert_eq!(
+        first.conversation_surface("tenant", "space"),
+        second.conversation_surface("tenant", "space")
+    );
+    second.credential_id = None;
+    assert_eq!(
+        second.conversation_surface("tenant", "space"),
+        Err(ClientIdentityError::MissingEnrollment)
+    );
+    assert_eq!(
+        first.conversation_surface("tenant", "other"),
+        Err(ClientIdentityError::SpaceMismatch)
+    );
+}
+
+#[test]
+fn personal_clients_share_user_catalog_without_joining_space_group() {
+    let mut client = space_client();
+    let group = client.conversation_surface("tenant", "space").unwrap();
+    client.principal = ClientPrincipal::User {
+        user_id: "alice".into(),
+    };
+    let personal = client.conversation_surface("tenant", "space").unwrap();
+    client.app_client_id = "a:another-device".into();
+    assert_eq!(
+        personal,
+        client.conversation_surface("tenant", "space").unwrap()
+    );
+    assert_ne!(personal, group);
+    client.principal = ClientPrincipal::User {
+        user_id: "bob".into(),
+    };
+    assert_ne!(
+        personal,
+        client.conversation_surface("tenant", "space").unwrap()
+    );
+}

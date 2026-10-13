@@ -186,14 +186,25 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "user_id",
-        "client_id"
+        "principal",
+        "client_id",
+        "credential_id"
       ],
       "properties": {
-        "user_id": {
-          "$ref": "#/$defs/identifier"
-        },
         "client_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "principal": {
+          "$ref": "#/$defs/client_principal"
+        },
+        "credential_id": {
           "oneOf": [
             {
               "$ref": "#/$defs/identifier"
@@ -1918,6 +1929,46 @@
           "$ref": "#/$defs/llm_generation_support"
         }
       }
+    },
+    "client_principal": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "userId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "user"
+            },
+            "userId": {
+              "$ref": "#/$defs/identifier"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "tenantId",
+            "scopeId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "space"
+            },
+            "tenantId": {
+              "$ref": "#/$defs/identifier"
+            },
+            "scopeId": {
+              "$ref": "#/$defs/identifier"
+            }
+          }
+        }
+      ]
     }
   }
 }

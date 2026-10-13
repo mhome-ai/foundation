@@ -6,22 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-/// The authority under which a Client acts. A Space principal is a restricted
-/// Client enrolled in one Space, not an owner or the Space's Core service.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "camelCase", deny_unknown_fields)]
-pub enum ClientPrincipal {
-    User {
-        #[serde(rename = "userId")]
-        user_id: String,
-    },
-    Space {
-        #[serde(rename = "tenantId")]
-        tenant_id: String,
-        #[serde(rename = "scopeId")]
-        scope_id: String,
-    },
-}
+pub use conversation_api::ClientPrincipal;
 
 /// `appClientId` identifies the installation, `credentialId` its current
 /// enrollment. Neither is a secret. A connection ID is a separate routing key.
@@ -91,6 +76,19 @@ impl AuthenticatedClient {
                 Ok(())
             }
         }
+    }
+
+    /// Resolve the authenticated Client's catalog. Device/enrollment identity is
+    /// validated but never included in the shared Space group's storage key.
+    pub fn conversation_surface(
+        &self,
+        tenant_id: &str,
+        scope_id: &str,
+    ) -> Result<conversation_api::ConversationSurface, ClientIdentityError> {
+        self.validate_for(tenant_id, scope_id)?;
+        self.principal
+            .client_surface(tenant_id, scope_id)
+            .map_err(|_| ClientIdentityError::InvalidIdentifier)
     }
 
     /// No initializer/owner fallback: a Space Client has no acting user.
