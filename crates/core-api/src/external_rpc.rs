@@ -484,6 +484,36 @@ pub struct ExternalCoreHealth {
     pub capabilities: Vec<String>,
 }
 
+impl ExternalArtifactReadDescriptor {
+    /// Decode the bounded inline variant. File descriptors return None.
+    pub fn inline_content(&self) -> Result<Option<Vec<u8>>, String> {
+        use base64::Engine as _;
+        use sha2::{Digest, Sha256};
+        let Some(encoded) = &self.data_base64 else {
+            return if self.path.is_empty() {
+                Err("artifact descriptor has no content".into())
+            } else {
+                Ok(None)
+            };
+        };
+        if !self.path.is_empty()
+            || self.size_bytes > artifact_api::MAX_MEMORY_ARTIFACT_BYTES as u64
+            || encoded.len() > artifact_api::MAX_MEMORY_ARTIFACT_BYTES.div_ceil(3) * 4
+        {
+            return Err("invalid inline artifact descriptor".into());
+        }
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(encoded)
+            .map_err(|_| "invalid inline artifact base64")?;
+        if bytes.len() as u64 != self.size_bytes
+            || format!("{:x}", Sha256::digest(&bytes)) != self.sha256
+        {
+            return Err("inline artifact failed its integrity check".into());
+        }
+        Ok(Some(bytes))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -621,35 +651,5 @@ mod tests {
             ))
             .is_err()
         );
-    }
-}
-
-impl ExternalArtifactReadDescriptor {
-    /// Decode the bounded inline variant. File descriptors return None.
-    pub fn inline_content(&self) -> Result<Option<Vec<u8>>, String> {
-        use base64::Engine as _;
-        use sha2::{Digest, Sha256};
-        let Some(encoded) = &self.data_base64 else {
-            return if self.path.is_empty() {
-                Err("artifact descriptor has no content".into())
-            } else {
-                Ok(None)
-            };
-        };
-        if !self.path.is_empty()
-            || self.size_bytes > artifact_api::MAX_MEMORY_ARTIFACT_BYTES as u64
-            || encoded.len() > (artifact_api::MAX_MEMORY_ARTIFACT_BYTES + 2) / 3 * 4
-        {
-            return Err("invalid inline artifact descriptor".into());
-        }
-        let bytes = base64::engine::general_purpose::STANDARD
-            .decode(encoded)
-            .map_err(|_| "invalid inline artifact base64")?;
-        if bytes.len() as u64 != self.size_bytes
-            || format!("{:x}", Sha256::digest(&bytes)) != self.sha256
-        {
-            return Err("inline artifact failed its integrity check".into());
-        }
-        Ok(Some(bytes))
     }
 }
