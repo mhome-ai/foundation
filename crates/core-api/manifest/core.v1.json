@@ -28,9 +28,9 @@
         "deviceList": "device/list",
         "managementSnapshot": "management/snapshot",
         "deviceRemove": "device/remove",
-        "watchStatus": "watch/status",
-        "watchSet": "watch/set",
-        "sourceRemove": "source/remove"
+        "sourceRemove": "source/remove",
+        "deviceSettingsGet": "device/settings/get",
+        "deviceSettingsUpdate": "device/settings/update"
       },
       "flows": {
         "deviceAdd": "device.add"

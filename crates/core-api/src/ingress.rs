@@ -245,7 +245,7 @@ mod tests {
     #[test]
     fn ipc_budget_covers_core_budget_including_long_requests() {
         assert_eq!(
-            request_timeout("/app/plugin/camera/watch/set").as_secs(),
+            request_timeout("/app/plugin/camera/device/settings/update").as_secs(),
             60
         );
         assert_eq!(request_timeout("/harness/test/session/open").as_secs(), 150);

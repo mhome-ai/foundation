@@ -10,18 +10,18 @@ pub const SOURCE_REMOVE: &str = "source/remove";
 pub const RUNTIME_SOURCE_REMOVE_TARGET: &str = "/camera/app/source/remove";
 pub const APP_SOURCE_REMOVE_TARGET: &str = "/app/plugin/camera/source/remove";
 pub const DEVICE_REMOVE: &str = "device/remove";
-pub const WATCH_STATUS: &str = "watch/status";
-pub const WATCH_SET: &str = "watch/set";
+pub const DEVICE_SETTINGS_GET: &str = "device/settings/get";
+pub const DEVICE_SETTINGS_UPDATE: &str = "device/settings/update";
 pub const APP_DEVICE_LIST_TARGET: &str = "/app/plugin/camera/device/list";
 pub const APP_MANAGEMENT_SNAPSHOT_TARGET: &str = "/app/plugin/camera/management/snapshot";
 pub const APP_DEVICE_REMOVE_TARGET: &str = "/app/plugin/camera/device/remove";
-pub const APP_WATCH_STATUS_TARGET: &str = "/app/plugin/camera/watch/status";
-pub const APP_WATCH_SET_TARGET: &str = "/app/plugin/camera/watch/set";
+pub const APP_DEVICE_SETTINGS_GET_TARGET: &str = "/app/plugin/camera/device/settings/get";
+pub const APP_DEVICE_SETTINGS_UPDATE_TARGET: &str = "/app/plugin/camera/device/settings/update";
 pub const RUNTIME_DEVICE_LIST_TARGET: &str = "/camera/app/device/list";
 pub const RUNTIME_MANAGEMENT_SNAPSHOT_TARGET: &str = "/camera/app/management/snapshot";
 pub const RUNTIME_DEVICE_REMOVE_TARGET: &str = "/camera/app/device/remove";
-pub const RUNTIME_WATCH_STATUS_TARGET: &str = "/camera/app/watch/status";
-pub const RUNTIME_WATCH_SET_TARGET: &str = "/camera/app/watch/set";
+pub const RUNTIME_DEVICE_SETTINGS_GET_TARGET: &str = "/camera/app/device/settings/get";
+pub const RUNTIME_DEVICE_SETTINGS_UPDATE_TARGET: &str = "/camera/app/device/settings/update";
 pub const DEVICE_ADD_FLOW: &str = "device.add";
 pub const SETTINGS_STATUS: &str = crate::node::settings::STATUS;
 pub const SETTINGS_UPDATE: &str = crate::node::settings::UPDATE;
@@ -50,15 +50,51 @@ pub struct DeviceIdRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct WatchStatusRequest {
+pub struct DeviceSettingsGetRequest {
     pub device_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct WatchSetRequest {
+pub struct DeviceSettingsUpdateRequest {
     pub device_id: String,
-    pub enabled: bool,
+    pub settings: CameraSettingsPatch,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum MonitoringMode {
+    Off,
+    Auto,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum RecordingMode {
+    Off,
+    Event,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CameraSettings {
+    pub watch_mode: MonitoringMode,
+    pub object_detection_mode: MonitoringMode,
+    pub person_detection_mode: MonitoringMode,
+    pub record_mode: RecordingMode,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CameraSettingsPatch {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub watch_mode: Option<MonitoringMode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub object_detection_mode: Option<MonitoringMode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub person_detection_mode: Option<MonitoringMode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub record_mode: Option<RecordingMode>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -109,10 +145,10 @@ pub struct OnlineStateObservation {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct WatchControlResponse {
-    pub ok: bool,
+pub struct DeviceSettingsResponse {
     pub device_id: String,
-    pub enabled: bool,
+    pub revision: u64,
+    pub settings: CameraSettings,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -140,7 +176,7 @@ pub struct ManagementSnapshot {
     pub providers: Vec<ProviderCatalogItem>,
     pub devices: Vec<CameraDevice>,
     pub online_states: Vec<OnlineStateObservation>,
-    pub watch_states: Vec<WatchControlResponse>,
+    pub camera_settings: Vec<DeviceSettingsResponse>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -182,8 +218,11 @@ mod tests {
         assert_eq!(camera["routes"]["managementSnapshot"], MANAGEMENT_SNAPSHOT);
         assert_eq!(camera["routes"]["deviceRemove"], DEVICE_REMOVE);
         assert_eq!(camera["routes"]["sourceRemove"], SOURCE_REMOVE);
-        assert_eq!(camera["routes"]["watchStatus"], WATCH_STATUS);
-        assert_eq!(camera["routes"]["watchSet"], WATCH_SET);
+        assert_eq!(camera["routes"]["deviceSettingsGet"], DEVICE_SETTINGS_GET);
+        assert_eq!(
+            camera["routes"]["deviceSettingsUpdate"],
+            DEVICE_SETTINGS_UPDATE
+        );
         assert_eq!(camera["flows"]["deviceAdd"], DEVICE_ADD_FLOW);
         assert_eq!(
             APP_DEVICE_LIST_TARGET,
@@ -198,12 +237,12 @@ mod tests {
             format!("{APP_TARGET_PREFIX}{DEVICE_REMOVE}")
         );
         assert_eq!(
-            APP_WATCH_STATUS_TARGET,
-            format!("{APP_TARGET_PREFIX}{WATCH_STATUS}")
+            APP_DEVICE_SETTINGS_GET_TARGET,
+            format!("{APP_TARGET_PREFIX}{DEVICE_SETTINGS_GET}")
         );
         assert_eq!(
-            APP_WATCH_SET_TARGET,
-            format!("{APP_TARGET_PREFIX}{WATCH_SET}")
+            APP_DEVICE_SETTINGS_UPDATE_TARGET,
+            format!("{APP_TARGET_PREFIX}{DEVICE_SETTINGS_UPDATE}")
         );
         assert_eq!(
             RUNTIME_DEVICE_LIST_TARGET,
@@ -218,26 +257,26 @@ mod tests {
             format!("{RUNTIME_TARGET_PREFIX}{DEVICE_REMOVE}")
         );
         assert_eq!(
-            RUNTIME_WATCH_STATUS_TARGET,
-            format!("{RUNTIME_TARGET_PREFIX}{WATCH_STATUS}")
+            RUNTIME_DEVICE_SETTINGS_GET_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{DEVICE_SETTINGS_GET}")
         );
         assert_eq!(
-            RUNTIME_WATCH_SET_TARGET,
-            format!("{RUNTIME_TARGET_PREFIX}{WATCH_SET}")
+            RUNTIME_DEVICE_SETTINGS_UPDATE_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{DEVICE_SETTINGS_UPDATE}")
         );
     }
 
     #[test]
     fn management_requests_are_strict() {
         let invalid = serde_json::json!({"deviceId": "camera-1", "enabled": true});
-        assert!(serde_json::from_value::<WatchStatusRequest>(invalid).is_err());
-        let request: WatchSetRequest = serde_json::from_value(serde_json::json!({
+        assert!(serde_json::from_value::<DeviceSettingsGetRequest>(invalid).is_err());
+        let request: DeviceSettingsUpdateRequest = serde_json::from_value(serde_json::json!({
             "deviceId": "camera-1",
-            "enabled": true
+            "settings": {"watchMode": "auto"}
         }))
         .unwrap();
         assert_eq!(request.device_id, "camera-1");
-        assert!(request.enabled);
+        assert_eq!(request.settings.watch_mode, Some(MonitoringMode::Auto));
     }
 
     #[test]

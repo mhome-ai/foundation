@@ -14,7 +14,9 @@
       "name": "watch set request",
       "value": {
         "deviceId": "camera-1",
-        "enabled": true
+        "settings": {
+          "watchMode": "auto"
+        }
       }
     },
     {
@@ -48,14 +50,19 @@
             "source": "onvif"
           }
         ],
-        "watchStates": [
+        "sources": [],
+        "cameraSettings": [
           {
-            "ok": true,
             "deviceId": "camera-1",
-            "enabled": false
+            "revision": 1,
+            "settings": {
+              "watchMode": "off",
+              "objectDetectionMode": "off",
+              "personDetectionMode": "off",
+              "recordMode": "off"
+            }
           }
-        ],
-        "sources": []
+        ]
       }
     },
     {
@@ -77,9 +84,14 @@
     {
       "name": "watch response",
       "value": {
-        "ok": true,
         "deviceId": "camera-1",
-        "enabled": true
+        "revision": 1,
+        "settings": {
+          "watchMode": "off",
+          "objectDetectionMode": "off",
+          "personDetectionMode": "off",
+          "recordMode": "off"
+        }
       }
     },
     {
@@ -109,7 +121,7 @@
         ],
         "devices": [],
         "onlineStates": [],
-        "watchStates": []
+        "cameraSettings": []
       }
     }
   ],
@@ -136,8 +148,8 @@
           }
         ],
         "onlineStates": [],
-        "watchStates": [],
-        "sources": []
+        "sources": [],
+        "cameraSettings": []
       }
     },
     {
@@ -155,6 +167,22 @@
           }
         ],
         "onlineStates": []
+      }
+    },
+    {
+      "name": "empty patch",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {}
+      }
+    },
+    {
+      "name": "invalid mode",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "watchMode": "on"
+        }
       }
     }
   ]

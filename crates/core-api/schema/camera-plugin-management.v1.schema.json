@@ -10,7 +10,7 @@
       "$ref": "#/$defs/deviceIdRequest"
     },
     {
-      "$ref": "#/$defs/watchSetRequest"
+      "$ref": "#/$defs/deviceSettingsUpdateRequest"
     },
     {
       "$ref": "#/$defs/managementSnapshot"
@@ -22,7 +22,7 @@
       "$ref": "#/$defs/deviceMutationResponse"
     },
     {
-      "$ref": "#/$defs/watchControlResponse"
+      "$ref": "#/$defs/deviceSettingsResponse"
     },
     {
       "$ref": "#/$defs/errorResponse"
@@ -45,23 +45,6 @@
         "deviceId": {
           "type": "string",
           "minLength": 1
-        }
-      },
-      "additionalProperties": false
-    },
-    "watchSetRequest": {
-      "type": "object",
-      "required": [
-        "deviceId",
-        "enabled"
-      ],
-      "properties": {
-        "deviceId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "enabled": {
-          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -183,34 +166,13 @@
       },
       "additionalProperties": false
     },
-    "watchControlResponse": {
-      "type": "object",
-      "required": [
-        "ok",
-        "deviceId",
-        "enabled"
-      ],
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        },
-        "deviceId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "enabled": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
     "managementSnapshot": {
       "type": "object",
       "required": [
         "providers",
         "devices",
         "onlineStates",
-        "watchStates",
+        "cameraSettings",
         "sources"
       ],
       "properties": {
@@ -232,16 +194,16 @@
             "$ref": "#/$defs/onlineStateObservation"
           }
         },
-        "watchStates": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/watchControlResponse"
-          }
-        },
         "sources": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/homeAssistantSource"
+          }
+        },
+        "cameraSettings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/deviceSettingsResponse"
           }
         }
       },
@@ -356,6 +318,112 @@
             "string",
             "null"
           ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "cameraSettings": {
+      "type": "object",
+      "properties": {
+        "watchMode": {
+          "enum": [
+            "off",
+            "auto"
+          ]
+        },
+        "objectDetectionMode": {
+          "enum": [
+            "off",
+            "auto"
+          ]
+        },
+        "personDetectionMode": {
+          "enum": [
+            "off",
+            "auto"
+          ]
+        },
+        "recordMode": {
+          "enum": [
+            "off",
+            "event"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "watchMode",
+        "objectDetectionMode",
+        "personDetectionMode",
+        "recordMode"
+      ]
+    },
+    "cameraSettingsPatch": {
+      "type": "object",
+      "properties": {
+        "watchMode": {
+          "enum": [
+            "off",
+            "auto"
+          ]
+        },
+        "objectDetectionMode": {
+          "enum": [
+            "off",
+            "auto"
+          ]
+        },
+        "personDetectionMode": {
+          "enum": [
+            "off",
+            "auto"
+          ]
+        },
+        "recordMode": {
+          "enum": [
+            "off",
+            "event"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "deviceSettingsUpdateRequest": {
+      "type": "object",
+      "required": [
+        "deviceId",
+        "settings"
+      ],
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "settings": {
+          "$ref": "#/$defs/cameraSettingsPatch"
+        }
+      },
+      "additionalProperties": false
+    },
+    "deviceSettingsResponse": {
+      "type": "object",
+      "required": [
+        "deviceId",
+        "revision",
+        "settings"
+      ],
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "settings": {
+          "$ref": "#/$defs/cameraSettings"
         }
       },
       "additionalProperties": false
