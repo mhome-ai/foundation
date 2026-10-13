@@ -446,9 +446,6 @@ impl ArtifactReference {
     fn validate(&self) -> Result<(), ArtifactReferenceError> {
         self.lifecycle
             .validate_creation_id(self.creation_id.as_deref())?;
-        if self.lifecycle == ArtifactLifecycle::Man && self.creation_id.is_none() {
-            return Err(invalid("manual artifact requires a creation ID"));
-        }
         validate_segment(&self.tenant_id, "tenant")?;
         validate_segment(&self.scope_id, "scope")?;
         if self.sha256.len() != 64

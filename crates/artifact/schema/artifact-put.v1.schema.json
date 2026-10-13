@@ -148,20 +148,16 @@
         },
         "creationId": {
           "type": "string",
-          "pattern": "^[a-f0-9]{32}$"
+          "minLength": 1,
+          "maxLength": 128,
+          "not": {
+            "pattern": "[^A-Za-z0-9_-]"
+          }
         }
       },
       "allOf": [
         {
           "if": {
-            "properties": {
-              "creationId": {}
-            },
-            "required": [
-              "creationId"
-            ]
-          },
-          "then": {
             "properties": {
               "lifecycle": {
                 "const": "man"
@@ -170,6 +166,24 @@
             "required": [
               "lifecycle"
             ]
+          },
+          "then": {
+            "required": [
+              "creationId"
+            ],
+            "properties": {
+              "creationId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "creationId"
+              ],
+              "properties": {
+                "creationId": {}
+              }
+            }
           }
         }
       ]

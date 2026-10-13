@@ -52,6 +52,42 @@
       "sizeBytes": 12,
       "width": 2,
       "height": 3
+    },
+    {
+      "name": "man UUID",
+      "uri": "meow-artifact://v2/tenant/scope/man/550E8400-e29b-41d4-a716-446655440000/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "kind": "image",
+      "mimeType": "image/png",
+      "sizeBytes": 12,
+      "width": 2,
+      "height": 3
+    },
+    {
+      "name": "man short",
+      "uri": "meow-artifact://v2/tenant/scope/man/A/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "kind": "image",
+      "mimeType": "image/png",
+      "sizeBytes": 12,
+      "width": 2,
+      "height": 3
+    },
+    {
+      "name": "man custom",
+      "uri": "meow-artifact://v2/tenant/scope/man/caller-A_1/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "kind": "image",
+      "mimeType": "image/png",
+      "sizeBytes": 12,
+      "width": 2,
+      "height": 3
+    },
+    {
+      "name": "man max length",
+      "uri": "meow-artifact://v2/tenant/scope/man/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "kind": "image",
+      "mimeType": "image/png",
+      "sizeBytes": 12,
+      "width": 2,
+      "height": 3
     }
   ],
   "invalid": [
@@ -96,12 +132,40 @@
       "uri": "meow-artifact://v2/tenant/scope/unknown/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
-      "name": "manual requires creation identity",
-      "uri": "meow-artifact://v2/tenant/scope/man/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
-    },
-    {
       "name": "standard cannot carry manual identity",
       "uri": "meow-artifact://v2/tenant/scope/std/1234567890abcdef1234567890abcdef/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "man ID empty",
+      "uri": "meow-artifact://v2/tenant/scope/man//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "man ID overlong",
+      "uri": "meow-artifact://v2/tenant/scope/man/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "man ID slash",
+      "uri": "meow-artifact://v2/tenant/scope/man/caller/id/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "man ID dot",
+      "uri": "meow-artifact://v2/tenant/scope/man/../aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "man ID percent",
+      "uri": "meow-artifact://v2/tenant/scope/man/caller%2Fid/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "man ID space",
+      "uri": "meow-artifact://v2/tenant/scope/man/caller id/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "man ID unicode",
+      "uri": "meow-artifact://v2/tenant/scope/man/猫/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "man ID newline",
+      "uri": "meow-artifact://v2/tenant/scope/man/A\n/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     }
   ]
 }

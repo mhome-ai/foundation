@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Retention and ownership policy; part of resource identity, never the content digest.
+/// Retention and resource identity policy; never part of the content digest.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ArtifactLifecycle {
@@ -32,23 +32,24 @@ impl ArtifactLifecycle {
         }
     }
 
-    /// Manual callers may reserve a 128-bit creation ID for retry/recovery before uploading.
+    /// Manual identities are supplied and retained verbatim by callers.
     pub fn validate_creation_id(
         self,
         id: Option<&str>,
     ) -> Result<(), crate::ArtifactReferenceError> {
-        if let Some(id) = id {
-            if self != Self::Man
-                || id.len() != 32
-                || !id
-                    .bytes()
-                    .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
+        match (self, id) {
+            (Self::Man, Some(id))
+                if !id.is_empty()
+                    && id.len() <= 128
+                    && id.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_')) =>
             {
-                return Err(crate::invalid(
-                    "creation ID must be 32 lowercase hex characters and requires man lifecycle",
-                ));
+                Ok(())
             }
+            (Self::Man, _) => Err(crate::invalid(
+                "man lifecycle requires a caller-supplied creation ID of 1-128 ASCII letters, digits, hyphens or underscores",
+            )),
+            (_, None) => Ok(()),
+            (_, Some(_)) => Err(crate::invalid("creation ID requires man lifecycle")),
         }
-        Ok(())
     }
 }

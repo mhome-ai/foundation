@@ -47,11 +47,15 @@ not accepted; this is a coordinated protocol cutover, without automatic migratio
   uses an asynchronous, tmp-only bucket lifecycle rule (one day), so physical removal
   can follow logical expiry. Explicit deletion remains available in both runtimes.
 - `man`: caller-managed durable content. Automatic retention never deletes it.
-  Each independent creation receives a fresh 128-bit creation ID. Callers can reserve
-  it before uploading by supplying `creationId` (32 lowercase hex characters), then
-  reuse it for retries. A supplied ID is accepted only for `man`; it cannot overwrite
-  existing different bytes. Deletion and explicit Space/store purge still apply.
-  Callers must durably record ownership and retry replacement/deletion after failures.
+  Callers must supply and retain `creationId`; the service never generates one.
+  IDs contain 1-128 ASCII letters, digits, hyphens or underscores, and are preserved
+  verbatim, including case. Conventional UUID strings are accepted. The resource
+  identity is `(creationId, sha256)` within its tenant, Space and lifecycle.
+  Repeating the same ID and bytes is idempotent; different IDs or different bytes
+  address separate resources. Metadata aliases share the same resource. Callers
+  save the returned URI and explicitly delete resources when no longer needed.
+  Local paths and cloud object keys derive from both the ID and digest, so old URIs
+  and delivery URLs cannot be rebound to different content after deletion.
 
 `/artifact/delete` takes `{ "uri": "meow-artifact://…" }` and returns `{}`. Missing content succeeds.
 It deletes only the selected resource in its tenant, Space and lifecycle namespace;

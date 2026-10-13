@@ -3,11 +3,21 @@
   "valid": [
     {
       "name": "audio-request",
-      "value": { "kind": "AUDIO", "mimeType": "audio/ogg", "dataBase64": "eA==", "durationMillis": 1200 }
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 1200
+      }
     },
     {
       "name": "video-request",
-      "value": { "kind": "VIDEO", "mimeType": "video/mp4", "dataBase64": "eA==", "durationMillis": 2000 }
+      "value": {
+        "kind": "VIDEO",
+        "mimeType": "video/mp4",
+        "dataBase64": "eA==",
+        "durationMillis": 2000
+      }
     },
     {
       "name": "file-response",
@@ -17,12 +27,136 @@
         "mimeType": "application/pdf",
         "sizeBytes": 30
       }
+    },
+    {
+      "name": "manual-uuid",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA==",
+        "creationId": "550E8400-e29b-41d4-a716-446655440000"
+      }
+    },
+    {
+      "name": "manual-short",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA==",
+        "creationId": "A"
+      }
+    },
+    {
+      "name": "manual-custom",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA==",
+        "creationId": "caller_A-1"
+      }
+    },
+    {
+      "name": "manual-max",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA==",
+        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      }
     }
   ],
   "invalid": [
     {
       "name": "unknown-field",
-      "value": { "kind": "FILE", "mimeType": "text/plain", "dataBase64": "eA==", "path": "/tmp/x" }
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "eA==",
+        "path": "/tmp/x"
+      }
+    },
+    {
+      "name": "manual-missing",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA=="
+      }
+    },
+    {
+      "name": "manual-empty",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA==",
+        "creationId": ""
+      }
+    },
+    {
+      "name": "manual-newline",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA==",
+        "creationId": "A\n"
+      }
+    },
+    {
+      "name": "manual-traversal",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA==",
+        "creationId": "../A"
+      }
+    },
+    {
+      "name": "manual-overlong",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA==",
+        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      }
+    },
+    {
+      "name": "manual-unicode",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "man",
+        "dataBase64": "eA==",
+        "creationId": "猫"
+      }
+    },
+    {
+      "name": "std-rejects-manual-id",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "std",
+        "dataBase64": "eA==",
+        "creationId": "caller-A"
+      }
+    },
+    {
+      "name": "tmp-rejects-manual-id",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "lifecycle": "tmp",
+        "dataBase64": "eA==",
+        "creationId": "caller-A"
+      }
     }
   ]
 }
