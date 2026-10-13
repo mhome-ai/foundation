@@ -24,7 +24,6 @@ const SCOPE_MODE_TARGETS: &[&str] = &[
     "/app/scope/context/get",
     "/app/artifact/put",
     "/app/artifact/import",
-    "/app/artifact/persist",
     "/app/artifact/delete",
 ];
 

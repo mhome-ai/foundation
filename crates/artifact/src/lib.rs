@@ -624,5 +624,4 @@ pub struct HostTlsPublicKey {
 }
 
 /// Lifecycle operations use the same canonical, scope-checked URI as resolve.
-pub type PersistArtifactRequest = ResolveArtifactRequest;
 pub type DeleteArtifactRequest = ResolveArtifactRequest;

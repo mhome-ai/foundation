@@ -31,12 +31,6 @@
     "schema": "schema/artifact-import.v1.schema.json",
     "schemaVersion": 1
   },
-  "persist": {
-    "target": "/artifact/persist",
-    "requestSchema": "schema/artifact-resolve.v1.schema.json#/$defs/request",
-    "responseSchema": "schema/artifact-put.v1.schema.json#/$defs/response",
-    "schemaVersion": 1
-  },
   "delete": {
     "target": "/artifact/delete",
     "requestSchema": "schema/artifact-resolve.v1.schema.json#/$defs/request",

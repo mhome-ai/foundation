@@ -33,10 +33,8 @@ digest as resource ID in independent namespaces; the same bytes never share an o
 across policies. Metadata remains canonical base64url JSON. Version 1 references are
 not accepted; this is a coordinated protocol cutover, without automatic migration.
 
-- `std`: durable content with rolling 30-day idle retention. Upload/repeated ingestion
-  initializes or renews the deadline. Opening content renews a persisted timestamp;
-  metadata queries, HEAD, signed-URL issuance and URI lookup do not. Daily maintenance
-  reclaims eligible objects. Filesystem atime is not used.
+- `std`: durable content retained until explicit deletion or a Space/store purge.
+  Reads, metadata queries and repeated ingestion do not maintain an expiry timestamp.
 - `tmp`: memory only, with one-hour idle retention, lost on process restart. Content
   reads and repeated ingestion renew it; metadata and resolve do not. Reads reject
   expired objects immediately. There is no disk spill, total capacity or object-count
@@ -48,22 +46,15 @@ not accepted; this is a coordinated protocol cutover, without automatic migratio
   existing different bytes. Deletion and explicit Space/store purge still apply.
   Callers must durably record ownership and retry replacement/deletion after failures.
 
-`/artifact/persist` takes `{ "uri": "meow-artifact://…" }` and returns a put response.
-For `tmp`, it creates/reuses a separate `std` resource and returns its URI; callers must
-save that destination URI. The original temporary object retains its policy and remains
-readable until expiry/deletion. For `std`, persist is idempotent. `man` is already caller
-managed and rejects promotion. Missing/expired objects cannot be promoted; write failure
-preserves temporary content.
-
-`/artifact/delete` takes the same request and returns `{}`. Missing content succeeds.
+`/artifact/delete` takes `{ "uri": "meow-artifact://…" }` and returns `{}`. Missing content succeeds.
 It deletes only the selected resource in its tenant, Space and lifecycle namespace;
 metadata aliases of that resource share deletion. Independently created manual resources
 do not share deletion. An already opened snapshot may finish after deletion or expiry.
 Standard/temporary digest identities can be recreated: do not treat an unexpired signed
 URL as a permanently revoked object ID.
 
-App Facade equivalents are `/app/artifact/persist` and `/app/artifact/delete`; Wasm hosts
-expose `artifact_persist_async` and `artifact_delete_async`. LLM inputs continue to use
+The App Facade exposes `/app/artifact/delete`; Wasm hosts expose
+`artifact_delete_async`. LLM inputs continue to use
 canonical references. Temporary HTTP uploads and native reads transfer bytes from memory;
 large native transfers use bounded attachments on the existing IPC connection. Temporary
 delivery uses `no-store`; resolve grants never outlive the reported object expiration.
