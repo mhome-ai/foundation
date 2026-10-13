@@ -5,6 +5,10 @@ provider runtimes. Public `/app/*` contracts belong to
 `mhome-app-facade-api`; this crate owns internal MWS, authentication, LLM,
 Messaging normalization, Node runtime, and Storage contracts.
 
+The additive [`client_identity`](contract/client-identity.md) contract separates
+User and Space Client identity, installation ID and enrollment ID. Runtime ingress
+has not yet cut over to this contract; operation authorization remains separate.
+
 MWS uses standard WebSocket Ping/Pong control frames for connection liveness.
 There are no application `pi`/`po` messages or auth `heartbeatInterval` field.
 The transport owns heartbeat timing and reports authenticated local connection

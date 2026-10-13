@@ -1,5 +1,6 @@
 #![allow(clippy::derivable_impls, clippy::should_implement_trait)]
 
+pub mod client_identity;
 mod delivery;
 mod external_rpc;
 pub mod host;
