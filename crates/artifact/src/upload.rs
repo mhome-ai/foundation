@@ -8,8 +8,10 @@ use crate::ArtifactKind;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PrepareArtifactUploadRequest {
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
-    pub temporary: bool,
+    #[serde(default)]
+    pub lifecycle: crate::ArtifactLifecycle,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub creation_id: Option<String>,
     pub kind: ArtifactKind,
     pub mime_type: String,
     pub size_bytes: u64,
@@ -20,6 +22,9 @@ pub struct PrepareArtifactUploadRequest {
 
 impl PrepareArtifactUploadRequest {
     pub fn validate(&self) -> Result<(), PrepareArtifactUploadValidationError> {
+        self.lifecycle
+            .validate_creation_id(self.creation_id.as_deref())
+            .map_err(|_| invalid("invalid artifact creation ID"))?;
         if self.mime_type.trim() != self.mime_type || self.mime_type.is_empty() {
             return Err(invalid("artifact upload MIME type is invalid"));
         }
@@ -114,7 +119,8 @@ mod tests {
     #[test]
     fn validates_upload_metadata() {
         let request = PrepareArtifactUploadRequest {
-            temporary: false,
+            lifecycle: crate::ArtifactLifecycle::Std,
+            creation_id: None,
             kind: ArtifactKind::Audio,
             mime_type: "audio/ogg".to_string(),
             size_bytes: 42,
@@ -127,7 +133,8 @@ mod tests {
     #[test]
     fn rejects_malformed_hashes_and_kind_mismatch() {
         let mut request = PrepareArtifactUploadRequest {
-            temporary: false,
+            lifecycle: crate::ArtifactLifecycle::Std,
+            creation_id: None,
             kind: ArtifactKind::Audio,
             mime_type: "image/png".to_string(),
             size_bytes: 42,

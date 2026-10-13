@@ -250,3 +250,67 @@ fn conversion_fields_are_rejected() {
         serde_json::from_str(include_str!("../schema/artifact-put.v1.schema.json")).unwrap();
     assert!(!jsonschema::validator_for(&schema).unwrap().is_valid(&value));
 }
+
+#[test]
+fn modes_and_manual_retries_are_explicit_in_rust_and_schema() {
+    use artifact_api::{ArtifactLifecycle, ImportArtifactRequest};
+    use serde_json::json;
+    let id = "0123456789abcdef0123456789abcdef";
+    for (schema_text, base, operation) in [
+        (
+            include_str!("../schema/artifact-put.v1.schema.json"),
+            json!({"kind":"FILE","mimeType":"text/plain","dataBase64":"eA=="}),
+            "put",
+        ),
+        (
+            include_str!("../schema/artifact-upload.v1.schema.json"),
+            json!({"kind":"FILE","mimeType":"text/plain","sizeBytes":1,"sha256":"a".repeat(64)}),
+            "upload",
+        ),
+        (
+            include_str!("../schema/artifact-import.v1.schema.json"),
+            json!({"kind":"FILE","sourceUrl":"https://example.test/file"}),
+            "import",
+        ),
+    ] {
+        let schema: Value = serde_json::from_str(schema_text).unwrap();
+        let validator = jsonschema::validator_for(&schema).unwrap();
+        for (mode, creation, valid) in [
+            (None, None, true),
+            (Some("std"), None, true),
+            (Some("tmp"), None, true),
+            (Some("man"), None, true),
+            (Some("man"), Some(id), true),
+            (None, Some(id), false),
+            (Some("tmp"), Some(id), false),
+            (Some("man"), Some("bad"), false),
+            (Some("unknown"), None, false),
+        ] {
+            let mut value = base.clone();
+            if let Some(mode) = mode {
+                value["lifecycle"] = json!(mode);
+            }
+            if let Some(id) = creation {
+                value["creationId"] = json!(id);
+            }
+            assert_eq!(validator.is_valid(&value), valid, "{operation}: {value}");
+            let rust_valid = match operation {
+                "put" => serde_json::from_value::<PutArtifactRequest>(value.clone())
+                    .map(|v| v.decode().is_ok())
+                    .unwrap_or(false),
+                "upload" => serde_json::from_value::<PrepareArtifactUploadRequest>(value.clone())
+                    .map(|v| v.validate().is_ok())
+                    .unwrap_or(false),
+                _ => serde_json::from_value::<ImportArtifactRequest>(value.clone())
+                    .map(|v| {
+                        v.lifecycle
+                            .validate_creation_id(v.creation_id.as_deref())
+                            .is_ok()
+                    })
+                    .unwrap_or(false),
+            };
+            assert_eq!(rust_valid, valid, "{operation}: {value}");
+        }
+    }
+    assert_eq!(ArtifactLifecycle::default(), ArtifactLifecycle::Std);
+}

@@ -48,11 +48,41 @@
           "minimum": 1,
           "maximum": 9007199254740991
         },
-        "temporary": {
-          "type": "boolean",
-          "default": false
+        "lifecycle": {
+          "enum": [
+            "std",
+            "tmp",
+            "man"
+          ],
+          "default": "std"
+        },
+        "creationId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "creationId": {}
+            },
+            "required": [
+              "creationId"
+            ]
+          },
+          "then": {
+            "properties": {
+              "lifecycle": {
+                "const": "man"
+              }
+            },
+            "required": [
+              "lifecycle"
+            ]
+          }
+        }
+      ]
     },
     "response": {
       "type": "object",

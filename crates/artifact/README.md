@@ -2,7 +2,7 @@
 
 Storage-independent artifact references shared by mHome runtimes.
 
-The crate is the source of truth for the `meow-artifact://v1/` URI format and its
+The crate is the source of truth for the `meow-artifact://v2/` URI format and its
 immutable image, audio, video, and file metadata. The published schema and conformance
 fixtures are intended for non-Rust runtimes.
 
@@ -13,56 +13,63 @@ embedding them in a control-plane message.
 Delivery is an explicit `DATA_URL` or `SIGNED_URL` union; a signed URL may point to a
 cloud object store or an authenticated local streaming endpoint.
 
-TTL, storage placement, filesystem paths, signed URLs, and cloud object keys are
-runtime concerns and are deliberately not encoded into an artifact reference.
+Retention mode and resource identity are encoded in the reference. Exact TTL deadlines,
+filesystem paths, signed URLs, and cloud object keys remain runtime concerns.
 
-Capability media values (`Image`, `Audio`) use `MediaReference`: exactly `{ "uri": "meow-artifact://v1/..." }`. The reference has no URL, inline bytes, MIME or creation timestamp fields. Parse and check kind and tenant/scope at capability boundaries; do not implicitly import media. Upload bytes with `PutArtifactRequest` or explicitly download finite HTTP(S) content with `ImportArtifactRequest` via `/app/artifact/put` and `/app/artifact/import`. Storage metadata and upload transports retain their MIME and byte fields. Resolve to temporary delivery URLs only at consumers. Conversation media sources retain their existing tagged artifact protocol. Video storage remains unsupported by the runtimes.
+Capability media values (`Image`, `Audio`) use `MediaReference`: exactly `{ "uri": "meow-artifact://v2/..." }`. The reference has no URL, inline bytes, MIME or creation timestamp fields. Parse and check kind and tenant/scope at capability boundaries; do not implicitly import media. Upload bytes with `PutArtifactRequest` or explicitly download finite HTTP(S) content with `ImportArtifactRequest` via `/app/artifact/put` and `/app/artifact/import`. Storage metadata and upload transports retain their MIME and byte fields. Resolve to temporary delivery URLs only at consumers. Conversation media sources retain their existing tagged artifact protocol. Video storage remains unsupported by the runtimes.
 
 Upload/import preserves bytes. Callers perform conversion before upload. Public ingress is limited to 1 MiB; internal producers retain their own limits. The shared reference and storage contracts do not impose the public ingress limit.
 
-### Temporary artifacts (MeowCore)
+### Lifecycle and resource identity
 
-`put`, explicit HTTP `import`, and `upload/prepare` accept `temporary: true`.
-Omitting the flag preserves durable storage. The flag is a storage request, not
-part of the content-addressed URI: putting the same bytes in the same tenant and
-scope reuses that content. Existing durable content is never downgraded. Put and
-resolve responses report `temporary: true` and `expiresAtUnixMs` for temporary
-content; durable responses omit both fields.
+`put`, explicit HTTP `import`, and `upload/prepare` accept `lifecycle`: `std`, `tmp`,
+or `man`. Omission means `std`. Put/resolve responses report the selected lifecycle.
+The former `temporary` request/response field is no longer accepted.
 
-MeowCore keeps temporary content only in memory, without a total capacity or
-object-count quota and without disk spill. Each successful content read resets
-one hour of idle retention. Upload and repeated put / import revalidation also
-reset that deadline; resolve and metadata queries do not. Objects never read
-expire one hour after upload. Reads reject expired objects immediately, while
-periodic maintenance reclaims idle entries. An already opened snapshot may
-finish after deletion or expiry. Existing per-upload size and transport limits
-still apply. The caller is responsible for peak memory use.
+The canonical URI is
+`meow-artifact://v2/<tenant>/<scope>/<lifecycle>/<resourceId>/<sha256>/<metadata>`.
+SHA-256 always hashes the original bytes. Standard and temporary resources use their
+digest as resource ID in independent namespaces; the same bytes never share an object
+across policies. Metadata remains canonical base64url JSON. Version 1 references are
+not accepted; this is a coordinated protocol cutover, without automatic migration.
 
-`/artifact/persist` takes `{ "uri": "meow-artifact://…" }` and returns a put
-response after durable storage succeeds. Promotion is idempotent, preserves the
-URI, and leaves the temporary object readable if writing fails. MeowCore's
-existing thirty-day durable retention policy still applies. Expired or missing
-objects cannot be promoted. Persist before saving a reference in long-lived
-history or scheduling work beyond its expiration.
+- `std`: durable content with rolling 30-day idle retention. Upload/repeated ingestion
+  initializes or renews the deadline. Opening content renews a persisted timestamp;
+  metadata queries, HEAD, signed-URL issuance and URI lookup do not. Daily maintenance
+  reclaims eligible objects. Filesystem atime is not used.
+- `tmp`: memory only, with one-hour idle retention, lost on process restart. Content
+  reads and repeated ingestion renew it; metadata and resolve do not. Reads reject
+  expired objects immediately. There is no disk spill, total capacity or object-count
+  quota; existing per-upload limits still apply.
+- `man`: caller-managed durable content. Automatic retention never deletes it.
+  Each independent creation receives a fresh 128-bit creation ID. Callers can reserve
+  it before uploading by supplying `creationId` (32 lowercase hex characters), then
+  reuse it for retries. A supplied ID is accepted only for `man`; it cannot overwrite
+  existing different bytes. Deletion and explicit Space/store purge still apply.
+  Callers must durably record ownership and retry replacement/deletion after failures.
 
-`/artifact/delete` takes the same request and returns `{}`. Deleting missing
-content succeeds. Deletion affects all metadata aliases of that content in the
-same scope; an opened snapshot may finish, while subsequent opens fail. Do not
-delete after each LLM call when another caller may reuse the URI. There is no
-separate eviction API. A signed URL is not a revocable object identity: recreating
-the identical content may make an unexpired old URL usable again.
+`/artifact/persist` takes `{ "uri": "meow-artifact://…" }` and returns a put response.
+For `tmp`, it creates/reuses a separate `std` resource and returns its URI; callers must
+save that destination URI. The original temporary object retains its policy and remains
+readable until expiry/deletion. For `std`, persist is idempotent. `man` is already caller
+managed and rejects promotion. Missing/expired objects cannot be promoted; write failure
+preserves temporary content.
 
-App Facade equivalents are `/app/artifact/persist` and `/app/artifact/delete`;
-Wasm hosts expose `artifact_persist_async` and `artifact_delete_async`. LLM inputs
-continue to use canonical Artifact references. Temporary HTTP uploads and native
-reads transfer content from memory without staging files. Large native transfers use bounded attachments on the existing
-IPC connection; the JSON control frame limit is unchanged. Temporary delivery uses
-`no-store`, and resolve grants never outlive the reported object expiration.
+`/artifact/delete` takes the same request and returns `{}`. Missing content succeeds.
+It deletes only the selected resource in its tenant, Space and lifecycle namespace;
+metadata aliases of that resource share deletion. Independently created manual resources
+do not share deletion. An already opened snapshot may finish after deletion or expiry.
+Standard/temporary digest identities can be recreated: do not treat an unexpired signed
+URL as a permanently revoked object ID.
 
-Temporary state is process-owned and is lost on restart. Startup removes
-abandoned spill directories left by older runtimes. This contract adds no database
-or migration. Cloud forwarding preserves the local owner’s lifetime metadata and
-routes persist/delete to that owner. Cloud-owned storage rejects temporary writes;
-it supports idempotent persist for existing durable content and exact-key delete.
-A multi-instance cloud service must not emulate temporary storage with an
-uncoordinated in-process map.
+App Facade equivalents are `/app/artifact/persist` and `/app/artifact/delete`; Wasm hosts
+expose `artifact_persist_async` and `artifact_delete_async`. LLM inputs continue to use
+canonical references. Temporary HTTP uploads and native reads transfer bytes from memory;
+large native transfers use bounded attachments on the existing IPC connection. Temporary
+delivery uses `no-store`; resolve grants never outlive the reported object expiration.
+Only `tmp` responses contain `expiresAtUnixMs`. Native transport descriptors retain their
+`temporary` boolean to distinguish memory from disk; it is not an ingress lifecycle policy.
+
+Forwarding services must preserve the owner's policy and URI. Each storage implementation
+must adopt the lifecycle contract before consuming this protocol release; a shared cloud
+service must not emulate temporary storage with an uncoordinated process-local map.

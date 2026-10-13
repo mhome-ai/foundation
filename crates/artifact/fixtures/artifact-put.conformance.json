@@ -12,7 +12,7 @@
     {
       "name": "file-response",
       "value": {
-        "uri": "meow-artifact://v1/tenant/scope/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "uri": "meow-artifact://v2/tenant/scope/std/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
         "kind": "FILE",
         "mimeType": "application/pdf",
         "sizeBytes": 30

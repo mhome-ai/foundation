@@ -71,18 +71,18 @@ for (const name of ["artifactPut", "artifactResolve"]) {
     ).value;
     const expiresAtUnixMs = 1900000000000;
     assert.equal(
-      validate({ ...response, temporary: true, expiresAtUnixMs }),
+      validate({ ...response, lifecycle: "tmp", expiresAtUnixMs }),
       true
     );
-    assert.equal(validate({ ...response, temporary: false }), true);
-    assert.equal(validate({ ...response, temporary: true }), false);
+    assert.equal(validate({ ...response, lifecycle: "std" }), true);
+    assert.equal(validate({ ...response, lifecycle: "tmp" }), false);
     assert.equal(validate({ ...response, expiresAtUnixMs }), false);
     assert.equal(
-      validate({ ...response, temporary: false, expiresAtUnixMs }),
+      validate({ ...response, lifecycle: "std", expiresAtUnixMs }),
       false
     );
     assert.equal(
-      validate({ ...response, temporary: true, expiresAtUnixMs: 0 }),
+      validate({ ...response, lifecycle: "tmp", expiresAtUnixMs: 0 }),
       false
     );
   });

@@ -26,9 +26,39 @@
       "minLength": 3,
       "maxLength": 255
     },
-    "temporary": {
-      "type": "boolean",
-      "default": false
+    "lifecycle": {
+      "enum": [
+        "std",
+        "tmp",
+        "man"
+      ],
+      "default": "std"
+    },
+    "creationId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}$"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "creationId": {}
+        },
+        "required": [
+          "creationId"
+        ]
+      },
+      "then": {
+        "properties": {
+          "lifecycle": {
+            "const": "man"
+          }
+        },
+        "required": [
+          "lifecycle"
+        ]
+      }
+    }
+  ]
 }

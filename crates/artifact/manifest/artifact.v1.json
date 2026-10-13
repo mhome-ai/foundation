@@ -1,7 +1,7 @@
 {
   "manifest": "mhome.artifact.v1",
-  "contractVersion": "1.9.0",
-  "uriPrefix": "meow-artifact://v1/",
+  "contractVersion": "1.10.0",
+  "uriPrefix": "meow-artifact://v2/",
   "kinds": [
     "image",
     "audio",

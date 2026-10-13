@@ -29,6 +29,10 @@ as a Folder.
 
 ## Lossless external boundaries (core-api 1.19.0)
 
+External protocol **20** adopts Artifact lifecycle requests and responses (`std`, `tmp`,
+`man`) and v2 resource URIs. Host and Core must agree on this version before exchanging
+artifact messages; native memory/disk descriptors retain their `temporary` boolean.
+
 External protocol **19** adds `metadataOnly` to `AuthorizeArtifactRead` for HEAD
 and other metadata probes. Such responses contain metadata without a path or
 inline content and do not renew temporary retention. Attachment upload clients

@@ -8,8 +8,10 @@ use crate::{ArtifactKind, ArtifactReference};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PutArtifactRequest {
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
-    pub temporary: bool,
+    #[serde(default)]
+    pub lifecycle: crate::ArtifactLifecycle,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub creation_id: Option<String>,
     pub kind: ArtifactKind,
     pub mime_type: String,
     pub data_base64: String,
@@ -19,6 +21,9 @@ pub struct PutArtifactRequest {
 
 impl PutArtifactRequest {
     pub fn decode(&self) -> Result<Vec<u8>, PutArtifactValidationError> {
+        self.lifecycle
+            .validate_creation_id(self.creation_id.as_deref())
+            .map_err(|_| invalid("invalid artifact creation ID"))?;
         if self.mime_type.trim() != self.mime_type || self.mime_type.is_empty() {
             return Err(invalid("artifact put MIME type is invalid"));
         }
@@ -60,8 +65,8 @@ impl PutArtifactRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PutArtifactResponse {
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
-    pub temporary: bool,
+    #[serde(default)]
+    pub lifecycle: crate::ArtifactLifecycle,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub expires_at_unix_ms: Option<u64>,
     pub uri: String,
@@ -78,14 +83,16 @@ pub struct PutArtifactResponse {
 
 impl PutArtifactResponse {
     pub fn validate(&self) -> Result<ArtifactReference, PutArtifactValidationError> {
-        if self.temporary != self.expires_at_unix_ms.is_some() || self.expires_at_unix_ms == Some(0)
+        if self.lifecycle.is_temporary() != self.expires_at_unix_ms.is_some()
+            || self.expires_at_unix_ms == Some(0)
         {
             return Err(invalid("artifact lifetime and expiration are inconsistent"));
         }
         let reference = ArtifactReference::parse(&self.uri)
             .map_err(|_| invalid("artifact put URI is invalid"))?;
         let metadata = reference.metadata();
-        if self.kind != metadata.kind()
+        if self.lifecycle != reference.lifecycle()
+            || self.kind != metadata.kind()
             || self.mime_type != metadata.mime_type()
             || self.size_bytes != metadata.size_bytes()
             || self.width != metadata.width()
@@ -122,7 +129,8 @@ mod tests {
     #[test]
     fn request_rejects_kind_mime_mismatch() {
         let request = PutArtifactRequest {
-            temporary: false,
+            lifecycle: crate::ArtifactLifecycle::Std,
+            creation_id: None,
             kind: ArtifactKind::Audio,
             mime_type: "image/png".to_string(),
             data_base64: "eA==".to_string(),
@@ -140,14 +148,11 @@ mod lifecycle_tests {
         let mut input: serde_json::Value =
             serde_json::json!({"kind":"FILE","mimeType":"text/plain","dataBase64":"eA=="});
         let durable: PutArtifactRequest = serde_json::from_value(input.clone()).unwrap();
-        assert!(!durable.temporary);
-        assert!(serde_json::to_value(&durable)
-            .unwrap()
-            .get("temporary")
-            .is_none());
-        input["temporary"] = true.into();
+        assert!(!durable.lifecycle.is_temporary());
+        assert_eq!(serde_json::to_value(&durable).unwrap()["lifecycle"], "std");
+        input["lifecycle"] = "tmp".into();
         let temporary: PutArtifactRequest = serde_json::from_value(input).unwrap();
-        assert!(temporary.temporary);
+        assert!(temporary.lifecycle.is_temporary());
         assert_eq!(temporary.decode().unwrap(), b"x");
     }
 }

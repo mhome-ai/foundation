@@ -33,8 +33,8 @@ pub enum ArtifactDelivery {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ResolveArtifactResponse {
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
-    pub temporary: bool,
+    #[serde(default)]
+    pub lifecycle: crate::ArtifactLifecycle,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub expires_at_unix_ms: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -54,14 +54,16 @@ pub struct ResolveArtifactResponse {
 
 impl ResolveArtifactResponse {
     pub fn validate(&self) -> Result<ArtifactReference, ResolveArtifactResponseError> {
-        if self.temporary != self.expires_at_unix_ms.is_some() || self.expires_at_unix_ms == Some(0)
+        if self.lifecycle.is_temporary() != self.expires_at_unix_ms.is_some()
+            || self.expires_at_unix_ms == Some(0)
         {
             return Err(invalid("artifact lifetime and expiration are inconsistent"));
         }
         let reference = ArtifactReference::parse(&self.uri)
             .map_err(|_| invalid("artifact resolve URI is invalid"))?;
         let metadata = reference.metadata();
-        if self.kind != metadata.kind()
+        if self.lifecycle != reference.lifecycle()
+            || self.kind != metadata.kind()
             || self.mime_type != metadata.mime_type()
             || self.size_bytes != metadata.size_bytes()
             || self.width != metadata.width()
@@ -113,12 +115,12 @@ fn invalid(message: &'static str) -> ResolveArtifactResponseError {
 mod tests {
     use super::*;
 
-    const FILE_URI: &str = "meow-artifact://v1/tenant/scope/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0";
+    const FILE_URI: &str = "meow-artifact://v2/tenant/scope/std/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0";
 
     #[test]
     fn validates_response_against_reference() {
         let response = ResolveArtifactResponse {
-            temporary: false,
+            lifecycle: crate::ArtifactLifecycle::Std,
             expires_at_unix_ms: None,
             host_identity: None,
             uri: FILE_URI.to_string(),
@@ -140,7 +142,7 @@ mod tests {
     #[test]
     fn rejects_response_metadata_drift() {
         let response = ResolveArtifactResponse {
-            temporary: false,
+            lifecycle: crate::ArtifactLifecycle::Std,
             expires_at_unix_ms: None,
             host_identity: None,
             uri: FILE_URI.to_string(),

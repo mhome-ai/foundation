@@ -310,7 +310,7 @@
             },
             "uri": {
               "type": "string",
-              "pattern": "^meow-artifact://v1/"
+              "pattern": "^meow-artifact://v2/"
             }
           }
         },
