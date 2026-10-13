@@ -70,19 +70,33 @@ for (const name of ["artifactPut", "artifactResolve"]) {
       ({ value }) => value.uri && value.kind
     ).value;
     const expiresAtUnixMs = 1900000000000;
+    const temporaryResponse = {
+      ...response,
+      uri: response.uri.replace("/std/", "/tmp/"),
+    };
+    const manualResponse = {
+      ...response,
+      lifecycle: "man",
+      uri: response.uri.replace(
+        /\/std\/[a-f0-9]{64}\//,
+        "/man/0123456789abcdef0123456789abcdef/"
+      ),
+    };
     assert.equal(
-      validate({ ...response, lifecycle: "tmp", expiresAtUnixMs }),
+      validate({ ...temporaryResponse, lifecycle: "tmp", expiresAtUnixMs }),
       true
     );
     assert.equal(validate({ ...response, lifecycle: "std" }), true);
-    assert.equal(validate({ ...response, lifecycle: "tmp" }), false);
+    assert.equal(validate(manualResponse), true);
+    assert.equal(validate({ ...manualResponse, expiresAtUnixMs }), false);
+    assert.equal(validate({ ...temporaryResponse, lifecycle: "tmp" }), false);
     assert.equal(validate({ ...response, expiresAtUnixMs }), false);
     assert.equal(
       validate({ ...response, lifecycle: "std", expiresAtUnixMs }),
       false
     );
     assert.equal(
-      validate({ ...response, lifecycle: "tmp", expiresAtUnixMs: 0 }),
+      validate({ ...temporaryResponse, lifecycle: "tmp", expiresAtUnixMs: 0 }),
       false
     );
   });
