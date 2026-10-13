@@ -4,7 +4,15 @@ use serde_json::Value;
 use crate::{AuthRequest, AuthenticatedSession, ServiceCoreInput, ServiceCoreOutput};
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 17;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 18;
+/// Maximum single native artifact body, separate from the JSON control frame limit.
+pub const MAX_NATIVE_ARTIFACT_BYTES: usize = 50 * 1024 * 1024;
+pub const MAX_NATIVE_ARTIFACT_BASE64_BYTES: usize = MAX_NATIVE_ARTIFACT_BYTES.div_ceil(3) * 4;
+/// Protocol 18 sends large dataBase64 strings after the JSON frame. The JSON field
+/// is an empty string marker, followed by a u32 byte length and that many ASCII
+/// bytes on the same connection. Only artifact commit requests and open/read
+/// responses support this attachment. Control frames keep their 16 MiB limit.
+pub const ARTIFACT_ATTACHMENT_CHUNK_BYTES: usize = 1024 * 1024;
 pub const ARTIFACT_CONTENT_PATH_PREFIX: &str = "/artifact/v1/content/";
 pub const ARTIFACT_UPLOAD_PATH_PREFIX: &str = "/artifact/v1/upload/";
 
@@ -497,8 +505,8 @@ impl ExternalArtifactReadDescriptor {
             };
         };
         if !self.path.is_empty()
-            || self.size_bytes > artifact_api::MAX_MEMORY_ARTIFACT_BYTES as u64
-            || encoded.len() > artifact_api::MAX_MEMORY_ARTIFACT_BYTES.div_ceil(3) * 4
+            || self.size_bytes > MAX_NATIVE_ARTIFACT_BYTES as u64
+            || encoded.len() > MAX_NATIVE_ARTIFACT_BASE64_BYTES
         {
             return Err("invalid inline artifact descriptor".into());
         }
@@ -583,7 +591,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 17);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 18);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");

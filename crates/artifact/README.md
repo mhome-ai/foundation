@@ -29,14 +29,14 @@ scope reuses that content. Existing durable content is never downgraded. Put and
 resolve responses report `temporary: true` and `expiresAtUnixMs` for temporary
 content; durable responses omit both fields.
 
-MeowCore retains temporary objects for ten minutes from commit or repeated put /
-import revalidation. Ordinary reads do not renew expiration. Small objects (up to
-1 MiB) use memory, subject to 64 MiB per runtime and 16 MiB per scope. New objects
-over these limits use temporary disk, capped at 512 MiB per runtime and 128 MiB
-per scope. Object limits are 4096 per runtime / 1024 per scope. Open snapshots
-continue to count against capacity after deletion or expiry. Exhausted capacity
-returns an availability error; unrelated live objects are not silently deleted.
-Ingress is bounded separately. These are implementation defaults, not URI fields.
+MeowCore keeps temporary content only in memory, without a total capacity or
+object-count quota and without disk spill. Each successful content read resets
+one hour of idle retention. Upload and repeated put / import revalidation also
+reset that deadline; resolve and metadata queries do not. Objects never read
+expire one hour after upload. Reads reject expired objects immediately, while
+periodic maintenance reclaims idle entries. An already opened snapshot may
+finish after deletion or expiry. Existing per-upload size and transport limits
+still apply. The caller is responsible for peak memory use.
 
 `/artifact/persist` takes `{ "uri": "meow-artifact://…" }` and returns a put
 response after durable storage succeeds. Promotion is idempotent, preserves the
@@ -54,13 +54,15 @@ the identical content may make an unexpired old URL usable again.
 
 App Facade equivalents are `/app/artifact/persist` and `/app/artifact/delete`;
 Wasm hosts expose `artifact_persist_async` and `artifact_delete_async`. LLM inputs
-continue to use canonical Artifact references. Small temporary HTTP uploads and
-native read descriptors carry bounded inline bytes without a staging file;
-larger objects retain file-based streaming. Temporary delivery uses `no-store`,
-and host resolve grants never outlive the reported object expiration.
+continue to use canonical Artifact references. Temporary HTTP uploads and native
+reads transfer content from memory without staging files. Large native transfers use bounded attachments on the existing
+IPC connection; the JSON control frame limit is unchanged. Temporary delivery uses
+`no-store`, and resolve grants never outlive the reported object expiration.
 
-Temporary state is process-owned and is lost on restart, including spilled
-objects. The runtime removes abandoned spill directories on startup and expired
-entries during maintenance. This contract adds no database or migration. A
-cloud-owned artifact store needs its own implementation; a multi-instance cloud
-service must not emulate this with an uncoordinated in-process map.
+Temporary state is process-owned and is lost on restart. Startup removes
+abandoned spill directories left by older runtimes. This contract adds no database
+or migration. Cloud forwarding preserves the local owner’s lifetime metadata and
+routes persist/delete to that owner. Cloud-owned storage rejects temporary writes;
+it supports idempotent persist for existing durable content and exact-key delete.
+A multi-instance cloud service must not emulate temporary storage with an
+uncoordinated in-process map.

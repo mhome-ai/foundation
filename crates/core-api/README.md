@@ -29,7 +29,14 @@ as a Folder.
 
 ## Lossless external boundaries (core-api 1.19.0)
 
-External protocol **17** returns `HttpPayloadResponse { statusCode, body }` from
+External protocol **18** adds bounded, connection-scoped attachments for large
+memory-backed Artifact content. Artifact commit requests and open/read responses
+use an empty `dataBase64` marker followed by a big-endian u32 length and that many
+base64 bytes. The body is bounded by the existing 50 MiB per-file limit before base64 encoding;
+ordinary JSON frames retain the 16 MiB limit. No upload session or disk spill is
+created for this transfer.
+
+The protocol returns `HttpPayloadResponse { statusCode, body }` from
 all HTTP handler RPCs. A completed HTTP response (including 4xx/5xx) is an RPC
 success; RPC errors describe failures to execute the call, not HTTP status.
 Hosts preserve status and JSON body, never infer them from error messages.

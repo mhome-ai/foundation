@@ -567,6 +567,3 @@ pub struct HostTlsPublicKey {
 /// Lifecycle operations use the same canonical, scope-checked URI as resolve.
 pub type PersistArtifactRequest = ResolveArtifactRequest;
 pub type DeleteArtifactRequest = ResolveArtifactRequest;
-
-/// Upper bound for memory-backed objects and inline native transport.
-pub const MAX_MEMORY_ARTIFACT_BYTES: usize = 1024 * 1024;
