@@ -31,17 +31,20 @@ This additive module is an identity foundation, not an ingress cutover. Existing
 `AuthenticatedSession`, MWS bridge metadata and `ServiceCoreInput::ClientRequest`
 still use the previous user-based contracts. No runtime entrypoint accepts Space
 Client credentials merely because these types exist. Replace the contracts and
-all their producers/consumers together when the Space Client operation policy is
-settled. There is no intended legacy-user fallback for a Space principal.
+all their producers/consumers together with the Space Client operation policy.
+There is no intended legacy-user fallback for a Space principal.
 
 Host policy is already decided: Space Clients cannot manage Admin Hosts; they
 have read-only Host-management access to a Host bound to the same Space. User
 writes to Space Hosts require current Space OWNER through Core. This does not
-define general Space business permissions. In particular, the existing
+define general Space business permissions. The agreed business hierarchy is
+[READ < WRITE < MANAGE](space-access.md), with Space Clients capped at WRITE.
+Ordinary business configuration such as dashboards and automations is writable;
+identity, credentials and infrastructure require management. The existing
 `SPACE_EXECUTE` classification also contains Host claim/runtime operations, and
 `SPACE_WRITE` contains both ordinary data edits and runtime configuration. Neither
-classification can be granted wholesale to a Space Client. The operation policy
-must distinguish use of configured capabilities from configuration management.
+classification can be granted wholesale to a Space Client. API adapters must
+reclassify these operations by their actual effects before enabling the policy.
 
 Device factory reset remains the supported way to clear device enrollment. It
 must stop old sessions, persist reset intent, erase device credentials and keys,

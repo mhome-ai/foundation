@@ -10,6 +10,7 @@ pub mod messaging;
 pub mod node;
 mod node_commissioning;
 mod node_service;
+pub mod space_access;
 pub mod webhook;
 pub use node_commissioning::*;
 mod recipient;

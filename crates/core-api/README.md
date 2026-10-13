@@ -8,6 +8,9 @@ Messaging normalization, Node runtime, and Storage contracts.
 The additive [`client_identity`](contract/client-identity.md) contract separates
 User and Space Client identity, installation ID and enrollment ID. Runtime ingress
 has not yet cut over to this contract; operation authorization remains separate.
+The additive [`space_access`](contract/space-access.md) contract defines the
+READ/WRITE/MANAGE hierarchy and its pure User/Space Client decision. It does not
+change runtime admission until adapters and operation classifications adopt it.
 
 MWS uses standard WebSocket Ping/Pong control frames for connection liveness.
 There are no application `pi`/`po` messages or auth `heartbeatInterval` field.
