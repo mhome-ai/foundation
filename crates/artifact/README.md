@@ -35,10 +35,17 @@ not accepted; this is a coordinated protocol cutover, without automatic migratio
 
 - `std`: durable content retained until explicit deletion or a Space/store purge.
   Reads, metadata queries and repeated ingestion do not maintain an expiry timestamp.
-- `tmp`: memory only, with one-hour idle retention, lost on process restart. Content
-  reads and repeated ingestion renew it; metadata and resolve do not. Reads reject
-  expired objects immediately. There is no disk spill, total capacity or object-count
-  quota; existing per-upload limits still apply.
+- `tmp`: short-lived content whose retention policy belongs to its storage runtime.
+  Local MeowCore keeps bytes only in memory, with one-hour idle retention, lost on
+  process restart. Content reads and repeated ingestion renew it; metadata and resolve
+  do not. There is no disk spill, total capacity or object-count quota. Cloud runtimes
+  keep bytes in shared object storage, with a fixed one-hour access lifetime from the
+  storage server's last-modified timestamp. Re-upload renews cloud content; reads,
+  metadata and resolve do not. Both runtimes reject expired content immediately and
+  report the current deadline in `expiresAtUnixMs`; callers must not assume that a
+  read extends it. Existing per-upload limits still apply. Cloud object reclamation
+  uses an asynchronous, tmp-only bucket lifecycle rule (one day), so physical removal
+  can follow logical expiry. Explicit deletion remains available in both runtimes.
 - `man`: caller-managed durable content. Automatic retention never deletes it.
   Each independent creation receives a fresh 128-bit creation ID. Callers can reserve
   it before uploading by supplying `creationId` (32 lowercase hex characters), then
@@ -55,7 +62,7 @@ URL as a permanently revoked object ID.
 
 The App Facade exposes `/app/artifact/delete`; Wasm hosts expose
 `artifact_delete_async`. LLM inputs continue to use
-canonical references. Temporary HTTP uploads and native reads transfer bytes from memory;
+canonical references. Local temporary HTTP uploads and native reads transfer bytes from memory;
 large native transfers use bounded attachments on the existing IPC connection. Temporary
 delivery uses `no-store`; resolve grants never outlive the reported object expiration.
 Only `tmp` responses contain `expiresAtUnixMs`. Native transport descriptors retain their
