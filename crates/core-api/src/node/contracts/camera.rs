@@ -87,14 +87,36 @@ pub struct CameraSettings {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CameraSettingsPatch {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "present_setting"
+    )]
     pub watch_mode: Option<MonitoringMode>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "present_setting"
+    )]
     pub object_detection_mode: Option<MonitoringMode>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "present_setting"
+    )]
     pub person_detection_mode: Option<MonitoringMode>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "present_setting"
+    )]
     pub record_mode: Option<RecordingMode>,
+}
+
+fn present_setting<'de, D: serde::Deserializer<'de>, T: Deserialize<'de>>(
+    d: D,
+) -> Result<Option<T>, D::Error> {
+    T::deserialize(d).map(Some)
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -277,6 +299,12 @@ mod tests {
         .unwrap();
         assert_eq!(request.device_id, "camera-1");
         assert_eq!(request.settings.watch_mode, Some(MonitoringMode::Auto));
+        assert!(
+            serde_json::from_value::<DeviceSettingsUpdateRequest>(serde_json::json!({
+                "deviceId":"camera-1", "settings":{"watchMode":null}
+            }))
+            .is_err()
+        );
     }
 
     #[test]
