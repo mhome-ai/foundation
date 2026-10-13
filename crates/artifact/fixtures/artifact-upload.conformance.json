@@ -67,6 +67,25 @@
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       }
+    },
+    {
+      "name": "maximum-duration",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 1,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 9007199254740991
+      }
+    },
+    {
+      "name": "maximum-size",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 9007199254740991,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
     }
   ],
   "invalid": [
@@ -173,6 +192,55 @@
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "creationId": "caller-A"
+      }
+    },
+    {
+      "name": "null-creation-id",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 1,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "creationId": null
+      }
+    },
+    {
+      "name": "null-duration",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 1,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": null
+      }
+    },
+    {
+      "name": "duration-zero",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 1,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 0
+      }
+    },
+    {
+      "name": "duration-overflow",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 1,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 9007199254740992
+      }
+    },
+    {
+      "name": "size-overflow",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 9007199254740992,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       }
     }
   ]

@@ -35,19 +35,39 @@ pub enum ArtifactDelivery {
 pub struct ResolveArtifactResponse {
     #[serde(default)]
     pub lifecycle: crate::ArtifactLifecycle,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub expires_at_unix_ms: Option<u64>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub host_identity: Option<crate::HostTlsIdentity>,
     pub uri: String,
     pub kind: ArtifactKind,
     pub mime_type: String,
     pub size_bytes: u64,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub width: Option<u32>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub height: Option<u32>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub duration_millis: Option<u64>,
     pub delivery: ArtifactDelivery,
 }

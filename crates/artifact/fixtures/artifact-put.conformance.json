@@ -67,6 +67,15 @@
         "dataBase64": "eA==",
         "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       }
+    },
+    {
+      "name": "maximum-duration",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 9007199254740991
+      }
     }
   ],
   "invalid": [
@@ -156,6 +165,42 @@
         "lifecycle": "tmp",
         "dataBase64": "eA==",
         "creationId": "caller-A"
+      }
+    },
+    {
+      "name": "null-creation-id",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "creationId": null
+      }
+    },
+    {
+      "name": "null-duration",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": null
+      }
+    },
+    {
+      "name": "duration-zero",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 0
+      }
+    },
+    {
+      "name": "duration-overflow",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 9007199254740992
       }
     }
   ]

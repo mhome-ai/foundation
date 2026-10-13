@@ -40,11 +40,19 @@ impl MediaReference {
 pub struct ImportArtifactRequest {
     #[serde(default)]
     pub lifecycle: crate::ArtifactLifecycle,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub creation_id: Option<String>,
     pub kind: ArtifactKind,
     pub source_url: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub mime_type: Option<String>,
 }
 

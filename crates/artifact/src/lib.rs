@@ -183,9 +183,8 @@ impl ArtifactMetadata {
 
     fn validate(&self) -> Result<(), ArtifactReferenceError> {
         validate_mime_type(&self.mime_type)?;
-        if self.size_bytes == 0 || self.size_bytes > MAX_SAFE_INTEGER {
-            return Err(invalid("artifact size is invalid"));
-        }
+        validate_size_bytes(self.size_bytes).map_err(invalid)?;
+        validate_duration_millis(self.kind, self.duration_millis).map_err(invalid)?;
         match self.kind {
             ArtifactKind::Image => {
                 if !self.mime_type.starts_with("image/") {
@@ -197,7 +196,6 @@ impl ArtifactMetadata {
                     || self
                         .height
                         .is_none_or(|value| value == 0 || value > MAX_DIMENSION)
-                    || self.duration_millis.is_some()
                 {
                     return Err(invalid("image artifact metadata is invalid"));
                 }
@@ -206,12 +204,7 @@ impl ArtifactMetadata {
                 if !self.mime_type.starts_with("audio/") {
                     return Err(invalid("audio artifact MIME type is invalid"));
                 }
-                if self.width.is_some()
-                    || self.height.is_some()
-                    || self
-                        .duration_millis
-                        .is_some_and(|value| value == 0 || value > MAX_SAFE_INTEGER)
-                {
+                if self.width.is_some() || self.height.is_some() {
                     return Err(invalid("audio artifact metadata is invalid"));
                 }
             }
@@ -223,9 +216,6 @@ impl ArtifactMetadata {
                     || self
                         .height
                         .is_none_or(|value| value == 0 || value > MAX_DIMENSION)
-                    || self
-                        .duration_millis
-                        .is_some_and(|value| value == 0 || value > MAX_SAFE_INTEGER)
                 {
                     return Err(invalid("video artifact metadata is invalid"));
                 }
@@ -234,7 +224,7 @@ impl ArtifactMetadata {
                 if self.mime_type.starts_with("video/") {
                     return Err(invalid("video artifacts are not supported"));
                 }
-                if self.width.is_some() || self.height.is_some() || self.duration_millis.is_some() {
+                if self.width.is_some() || self.height.is_some() {
                     return Err(invalid("file artifact metadata is invalid"));
                 }
             }
@@ -249,11 +239,23 @@ struct RawArtifactMetadata {
     k: String,
     m: String,
     s: u64,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_optional_non_null"
+    )]
     w: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_optional_non_null"
+    )]
     h: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_optional_non_null"
+    )]
     d: Option<u64>,
 }
 
@@ -458,6 +460,38 @@ impl ArtifactReference {
         }
         self.metadata.validate()
     }
+}
+
+// Serde's default Option handling conflates omission with null. Wire fields are optional,
+// but an explicitly supplied value must deserialize as T, matching the published schemas.
+fn deserialize_optional_non_null<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    T::deserialize(deserializer).map(Some)
+}
+
+fn validate_size_bytes(size_bytes: u64) -> Result<(), &'static str> {
+    if size_bytes == 0 || size_bytes > MAX_SAFE_INTEGER {
+        return Err("artifact size is invalid");
+    }
+    Ok(())
+}
+
+fn validate_duration_millis(
+    kind: ArtifactKind,
+    duration_millis: Option<u64>,
+) -> Result<(), &'static str> {
+    if let Some(duration) = duration_millis {
+        if !matches!(kind, ArtifactKind::Audio | ArtifactKind::Video) {
+            return Err("artifact duration is only valid for audio or video");
+        }
+        if duration == 0 || duration > MAX_SAFE_INTEGER {
+            return Err("artifact duration is invalid");
+        }
+    }
+    Ok(())
 }
 
 fn validate_segment(value: &str, name: &str) -> Result<(), ArtifactReferenceError> {

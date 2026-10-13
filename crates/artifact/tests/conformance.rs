@@ -151,6 +151,15 @@ fn resolve_fixture_matches_rust_contract_and_schema() {
             "{} must be rejected by the resolve schema",
             case.name
         );
+        let request_valid = serde_json::from_value::<ResolveArtifactRequest>(case.value.clone())
+            .is_ok_and(|request| request.reference().is_ok());
+        let response_valid = serde_json::from_value::<ResolveArtifactResponse>(case.value)
+            .is_ok_and(|response| response.validate().is_ok());
+        assert!(
+            !request_valid && !response_valid,
+            "{} must be rejected by Rust",
+            case.name
+        );
     }
 }
 
@@ -176,6 +185,15 @@ fn put_fixture_matches_rust_contract_and_schema() {
     }
     for case in fixture.invalid {
         assert!(!validator.is_valid(&case.value), "{} must fail", case.name);
+        let request_valid = serde_json::from_value::<PutArtifactRequest>(case.value.clone())
+            .is_ok_and(|request| request.decode().is_ok());
+        let response_valid = serde_json::from_value::<PutArtifactResponse>(case.value)
+            .is_ok_and(|response| response.validate().is_ok());
+        assert!(
+            !request_valid && !response_valid,
+            "{} must be rejected by Rust",
+            case.name
+        );
     }
 }
 
@@ -202,6 +220,16 @@ fn upload_fixture_matches_rust_contract_and_schema() {
     }
     for case in fixture.invalid {
         assert!(!validator.is_valid(&case.value), "{} must fail", case.name);
+        let request_valid =
+            serde_json::from_value::<PrepareArtifactUploadRequest>(case.value.clone())
+                .is_ok_and(|request| request.validate().is_ok());
+        let response_valid = serde_json::from_value::<PrepareArtifactUploadResponse>(case.value)
+            .is_ok_and(|response| response.validate().is_ok());
+        assert!(
+            !request_valid && !response_valid,
+            "{} must be rejected by Rust",
+            case.name
+        );
     }
 }
 

@@ -24,7 +24,8 @@ Upload/import preserves bytes. Callers perform conversion before upload. Public 
 
 `put`, explicit HTTP `import`, and `upload/prepare` accept `lifecycle`: `std`, `tmp`,
 or `man`. Omission means `std`. Put/resolve responses report the selected lifecycle.
-The former `temporary` request/response field is no longer accepted.
+The former `temporary` request/response field is no longer accepted. Optional fields
+must be omitted when absent; explicit `null` values are rejected.
 
 The canonical URI is
 `meow-artifact://v2/<tenant>/<scope>/<lifecycle>/<resourceId>/<sha256>/<metadata>`.

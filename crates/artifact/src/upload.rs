@@ -10,13 +10,21 @@ use crate::ArtifactKind;
 pub struct PrepareArtifactUploadRequest {
     #[serde(default)]
     pub lifecycle: crate::ArtifactLifecycle,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub creation_id: Option<String>,
     pub kind: ArtifactKind,
     pub mime_type: String,
     pub size_bytes: u64,
     pub sha256: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub duration_millis: Option<u64>,
 }
 
@@ -43,9 +51,7 @@ impl PrepareArtifactUploadRequest {
             }
             _ => {}
         }
-        if self.size_bytes == 0 {
-            return Err(invalid("artifact upload content is empty"));
-        }
+        crate::validate_size_bytes(self.size_bytes).map_err(invalid)?;
         if self.sha256.len() != 64
             || !self
                 .sha256
@@ -56,16 +62,7 @@ impl PrepareArtifactUploadRequest {
                 "artifact upload SHA-256 must be 64 lowercase hexadecimal characters",
             ));
         }
-        if !matches!(self.kind, ArtifactKind::Audio | ArtifactKind::Video)
-            && self.duration_millis.is_some()
-        {
-            return Err(invalid(
-                "artifact upload duration is only valid for audio or video",
-            ));
-        }
-        if self.duration_millis == Some(0) {
-            return Err(invalid("artifact upload duration is invalid"));
-        }
+        crate::validate_duration_millis(self.kind, self.duration_millis).map_err(invalid)?;
         Ok(())
     }
 }
@@ -73,7 +70,11 @@ impl PrepareArtifactUploadRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PrepareArtifactUploadResponse {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub host_identity: Option<crate::HostTlsIdentity>,
     pub upload_id: String,
     pub url: String,

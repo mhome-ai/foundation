@@ -10,12 +10,20 @@ use crate::{ArtifactKind, ArtifactReference};
 pub struct PutArtifactRequest {
     #[serde(default)]
     pub lifecycle: crate::ArtifactLifecycle,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub creation_id: Option<String>,
     pub kind: ArtifactKind,
     pub mime_type: String,
     pub data_base64: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub duration_millis: Option<u64>,
 }
 
@@ -42,22 +50,11 @@ impl PutArtifactRequest {
             }
             _ => {}
         }
-        if !matches!(self.kind, ArtifactKind::Audio | ArtifactKind::Video)
-            && self.duration_millis.is_some()
-        {
-            return Err(invalid(
-                "artifact put duration is only valid for audio or video",
-            ));
-        }
-        if self.duration_millis == Some(0) {
-            return Err(invalid("artifact put duration is invalid"));
-        }
+        crate::validate_duration_millis(self.kind, self.duration_millis).map_err(invalid)?;
         let bytes = STANDARD
             .decode(&self.data_base64)
             .map_err(|_| invalid("artifact put content is invalid base64"))?;
-        if bytes.is_empty() {
-            return Err(invalid("artifact put content is empty"));
-        }
+        crate::validate_size_bytes(bytes.len() as u64).map_err(invalid)?;
         Ok(bytes)
     }
 }
@@ -67,17 +64,33 @@ impl PutArtifactRequest {
 pub struct PutArtifactResponse {
     #[serde(default)]
     pub lifecycle: crate::ArtifactLifecycle,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub expires_at_unix_ms: Option<u64>,
     pub uri: String,
     pub kind: ArtifactKind,
     pub mime_type: String,
     pub size_bytes: u64,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub width: Option<u32>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub height: Option<u32>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
     pub duration_millis: Option<u64>,
 }
 
