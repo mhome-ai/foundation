@@ -12,6 +12,7 @@ fn binding() -> Binding {
         env: Default::default(),
         binding_generation: "binding-a".into(),
         controller_id: "client-a".into(),
+        controller_kind: ControllerKind::UserClient,
         principal: Principal::User {
             user_id: "alice".into(),
         },
@@ -243,6 +244,9 @@ fn renewal_rejects_scope_user_controller_host_and_generation_changes() {
     cases.push(changed);
     let mut changed = binding();
     changed.controller_id = "other-client".into();
+    cases.push(changed);
+    let mut changed = binding();
+    changed.controller_kind = ControllerKind::Core;
     cases.push(changed);
     let mut changed = binding();
     changed.host_id = "other-host".into();
@@ -526,6 +530,7 @@ fn access_capped_at_lease_deadline_does_not_refresh_on_every_request() {
 #[test]
 fn space_sessions_share_lifecycle_but_never_cross_tenant_or_space() {
     let mut home = binding();
+    home.controller_kind = ControllerKind::SpaceClient;
     home.principal = Principal::Space {
         tenant_id: "tenant-a".into(),
         space_id: "home-a".into(),
@@ -552,6 +557,56 @@ fn space_sessions_share_lifecycle_but_never_cross_tenant_or_space() {
         session.authorize(&binding(), &access, now),
         Err(Failure::BindingMismatch)
     );
+}
+
+#[test]
+fn shared_pod_cannot_refresh_or_renew_as_core() {
+    let mut shared = binding();
+    shared.controller_kind = ControllerKind::SpaceClient;
+    shared.principal = Principal::Space {
+        tenant_id: "tenant-a".into(),
+        space_id: "home-a".into(),
+    };
+    let (session, access) =
+        Session::establish(shared.clone(), "pod-session".into(), lease(START), START).unwrap();
+    let mut restored: Session =
+        serde_json::from_slice(&serde_json::to_vec(&session).unwrap()).unwrap();
+    let mut core = shared;
+    core.controller_kind = ControllerKind::Core;
+    assert_eq!(
+        restored.authorize(&core, &access, START),
+        Err(Failure::BindingMismatch)
+    );
+    assert_eq!(
+        restored.refresh_access(&core, START),
+        Err(Failure::BindingMismatch)
+    );
+    assert_eq!(
+        restored.renew_authorization(&core, lease(START), START),
+        Err(Failure::BindingMismatch)
+    );
+    assert_eq!(restored, session);
+}
+
+#[test]
+fn controller_kind_is_required_and_cannot_mismatch_the_principal() {
+    let mut old = serde_json::to_value(binding()).unwrap();
+    old.as_object_mut().unwrap().remove("controllerKind");
+    assert!(serde_json::from_value::<Binding>(old).is_err());
+
+    let mut wrong_user = binding();
+    wrong_user.controller_kind = ControllerKind::SpaceClient;
+    let mut wrong_space = binding();
+    wrong_space.principal = Principal::Space {
+        tenant_id: "tenant-a".into(),
+        space_id: "home-a".into(),
+    };
+    for invalid in [wrong_user, wrong_space] {
+        assert_eq!(
+            Session::establish(invalid, "session-a".into(), lease(START), START),
+            Err(Failure::BindingMismatch)
+        );
+    }
 }
 
 #[test]

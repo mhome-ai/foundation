@@ -1,4 +1,5 @@
 //! Shared Host authentication rules and optional pinned LAN TLS transport.
+pub mod policy;
 pub mod session;
 pub mod signatures;
 pub mod token_session;

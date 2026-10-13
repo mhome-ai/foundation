@@ -1,7 +1,8 @@
 # mhome-host-auth
 
-Shared Rust implementation of the existing `core_api::host::auth` protocol. This
-crate keeps login, authorization persistence and Space policy in its adapters.
+Shared Rust implementation of the existing `core_api::host::auth` protocol, plus
+the lifecycle and policy foundation for its planned bearer-token replacement.
+Login, cryptographic grant verification and authorization persistence belong to adapters.
 Optional TLS/file features provide shared transport; Client identities remain separate.
 
 - `signatures`: P-256 keys, compact bootstrap JWS, request/response HTTP message
@@ -98,12 +99,59 @@ must not be treated as expiry and must not trigger automatic re-enrollment.
 These deadlines do not stop running services or reset the Host's binding.
 
 `Session` contains durable metadata only. Its `Binding` fixes the Host, environment,
-binding generation, controller and typed User/Space principal. Adapters verify
+binding generation, controller ID and kind, and typed User/Space principal. Adapters verify
 permissions and authority; an untrusted request cannot choose these fields.
 Each controller/Host pair has its own credentials. Refresh never changes its
 principal or permissions, and never rotates the refresh token. Renewing online
 authority does not touch the idle timer or extend existing access-token expiries.
 Every access token has its own `AccessWindow`, capped by the current lease.
+
+### Fixed Host modes and Client kinds
+
+`policy::HostPolicy` is the management authorization foundation. `HostMode::Admin`
+supports multiple user administrators and multiple hosted Spaces. `HostMode::Space`
+binds exactly one tenant/Space. The installed package supplies the mode; loading
+persisted state must call `validate(installed_mode)` and reject a mode change.
+Explicit reset replaces the binding generation. Removing the last administrator
+is rejected; it must not silently reopen first claim.
+
+Personal Pods use `ClientMode::User` and `ControllerKind::UserClient`; shared Pods
+use `ClientMode::Space` and `ControllerKind::SpaceClient`. `ControllerKind::Core`
+is a distinct authenticated controller, not another spelling of Space Client.
+Grant verification establishes these types; untrusted request fields cannot.
+`Binding` requires its controller kind, without a default or legacy conversion.
+
+| Authenticated caller | Admin Host | Space Host |
+| --- | --- | --- |
+| User Client, including a personal Pod | Current Host administrator, within granted permissions | No direct management session; use the owning Core |
+| Space Client, including a shared Pod | Denied | Same tenant/Space, read-only even with an overbroad grant |
+| Core acting for a user | That user must still be a Host administrator | Denied as a User principal |
+| Core with Space authority | Denied as a Space principal | Same tenant/Space, within granted permissions |
+
+Core must independently verify Space OWNER for human management requests and keep
+the original Client kind through direct and proxy paths. It must reject Space
+Client writes before using its own Host credentials. Host-side policy alone cannot
+prove that an incoming Core operation was not improperly delegated by Core.
+
+These checks govern authenticated management, not public discovery. An unclaimed
+Host can advertise and expose its limited onboarding status; it cannot authorize
+management until claimed. `Read` does not make every GET safe: adapters classify
+each operation and return only data covered by its permission. Plans, installs,
+restarts and configuration changes are writes regardless of the HTTP method.
+
+Run both token/session validation and `HostPolicy::authorize` before dispatch;
+neither replaces the other. Rechecking the current admin set denies a removed
+administrator even if their token has not expired. Gate ordinary local IPC through
+the same policy; OS-protected physical-administrator transactions remain separate.
+First-claim and administrator-addition helpers consume **already verified**
+approval, not request JSON. Adapters must check the target, purpose, expiry,
+consent, reservation and single use, and serialize/persist claim changes atomically.
+Durable Hub setup reservations, rollback/retry and completion receipts remain
+adapter work, as do cloud issuance and personal/shared Pod provisioning.
+
+This module has policy tests but is not yet wired into Host, Core or Pod runtimes.
+It does not claim to complete the protocol cutover or enforce these modes in an
+already running deployment.
 
 ### Authority and persistence contract
 

@@ -37,6 +37,16 @@ pub enum Principal {
     },
 }
 
+/// Established from verified credentials, never from self-declared request
+/// metadata. Personal Pods use UserClient; shared Pods use SpaceClient.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ControllerKind {
+    UserClient,
+    SpaceClient,
+    Core,
+}
+
 /// Immutable session context. This is authenticated metadata, never client input
 /// accepted on its own. Permissions remain the authority adapter's responsibility.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -46,12 +56,13 @@ pub struct Binding {
     pub env: RuntimeEnv,
     pub binding_generation: String,
     pub controller_id: String,
+    pub controller_kind: ControllerKind,
     pub principal: Principal,
 }
 
 impl Binding {
-    fn validate(&self) -> Result<(), Failure> {
-        let valid = |s: &str| !s.trim().is_empty() && s.len() <= 256;
+    pub(crate) fn validate(&self) -> Result<(), Failure> {
+        let valid = |s: &str| !s.is_empty() && s.trim() == s && s.len() <= 256;
         let principal_valid = match &self.principal {
             Principal::User { user_id } => valid(user_id),
             Principal::Space {
@@ -59,7 +70,18 @@ impl Binding {
                 space_id,
             } => valid(tenant_id) && valid(space_id),
         };
-        if valid(&self.host_id)
+        let controller_matches = matches!(
+            (&self.principal, self.controller_kind),
+            (
+                Principal::User { .. },
+                ControllerKind::UserClient | ControllerKind::Core
+            ) | (
+                Principal::Space { .. },
+                ControllerKind::SpaceClient | ControllerKind::Core
+            )
+        );
+        if controller_matches
+            && valid(&self.host_id)
             && valid(&self.binding_generation)
             && valid(&self.controller_id)
             && principal_valid
