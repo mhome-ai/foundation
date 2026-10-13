@@ -124,6 +124,7 @@ cargo publish -p "${package}" --locked --dry-run --allow-dirty
 staging_root=""
 protocol_tarball=""
 if [[ -n "${protocol}" ]]; then
+  npm run test:protocol-packages
   staging_root="$(mktemp -d)"
   trap 'rm -rf "${staging_root}"' EXIT
   node scripts/stage-protocol-package.mjs "${protocol}" "${staging_root}/package"

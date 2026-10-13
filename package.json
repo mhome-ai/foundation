@@ -6,5 +6,9 @@
     "stage:protocol": "node scripts/stage-protocol-package.mjs",
     "test:protocol-packages": "node --test scripts/tests/*.test.mjs",
     "verify:app-facade-routing": "node scripts/generate-app-facade-routing.mjs --check"
+  },
+  "devDependencies": {
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1"
   }
 }

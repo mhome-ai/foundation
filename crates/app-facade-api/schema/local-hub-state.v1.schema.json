@@ -30,8 +30,8 @@
   "allOf": [
     {
       "if": { "properties": { "configured": { "const": true } }, "required": ["configured"] },
-      "then": { "required": ["hub"] },
-      "else": { "not": { "required": ["hub"] } }
+      "then": { "properties": { "hub": {} }, "required": ["hub"] },
+      "else": { "not": { "properties": { "hub": {} }, "required": ["hub"] } }
     }
   ],
   "$defs": {

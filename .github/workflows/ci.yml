@@ -45,6 +45,9 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
+      - name: Install protocol verification tools
+        working-directory: ${{ env.MHOME_SOURCE_DIR }}
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify protocol npm packages
         working-directory: ${{ env.MHOME_SOURCE_DIR }}
         run: |

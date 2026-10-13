@@ -22,21 +22,22 @@
           "then": {
             "not": {
               "anyOf": [
-                { "required": ["preparedActionId"] },
-                { "required": ["approvalToken"] }
+                { "properties": { "preparedActionId": {} }, "required": ["preparedActionId"] },
+                { "properties": { "approvalToken": {} }, "required": ["approvalToken"] }
               ]
             }
           }
         },
         {
           "if": { "properties": { "mode": { "const": "commit" } } },
-          "then": { "required": ["preparedActionId", "approvalToken"] }
+          "then": { "properties": { "preparedActionId": {}, "approvalToken": {} }, "required": ["preparedActionId", "approvalToken"] }
         },
         {
           "if": { "properties": { "mode": { "const": "reject" } } },
           "then": {
+            "properties": { "preparedActionId": {} },
             "required": ["preparedActionId"],
-            "not": { "required": ["approvalToken"] }
+            "not": { "properties": { "approvalToken": {} }, "required": ["approvalToken"] }
           }
         }
       ]

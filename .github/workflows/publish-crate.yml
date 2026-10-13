@@ -46,6 +46,8 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
+      - name: Install protocol verification tools
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify and publish selected crate
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

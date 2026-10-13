@@ -102,8 +102,8 @@
           "then": {
             "not": {
               "anyOf": [
-                { "required": ["defaultValue"] },
-                { "required": ["defaultValueRef"] },
+                { "properties": { "defaultValue": {} }, "required": ["defaultValue"] },
+                { "properties": { "defaultValueRef": {} }, "required": ["defaultValueRef"] },
                 {
                   "properties": { "readOnly": { "const": true } },
                   "required": ["readOnly"]

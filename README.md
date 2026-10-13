@@ -47,7 +47,10 @@ same release tag:
 - `@mhome/app-facade-protocol`
 - `@mhome/core-protocol`
 
-Run `npm run test:protocol-packages` to verify package staging. To inspect a tarball locally:
+Run `npm ci` before protocol checks or tagged crate verification. Then run
+`npm run test:protocol-packages` to verify package staging, strict AJV schema compilation
+and Artifact conformance fixtures. Tagged protocol releases run these checks before
+uploading either package. To inspect a tarball locally:
 
 ```bash
 staging="$(mktemp -d)/package"

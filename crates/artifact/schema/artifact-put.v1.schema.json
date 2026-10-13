@@ -81,12 +81,18 @@
             ]
           },
           "then": {
+            "properties": {
+              "expiresAtUnixMs": {}
+            },
             "required": [
               "expiresAtUnixMs"
             ]
           },
           "else": {
             "not": {
+              "properties": {
+                "expiresAtUnixMs": {}
+              },
               "required": [
                 "expiresAtUnixMs"
               ]
