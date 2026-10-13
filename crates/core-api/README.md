@@ -29,6 +29,12 @@ as a Folder.
 
 ## Lossless external boundaries (core-api 1.19.0)
 
+External protocol **19** adds `metadataOnly` to `AuthorizeArtifactRead` for HEAD
+and other metadata probes. Such responses contain metadata without a path or
+inline content and do not renew temporary retention. Attachment upload clients
+must concurrently receive an early error response while sending the body, so
+an expired grant is preserved as a domain error instead of a broken connection.
+
 External protocol **18** adds bounded, connection-scoped attachments for large
 memory-backed Artifact content. Artifact commit requests and open/read responses
 use an empty `dataBase64` marker followed by a big-endian u32 length and that many

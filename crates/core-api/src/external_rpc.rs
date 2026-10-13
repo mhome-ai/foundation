@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::{AuthRequest, AuthenticatedSession, ServiceCoreInput, ServiceCoreOutput};
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 18;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 19;
 /// Maximum single native artifact body, separate from the JSON control frame limit.
 pub const MAX_NATIVE_ARTIFACT_BYTES: usize = 50 * 1024 * 1024;
 pub const MAX_NATIVE_ARTIFACT_BASE64_BYTES: usize = MAX_NATIVE_ARTIFACT_BYTES.div_ceil(3) * 4;
@@ -302,6 +302,10 @@ pub struct ExternalOpenArtifactRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExternalAuthorizeArtifactReadRequest {
     pub grant: String,
+    /// Inspect existence and metadata without reading content or renewing idle expiry.
+    /// The response has neither a file path nor inline content in this mode.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub metadata_only: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -578,6 +582,27 @@ mod tests {
     }
 
     #[test]
+    fn artifact_read_metadata_mode_is_explicit_and_defaults_to_content() {
+        let read: ExternalAuthorizeArtifactReadRequest =
+            serde_json::from_value(serde_json::json!({"grant":"signed"})).unwrap();
+        assert!(!read.metadata_only);
+        assert_eq!(
+            serde_json::to_value(read).unwrap(),
+            serde_json::json!({"grant":"signed"})
+        );
+        let head: ExternalAuthorizeArtifactReadRequest =
+            serde_json::from_value(serde_json::json!({"grant":"signed", "metadataOnly":true}))
+                .unwrap();
+        assert!(head.metadata_only);
+        assert!(
+            serde_json::from_value::<ExternalAuthorizeArtifactReadRequest>(
+                serde_json::json!({"grant":"signed", "metadataOnly":"true"})
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
     fn external_events_use_the_current_wire_shape() {
         let event = ExternalCoreEvent {
             event_id: "event-1".to_string(),
@@ -591,7 +616,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 18);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 19);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");
