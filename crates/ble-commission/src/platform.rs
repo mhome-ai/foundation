@@ -58,7 +58,7 @@ pub trait Central: Send + Sync + 'static {
 pub trait LanDiscovery: Send + Sync + 'static {
     async fn set_browsing(&self, browsing: bool) -> Result<(), String>;
     async fn connect(&self, address: std::net::SocketAddr) -> Result<Arc<dyn Link>, LinkError> {
-        crate::lan::HttpLink::new(address)
+        crate::lan::HttpLink::connect(address)
     }
 }
 

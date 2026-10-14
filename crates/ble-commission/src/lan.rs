@@ -21,7 +21,7 @@ pub(crate) struct HttpLink {
 }
 
 impl HttpLink {
-    pub fn new(address: SocketAddr) -> Result<Arc<dyn Link>, LinkError> {
+    pub fn connect(address: SocketAddr) -> Result<Arc<dyn Link>, LinkError> {
         if address.port() == 0 || address.ip().is_unspecified() || address.ip().is_multicast() {
             return Err(LinkError::NotFound("invalid Pod LAN address".into()));
         }
@@ -145,7 +145,7 @@ mod tests {
             }
             assert_ne!(ids[0], ids[1]);
         });
-        let first = HttpLink::new(address).unwrap();
+        let first = HttpLink::connect(address).unwrap();
         assert_eq!(
             first.exchange("pod-info", b"ciphertext").await.unwrap(),
             b"abc"
@@ -153,7 +153,7 @@ mod tests {
         assert!(first.exchange("prov-config", b"wifi").await.is_err());
         first.disconnect().await;
         assert!(first.exchange("pod-info", b"ciphertext").await.is_err());
-        let second = HttpLink::new(address).unwrap();
+        let second = HttpLink::connect(address).unwrap();
         assert!(matches!(
             second.exchange("pod-info", b"ciphertext").await,
             Err(LinkError::Rejected(_))

@@ -755,10 +755,11 @@ impl Actor {
     }
 
     async fn prompt_authorization(&mut self) {
-        if self.kind == DeviceKind::Pod && !self.lan {
-            if !self.confirm_saved_network().await || !self.handoff_to_lan().await {
-                return;
-            }
+        if self.kind == DeviceKind::Pod
+            && !self.lan
+            && (!self.confirm_saved_network().await || !self.handoff_to_lan().await)
+        {
+            return;
         }
         let Some(account) = self.race(self.engine.platform.cloud.account()).await else {
             return;
