@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 pub struct SampleEvidence {
     pub id: String,
     pub source_device_id: String,
-    pub source_run_id: String,
-    pub source_track_id: String,
     pub captured_at_ms: u64,
     pub vector: Vec<f32>,
     pub quality: f32,
@@ -60,6 +58,17 @@ pub struct ObserveResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn live_evidence_requires_no_body_tracking_and_rejects_legacy_fields() {
+        let value = serde_json::json!({"id":"face","sourceDeviceId":"camera","capturedAtMs":1,"vector":[1.0,0.0],"quality":0.75,"imageBase64":null});
+        let evidence: super::SampleEvidence = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(serde_json::to_value(evidence).unwrap(), value);
+        let mut legacy = value;
+        legacy["sourceTrackId"] = "fake".into();
+        assert!(serde_json::from_value::<super::SampleEvidence>(legacy).is_err());
+        assert_eq!(crate::PROTOCOL_VERSION, "person.v3");
+    }
+
     #[test]
     fn decision_wire_contract_distinguishes_unknown_from_stranger() {
         let known = PersonDecision::Identified {

@@ -1,6 +1,6 @@
 [package]
 name = "mhome-app-facade-api"
-version = "1.41.0"
+version = "1.41.1"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -14,7 +14,7 @@ include = ["src/**", "tests/**", "schema/**", "fixtures/**", "manifest/**", "con
 name = "app_facade_api"
 
 [dependencies]
-person-api = { package = "mhome-person-api", version = "=1.1.0", path = "../person-api" }
+person-api = { package = "mhome-person-api", version = "=1.2.0", path = "../person-api" }
 core-api = { package = "mhome-core-api", version = "=1.37.2", path = "../core-api" }
 artifact-api = { package = "mhome-artifact-api", version = "=1.15.0", path = "../artifact" }
 conversation-api = { package = "mhome-conversation-api", version = "=3.12.1", path = "../conversation-api" }

@@ -1192,7 +1192,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.41.0"
+version = "1.41.1"
 dependencies = [
  "jsonschema",
  "mhome-artifact-api",
@@ -1215,7 +1215,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "async-trait",
  "mhome-app-facade-api",
@@ -1264,7 +1264,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-face-matching"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "mhome-person-api",
 ]
@@ -1333,7 +1333,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-person-api"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "serde",
  "serde_json",

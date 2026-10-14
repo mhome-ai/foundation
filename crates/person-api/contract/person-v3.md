@@ -1,4 +1,4 @@
-# Person v2
+# Person v3
 
 Core owns the Space-wide library and all identity decisions. Producers describe an
 immutable embedding contract and submit live observations. There is no gallery download,
@@ -21,8 +21,10 @@ All decisions in a batch use its pre-learning snapshot. Unavailable or ambiguous
 is not evidence of a stranger.
 
 Each group retains at most ten vectors with corresponding metadata-free face crops of
-at most 256 by 256 pixels. Track quotas and similarity prevent redundant evidence from
-filling the group. Learning uses stricter thresholds and ambiguity checks than recognition.
+at most 256 by 256 pixels. Similarity deduplication applies from the first sample;
+body track IDs and run IDs are neither required nor stored. Unknown candidates need
+at least four retained, nonredundant face samples before recognition can identify them.
+A continuous visit or a face without a body can supply these samples. Learning uses stricter thresholds and ambiguity checks than recognition.
 Naming anchors the representative the user saw; automatic learning must also match this
 protected sample and cannot replace it. Only a materially better photo changes the card.
 
@@ -52,5 +54,5 @@ and `kind`; matching evidence stays private to Core.
 
 Explicit encrypted backup contains only the current library, including naming anchors.
 Transfers are temporary, scoped to the member and Space, and closed or expired. The archive
-format is v2 and includes last-seen clocks and reserved short codes. Restore preserves
+format is v3 and includes last-seen clocks and reserved short codes. Restore preserves
 those clocks; older archive versions are rejected before replacing any data. Person data is never registered with general cloud data synchronization.
