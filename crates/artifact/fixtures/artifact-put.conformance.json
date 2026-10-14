@@ -92,6 +92,22 @@
         "dataBase64": "eA==",
         "mimeType": "audio/vnd.example+json"
       }
+    },
+    {
+      "name": "canonical-base64-two-byte",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "SGk="
+      }
+    },
+    {
+      "name": "canonical-base64-three-byte",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "TWFu"
+      }
     }
   ],
   "invalid": [
@@ -257,6 +273,112 @@
         "kind": "AUDIO",
         "dataBase64": "eA==",
         "mimeType": "audio/ogg\n"
+      }
+    },
+    {
+      "name": "image-wrong-mime-kind",
+      "value": {
+        "kind": "IMAGE",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA=="
+      }
+    },
+    {
+      "name": "audio-wrong-mime-kind",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "image/png",
+        "dataBase64": "eA=="
+      }
+    },
+    {
+      "name": "video-wrong-mime-kind",
+      "value": {
+        "kind": "VIDEO",
+        "mimeType": "image/png",
+        "dataBase64": "eA=="
+      }
+    },
+    {
+      "name": "file-wrong-mime-kind",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "video/mp4",
+        "dataBase64": "eA=="
+      }
+    },
+    {
+      "name": "image-with-duration",
+      "value": {
+        "kind": "IMAGE",
+        "mimeType": "image/png",
+        "dataBase64": "eA==",
+        "durationMillis": 1
+      }
+    },
+    {
+      "name": "file-with-duration",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "eA==",
+        "durationMillis": 1
+      }
+    },
+    {
+      "name": "noncanonical-base64-1",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "eA"
+      }
+    },
+    {
+      "name": "noncanonical-base64-2",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "eA="
+      }
+    },
+    {
+      "name": "noncanonical-base64-3",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "eB=="
+      }
+    },
+    {
+      "name": "noncanonical-base64-4",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "eAB="
+      }
+    },
+    {
+      "name": "noncanonical-base64-5",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "eA==\n"
+      }
+    },
+    {
+      "name": "noncanonical-base64-6",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": " eA=="
+      }
+    },
+    {
+      "name": "noncanonical-base64-7",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "text/plain",
+        "dataBase64": "===="
       }
     }
   ]

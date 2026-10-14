@@ -1205,7 +1205,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-artifact-api"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
@@ -1297,7 +1297,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-llm-api"
-version = "3.3.2"
+version = "3.3.3"
 dependencies = [
  "mhome-artifact-api",
  "serde",

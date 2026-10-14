@@ -9,6 +9,88 @@ use serde_json::{json, Value};
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 
 #[test]
+fn canonical_base64_schema_accepts_all_byte_values_and_padding_lengths() {
+    use base64::{engine::general_purpose::STANDARD, Engine as _};
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-put.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    for byte in 0..=u8::MAX {
+        for length in 1..=4 {
+            let bytes = vec![byte; length];
+            let value = json!({"kind":"FILE", "mimeType":"application/octet-stream", "dataBase64": STANDARD.encode(&bytes)});
+            assert!(validator.is_valid(&value), "{byte} repeated {length} times");
+            assert_eq!(
+                serde_json::from_value::<PutArtifactRequest>(value)
+                    .unwrap()
+                    .decode()
+                    .unwrap(),
+                bytes
+            );
+        }
+    }
+}
+
+#[test]
+fn kind_mime_and_duration_constraints_match_schema_for_every_lifecycle() {
+    let put_schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-put.v1.schema.json")).unwrap();
+    let upload_schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-upload.v1.schema.json")).unwrap();
+    let put_validator = jsonschema::validator_for(&put_schema).unwrap();
+    let upload_validator = jsonschema::validator_for(&upload_schema).unwrap();
+
+    for (kind, accepted_mimes, allows_duration) in [
+        ("IMAGE", &["image/png"][..], false),
+        ("AUDIO", &["audio/ogg"][..], true),
+        ("VIDEO", &["video/mp4"][..], true),
+        ("FILE", &["image/png", "audio/ogg", "text/plain"][..], false),
+    ] {
+        for mime in ["image/png", "audio/ogg", "video/mp4", "text/plain"] {
+            for duration in [None, Some(1)] {
+                let valid =
+                    accepted_mimes.contains(&mime) && (duration.is_none() || allows_duration);
+                for lifecycle in ["std", "tmp", "man"] {
+                    let mut put = json!({"kind":kind, "mimeType":mime, "dataBase64":"eA==", "lifecycle":lifecycle});
+                    if let Some(duration) = duration {
+                        put["durationMillis"] = duration.into();
+                    }
+                    if lifecycle == "man" {
+                        put["creationId"] = "caller-A".into();
+                    }
+                    let mut upload = put.clone();
+                    upload.as_object_mut().unwrap().remove("dataBase64");
+                    upload["sizeBytes"] = 1.into();
+                    upload["sha256"] = "a".repeat(64).into();
+                    for (name, accepted) in [
+                        (
+                            "put Rust",
+                            serde_json::from_value::<PutArtifactRequest>(put.clone())
+                                .unwrap()
+                                .decode()
+                                .is_ok(),
+                        ),
+                        (
+                            "upload Rust",
+                            serde_json::from_value::<PrepareArtifactUploadRequest>(upload.clone())
+                                .unwrap()
+                                .validate()
+                                .is_ok(),
+                        ),
+                        ("put schema", put_validator.is_valid(&put)),
+                        ("upload schema", upload_validator.is_valid(&upload)),
+                    ] {
+                        assert_eq!(
+                            accepted, valid,
+                            "{name}: {kind} {mime} {duration:?} {lifecycle}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
 fn mime_rules_match_metadata_before_upload_for_every_lifecycle() {
     let put_schema: Value =
         serde_json::from_str(include_str!("../schema/artifact-put.v1.schema.json")).unwrap();

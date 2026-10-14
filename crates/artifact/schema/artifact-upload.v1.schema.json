@@ -99,6 +99,58 @@
               }
             }
           }
+        },
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "kind": {
+                  "const": "IMAGE"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "pattern": "^image/"
+                },
+                "durationMillis": false
+              }
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "AUDIO"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "pattern": "^audio/"
+                }
+              }
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "VIDEO"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "pattern": "^video/"
+                }
+              }
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "FILE"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "not": {
+                    "pattern": "^video/"
+                  }
+                },
+                "durationMillis": false
+              }
+            }
+          ]
         }
       ]
     },

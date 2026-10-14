@@ -26,6 +26,12 @@ characters. Parameters, whitespace and uppercase letters are rejected before
 decoding content or issuing an upload grant, for every lifecycle. Callers must
 send `audio/ogg`, for example, rather than `audio/OGG` or `audio/ogg;codecs=opus`.
 Image content is still inspected by storage to determine its actual format.
+Put and upload schemas also enforce kind-dependent MIME and duration rules:
+image/audio/video require their respective MIME prefix; files cannot use a video
+MIME type, and only audio/video may carry `durationMillis`. Shared negative fixtures
+cover these combinations so schema-based callers and Rust reject the same inputs.
+Put content uses canonical padded standard base64; missing padding, whitespace and
+nonzero unused trailing bits are rejected across runtimes.
 
 ### Lifecycle and resource identity
 
