@@ -4,7 +4,7 @@ use core_api::{
 };
 
 #[test]
-fn all_membership_and_delegation_combinations_obey_the_same_hierarchy() {
+fn all_membership_combinations_obey_the_same_hierarchy() {
     let user = ClientPrincipal::User {
         user_id: "user".into(),
     };
@@ -13,24 +13,17 @@ fn all_membership_and_delegation_combinations_obey_the_same_hierarchy() {
         (Some(Role::Member), Some(Level::Write)),
         (Some(Role::Owner), Some(Level::Manage)),
     ] {
-        for ceiling in [
-            None,
-            Some(Level::Read),
-            Some(Level::Write),
-            Some(Level::Manage),
-        ] {
-            let facts = SpaceAccessFacts {
-                principal: &user,
-                tenant_id: "tenant",
-                scope_id: "space",
-                member_role: role,
-                ceiling,
-            };
-            for required in [Level::Read, Level::Write, Level::Manage] {
-                let expected = maximum.is_some_and(|level| level >= required)
-                    && ceiling.is_none_or(|level| level >= required);
-                assert_eq!(facts.allows(required), expected);
-            }
+        let facts = SpaceAccessFacts {
+            principal: &user,
+            tenant_id: "tenant",
+            scope_id: "space",
+            member_role: role,
+        };
+        for required in [Level::Read, Level::Write, Level::Manage] {
+            assert_eq!(
+                facts.allows(required),
+                maximum.is_some_and(|level| level >= required)
+            );
         }
     }
 }
@@ -47,7 +40,6 @@ fn space_client_never_inherits_the_enrolling_users_owner_role() {
             tenant_id: "tenant",
             scope_id: "space",
             member_role: role,
-            ceiling: Some(Level::Manage),
         };
         assert!(facts.allows(Level::Read));
         assert!(facts.allows(Level::Write));
@@ -72,27 +64,9 @@ fn space_and_tenant_are_both_authorization_boundaries() {
             tenant_id: tenant,
             scope_id: space,
             member_role: Some(Role::Owner),
-            ceiling: None,
         };
         assert_eq!(facts.effective_level(), None);
     }
-}
-
-#[test]
-fn read_only_delegation_restricts_a_space_client() {
-    let principal = ClientPrincipal::Space {
-        tenant_id: "tenant".into(),
-        scope_id: "space".into(),
-    };
-    let facts = SpaceAccessFacts {
-        principal: &principal,
-        tenant_id: "tenant",
-        scope_id: "space",
-        member_role: None,
-        ceiling: Some(Level::Read),
-    };
-    assert!(facts.allows(Level::Read));
-    assert!(!facts.allows(Level::Write));
 }
 
 #[test]
@@ -105,7 +79,6 @@ fn an_empty_user_or_unknown_role_cannot_gain_access() {
         tenant_id: "tenant",
         scope_id: "space",
         member_role: Some(Role::Owner),
-        ceiling: None,
     };
     assert!(!facts.allows(Level::Read));
     assert!(serde_json::from_str::<Role>("\"ADMIN\"").is_err());

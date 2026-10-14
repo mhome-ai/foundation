@@ -41,13 +41,11 @@ impl SpaceMemberRole {
 }
 
 /// Facts from the authenticated ingress and its membership store/cache.
-/// A missing ceiling means no additional restriction; it never grants access.
 pub struct SpaceAccessFacts<'a> {
     pub principal: &'a ClientPrincipal,
     pub tenant_id: &'a str,
     pub scope_id: &'a str,
     pub member_role: Option<SpaceMemberRole>,
-    pub ceiling: Option<SpaceAccessLevel>,
 }
 
 impl SpaceAccessFacts<'_> {
@@ -69,7 +67,7 @@ impl SpaceAccessFacts<'_> {
             }
             _ => return None,
         };
-        Some(self.ceiling.map_or(level, |ceiling| level.min(ceiling)))
+        Some(level)
     }
 
     pub fn allows(&self, required: SpaceAccessLevel) -> bool {

@@ -87,5 +87,7 @@ in the same Space can read the retained group. Unenrolled devices cannot do so.
 
 Agent execution carries the same `ClientPrincipal`, plus originating Client and
 enrollment metadata. The Space owner may pay for model calls without becoming
-the actor. Sharing a group or responding to an interaction never raises the
-original operation's authority. Business authorization remains mandatory.
+the actor. Any authenticated member of a group conversation may answer a pending
+interaction; there is no same-user, same-device or additional responder-role
+requirement. Execution retains the original actor and its authority. Business
+authorization remains mandatory.
