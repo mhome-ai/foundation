@@ -34,7 +34,7 @@ pub enum InteractionTone {
 )]
 #[serde(deny_unknown_fields)]
 pub enum ClientTask {
-    InstallIntegrations { integration_ids: Vec<String> },
+    InstallIntegration { integration_id: String },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -143,11 +143,8 @@ impl InteractionPreview {
                     }
             })
             && match &self.client_task {
-                Some(ClientTask::InstallIntegrations { integration_ids }) => {
-                    !integration_ids.is_empty()
-                        && integration_ids
-                            .iter()
-                            .all(|integration_id| !integration_id.trim().is_empty())
+                Some(ClientTask::InstallIntegration { integration_id }) => {
+                    !integration_id.trim().is_empty()
                 }
                 None => true,
             }

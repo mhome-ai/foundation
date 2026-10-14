@@ -19,27 +19,23 @@
         "operation_id": "run-1:step:0:tool:call-2",
         "preview": {
           "actionCode": "integration.install",
-          "title": "Integration required",
-          "message": "Install Matter, then continue.",
+          "title": "Connect integration",
+          "message": "Complete the connection flow, then check installation.",
           "tone": "normal",
           "details": [
             {
-              "label": "Integrations",
+              "label": "Integration",
               "value": {
-                "type": "text_list",
-                "items": [
-                  "matter"
-                ]
+                "type": "text",
+                "text": "provider.example"
               }
             }
           ],
-          "proceedLabel": "I've installed it",
-          "rejectLabel": "Skip",
+          "proceedLabel": "Done, check installation",
+          "rejectLabel": "Cancel",
           "clientTask": {
-            "type": "install_integrations",
-            "integrationIds": [
-              "matter"
-            ]
+            "type": "install_integration",
+            "integrationId": "provider.example"
           }
         },
         "payload": {

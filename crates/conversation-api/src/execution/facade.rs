@@ -105,17 +105,17 @@ mod tests {
             "Integration required",
             "Install it, then continue.",
         );
-        preview.client_task = Some(ClientTask::InstallIntegrations {
-            integration_ids: Vec::new(),
+        preview.client_task = Some(ClientTask::InstallIntegration {
+            integration_id: String::new(),
         });
         assert!(!preview.is_valid());
 
-        preview.client_task = Some(ClientTask::InstallIntegrations {
-            integration_ids: vec!["matter".to_owned()],
+        preview.client_task = Some(ClientTask::InstallIntegration {
+            integration_id: "provider.example".to_owned(),
         });
         assert!(preview.is_valid());
         let encoded = serde_json::to_value(preview).expect("serializes");
-        assert_eq!(encoded["clientTask"]["type"], "install_integrations");
-        assert_eq!(encoded["clientTask"]["integrationIds"][0], "matter");
+        assert_eq!(encoded["clientTask"]["type"], "install_integration");
+        assert_eq!(encoded["clientTask"]["integrationId"], "provider.example");
     }
 }

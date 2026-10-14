@@ -253,18 +253,16 @@
           "additionalProperties": false,
           "required": [
             "type",
-            "integrationIds"
+            "integrationId"
           ],
           "properties": {
             "type": {
-              "const": "install_integrations"
+              "const": "install_integration"
             },
-            "integrationIds": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "$ref": "#/$defs/id"
-              }
+            "integrationId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
             }
           }
         }
