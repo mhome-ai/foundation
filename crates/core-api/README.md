@@ -18,6 +18,13 @@ The transport owns heartbeat timing and reports authenticated local connection
 activity through `RefreshLocalAppClient`; closing the transport removes that
 connection through `CleanupLocalAppClient`.
 
+`NodeDescription.appAccess` declares exact runtime targets and their required
+Space READ/WRITE/MANAGE level. Core reads it over the authenticated Node connection
+and checks App-originated calls before dispatch. Every `/app/` and
+`/interaction-flow/` route in `routes` must declare access; undeclared targets are
+not App-callable. Internal service calls keep their existing trusted boundary.
+This is business authorization, independent of operating-system permissions.
+
 `interaction_flow` defines the serializable Core-to-Node flow definition and
 handler protocol. Definitions name logical operations only; MeowCore chooses
 and pins the Node instance and fixed transport routes for each session.

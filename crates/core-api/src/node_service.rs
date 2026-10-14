@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
+use std::collections::BTreeMap;
 
+use crate::space_access::SpaceAccessLevel;
 use crate::NodeInstancePolicy;
 
 pub const NODE_DESCRIBE_SCHEMA_VERSION: &str = "mhome.node.describe.v1";
@@ -29,8 +31,36 @@ pub struct NodeDescription {
     pub service_version: String,
     pub instance_policy: NodeInstancePolicy,
     pub routes: Vec<String>,
+    /// Exact runtime targets callable on behalf of an App principal. Core checks
+    /// these levels before dispatch; an absent target is not App-callable.
+    pub app_access: BTreeMap<String, SpaceAccessLevel>,
     pub capabilities: Vec<String>,
     pub details: Map<String, Value>,
+}
+
+impl NodeDescription {
+    /// Shared producer/consumer validation. Internal routes may remain private;
+    /// every advertised App route and Interaction Flow route needs a policy.
+    pub fn validate_app_access(&self) -> Result<(), String> {
+        let prefix = format!("/{}/", self.node_type);
+        let app_prefix = format!("{prefix}app/");
+        let flow_prefix = format!("{prefix}interaction-flow/");
+        for target in self.app_access.keys() {
+            if !target.starts_with(&prefix) || !self.routes.contains(target) {
+                return Err(format!(
+                    "App access target is not an advertised route of this Node: {target}"
+                ));
+            }
+        }
+        for target in &self.routes {
+            if (target.starts_with(&app_prefix) || target.starts_with(&flow_prefix))
+                && !self.app_access.contains_key(target)
+            {
+                return Err(format!("App access level is missing for {target}"));
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -96,6 +126,7 @@ mod tests {
             "serviceVersion": "1.0.0",
             "instancePolicy": "multiple",
             "routes": ["/camera/describe", "/camera/readiness"],
+            "appAccess": {},
             "capabilities": [],
             "details": {},
             "futureField": true
@@ -119,6 +150,38 @@ mod tests {
         }))
         .expect("additive readiness");
         assert_eq!(readiness.state, NodeReadinessState::Degraded);
+    }
+
+    #[test]
+    fn app_access_rejects_missing_foreign_and_unadvertised_policies() {
+        let mut value = json!({
+            "schemaVersion": NODE_DESCRIBE_SCHEMA_VERSION,
+            "nodeType": "camera", "serviceId": "camera", "serviceVersion": "1.0.0",
+            "instancePolicy": "multiple", "capabilities": [], "details": {},
+            "routes": ["/camera/app/device/list", "/camera/interaction-flow/execute"],
+            "appAccess": {"/camera/app/device/list": "read", "/camera/interaction-flow/execute": "manage"}
+        });
+        let valid: NodeDescription = serde_json::from_value(value.clone()).unwrap();
+        assert!(valid.validate_app_access().is_ok());
+        for target in [
+            "/camera/app/device/list",
+            "/camera/interaction-flow/execute",
+        ] {
+            let mut invalid = valid.clone();
+            invalid.app_access.remove(target);
+            assert!(invalid.validate_app_access().is_err());
+        }
+        for target in ["/camera/app/missing", "/other/app/device/list"] {
+            let mut invalid = valid.clone();
+            invalid
+                .app_access
+                .insert(target.into(), SpaceAccessLevel::Write);
+            assert!(invalid.validate_app_access().is_err());
+        }
+        value["appAccess"]["/camera/app/device/list"] = json!("execute");
+        assert!(serde_json::from_value::<NodeDescription>(value.clone()).is_err());
+        value.as_object_mut().unwrap().remove("appAccess");
+        assert!(serde_json::from_value::<NodeDescription>(value).is_err());
     }
 
     #[test]
