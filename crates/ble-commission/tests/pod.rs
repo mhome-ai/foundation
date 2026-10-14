@@ -82,7 +82,7 @@ async fn commissions_a_pod_end_to_end() {
     valid(&done);
 
     assert_eq!(device.scans.load(Ordering::SeqCst), 1);
-    assert_eq!(device.connects.load(Ordering::SeqCst), 1);
+    assert_eq!(device.connects.load(Ordering::SeqCst), 2);
     let calls = harness.cloud.calls.lock().unwrap().clone();
     assert_eq!(calls[0].path, "pod/credential/issue");
     assert_eq!(calls[0].scope_id.as_deref(), Some("scope-a"));
@@ -657,5 +657,121 @@ async fn a_refused_issue_fails_without_any_cleanup_call() {
     assert!(!harness
         .journal()
         .iter()
-        .any(|entry| entry.starts_with("device:pod-credential")));
+        .any(|entry| entry == "device:pod-credential:deliver"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn lan_setup_works_without_bluetooth_and_never_reconfigures_wifi() {
+    let h = Harness::new();
+    let device = h.add_device("pod-a", Script::pod());
+    h.core.on_adapter_state(app_facade_api::pod::AdapterStatus {
+        state: app_facade_api::pod::AdapterState::PoweredOff,
+        message: None,
+    });
+    h.lan.advertise();
+    let s = h
+        .ok(
+            "/local/pod/commission/start",
+            json!({"candidateId":"lan:pod-a"}),
+        )
+        .await;
+    let id = session_id(&s);
+    secure(&h, &id).await;
+    h.wait_state(POD, "awaiting_authorization").await;
+    authorize(&h, &id).await;
+    valid(&h.wait_state(POD, "completed").await);
+    assert_eq!(device.scans.load(Ordering::SeqCst), 0);
+    assert!(!h.journal().iter().any(|e| e == "device:apply"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn lan_metadata_cannot_substitute_a_different_device_or_environment() {
+    for changed_env in [false, true] {
+        let h = Harness::new();
+        let mut script = Script::pod();
+        if changed_env {
+            script.env = "dev";
+        } else {
+            script.device_id = "different-device";
+        }
+        h.add_device("pod-a", script);
+        h.lan.advertise();
+        let s = h
+            .ok(
+                "/local/pod/commission/start",
+                json!({"candidateId":"lan:pod-a"}),
+            )
+            .await;
+        secure(&h, &session_id(&s)).await;
+        let failed = h.wait_state(POD, "failed").await;
+        assert_eq!(failed["error"]["code"], "device_mismatch");
+        assert!(h.cloud.calls.lock().unwrap().is_empty());
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn retry_reads_committed_completion_without_issuing_another_credential() {
+    let h = Harness::new();
+    let mut script = Script::pod();
+    script.initial_state = "commissioned";
+    h.add_device("pod-a", script);
+    h.lan.advertise();
+    let s = h
+        .ok(
+            "/local/pod/commission/start",
+            json!({"candidateId":"lan:pod-a"}),
+        )
+        .await;
+    secure(&h, &session_id(&s)).await;
+    valid(&h.wait_state(POD, "completed").await);
+    assert!(h.cloud.calls.lock().unwrap().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn successful_wifi_with_no_lan_discovery_ends_attempt_without_issuing() {
+    let h = Harness::new();
+    h.lan.enabled.store(false, Ordering::SeqCst);
+    h.add_device("pod-a", Script::pod());
+    let id = start(&h).await;
+    secure(&h, &id).await;
+    h.wait_state(POD, "awaiting_wifi").await;
+    h.ok(
+        "/local/pod/commission/wifi",
+        json!({"sessionId":id,"ssid":"home","password":"correct horse"}),
+    )
+    .await;
+    let failed = h.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["code"], "lan_unavailable");
+    assert_eq!(failed["candidate"]["wifiConfigured"], true);
+    assert!(h.cloud.calls.lock().unwrap().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn ble_handoff_waits_for_network_persistence_after_wifi_connects() {
+    let h = Harness::new();
+    let mut script = Script::pod();
+    script.wifi_save_pending_polls = 4;
+    h.add_device("pod-a", script);
+    to_authorization(&h).await;
+    assert!(h.position("device:wifi:saved") < h.position("device:disconnected"));
+    assert!(h.cloud.calls.lock().unwrap().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn failed_pod_wifi_ends_the_attempt() {
+    let h = Harness::new();
+    let mut script = Script::pod();
+    script.join = support::Join::Failed(protocomm::proto::WifiConnectFailedReason::AuthError);
+    h.add_device("pod-a", script);
+    let id = start(&h).await;
+    secure(&h, &id).await;
+    h.wait_state(POD, "awaiting_wifi").await;
+    h.ok(
+        "/local/pod/commission/wifi",
+        json!({"sessionId":id,"ssid":"home","password":"wrong password"}),
+    )
+    .await;
+    let failed = h.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["code"], "wifi_auth_failed");
+    assert!(h.cloud.calls.lock().unwrap().is_empty());
 }

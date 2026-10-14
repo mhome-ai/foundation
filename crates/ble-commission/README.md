@@ -1,9 +1,9 @@
 # mhome-ble-commission
 
-Platform-neutral BLE discovery, pod commissioning and Host provisioning for
+Platform-neutral BLE and LAN discovery, pod commissioning and Host provisioning for
 MeowLink native Clients. It implements the `/local/pod/*` and
 `/local/host/provision/*` targets of `mhome-app-facade-api` once, so desktop and
-mobile Clients only supply a radio, a GATT central, the signed-in cloud account
+mobile Clients only supply a radio, a GATT central, a native LAN browser, the signed-in cloud account
 and an event sink.
 
 ## Entry points
@@ -15,6 +15,9 @@ let core = Commissioning::with_own_runtime(platform)?;
 
 core.on_adapter_state(status);          // whenever the adapter changes
 core.on_advertisement(advertisement);   // every advertisement while scanning
+core.on_lan_advertisement(advertisement); // resolved _meow-pod-init service
+core.on_lan_removed(service_id);
+core.on_lan_error(message);             // asynchronous browser/permission failure
 let json = core.handle(target, payload).await?;     // facade request
 let json = core.handle_blocking(target, payload)?;  // from a foreign thread
 ```
@@ -26,7 +29,9 @@ as the `core-api` `ErrorResponse` envelope: `BAD_REQUEST` for unreadable bodies,
 
 Scanning only starts once the platform has reported a `ready` adapter, a
 discovery lease is live and no session holds the radio. Dropping
-`Commissioning` stops its tasks.
+`Commissioning` stops its tasks. LAN browsing follows discovery leases and active
+Pod sessions, independently of Bluetooth availability. `LanDiscovery::set_browsing`
+controls the native DNS-SD browser; HTTP/SRP is implemented once in this crate.
 
 ## Platform traits
 
@@ -93,8 +98,11 @@ disconnecting) is refused with `session_active` or `busy`. The native core owns 
 leaving a page does not cancel it and callers do not renew it. There is no
 user cancellation endpoint. Only the device's `commissioned` response confirms
 success. Lost delivery/activation confirmation fails and releases the link.
-There is no cloud revocation call; unused pending credentials expire. Reset
-the device and start a fresh attempt to retry.
+There is no cloud revocation call; unused pending credentials expire. Select the LAN candidate again to retry activation; the device retains a saved
+network. The secure channel verifies the full device ID, environment and (after
+BLE handoff) identity key. A fresh handshake uses new cipher state, while the
+entered code is held temporarily to avoid prompting twice. Completed or in-flight
+activation is read before any new credential issuance.
 
 
 A pod whose `pod-info` reports `"mode":"reprovision"` is in a Wi-Fi change

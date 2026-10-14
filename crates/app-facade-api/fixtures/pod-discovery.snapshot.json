@@ -1,11 +1,13 @@
 {
   "revision": 4,
+  "lanBrowsing": false,
   "scanning": true,
   "adapter": { "state": "ready" },
   "candidates": [
     {
       "candidateId": "ble:1A2B3C4D",
       "kind": "pod",
+      "transport": "ble",
       "name": "MeowPod S1",
       "model": "S1",
       "shortId": "1A2B3C4D",

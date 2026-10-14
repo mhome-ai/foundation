@@ -2,11 +2,11 @@
 use std::collections::HashMap;
 
 use app_facade_api::pod::{
-    AdapterState, AdapterStatus, BleAdvertisement, DeviceKind, DiscoverySnapshot, PodCandidate,
-    CANDIDATE_TTL_MS,
+    AdapterState, AdapterStatus, BleAdvertisement, DeviceKind, DiscoverySnapshot,
+    DiscoveryTransport, PodCandidate, CANDIDATE_TTL_MS,
 };
 
-use crate::platform::Advertisement;
+use crate::platform::{Advertisement, LanAdvertisement};
 
 /// Smaller RSSI changes do not count as a change of the snapshot.
 const RSSI_PUBLISH_DELTA: i32 = 6;
@@ -21,6 +21,10 @@ pub(crate) struct Discovery {
     pub leases: HashMap<String, i64>,
     pub candidates: HashMap<String, PodCandidate>,
     pub scan_refused_at: Option<i64>,
+    pub lan: HashMap<String, LanAdvertisement>,
+    pub lan_browsing: bool,
+    pub lan_refused_at: Option<i64>,
+    pub lan_error: Option<String>,
 }
 
 impl Discovery {
@@ -35,6 +39,10 @@ impl Discovery {
             leases: HashMap::new(),
             candidates: HashMap::new(),
             scan_refused_at: None,
+            lan: HashMap::new(),
+            lan_browsing: false,
+            lan_refused_at: None,
+            lan_error: None,
         }
     }
 
@@ -49,6 +57,8 @@ impl Discovery {
         DiscoverySnapshot {
             revision: self.revision,
             scanning: self.scanning,
+            lan_browsing: self.lan_browsing,
+            lan_error: self.lan_error.clone(),
             adapter: self.adapter.clone(),
             candidates,
         }
@@ -66,7 +76,8 @@ impl Discovery {
         self.adapter = status;
         self.scan_refused_at = None;
         if self.adapter.state != AdapterState::Ready {
-            self.candidates.clear();
+            self.candidates
+                .retain(|_, c| c.transport == DiscoveryTransport::Lan);
             self.scanning = false;
         }
         self.revision += 1;
@@ -85,8 +96,9 @@ impl Discovery {
     pub fn prune(&mut self, now: i64) -> bool {
         let cutoff = now - CANDIDATE_TTL_MS;
         let before = self.candidates.len();
-        self.candidates
-            .retain(|_, candidate| candidate.last_seen_ms >= cutoff);
+        self.candidates.retain(|_, candidate| {
+            candidate.transport == DiscoveryTransport::Lan || candidate.last_seen_ms >= cutoff
+        });
         if self.candidates.len() == before {
             return false;
         }
@@ -132,6 +144,8 @@ impl Discovery {
         let candidate = PodCandidate {
             candidate_id: advertisement.peripheral_id.clone(),
             kind,
+            transport: DiscoveryTransport::Ble,
+            device_id: None,
             name,
             model,
             short_id: decoded.short_id_hex(),
@@ -163,6 +177,63 @@ impl Discovery {
             entry.last_seen_ms = now;
         }
         changed
+    }
+
+    pub fn observe_lan(&mut self, advertisement: LanAdvertisement, now: i64) -> bool {
+        if advertisement.protocol != 1
+            || advertisement.env != core_api::RuntimeEnv::current().as_str()
+            || advertisement.device_id.is_empty()
+            || advertisement.device_id.len() > 64
+            || advertisement.service_id.is_empty()
+            || advertisement.addresses.is_empty()
+            || advertisement.addresses.len() > 16
+            || advertisement
+                .addresses
+                .iter()
+                .any(|a| a.port() == 0 || a.ip().is_multicast() || a.ip().is_unspecified())
+        {
+            return false;
+        }
+        let id = format!("lan:{}", advertisement.service_id);
+        if self.lan.get(&id) == Some(&advertisement) {
+            return false;
+        }
+        self.candidates.insert(
+            id.clone(),
+            PodCandidate {
+                candidate_id: id.clone(),
+                kind: DeviceKind::Pod,
+                transport: DiscoveryTransport::Lan,
+                device_id: Some(advertisement.device_id.clone()),
+                name: advertisement.name.clone(),
+                model: Some(advertisement.model.clone()),
+                short_id: advertisement.device_id.clone(),
+                rssi: i16::MIN,
+                commissionable: true,
+                wifi_configured: true,
+                last_seen_ms: now,
+            },
+        );
+        self.lan.insert(id, advertisement);
+        self.revision += 1;
+        true
+    }
+
+    pub fn remove_lan(&mut self, service_id: &str) -> bool {
+        let id = format!("lan:{service_id}");
+        if self.lan.remove(&id).is_none() {
+            return false;
+        }
+        self.candidates.remove(&id);
+        self.revision += 1;
+        true
+    }
+
+    pub fn clear_lan(&mut self) {
+        self.lan.clear();
+        self.candidates
+            .retain(|_, c| c.transport != DiscoveryTransport::Lan);
+        self.revision += 1;
     }
 }
 

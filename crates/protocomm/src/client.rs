@@ -176,7 +176,7 @@ impl<T: Transport> ProtocommClient<T> {
         use proto::sec2_payload::Payload;
         use proto::session_data::Proto;
 
-        if patch_version > MAX_PATCH_VERSION {
+        if patch_version != MAX_PATCH_VERSION {
             return Err(ProtocommError::UnsupportedSecurity(format!(
                 "security 2 patch version {patch_version}"
             )));

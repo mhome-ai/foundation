@@ -90,6 +90,10 @@ pub(crate) async fn open(
         Ok(Ok(Err(error))) => return Err(OpenError::Link(error.to_string())),
         Ok(Ok(Ok(link))) => link,
     };
+    open_link(link, kind).await
+}
+
+pub(crate) async fn open_link(link: Arc<dyn Link>, kind: DeviceKind) -> Result<Opened, OpenError> {
     let client = Arc::new(ProtocommClient::new(LinkTransport { link: link.clone() }));
     let version = match client.version().await {
         Ok(version) => version,
@@ -100,7 +104,7 @@ pub(crate) async fn open(
     };
     let patch_version = version.security_patch_version();
     if version.security_version() != Some(SECURITY_VERSION)
-        || patch_version > MAX_PATCH_VERSION
+        || patch_version != MAX_PATCH_VERSION
         || !version.has_app_capability(APP_INFO_LABEL, capability(kind))
     {
         link.disconnect().await;

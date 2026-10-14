@@ -5,6 +5,7 @@
   "candidate": {
     "candidateId": "ble:5E6F7A8B",
     "kind": "host",
+    "transport": "ble",
     "name": "Kitchen Host",
     "shortId": "5E6F7A8B",
     "rssi": -61,

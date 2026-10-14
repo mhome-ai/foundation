@@ -6,8 +6,9 @@ use std::time::{Duration, Instant};
 
 use app_facade_api::pod::{AdapterStatus, DeviceKind};
 use ble_commission::{
-    Account, BlockingCentral, BlockingCloud, BlockingLink, BlockingRadio, Central, Cloud,
-    CloudEndpoints, CloudError, CloudResponse, Commissioning, Link, LinkError, Platform, Radio,
+    Account, BlockingCentral, BlockingCloud, BlockingLanDiscovery, BlockingLink, BlockingRadio,
+    Central, Cloud, CloudEndpoints, CloudError, CloudResponse, Commissioning, Link, LinkError,
+    Platform, Radio,
 };
 use serde_json::{json, Value};
 use support::{FakeCentral, FakeCloud, FakeDevice, FakeRadio, FakeSink, Journal, Script, CODE};
@@ -22,6 +23,12 @@ impl Foreign {
     }
 }
 
+struct ForeignLan;
+impl BlockingLanDiscovery for ForeignLan {
+    fn set_browsing(&self, _: bool) -> Result<(), String> {
+        Ok(())
+    }
+}
 struct ForeignRadio(Foreign, Arc<FakeRadio>);
 struct ForeignCentral(Foreign, Arc<FakeCentral>);
 struct ForeignLink(Foreign, Arc<dyn Link>);
@@ -120,13 +127,21 @@ fn a_blocking_platform_commissions_a_pod_on_its_own_runtime() {
         .lock()
         .unwrap()
         .insert("pod-a".into(), device);
-    let core = Commissioning::with_own_runtime(Platform::blocking(
+    let lan = Arc::new(support::FakeLan {
+        central: central.clone(),
+        core: Default::default(),
+        enabled: std::sync::atomic::AtomicBool::new(true),
+    });
+    let mut platform = Platform::blocking(
         Arc::new(ForeignRadio(foreign.clone(), radio.clone())),
+        Arc::new(ForeignLan),
         Arc::new(ForeignCentral(foreign.clone(), central)),
         Arc::new(ForeignCloud(foreign.clone(), cloud.clone())),
         sink.clone(),
-    ))
-    .unwrap();
+    );
+    platform.lan = lan.clone();
+    let core = Arc::new(Commissioning::with_own_runtime(platform).unwrap());
+    *lan.core.lock().unwrap() = Some(Arc::downgrade(&core));
     core.on_adapter_state(support::ready());
     core.on_advertisement(support::advertisement("pod-a", DeviceKind::Pod, false));
 

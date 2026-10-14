@@ -8,8 +8,8 @@ use std::time::Duration;
 use app_facade_api::host_provision::{is_claim_token, HostFinishResponse, HOST_INFO_ENDPOINT};
 use app_facade_api::pod::{
     AuthorizationPrompt, CommissionError, CommissionErrorCode, CredentialIssueRequest, DeviceKind,
-    PodInfo, SessionMode, ACTIVATION_GRACE_MS, CODE_ATTEMPTS, NOT_ACTIVATED_DETAIL,
-    POD_CREDENTIAL_ENDPOINT, POD_INFO_ENDPOINT, SRP_USERNAME,
+    DiscoveryTransport, PodInfo, SessionMode, ACTIVATION_GRACE_MS, CODE_ATTEMPTS,
+    NOT_ACTIVATED_DETAIL, POD_CREDENTIAL_ENDPOINT, POD_INFO_ENDPOINT, SRP_USERNAME,
 };
 use protocomm::{ProtocommError, WifiFailure, WifiStatus};
 use serde_json::{json, Value};
@@ -51,6 +51,8 @@ pub(crate) struct Actor {
     pod_info: Option<PodInfo>,
     credential: Option<Credential>,
     reply: Option<oneshot::Sender<()>>,
+    pairing_code: Option<zeroize::Zeroizing<String>>,
+    lan: bool,
 }
 
 async fn cancelled(cancel: &mut watch::Receiver<bool>) {
@@ -101,6 +103,8 @@ impl Actor {
             pod_info: None,
             credential: None,
             reply: None,
+            pairing_code: None,
+            lan: false,
         };
         tokio::spawn(actor.run(commands));
     }
@@ -179,12 +183,27 @@ impl Actor {
     async fn open(&mut self) -> Option<bool> {
         // Keep ownership through connection/version setup, even if the session
         // deadline expires. Cleanup must receive and close a late native link.
-        let opened = device::open(
-            &self.engine.platform.central,
-            &self.peripheral_id,
-            self.kind,
-        )
-        .await;
+        let lan = self
+            .engine
+            .discovery
+            .lock()
+            .unwrap()
+            .lan
+            .get(&self.peripheral_id)
+            .cloned();
+        let opened = if let Some(lan) = lan {
+            self.lan = true;
+            self.open_lan_addresses(&lan.addresses).await
+        } else if self.peripheral_id.starts_with("lan:") {
+            Err(OpenError::Link("Pod is no longer on this LAN".into()))
+        } else {
+            device::open(
+                &self.engine.platform.central,
+                &self.peripheral_id,
+                self.kind,
+            )
+            .await
+        };
         match opened {
             Ok(opened) => {
                 let locked = opened.locked;
@@ -215,6 +234,30 @@ impl Actor {
                 None
             }
         }
+    }
+
+    async fn open_lan_addresses(
+        &self,
+        addresses: &[std::net::SocketAddr],
+    ) -> Result<Opened, OpenError> {
+        let mut last = OpenError::Link("Pod is no longer on this LAN".into());
+        for address in addresses.iter().take(4) {
+            if self.over() {
+                return Err(OpenError::Link("initialization cancelled".into()));
+            }
+            let link = match self.engine.platform.lan.connect(*address).await {
+                Ok(link) => link,
+                Err(e) => {
+                    last = OpenError::Link(e.to_string());
+                    continue;
+                }
+            };
+            match device::open_link(link, DeviceKind::Pod).await {
+                Ok(opened) => return Ok(opened),
+                Err(e) => last = e,
+            }
+        }
+        Err(last)
     }
 
     fn code_locked(&self) {
@@ -277,6 +320,7 @@ impl Actor {
         };
         match result {
             Ok(()) => {
+                self.pairing_code = Some(zeroize::Zeroizing::new(code));
                 if self.enter(Phase::ReadingInfo, None) {
                     self.ack();
                     self.read_info().await;
@@ -366,8 +410,34 @@ impl Actor {
                 let Some((pod_info, device)) = device::pod_info(&info) else {
                     return self.fail(incomplete());
                 };
+                if self.lan {
+                    let expected = self
+                        .engine
+                        .mutate(self.kind, &self.id, |live| live.candidate.device_id.clone())
+                        .flatten();
+                    if expected.as_deref() != Some(&pod_info.device_id)
+                        || pod_info.env != core_api::RuntimeEnv::current().as_str()
+                    {
+                        return self.fail(error(
+                            CommissionErrorCode::DeviceMismatch,
+                            "This is a different device. Select the pod again.",
+                            None,
+                        ));
+                    }
+                }
                 let reprovision = pod_info.reprovision();
                 let kept_wifi = device.wifi_configured && !reprovision;
+                let completed = pod_info.state == "commissioned";
+                let activating = pod_info.state == "activating";
+                if self.lan && (completed || activating) {
+                    let Some(pod_id) = pod_info.pod_id.clone().filter(|id| !id.is_empty()) else {
+                        return self.fail(incomplete());
+                    };
+                    self.credential = Some(Credential {
+                        pod_id,
+                        activate_before: self.engine.now_ms() + 120_000,
+                    });
+                }
                 self.pod_info = Some(pod_info);
                 if !self.update(|live| {
                     live.device = Some(device);
@@ -375,7 +445,14 @@ impl Actor {
                 }) {
                     return;
                 }
-                if kept_wifi {
+                if self.lan && completed {
+                    self.complete_pod().await;
+                } else if self.lan && activating {
+                    self.enter(Phase::Activating, None);
+                    self.activate(client).await;
+                } else if self.lan {
+                    self.prompt_authorization().await;
+                } else if kept_wifi {
                     self.confirm_kept_wifi(client).await;
                 } else {
                     self.offer_wifi(None).await;
@@ -500,6 +577,13 @@ impl Actor {
                 if !self.survived(&client, &failure).await {
                     return self.fail_disconnected(failure);
                 }
+                if self.kind == DeviceKind::Pod {
+                    return self.fail(error(
+                        CommissionErrorCode::WifiFailed,
+                        "The pod could not join Wi-Fi. Start setup again.",
+                        None,
+                    ));
+                }
                 self.join_failed = true;
                 self.update(|live| {
                     live.error = Some(error(
@@ -537,7 +621,14 @@ impl Actor {
                 }
                 Ok(WifiStatus::Failed(failure)) => {
                     self.join_failed = true;
-                    self.enter(Phase::AwaitingWifi, Some(wifi_error(self.kind, failure)));
+                    self.enter(
+                        if self.kind == DeviceKind::Pod {
+                            Phase::Failed
+                        } else {
+                            Phase::AwaitingWifi
+                        },
+                        Some(wifi_error(self.kind, failure)),
+                    );
                     return;
                 }
                 Err(failure) => return self.fail_disconnected(failure),
@@ -545,7 +636,11 @@ impl Actor {
         }
         self.join_failed = true;
         self.enter(
-            Phase::AwaitingWifi,
+            if self.kind == DeviceKind::Pod {
+                Phase::Failed
+            } else {
+                Phase::AwaitingWifi
+            },
             Some(error(
                 CommissionErrorCode::WifiFailed,
                 &format!("The {} took too long to join Wi-Fi.", noun(self.kind)),
@@ -655,6 +750,11 @@ impl Actor {
     }
 
     async fn prompt_authorization(&mut self) {
+        if self.kind == DeviceKind::Pod && !self.lan {
+            if !self.confirm_saved_network().await || !self.handoff_to_lan().await {
+                return;
+            }
+        }
         let Some(account) = self.race(self.engine.platform.cloud.account()).await else {
             return;
         };
@@ -687,6 +787,157 @@ impl Actor {
             live.set(Phase::AwaitingAuthorization, None);
             live.authorization = Some(prompt);
         });
+    }
+
+    async fn confirm_saved_network(&self) -> bool {
+        let Some(client) = self.client() else {
+            return false;
+        };
+        for _ in 0..30 {
+            let Some(info) = self
+                .race(client.call_json(POD_INFO_ENDPOINT, &json!({})))
+                .await
+            else {
+                return false;
+            };
+            match info {
+                Ok(info) if info["state"] == "wifi_connected" => return true,
+                Ok(info) if info["state"] == "failed" => break,
+                Ok(_) => {}
+                Err(error) => {
+                    self.fail_disconnected(error);
+                    return false;
+                }
+            }
+            if self.sleep(TICK).await.is_none() {
+                return false;
+            }
+        }
+        self.fail(error(
+            CommissionErrorCode::WifiFailed,
+            "The pod did not confirm saving its network. Start setup again.",
+            None,
+        ));
+        false
+    }
+
+    /// Network configuration is already committed by the Pod. Dropping BLE now
+    /// must not undo it. A failure ends this attempt; the LAN candidate remains.
+    async fn handoff_to_lan(&mut self) -> bool {
+        let (Some(expected), Some(code)) = (self.pod_info.clone(), self.pairing_code.clone())
+        else {
+            self.fail_disconnected("pairing context is missing");
+            return false;
+        };
+        if let Some(device) = self.device.take() {
+            device.link.disconnect().await;
+        }
+        if !self.update(|live| {
+            live.set(Phase::DiscoveringLan, None);
+            live.candidate.wifi_configured = true;
+            live.candidate.device_id = Some(expected.device_id.clone());
+        }) {
+            return false;
+        }
+        self.engine.reconcile();
+        let mut candidates = Vec::new();
+        for _ in 0..30 {
+            candidates = self
+                .engine
+                .discovery
+                .lock()
+                .unwrap()
+                .lan
+                .values()
+                .filter(|a| a.device_id == expected.device_id)
+                .cloned()
+                .collect();
+            if !candidates.is_empty() {
+                break;
+            }
+            if self.sleep(TICK).await.is_none() {
+                return false;
+            }
+        }
+        if candidates.is_empty() {
+            self.fail(error(
+                CommissionErrorCode::LanUnavailable,
+                "Wi-Fi is configured. Connect this app to the same local network and try again.",
+                None,
+            ));
+            return false;
+        }
+        if !self.enter(Phase::ConnectingLan, None) {
+            return false;
+        }
+        for candidate in candidates {
+            let Ok(opened) = self.open_lan_addresses(&candidate.addresses).await else {
+                continue;
+            };
+            let client = opened.client.clone();
+            self.lan = true;
+            self.device = Some(opened);
+            // A fresh SRP exchange generates a new key and new record nonces.
+            let Some(result) = self
+                .race(client.establish_sec2(SRP_USERNAME, &code, 1))
+                .await
+            else {
+                return false;
+            };
+            if result.is_err() {
+                if let Some(device) = self.device.take() {
+                    device.link.disconnect().await;
+                }
+                self.fail(error(
+                    CommissionErrorCode::CodeRejected,
+                    "The pairing code is no longer valid. Select the pod again.",
+                    None,
+                ));
+                return false;
+            }
+            let Some(response) = self
+                .race(client.call_json(POD_INFO_ENDPOINT, &json!({})))
+                .await
+            else {
+                return false;
+            };
+            let info = response.ok().and_then(|v| device::pod_info(&v));
+            let Some((info, device_info)) = info else {
+                if let Some(device) = self.device.take() {
+                    device.link.disconnect().await;
+                }
+                continue;
+            };
+            if info.device_id != expected.device_id
+                || info.identity != expected.identity
+                || info.env != core_api::RuntimeEnv::current().as_str()
+            {
+                if let Some(device) = self.device.take() {
+                    device.link.disconnect().await;
+                }
+                self.fail(error(
+                    CommissionErrorCode::DeviceMismatch,
+                    "The device identity changed during setup.",
+                    None,
+                ));
+                return false;
+            }
+            self.lan = true;
+            self.pod_info = Some(info);
+            self.update(|live| {
+                live.device = Some(device_info);
+                live.candidate.transport = DiscoveryTransport::Lan;
+                live.candidate.device_id = Some(expected.device_id.clone());
+                live.candidate.wifi_configured = true;
+            });
+            return true;
+        }
+        self.fail(error(
+            CommissionErrorCode::LanUnavailable,
+            "Wi-Fi is configured, but the pod could not be reached on this local network.",
+            None,
+        ));
+        false
     }
 
     async fn authorize(&mut self, scope_id: String, endpoints: CloudEndpoints) {
@@ -778,7 +1029,7 @@ impl Actor {
             Err(failure) => {
                 self.fail(error(
                     CommissionErrorCode::DeliveryFailed,
-                    "The pod did not confirm delivery. Reset it and start setup again.",
+                    "The pod did not confirm delivery. Select it on your local network to check its state and retry.",
                     Some(failure.to_string()),
                 ));
             }
@@ -786,9 +1037,14 @@ impl Actor {
     }
 
     fn deadline(&self) -> i64 {
-        self.credential.as_ref().map_or(0, |credential| {
-            credential.activate_before + ACTIVATION_GRACE_MS
-        })
+        self.credential.as_ref().map_or_else(
+            || {
+                self.engine
+                    .mutate(self.kind, &self.id, |live| live.expires_at_ms)
+                    .unwrap_or(0)
+            },
+            |credential| credential.activate_before + ACTIVATION_GRACE_MS,
+        )
     }
 
     async fn activate(&mut self, client: Arc<device::Client>) {
@@ -835,16 +1091,13 @@ impl Actor {
     }
 
     async fn complete_pod(&mut self) {
-        let Some(pod_id) = self
+        let pod_id = self
             .credential
             .as_ref()
-            .map(|credential| credential.pod_id.clone())
-        else {
-            return;
-        };
+            .map(|credential| credential.pod_id.clone());
         let completed = self.update(|live| {
             live.set(Phase::Completed, None);
-            live.pod_id = Some(pod_id);
+            live.pod_id = pod_id;
         });
         if !completed {
             return;
@@ -856,9 +1109,19 @@ impl Actor {
 
     async fn cleanup(&mut self) {
         if let Some(device) = self.device.take() {
+            if self.lan && device.client.is_secured().await {
+                let _ = tokio::time::timeout(
+                    Duration::from_secs(2),
+                    device
+                        .client
+                        .call_json(POD_CREDENTIAL_ENDPOINT, &json!({"op":"close"})),
+                )
+                .await;
+            }
             device.link.disconnect().await;
         }
         self.engine.release(self.kind, &self.id);
         self.credential = None;
+        self.pairing_code = None;
     }
 }

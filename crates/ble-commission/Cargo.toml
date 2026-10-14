@@ -1,11 +1,11 @@
 [package]
 name = "mhome-ble-commission"
-version = "0.3.15"
+version = "0.4.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "Platform-neutral BLE discovery, pod commissioning and Host provisioning for MeowLink native Clients"
+description = "Platform-neutral BLE/LAN discovery, pod commissioning and Host provisioning for MeowLink native Clients"
 readme = "README.md"
 publish = ["crates-io"]
 include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
@@ -14,17 +14,19 @@ include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
 name = "ble_commission"
 
 [dependencies]
-app-facade-api = { package = "mhome-app-facade-api", version = "=1.40.1", path = "../app-facade-api" }
+app-facade-api = { package = "mhome-app-facade-api", version = "=1.41.0", path = "../app-facade-api" }
 async-trait = "0.1"
 core-api = { package = "mhome-core-api", version = "=1.37.2", path = "../core-api" }
-protocomm = { package = "mhome-protocomm", version = "=0.1.0", path = "../protocomm" }
+protocomm = { package = "mhome-protocomm", version = "=0.2.0", path = "../protocomm" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2"
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "sync", "time"] }
 tracing = "0.1"
+reqwest = { version = "0.12", default-features = false }
+zeroize = "1"
 uuid = { version = "1.11", features = ["v4"] }
 
 [dev-dependencies]
 prost = "0.13"
-tokio = { version = "1", features = ["macros", "rt", "sync", "test-util", "time"] }
+tokio = { version = "1", features = ["macros", "rt", "sync", "test-util", "time", "io-util", "net"] }

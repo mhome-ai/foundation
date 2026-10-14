@@ -89,6 +89,15 @@ pub const POD_MODE_REPROVISION: &str = "reprovision";
 pub const NOT_ACTIVATED_DETAIL: &str = "not_activated";
 pub const POD_INFO_ENDPOINT: &str = "pod-info";
 pub const POD_CREDENTIAL_ENDPOINT: &str = "pod-credential";
+/// DNS-SD service for uninitialized Pods, on either Ethernet or Wi-Fi.
+pub const POD_INIT_SERVICE: &str = "_meow-pod-init._tcp.local.";
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum DiscoveryTransport {
+    Ble,
+    Lan,
+}
 /// Characteristic UUIDs used when a device exposes no `0x2901` descriptor: the
 /// service UUID with bytes 2..4 replaced by this value. Custom endpoints take
 /// the values after `proto-ver` in contract order.
@@ -220,6 +229,10 @@ impl DeviceKind {
 pub struct PodCandidate {
     pub candidate_id: String,
     pub kind: DeviceKind,
+    pub transport: DiscoveryTransport,
+    /// Discovery metadata only; verify again inside the authenticated channel.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_id: Option<String>,
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub model: Option<String>,
@@ -235,6 +248,9 @@ pub struct PodCandidate {
 pub struct DiscoverySnapshot {
     pub revision: u64,
     pub scanning: bool,
+    pub lan_browsing: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lan_error: Option<String>,
     pub adapter: AdapterStatus,
     pub candidates: Vec<PodCandidate>,
 }
@@ -283,6 +299,8 @@ pub enum CommissionState {
     ReadingInfo,
     AwaitingWifi,
     JoiningWifi,
+    DiscoveringLan,
+    ConnectingLan,
     AwaitingAuthorization,
     Issuing,
     Delivering,
@@ -309,6 +327,8 @@ pub enum CommissionErrorCode {
     WifiAuthFailed,
     WifiNotFound,
     WifiFailed,
+    LanUnavailable,
+    DeviceMismatch,
     IssueFailed,
     DeliveryFailed,
     ActivationFailed,
@@ -510,6 +530,9 @@ pub struct PodIdentity {
 #[serde(rename_all = "camelCase")]
 pub struct PodInfo {
     pub protocol: u32,
+    pub env: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pod_id: Option<String>,
     pub device_id: String,
     pub model: String,
     #[serde(default)]

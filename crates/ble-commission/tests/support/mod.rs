@@ -13,7 +13,7 @@ use app_facade_api::pod::{
 use async_trait::async_trait;
 use ble_commission::{
     Account, Advertisement, Central, Cloud, CloudEndpoints, CloudError, CloudResponse,
-    Commissioning, EventSink, Link, LinkError, Platform, Radio,
+    Commissioning, EventSink, LanAdvertisement, LanDiscovery, Link, LinkError, Platform, Radio,
 };
 use core_api::ErrorResponse;
 use prost::Message;
@@ -74,6 +74,7 @@ pub struct Script {
     pub kept_wifi_connecting_polls: u32,
     pub join: Join,
     pub join_connecting_polls: u32,
+    pub wifi_save_pending_polls: u32,
     pub activation: Activation,
     pub deliver_ok: bool,
     /// Drops the link right after handling this op (`deliver`, `status`...).
@@ -85,6 +86,9 @@ pub struct Script {
     /// Inside a Wi-Fi change window, with the pod code saving the new network
     /// reports (`None` saves it).
     pub reprovision: Option<Option<&'static str>>,
+    pub device_id: &'static str,
+    pub env: &'static str,
+    pub initial_state: &'static str,
 }
 
 impl Script {
@@ -97,6 +101,7 @@ impl Script {
             kept_wifi_connecting_polls: 0,
             join: Join::Connected("192.168.0.50"),
             join_connecting_polls: 2,
+            wifi_save_pending_polls: 0,
             activation: Activation::Commissioned { after_polls: 2 },
             deliver_ok: true,
             drop_after_op: None,
@@ -104,6 +109,9 @@ impl Script {
             claim_token: None,
             scan_page_cap: None,
             reprovision: None,
+            device_id: "a0b1c2d3e4f5",
+            env: "prod",
+            initial_state: "advertising",
         }
     }
 
@@ -132,6 +140,7 @@ struct DeviceState {
     configured: Option<(String, String)>,
     pod_state: &'static str,
     activation_polls: u32,
+    wifi_save_polls: u32,
     rejections: u32,
 }
 
@@ -159,8 +168,9 @@ impl FakeDevice {
                 responder: SessionResponder::new("meow", salt, verifier),
                 sta,
                 configured: None,
-                pod_state: "advertising",
+                pod_state: script.initial_state,
                 activation_polls: 0,
+                wifi_save_polls: 0,
                 rejections: 0,
             }),
             script: Mutex::new(script),
@@ -378,16 +388,29 @@ impl FakeDevice {
             .to_string();
         let script = self.script.lock().unwrap();
         note(&self.journal, format!("device:{endpoint}:{op}"));
+        let info_state = if endpoint == "pod-info" && state.pod_state == "wifi_connected" {
+            state.wifi_save_polls += 1;
+            if state.wifi_save_polls <= script.wifi_save_pending_polls {
+                "wifi_joining"
+            } else {
+                note(&self.journal, "device:wifi:saved");
+                state.pod_state
+            }
+        } else {
+            state.pod_state
+        };
         let response = match (endpoint, op.as_str()) {
             ("pod-info", _) => json!({
                 "protocol": 1,
-                "deviceId": "a0b1c2d3e4f5",
+                "env": script.env,
+                "deviceId": script.device_id,
+                "podId": if matches!(state.pod_state, "activating" | "commissioned") { Some("pod-1") } else { None },
                 "model": "S1",
                 "platform": "esp32c5",
                 "firmwareVersion": "0.3.0",
                 "identity": { "keyId": "p256:abc", "alg": "ES256", "x": "x", "y": "y", "fingerprint": "f" },
                 "wifiConfigured": script.wifi_configured && script.reprovision.is_none(),
-                "state": "secured",
+                "state": info_state,
                 "mode": script.reprovision.map(|_| "reprovision"),
             }),
             ("pod-credential", "deliver") => {
@@ -554,6 +577,58 @@ impl Central for FakeCentral {
         device.connected.store(true, Ordering::SeqCst);
         device.connects.fetch_add(1, Ordering::SeqCst);
         Ok(Arc::new(DeviceLink(device)))
+    }
+}
+
+pub struct FakeLan {
+    pub central: Arc<FakeCentral>,
+    pub core: Mutex<Option<std::sync::Weak<Commissioning>>>,
+    pub enabled: AtomicBool,
+}
+impl FakeLan {
+    pub fn advertise(&self) {
+        if !self.enabled.load(Ordering::SeqCst) {
+            return;
+        }
+        if let Some(core) = self.core.lock().unwrap().as_ref().and_then(|c| c.upgrade()) {
+            for (id, device) in self.central.devices.lock().unwrap().iter() {
+                if device.script.lock().unwrap().kind == DeviceKind::Pod {
+                    core.on_lan_advertisement(lan_advertisement(id));
+                }
+            }
+        }
+    }
+}
+pub fn lan_advertisement(id: &str) -> LanAdvertisement {
+    LanAdvertisement {
+        service_id: id.into(),
+        device_id: "a0b1c2d3e4f5".into(),
+        name: "Meow Pod".into(),
+        model: "S1".into(),
+        env: core_api::RuntimeEnv::current().as_str().into(),
+        protocol: 1,
+        addresses: vec!["192.168.0.50:8080".parse().unwrap()],
+    }
+}
+#[async_trait]
+impl LanDiscovery for FakeLan {
+    async fn set_browsing(&self, browsing: bool) -> Result<(), String> {
+        if browsing {
+            self.advertise();
+        }
+        Ok(())
+    }
+    async fn connect(&self, _: std::net::SocketAddr) -> Result<Arc<dyn Link>, LinkError> {
+        let id = self
+            .central
+            .devices
+            .lock()
+            .unwrap()
+            .iter()
+            .find(|(_, d)| d.script.lock().unwrap().kind == DeviceKind::Pod)
+            .map(|(id, _)| id.clone())
+            .ok_or(LinkError::NotFound("no pod".into()))?;
+        self.central.connect(&id, DeviceKind::Pod).await
     }
 }
 
@@ -750,7 +825,8 @@ impl EventSink for FakeSink {
 }
 
 pub struct Harness {
-    pub core: Commissioning,
+    pub core: Arc<Commissioning>,
+    pub lan: Arc<FakeLan>,
     pub radio: Arc<FakeRadio>,
     pub central: Arc<FakeCentral>,
     pub cloud: Arc<FakeCloud>,
@@ -772,16 +848,27 @@ impl Harness {
         let central = Arc::new(FakeCentral::default());
         let cloud = Arc::new(FakeCloud::new(journal.clone()));
         let sink = Arc::new(FakeSink::new(journal.clone()));
+        let lan = Arc::new(FakeLan {
+            central: central.clone(),
+            core: Mutex::new(None),
+            enabled: AtomicBool::new(true),
+        });
         let platform = Platform {
+            lan: lan.clone(),
             radio: radio.clone(),
             central: central.clone(),
             cloud: cloud.clone(),
             events: sink.clone(),
         };
-        let core = Commissioning::new(platform, tokio::runtime::Handle::current());
+        let core = Arc::new(Commissioning::new(
+            platform,
+            tokio::runtime::Handle::current(),
+        ));
+        *lan.core.lock().unwrap() = Some(Arc::downgrade(&core));
         core.on_adapter_state(ready());
         Self {
             core,
+            lan,
             radio,
             central,
             cloud,

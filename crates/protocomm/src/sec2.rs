@@ -28,13 +28,10 @@ pub fn new_device_nonce() -> [u8; 12] {
     nonce
 }
 
-/// From patch version 1 on each side advances the nonce counter after every
-/// encrypt and decrypt; patch 0 keeps the nonce fixed. A failed decrypt does
-/// not advance it.
+/// Every record advances the nonce counter. Fixed-nonce patch 0 is forbidden.
 pub struct Sec2Cipher {
     cipher: Aes256Gcm,
     nonce: [u8; 12],
-    counter: bool,
 }
 
 impl Sec2Cipher {
@@ -43,22 +40,17 @@ impl Sec2Cipher {
         device_nonce: &[u8],
         patch_version: u32,
     ) -> Result<Self, CipherError> {
-        if patch_version > MAX_PATCH_VERSION {
+        if patch_version != MAX_PATCH_VERSION {
             return Err(CipherError::UnsupportedPatch(patch_version));
         }
         let nonce: [u8; 12] = device_nonce
             .try_into()
             .map_err(|_| CipherError::InvalidNonce)?;
-        let counter = patch_version >= 1;
-        if counter && nonce[8..] == [0, 0, 0, 0] {
+        if nonce[8..] == [0, 0, 0, 0] {
             return Err(CipherError::InvalidNonce);
         }
         let cipher = Aes256Gcm::new_from_slice(&session_key[..32]).expect("32-byte AES key");
-        Ok(Self {
-            cipher,
-            nonce,
-            counter,
-        })
+        Ok(Self { cipher, nonce })
     }
 
     pub fn encrypt(&mut self, plaintext: &[u8]) -> Result<Vec<u8>, CipherError> {
@@ -87,17 +79,15 @@ impl Sec2Cipher {
 
     /// The counter wraps to 0 after `u32::MAX`, which ESP-IDF treats as invalid.
     fn check_counter(&self) -> Result<(), CipherError> {
-        if self.counter && self.counter_value() == 0 {
+        if self.counter_value() == 0 {
             return Err(CipherError::Exhausted);
         }
         Ok(())
     }
 
     fn advance(&mut self) {
-        if self.counter {
-            let next = self.counter_value().wrapping_add(1);
-            self.nonce[8..].copy_from_slice(&next.to_be_bytes());
-        }
+        let next = self.counter_value().wrapping_add(1);
+        self.nonce[8..].copy_from_slice(&next.to_be_bytes());
     }
 }
 
@@ -117,9 +107,10 @@ mod tests {
         assert_eq!(client.decrypt(&response).unwrap(), b"{}");
         assert!(client.encrypt(b"last").is_ok());
         assert_eq!(client.encrypt(b"x").err(), Some(CipherError::Exhausted));
-        let mut fixed = Sec2Cipher::new(&key, &nonce, 0).unwrap();
-        let first = fixed.encrypt(b"same").unwrap();
-        assert_eq!(fixed.encrypt(b"same").unwrap(), first);
+        assert!(matches!(
+            Sec2Cipher::new(&key, &nonce, 0),
+            Err(CipherError::UnsupportedPatch(0))
+        ));
     }
 
     #[test]
@@ -146,7 +137,10 @@ mod tests {
             Sec2Cipher::new(&key, &[0u8; 12], 1).err(),
             Some(CipherError::InvalidNonce)
         );
-        assert!(Sec2Cipher::new(&key, &[0u8; 12], 0).is_ok());
+        assert!(matches!(
+            Sec2Cipher::new(&key, &[0u8; 12], 0),
+            Err(CipherError::UnsupportedPatch(0))
+        ));
         assert_eq!(
             Sec2Cipher::new(&key, &new_device_nonce(), 2).err(),
             Some(CipherError::UnsupportedPatch(2))

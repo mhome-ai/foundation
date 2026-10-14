@@ -1192,7 +1192,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.40.1"
+version = "1.41.0"
 dependencies = [
  "jsonschema",
  "mhome-artifact-api",
@@ -1215,19 +1215,21 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.3.15"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "mhome-app-facade-api",
  "mhome-core-api",
  "mhome-protocomm",
  "prost",
+ "reqwest",
  "serde",
  "serde_json",
  "thiserror 2.0.20",
  "tokio",
  "tracing",
  "uuid",
+ "zeroize",
 ]
 
 [[package]]
@@ -1348,7 +1350,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-protocomm"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "aes-gcm",
  "async-trait",

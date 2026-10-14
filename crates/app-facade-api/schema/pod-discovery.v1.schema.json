@@ -1,13 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.mhome.ai/app-facade/pod-discovery.v1.schema.json",
-  "title": "Native-client BLE discovery snapshot (pods and Hosts)",
+  "title": "Native-client BLE and LAN discovery snapshot (pods and Hosts)",
   "type": "object",
   "additionalProperties": false,
-  "required": ["revision", "scanning", "adapter", "candidates"],
+  "required": ["revision", "scanning", "lanBrowsing", "adapter", "candidates"],
   "properties": {
     "revision": { "type": "integer", "minimum": 0 },
     "scanning": { "type": "boolean" },
+    "lanBrowsing": { "type": "boolean" },
+    "lanError": { "type": "string" },
     "adapter": { "$ref": "#/$defs/adapter" },
     "candidates": { "type": "array", "items": { "$ref": "#/$defs/candidate" } }
   },
@@ -27,6 +29,7 @@
       "required": [
         "candidateId",
         "kind",
+        "transport",
         "name",
         "shortId",
         "rssi",
@@ -37,9 +40,11 @@
       "properties": {
         "candidateId": { "type": "string", "minLength": 1 },
         "kind": { "enum": ["pod", "host"] },
+        "transport": { "enum": ["ble", "lan"] },
+        "deviceId": { "type": "string", "minLength": 1, "maxLength": 64 },
         "name": { "type": "string", "minLength": 1 },
         "model": { "type": "string" },
-        "shortId": { "type": "string", "pattern": "^[0-9A-F]{8}$" },
+        "shortId": { "type": "string", "minLength": 1, "maxLength": 64 },
         "rssi": { "type": "integer" },
         "commissionable": { "type": "boolean" },
         "wifiConfigured": { "type": "boolean" },

@@ -5,8 +5,8 @@ use app_facade_api::host_provision::{self as host, ProvisionStatus};
 use app_facade_api::pod::{
     self, AdapterState, BluetoothSettingsResponse, CommissionAuthorizeRequest,
     CommissionCodeRequest, CommissionSessionRequest, CommissionStartRequest, CommissionStatus,
-    CommissionWifiRequest, DeviceKind, DiscoveryLease, EmptyRequest, LeaseRequest,
-    RequestErrorReason, DISCOVERY_LEASE_MS, SESSION_LIFETIME_MS,
+    CommissionWifiRequest, DeviceKind, DiscoveryLease, DiscoveryTransport, EmptyRequest,
+    LeaseRequest, RequestErrorReason, DISCOVERY_LEASE_MS, SESSION_LIFETIME_MS,
 };
 use core_api::ErrorResponse;
 use serde::de::DeserializeOwned;
@@ -236,7 +236,9 @@ async fn start(
                     "this device is not accepting setup now",
                 ));
             }
-            if discovery.adapter.state != AdapterState::Ready {
+            if candidate.transport == DiscoveryTransport::Ble
+                && discovery.adapter.state != AdapterState::Ready
+            {
                 return Err(RequestError::rejected(
                     Reason::BluetoothUnavailable,
                     "Bluetooth is not ready",

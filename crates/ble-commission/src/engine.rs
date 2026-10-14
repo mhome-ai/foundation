@@ -13,7 +13,7 @@ use tokio::time::Instant;
 use tracing::warn;
 
 use crate::discovery::{Discovery, SCAN_RETRY_MS};
-use crate::platform::{Advertisement, Platform};
+use crate::platform::{Advertisement, LanAdvertisement, Platform};
 use crate::session::{error, Live, Phase};
 
 const TICK: Duration = Duration::from_secs(1);
@@ -140,6 +140,68 @@ impl Engine {
         if self.discovery.lock().unwrap().observe(advertisement, now) {
             self.discovery_changed();
         }
+    }
+
+    pub fn on_lan_advertisement(&self, advertisement: LanAdvertisement) {
+        if self
+            .discovery
+            .lock()
+            .unwrap()
+            .observe_lan(advertisement, self.now_ms())
+        {
+            self.discovery_changed();
+        }
+    }
+
+    pub fn on_lan_removed(&self, service_id: &str) {
+        if self.discovery.lock().unwrap().remove_lan(service_id) {
+            self.discovery_changed();
+        }
+    }
+
+    pub fn on_lan_error(&self, message: String) {
+        let mut d = self.discovery.lock().unwrap();
+        d.lan_browsing = false;
+        d.lan_refused_at = Some(self.now_ms());
+        d.lan_error = Some(message);
+        d.clear_lan();
+        drop(d);
+        self.discovery_changed();
+    }
+
+    async fn reconcile_lan(&self) {
+        let now = self.now_ms();
+        let active = self
+            .sessions
+            .lock()
+            .unwrap()
+            .pod
+            .as_ref()
+            .is_some_and(|s| !s.phase.is_terminal());
+        let want = {
+            let mut d = self.discovery.lock().unwrap();
+            let want = d.has_live_lease(now) || active;
+            if want == d.lan_browsing
+                || (want && d.lan_refused_at.is_some_and(|at| now - at < SCAN_RETRY_MS))
+            {
+                return;
+            }
+            // Set before invoking the platform: its asynchronous error callback
+            // may arrive before set_browsing returns.
+            d.lan_browsing = want;
+            d.lan_error = None;
+            d.lan_refused_at = None;
+            if !want {
+                d.clear_lan();
+            } else {
+                d.revision += 1;
+            }
+            want
+        };
+        if let Err(message) = self.platform.lan.set_browsing(want).await {
+            self.on_lan_error(message);
+        }
+        self.discovery_changed();
     }
 
     /// Applies `change` to the session while it is current and not terminal,
@@ -337,7 +399,7 @@ async fn publish_discovery(engine: Arc<Engine>) {
 
 async fn reconcile_scanning(engine: Arc<Engine>) {
     loop {
-        engine.reconcile_once().await;
+        tokio::join!(engine.reconcile_once(), engine.reconcile_lan());
         tokio::select! {
             _ = engine.reconcile.notified() => {}
             _ = tokio::time::sleep(TICK) => {}

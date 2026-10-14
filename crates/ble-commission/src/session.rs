@@ -18,6 +18,8 @@ pub(crate) enum Phase {
     ReadingInfo,
     AwaitingWifi,
     JoiningWifi,
+    DiscoveringLan,
+    ConnectingLan,
     AwaitingAuthorization,
     Issuing,
     Delivering,
@@ -48,6 +50,8 @@ impl Phase {
             Self::ReadingInfo => CommissionState::ReadingInfo,
             Self::AwaitingWifi => CommissionState::AwaitingWifi,
             Self::JoiningWifi => CommissionState::JoiningWifi,
+            Self::DiscoveringLan => CommissionState::DiscoveringLan,
+            Self::ConnectingLan => CommissionState::ConnectingLan,
             Self::AwaitingAuthorization => CommissionState::AwaitingAuthorization,
             Self::Issuing => CommissionState::Issuing,
             Self::Delivering => CommissionState::Delivering,
@@ -69,7 +73,12 @@ impl Phase {
             Self::Completed => ProvisionState::Completed,
             Self::Failed => ProvisionState::Failed,
             Self::TimedOut => ProvisionState::TimedOut,
-            Self::AwaitingAuthorization | Self::Issuing | Self::Delivering | Self::Activating => {
+            Self::DiscoveringLan
+            | Self::ConnectingLan
+            | Self::AwaitingAuthorization
+            | Self::Issuing
+            | Self::Delivering
+            | Self::Activating => {
                 unreachable!("Host sessions have no credential phases")
             }
         }

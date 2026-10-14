@@ -160,3 +160,37 @@ async fn bluetooth_settings_are_opened_by_the_platform() {
     let opened = harness.ok("/local/pod/bluetooth/settings", json!({})).await;
     assert_eq!(opened, json!({ "opened": true }));
 }
+
+#[tokio::test(start_paused = true)]
+async fn lan_discovery_is_independent_and_reports_native_failures() {
+    let h = Harness::new();
+    h.core.on_adapter_state(AdapterStatus {
+        state: AdapterState::PoweredOff,
+        message: None,
+    });
+    let id = lease(&h).await;
+    settle().await;
+    h.core
+        .on_lan_advertisement(support::lan_advertisement("lan-pod"));
+    let list = h.ok("/local/pod/discovery/list", json!({})).await;
+    assert_eq!(list["lanBrowsing"], true);
+    assert_eq!(list["scanning"], false);
+    assert_eq!(list["candidates"][0]["transport"], "lan");
+    let mut wrong = support::lan_advertisement("wrong-env");
+    wrong.env = "e2e".into();
+    h.core.on_lan_advertisement(wrong);
+    assert_eq!(
+        h.ok("/local/pod/discovery/list", json!({})).await["candidates"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    h.core.on_lan_error("network access refused".into());
+    let list = h.ok("/local/pod/discovery/list", json!({})).await;
+    assert_eq!(list["lanBrowsing"], false);
+    assert_eq!(list["lanError"], "network access refused");
+    assert_eq!(list["candidates"], json!([]));
+    h.ok("/local/pod/discovery/stop", json!({"leaseId":id}))
+        .await;
+}

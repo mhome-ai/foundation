@@ -52,6 +52,41 @@ pub trait Central: Send + Sync + 'static {
     ) -> Result<Arc<dyn Link>, LinkError>;
 }
 
+/// Browses the Pod initialization service on the Client's own LAN. Implementations
+/// report resolved/removed services through Commissioning, never through a Core.
+#[async_trait]
+pub trait LanDiscovery: Send + Sync + 'static {
+    async fn set_browsing(&self, browsing: bool) -> Result<(), String>;
+    async fn connect(&self, address: std::net::SocketAddr) -> Result<Arc<dyn Link>, LinkError> {
+        crate::lan::HttpLink::new(address)
+    }
+}
+
+pub trait BlockingLanDiscovery: Send + Sync + 'static {
+    fn set_browsing(&self, browsing: bool) -> Result<(), String>;
+}
+
+#[async_trait]
+impl<T: BlockingLanDiscovery + ?Sized> LanDiscovery for Blocking<T> {
+    async fn set_browsing(&self, browsing: bool) -> Result<(), String> {
+        off_runtime(&self.0, move |lan| lan.set_browsing(browsing))
+            .await
+            .unwrap_or_else(|| Err("local discovery stopped".into()))
+    }
+}
+
+/// All fields are untrusted until the pairing handshake authenticates the Pod.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LanAdvertisement {
+    pub service_id: String,
+    pub device_id: String,
+    pub name: String,
+    pub model: String,
+    pub env: String,
+    pub protocol: u32,
+    pub addresses: Vec<std::net::SocketAddr>,
+}
+
 /// One connected device. Exchanges are a write with response followed by a
 /// read on the endpoint's characteristic; the core never overlaps them.
 #[async_trait]
@@ -297,6 +332,7 @@ impl<T: BlockingCloud + ?Sized> Cloud for Blocking<T> {
 #[derive(Clone)]
 pub struct Platform {
     pub radio: Arc<dyn Radio>,
+    pub lan: Arc<dyn LanDiscovery>,
     pub central: Arc<dyn Central>,
     pub cloud: Arc<dyn Cloud>,
     pub events: Arc<dyn EventSink>,
@@ -306,12 +342,14 @@ impl Platform {
     /// For foreign implementations whose methods block.
     pub fn blocking(
         radio: Arc<dyn BlockingRadio>,
+        lan: Arc<dyn BlockingLanDiscovery>,
         central: Arc<dyn BlockingCentral>,
         cloud: Arc<dyn BlockingCloud>,
         events: Arc<dyn EventSink>,
     ) -> Self {
         Self {
             radio: Arc::new(Blocking(radio)),
+            lan: Arc::new(Blocking(lan)),
             central: Arc::new(Blocking(central)),
             cloud: Arc::new(Blocking(cloud)),
             events,

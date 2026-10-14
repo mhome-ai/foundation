@@ -12,6 +12,7 @@ mod discovery;
 mod endpoints;
 mod engine;
 mod facade;
+mod lan;
 mod platform;
 mod session;
 
@@ -26,9 +27,9 @@ pub use cloud::is_loopback_url;
 pub use endpoints::{endpoint_uuid, fallback_endpoint_uuids};
 pub use facade::{is_target, RequestError};
 pub use platform::{
-    Account, Advertisement, Blocking, BlockingCentral, BlockingCloud, BlockingLink, BlockingRadio,
-    Central, Cloud, CloudEndpoints, CloudError, CloudResponse, EventSink, Link, LinkError,
-    Platform, Radio,
+    Account, Advertisement, Blocking, BlockingCentral, BlockingCloud, BlockingLanDiscovery,
+    BlockingLink, BlockingRadio, Central, Cloud, CloudEndpoints, CloudError, CloudResponse,
+    EventSink, LanAdvertisement, LanDiscovery, Link, LinkError, Platform, Radio,
 };
 
 /// The commissioning core. Dropping it stops discovery; a running session
@@ -92,6 +93,19 @@ impl Commissioning {
     /// Every advertisement seen while scanning; others are ignored.
     pub fn on_advertisement(&self, advertisement: Advertisement) {
         self.engine.on_advertisement(&advertisement);
+    }
+
+    pub fn on_lan_advertisement(&self, advertisement: LanAdvertisement) {
+        self.engine.on_lan_advertisement(advertisement);
+    }
+
+    /// The native browser stopped or local-network access was refused.
+    pub fn on_lan_error(&self, message: String) {
+        self.engine.on_lan_error(message);
+    }
+
+    pub fn on_lan_removed(&self, service_id: &str) {
+        self.engine.on_lan_removed(service_id);
     }
 }
 
