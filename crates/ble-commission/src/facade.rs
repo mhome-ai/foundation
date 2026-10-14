@@ -391,6 +391,7 @@ async fn authorize(
 ) -> Result<Value, RequestError> {
     let endpoints = engine.platform.cloud.cloud_endpoints().await;
     let scope_id = request.scope_id;
+    let client_mode = request.client_mode;
     self::request(engine, DeviceKind::Pod, &request.session_id, |live| {
         if live.phase != Phase::AwaitingAuthorization {
             return Err(wrong_state(live));
@@ -398,17 +399,21 @@ async fn authorize(
         if live.busy {
             return Err(busy());
         }
-        let offered = live
-            .authorization
-            .as_ref()
-            .is_some_and(|prompt| prompt.scopes.iter().any(|scope| scope.scope_id == scope_id));
+        let offered = live.authorization.as_ref().is_some_and(|prompt| {
+            prompt.scopes.iter().any(|scope| {
+                scope.scope_id == scope_id
+                    && (client_mode == app_facade_api::pod::ClientMode::User || scope.local)
+            })
+        });
         if !offered {
             return Err(RequestError::rejected(
                 Reason::ScopeNotOffered,
                 "choose one of the offered Spaces",
             ));
         }
-        if is_loopback_url(&endpoints.api) || is_loopback_url(&endpoints.ws) {
+        if client_mode == app_facade_api::pod::ClientMode::User
+            && (is_loopback_url(&endpoints.api) || is_loopback_url(&endpoints.ws))
+        {
             return Err(RequestError::rejected(
                 Reason::CloudUnreachableForDevice,
                 "The pod can't reach this MeowLink cloud address. Use an address on your network.",
@@ -419,6 +424,7 @@ async fn authorize(
         live.revision += 1;
         Ok(Some(Op::Authorize {
             scope_id,
+            client_mode,
             endpoints,
         }))
     })

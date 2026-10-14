@@ -5,8 +5,9 @@ use app_facade_api::pod::{
     BLE_SERVICE_UUID, CANDIDATE_TTL_MS, CODE_ATTEMPTS, CREDENTIAL_ISSUE_PATH,
     CREDENTIAL_REFUSAL_REASONS, CREDENTIAL_STATUS_PATH, CREDENTIAL_STATUS_POLL_MS,
     CUSTOM_ENDPOINT_MAX_BYTES, DISCOVERY_EVENT_INTERVAL_MS, DISCOVERY_LEASE_MS, EVENT_TARGETS,
-    LOCAL_TARGETS, NOT_ACTIVATED_DETAIL, POD_ENDPOINT_UUIDS, POD_MODE_REPROVISION,
-    SECURITY_VERSION, SESSION_LIFETIME_MS, SRP_USERNAME, STANDARD_ENDPOINT_UUIDS,
+    LAN_CREDENTIAL_MAX_BYTES, LOCAL_TARGETS, NOT_ACTIVATED_DETAIL, POD_ENDPOINT_UUIDS,
+    POD_MODE_REPROVISION, SECURITY_VERSION, SESSION_LIFETIME_MS, SPACE_CREDENTIAL_ISSUE_PATH,
+    SRP_USERNAME, STANDARD_ENDPOINT_UUIDS,
 };
 use serde_json::Value;
 
@@ -56,6 +57,11 @@ fn manifest_matches_the_rust_contract() {
     assert_eq!(session["credentialStatusPollMs"], CREDENTIAL_STATUS_POLL_MS);
     assert_eq!(manifest["cloud"]["issue"], CREDENTIAL_ISSUE_PATH);
     assert_eq!(manifest["cloud"]["status"], CREDENTIAL_STATUS_PATH);
+    assert_eq!(manifest["cloud"]["spaceIssue"], SPACE_CREDENTIAL_ISSUE_PATH);
+    assert_eq!(
+        manifest["lan"]["credentialMaxBytes"],
+        LAN_CREDENTIAL_MAX_BYTES
+    );
     assert!(manifest["cloud"].get("revoke").is_none());
     assert_eq!(
         strings(&manifest["activationErrorCodes"]),

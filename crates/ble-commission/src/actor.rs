@@ -7,9 +7,10 @@ use std::time::Duration;
 
 use app_facade_api::host_provision::{is_claim_token, HostFinishResponse, HOST_INFO_ENDPOINT};
 use app_facade_api::pod::{
-    AuthorizationPrompt, CommissionError, CommissionErrorCode, CredentialIssueRequest, DeviceKind,
-    DiscoveryTransport, PodInfo, SessionMode, ACTIVATION_GRACE_MS, CODE_ATTEMPTS,
-    NOT_ACTIVATED_DETAIL, POD_CREDENTIAL_ENDPOINT, POD_INFO_ENDPOINT, SRP_USERNAME,
+    AuthorizationPrompt, ClientMode, CommissionError, CommissionErrorCode, CredentialIssueRequest,
+    DeviceKind, DiscoveryTransport, PodInfo, SessionMode, SpaceCredentialIssueResponse,
+    ACTIVATION_GRACE_MS, CODE_ATTEMPTS, NOT_ACTIVATED_DETAIL, POD_CREDENTIAL_ENDPOINT,
+    POD_INFO_ENDPOINT, SPACE_CREDENTIAL_ISSUE_PATH, SRP_USERNAME,
 };
 use protocomm::{ProtocommError, WifiFailure, WifiStatus};
 use serde_json::{json, Value};
@@ -307,8 +308,9 @@ impl Actor {
             Op::Scan { join: false } => self.scan().await,
             Op::Authorize {
                 scope_id,
+                client_mode,
                 endpoints,
-            } => self.authorize(scope_id, endpoints).await,
+            } => self.authorize(scope_id, client_mode, endpoints).await,
         }
     }
 
@@ -947,7 +949,12 @@ impl Actor {
         false
     }
 
-    async fn authorize(&mut self, scope_id: String, endpoints: CloudEndpoints) {
+    async fn authorize(
+        &mut self,
+        scope_id: String,
+        client_mode: ClientMode,
+        endpoints: CloudEndpoints,
+    ) {
         let cloud = self.engine.platform.cloud.clone();
         let issue_failed = |detail: Option<String>| {
             error(
@@ -994,15 +1001,60 @@ impl Actor {
             identity: info.identity,
             client_id: cloud.client_id().await,
         };
-        let issued = match cloud::issue(&cloud, &account.context, &scope_id, &request).await {
-            Ok(issued) => issued,
-            Err(failure) => return self.fail(issue_failed(Some(failure.to_string()))),
+        let (credential, deliver) = match client_mode {
+            ClientMode::User => {
+                let issued = match cloud::issue(&cloud, &account.context, &scope_id, &request).await
+                {
+                    Ok(issued) => issued,
+                    Err(failure) => return self.fail(issue_failed(Some(failure.to_string()))),
+                };
+                let deliver = json!({"op":"deliver", "clientMode":"user", "podId":issued.pod_id,
+                    "refreshToken":issued.refresh_token, "scopeId":scope_id, "cloudApi":endpoints.api, "cloudWs":endpoints.ws});
+                (
+                    Credential {
+                        pod_id: issued.pod_id,
+                        activate_before: issued.activate_before,
+                    },
+                    deliver,
+                )
+            }
+            ClientMode::Space => {
+                if !account
+                    .scopes
+                    .iter()
+                    .any(|scope| scope.scope_id == scope_id && scope.local)
+                {
+                    return self.fail(issue_failed(Some("Choose a local Space".into())));
+                }
+                let issued: SpaceCredentialIssueResponse = match cloud::post(
+                    &cloud,
+                    &account.context,
+                    SPACE_CREDENTIAL_ISSUE_PATH,
+                    Some(&scope_id),
+                    &request,
+                )
+                .await
+                {
+                    Ok(issued) => issued,
+                    Err(failure) => return self.fail(issue_failed(Some(failure.to_string()))),
+                };
+                if issued.hub_identity.scope_id != scope_id {
+                    return self.fail(issue_failed(Some("Space binding mismatch".into())));
+                }
+                let deliver = json!({"op":"deliver", "clientMode":"space", "credentialId":issued.credential_id,
+                    "appClientId":issued.app_client_id, "jwtToken":issued.jwt_token, "scopeId":scope_id,
+                    "tenantId":issued.hub_identity.tenant_id, "hubIdentity":issued.hub_identity});
+                (
+                    Credential {
+                        pod_id: issued.credential_id,
+                        activate_before: issued.activate_before,
+                    },
+                    deliver,
+                )
+            }
         };
-        self.credential = Some(Credential {
-            pod_id: issued.pod_id.clone(),
-            activate_before: issued.activate_before,
-        });
-        let deadline = issued.activate_before + ACTIVATION_GRACE_MS;
+        let deadline = credential.activate_before + ACTIVATION_GRACE_MS;
+        self.credential = Some(credential);
         if !self.update(|live| {
             live.set(Phase::Delivering, None);
             live.expires_at_ms = deadline;
@@ -1010,14 +1062,6 @@ impl Actor {
             return;
         }
         self.ack();
-        let deliver = json!({
-            "op": "deliver",
-            "podId": issued.pod_id,
-            "refreshToken": issued.refresh_token,
-            "scopeId": scope_id,
-            "cloudApi": endpoints.api,
-            "cloudWs": endpoints.ws,
-        });
         match client.call_json(POD_CREDENTIAL_ENDPOINT, &deliver).await {
             Ok(response) if response.get("ok").and_then(Value::as_bool) == Some(true) => {
                 if self.enter(Phase::Activating, None) {

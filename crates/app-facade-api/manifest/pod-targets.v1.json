@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.pod.targets.v1",
-  "contractVersion": "1.41.1",
+  "contractVersion": "1.42.0",
   "contract": "contract/pod-commissioning-v1.md",
   "localTargets": [
     "/local/pod/discovery/start",
@@ -67,11 +67,13 @@
   "cloud": {
     "issue": "pod/credential/issue",
     "status": "pod/credential/status",
-    "statusSchema": "schema/pod-credential-status.v1.schema.json"
+    "statusSchema": "schema/pod-credential-status.v1.schema.json",
+    "spaceIssue": "pod/space/credential/issue"
   },
   "activationErrorCodes": [
     "time_sync_failed",
     "cloud_unreachable",
+    "local_hub_unavailable",
     "refresh_rejected",
     "auth_rejected",
     "storage_failed"
@@ -96,5 +98,12 @@
     "scope_not_offered",
     "cloud_unreachable_for_device",
     "busy"
+  ],
+  "lan": {
+    "credentialMaxBytes": 8192
+  },
+  "clientModes": [
+    "user",
+    "space"
   ]
 }

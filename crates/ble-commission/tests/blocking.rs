@@ -171,7 +171,7 @@ fn a_blocking_platform_commissions_a_pod_on_its_own_runtime() {
     call(
         &core,
         "/local/pod/commission/authorize",
-        json!({ "sessionId": id, "scopeId": "scope-a" }),
+        json!({ "sessionId": id, "scopeId": "scope-a", "clientMode": "user" }),
     );
     let done = wait(&core, "completed");
     assert_eq!(done["podId"], "pod-1");

@@ -6,6 +6,7 @@ mod external_rpc;
 pub mod host;
 pub mod ingress;
 pub mod interaction_flow;
+pub mod local_client;
 pub mod messaging;
 pub mod node;
 mod node_commissioning;
@@ -877,7 +878,7 @@ pub struct NodeInstanceListResponse {
 pub struct AuthenticatedSession {
     pub tenant_id: String,
     pub scope_id: String,
-    pub user_id: String,
+    pub client: client_identity::AuthenticatedClient,
     pub is_test: bool,
 }
 
@@ -950,7 +951,7 @@ pub enum ServiceCoreInput {
         ws_id: String,
         tenant_id: String,
         scope_id: String,
-        user_id: String,
+        client: client_identity::AuthenticatedClient,
         is_test: bool,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         surface_id: Option<String>,
@@ -1183,7 +1184,10 @@ impl Default for ScopeInfo {
 pub struct AuthConfig {
     pub tenant_id: String,
     pub command_timeout: i32,
-    pub user_info: UserInfo,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_info: Option<UserInfo>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub client: Option<client_identity::AuthenticatedClient>,
     pub scope: ScopeInfo,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hub_id: Option<String>,
@@ -1201,7 +1205,8 @@ impl AuthConfig {
         Self {
             tenant_id,
             command_timeout,
-            user_info,
+            user_info: Some(user_info),
+            client: None,
             scope,
             hub_id: None,
             jwt_token: None,
@@ -1214,7 +1219,8 @@ impl Default for AuthConfig {
         Self {
             tenant_id: String::new(),
             command_timeout: 10,
-            user_info: UserInfo::new(String::new()),
+            user_info: None,
+            client: None,
             scope: ScopeInfo::default(),
             hub_id: None,
             jwt_token: None,

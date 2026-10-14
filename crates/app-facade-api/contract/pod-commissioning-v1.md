@@ -1,6 +1,6 @@
 # Pod commissioning v1
 
-A pod is a MeowLink end device that acts as an App client of one user. This
+A pod is a MeowLink end device that acts as a User Client or a Space Client. This
 contract is implementation-neutral: ESP-IDF on BLE-capable ESP32 chips is the
 first implementation, not a requirement. Commissioners are the native Clients:
 desktop/CLI Clientd, Android and iOS. The shared UI and CLI never talk BLE; they
@@ -9,8 +9,10 @@ call the `/local/pod/*` targets of their native Client.
 Network provisioning and activation are separate transactions. BLE provisions
 Wi-Fi; Ethernet and already-connected Wi-Fi skip it. Every initialization then
 uses a direct native Client ↔ Pod LAN security-2 session. No Core relay is used.
-The current credential API below is the existing personal Pod credential; this
-transport change does not implement the separately planned Space Client issuer.
+The commissioner explicitly chooses `clientMode: "user" | "space"` during
+`/local/pod/commission/authorize`. User mode uses the personal Pod credential.
+Space mode uses a local Core credential signed by Lion; it carries no user
+identity and has no cloud access/refresh token. Changing mode requires reset.
 
 ## 1. Device identity
 
@@ -128,7 +130,7 @@ the response also carries `"mode":"reprovision"` and `wifiConfigured` is false
 
 `pod-credential` requests:
 
-- `{"op":"deliver","podId","refreshToken","scopeId","cloudApi","cloudWs"}` →
+- `{"op":"deliver","clientMode":"user","podId","refreshToken","scopeId","cloudApi","cloudWs"}` →
   `{"ok":true,"state":"activating"}`. Accepted only in `wifi_connected` outside a
   Wi-Fi change window; otherwise `{"ok":false,"state":<current pod state>,"reason"}`
   with `reason` `invalid_payload` (a missing or malformed field, including a
@@ -149,7 +151,7 @@ the response also carries `"mode":"reprovision"` and `wifiConfigured` is false
   best-effort: the commissioner records `completed` before sending it.
 
 Activation error codes: `time_sync_failed`, `cloud_unreachable`,
-`refresh_rejected`, `auth_rejected`, `storage_failed` (the final commit, or in a
+`local_hub_unavailable`, `refresh_rejected`, `auth_rejected`, `storage_failed` (the final commit, or in a
 Wi-Fi change window saving the new network, failed).
 
 The Pod commits Wi-Fi immediately after a successful join, before any credential
@@ -472,3 +474,63 @@ without revoking credentials. Retry over LAN after an uncertain activation outco
 
 The schemas are `schema/pod-discovery.v1.schema.json` and
 `schema/pod-commission.v1.schema.json`.
+
+
+## 8. Space Client local credential
+
+`POST /api/v1/pod/space/credential/issue` uses the assisting App's user
+`Authorization` and `ScopeId`, with the same device identity request as personal
+issuance. Any current member may assist. The Space must be local and have one
+published Hub with business and Host TLS identities. Cloud Spaces must complete
+Hub setup first. The issuer creates a fresh `appClientId` (`a:<random id>`) and
+signs a local JWT using the existing Space signing key and local-client audience.
+
+Claims are `token_type: local_space_client_access`, `sub: <scopeId>`,
+`tenant_id`, `scope_id`, `hub_id`, `app_client_id`, `jti`, `iat`, `exp`, `is_test`.
+The expiry follows existing long-lived User local credentials. No `userId`,
+initializer identity, `podId` or `issuedScopeId` grants authority. User local
+credentials retain `local_client_access` and must not contain `app_client_id`.
+Personal Pod issuance no longer stores `issuedScopeId`.
+
+Lion sends `{jwtToken, clientSource:"pod"}` to the authenticated Hub Bridge
+`/hub/client/space/register`. Core verifies signature, audience, issuer, current
+Hub, environment, Space and canonical installation ID, and stores a pending
+credential. First authentication must occur within ten minutes of JWT issuance.
+The response is `{credentialId, status:"pending", activateBefore}`. Lion returns
+`{credentialId, appClientId, jwtToken, activateBefore, hubIdentity}` only after
+registration succeeds. The Hub identity includes its business P-256 key and
+Host TLS public key, bound to `tenantId`, `scopeId`, `hubId` and `hostId`.
+
+The secured LAN `pod-credential` delivery is:
+
+```json
+{"op":"deliver","clientMode":"space","credentialId":"…","appClientId":"a:…","jwtToken":"…","tenantId":"…","scopeId":"…","hubIdentity":{}}
+```
+
+The actual `hubIdentity` is the complete issuer response. User credential fields
+(`refreshToken`, cloud endpoints, `podId`) are rejected in this variant. Space
+credential fields are rejected in the User variant. LAN credential plaintext is
+bounded to 8192 bytes; BLE credential delivery remains disabled.
+
+The Pod discovers the matching runtime environment and Space's Hub, pins TLS,
+verifies the signed Hub proof, and authenticates with the local JWT and signed
+`appClientId`. Core atomically activates the pending credential after all binding
+checks. The Pod requires a Space principal for the same Space, installation and
+credential in the authenticated response, then durably saves the profile. Only
+then does LAN setup report completion. The LAN status field named `podId` is an
+enrollment correlation ID: for Space mode it carries `credentialId`, never the
+installation ID or acting principal.
+
+After activation, reconnects do not require Lion or renew a cloud session. The
+same Core verifies the JWT and local registration offline, with its cached Scope
+verification key. Failed activation preserves working Wi-Fi and leaves LAN
+commissioning available. Retry may require the pairing code again. Unused pending
+credentials cannot activate after the deadline. Factory reset deletes the local
+credential and identity key; no server-side revoke workflow is introduced.
+
+Core carries `AuthenticatedClient` through WS, dispatch, plugin admission,
+prepared actions, dialogs and presence. A Space Client can READ/WRITE its Space;
+MANAGE, personal resources and Host user administration are rejected. It joins
+the canonical Space-client conversation group, never an initializer's threads.
+The billing owner fallback is not an acting identity. Host management tokens are
+independent and are never issued by this flow.

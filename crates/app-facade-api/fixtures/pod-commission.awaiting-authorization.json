@@ -24,7 +24,13 @@
   "authorization": {
     "userId": "user-1",
     "userName": "Ada",
-    "scopes": [{ "scopeId": "scope-1", "name": "Home" }],
+    "scopes": [
+      {
+        "scopeId": "scope-1",
+        "name": "Home",
+        "local": true
+      }
+    ],
     "defaultScopeId": "scope-1"
   }
 }

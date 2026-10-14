@@ -148,6 +148,7 @@ struct DeviceState {
 
 pub struct FakeDevice {
     pub script: Mutex<Script>,
+    pub deliveries: Mutex<Vec<Value>>,
     state: Mutex<DeviceState>,
     pub connected: AtomicBool,
     pub locked: AtomicBool,
@@ -176,6 +177,7 @@ impl FakeDevice {
                 rejections: 0,
             }),
             script: Mutex::new(script),
+            deliveries: Mutex::new(Vec::new()),
             connected: AtomicBool::new(false),
             locked: AtomicBool::new(false),
             connects: AtomicU32::new(0),
@@ -416,6 +418,7 @@ impl FakeDevice {
                 "mode": script.reprovision.map(|_| "reprovision"),
             }),
             ("pod-credential", "deliver") => {
+                self.deliveries.lock().unwrap().push(request.clone());
                 if script.deliver_ok && script.reprovision.is_none() {
                     state.pod_state = "activating";
                     json!({ "ok": true, "state": "activating" })
@@ -733,10 +736,12 @@ pub fn account(context: &str) -> Account {
             AuthorizationScope {
                 scope_id: "scope-a".into(),
                 name: "Home".into(),
+                local: true,
             },
             AuthorizationScope {
                 scope_id: "scope-b".into(),
                 name: "Cabin".into(),
+                local: false,
             },
         ],
         active_scope_id: Some("scope-b".into()),
@@ -765,6 +770,13 @@ impl Cloud for FakeCloud {
         });
         note(&self.journal, format!("cloud:{path}"));
         let body = match path {
+            "pod/space/credential/issue" => json!({
+                "credentialId":"space-credential", "appClientId":"a:space-device", "jwtToken":"space-jwt",
+                "activateBefore":self.clock.now_ms()+600_000,
+                "hubIdentity":{"hubId":"hub","tenantId":"tenant","scopeId":scope_id.unwrap(),
+                    "keyId":"p256:key", "algorithm":"ES256", "publicKeyX":"x", "publicKeyY":"y", "fingerprint":"key",
+                    "hostId":"host", "hostPublicKey":{"x":"x","y":"y"}}
+            }),
             "pod/credential/issue" => {
                 let delay = *self.issue_delay.lock().unwrap();
                 tokio::time::sleep(delay).await;

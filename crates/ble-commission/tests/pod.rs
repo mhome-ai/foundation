@@ -55,7 +55,7 @@ async fn authorize(harness: &Harness, id: &str) -> Value {
     harness
         .ok(
             "/local/pod/commission/authorize",
-            json!({ "sessionId": id, "scopeId": "scope-a" }),
+            json!({ "sessionId": id, "scopeId": "scope-a", "clientMode": "user" }),
         )
         .await
 }
@@ -322,7 +322,7 @@ async fn requests_are_checked_against_the_session_state() {
         harness
             .reason(
                 "/local/pod/commission/authorize",
-                body(json!({ "scopeId": "scope-a" }))
+                body(json!({ "clientMode": "user", "scopeId": "scope-a" }))
             )
             .await,
         "wrong_state"
@@ -360,7 +360,7 @@ async fn requests_are_checked_against_the_session_state() {
         harness
             .reason(
                 "/local/pod/commission/authorize",
-                body(json!({ "scopeId": "scope-z" }))
+                body(json!({ "clientMode": "user", "scopeId": "scope-z" }))
             )
             .await,
         "scope_not_offered"
@@ -377,7 +377,7 @@ async fn a_loopback_cloud_is_refused_before_issuing() {
         harness
             .reason(
                 "/local/pod/commission/authorize",
-                json!({ "sessionId": id, "scopeId": "scope-a" })
+                json!({ "sessionId": id, "scopeId": "scope-a", "clientMode": "user" })
             )
             .await,
         "cloud_unreachable_for_device"
@@ -483,7 +483,7 @@ async fn a_wifi_change_window_only_moves_the_pod_to_the_new_network() {
     assert!(harness
         .call(
             "/local/pod/commission/authorize",
-            json!({ "sessionId": id, "scopeId": "scope-a" }),
+            json!({ "sessionId": id, "scopeId": "scope-a", "clientMode": "user" }),
         )
         .await
         .is_err());
@@ -826,4 +826,35 @@ async fn confirmation_reconnect_rejects_replaced_device_identity() {
     authorize(&h, &id).await;
     let failed = h.wait_state(POD, "failed").await;
     assert_eq!(failed["error"]["code"], "device_mismatch");
+}
+
+#[tokio::test(start_paused = true)]
+async fn space_mode_uses_separate_issuance_and_only_offers_local_spaces() {
+    let harness = Harness::new();
+    let device = harness.add_device("pod-a", Script::pod());
+    let id = to_authorization(&harness).await;
+    let denied = harness
+        .core
+        .handle(
+            "/local/pod/commission/authorize",
+            &json!({"sessionId":id,"scopeId":"scope-b","clientMode":"space"}).to_string(),
+        )
+        .await;
+    assert!(denied.is_err());
+    harness
+        .ok(
+            "/local/pod/commission/authorize",
+            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+        )
+        .await;
+    let done = harness.wait_state(POD, "completed").await;
+    assert_eq!(done["podId"], "space-credential");
+    assert_eq!(harness.cloud.paths(), vec!["pod/space/credential/issue"]);
+    let deliveries = device.deliveries.lock().unwrap();
+    assert_eq!(deliveries.len(), 1);
+    assert_eq!(deliveries[0]["clientMode"], "space");
+    assert_eq!(deliveries[0]["jwtToken"], "space-jwt");
+    for key in ["podId", "refreshToken", "cloudApi", "cloudWs", "userId"] {
+        assert!(deliveries[0].get(key).is_none());
+    }
 }

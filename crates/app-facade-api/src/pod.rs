@@ -48,6 +48,9 @@ pub const CANDIDATE_TTL_MS: i64 = 10_000;
 /// Discovery change events are published at most this often.
 pub const DISCOVERY_EVENT_INTERVAL_MS: i64 = 1_000;
 pub const CUSTOM_ENDPOINT_MAX_BYTES: usize = 480;
+/// Credential delivery uses the common LAN channel; JWTs and Hub identity need
+/// more room than the BLE Wi-Fi commands. The complete envelope stays bounded.
+pub const LAN_CREDENTIAL_MAX_BYTES: usize = 8192;
 pub const SECURITY_VERSION: u64 = 2;
 pub const SRP_USERNAME: &str = "meow";
 /// App info label and capability in the pod's `proto-ver` response.
@@ -70,12 +73,14 @@ pub const CREDENTIAL_STATUS_POLL_MS: i64 = 5_000;
 
 /// Lion paths, relative to `cloudApi` (`https://…/api/v1`).
 pub const CREDENTIAL_ISSUE_PATH: &str = "pod/credential/issue";
+pub const SPACE_CREDENTIAL_ISSUE_PATH: &str = "pod/space/credential/issue";
 pub const CREDENTIAL_STATUS_PATH: &str = "pod/credential/status";
 
 /// Activation error codes a pod reports in `failed`.
 pub const ACTIVATION_ERROR_CODES: &[&str] = &[
     "time_sync_failed",
     "cloud_unreachable",
+    "local_hub_unavailable",
     "refresh_rejected",
     "auth_rejected",
     "storage_failed",
@@ -288,6 +293,14 @@ pub struct CommissionSessionRequest {
 pub struct CommissionAuthorizeRequest {
     pub session_id: String,
     pub scope_id: String,
+    pub client_mode: ClientMode,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum ClientMode {
+    User,
+    Space,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -366,6 +379,7 @@ pub struct WifiNetwork {
 pub struct AuthorizationScope {
     pub scope_id: String,
     pub name: String,
+    pub local: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -573,6 +587,32 @@ pub struct CredentialIssueResponse {
     pub refresh_token: String,
     /// Epoch milliseconds.
     pub activate_before: i64,
+}
+
+/// A Space Client receives no user login or cloud refresh credential.
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SpaceCredentialIssueResponse {
+    pub credential_id: String,
+    pub app_client_id: String,
+    pub jwt_token: String,
+    pub activate_before: i64,
+    pub hub_identity: HubIdentity,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HubIdentity {
+    pub hub_id: String,
+    pub tenant_id: String,
+    pub scope_id: String,
+    pub key_id: String,
+    pub algorithm: String,
+    pub public_key_x: String,
+    pub public_key_y: String,
+    pub fingerprint: String,
+    pub host_id: String,
+    pub host_public_key: core_api::host::auth::PublicKey,
 }
 
 /// Body of the owner's `credential/status` call.

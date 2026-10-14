@@ -23,7 +23,7 @@ pub(crate) enum CallError {
     Unreadable(String),
 }
 
-async fn post<T: DeserializeOwned>(
+pub(crate) async fn post<T: DeserializeOwned>(
     cloud: &Arc<dyn Cloud>,
     context: &str,
     path: &str,
