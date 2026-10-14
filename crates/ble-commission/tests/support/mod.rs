@@ -79,6 +79,7 @@ pub struct Script {
     pub deliver_ok: bool,
     /// Drops the link right after handling this op (`deliver`, `status`...).
     pub drop_after_op: Option<&'static str>,
+    pub drop_once: bool,
     pub lock_after_rejections: Option<u32>,
     pub claim_token: Option<&'static str>,
     /// Host-style paging: at most this many scan results per page.
@@ -105,6 +106,7 @@ impl Script {
             activation: Activation::Commissioned { after_polls: 2 },
             deliver_ok: true,
             drop_after_op: None,
+            drop_once: false,
             lock_after_rejections: None,
             claim_token: None,
             scan_page_cap: None,
@@ -505,7 +507,11 @@ impl FakeDevice {
             .encrypt(&response)
             .map_err(|error| LinkError::Rejected(error.to_string()))?;
         drop(guard);
-        if self.script.lock().unwrap().drop_after_op == Some(op.as_str()) && !op.is_empty() {
+        let mut script = self.script.lock().unwrap();
+        if script.drop_after_op == Some(op.as_str()) && !op.is_empty() {
+            if script.drop_once {
+                script.drop_after_op = None;
+            }
             self.drop_link();
             return Err(LinkError::Disconnected("response lost".into()));
         }

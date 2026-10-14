@@ -401,7 +401,11 @@ async fn lost_device_confirmation_fails_even_when_cloud_is_active() {
         *harness.cloud.status.lock().unwrap() = "active";
         let id = to_authorization(&harness).await;
         authorize(&harness, &id).await;
-        let failed = harness.wait_state(POD, "failed").await;
+        let failed = harness
+            .wait(POD, |s| {
+                matches!(s["state"].as_str(), Some("failed" | "timed_out"))
+            })
+            .await;
         assert!(failed.get("podId").is_none());
         tokio::time::sleep(Duration::from_secs(2)).await;
         assert!(harness.cloud.revokes().is_empty());
@@ -774,4 +778,52 @@ async fn failed_pod_wifi_ends_the_attempt() {
     let failed = h.wait_state(POD, "failed").await;
     assert_eq!(failed["error"]["code"], "wifi_auth_failed");
     assert!(h.cloud.calls.lock().unwrap().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn lost_confirmation_recovers_without_init_advertisement_or_duplicate_delivery() {
+    for op in ["deliver", "status"] {
+        let h = Harness::new();
+        let mut script = Script::pod();
+        script.activation = Activation::Commissioned { after_polls: 0 };
+        script.drop_after_op = Some(op);
+        script.drop_once = true;
+        let device = h.add_device("pod-a", script);
+        let id = to_authorization(&h).await;
+        h.lan.enabled.store(false, Ordering::SeqCst);
+        h.core.on_lan_removed("pod-a");
+        authorize(&h, &id).await;
+        valid(&h.wait_state(POD, "completed").await);
+        assert_eq!(device.connects.load(Ordering::SeqCst), 3);
+        assert_eq!(
+            h.cloud
+                .paths()
+                .iter()
+                .filter(|p| *p == "pod/credential/issue")
+                .count(),
+            1
+        );
+        assert_eq!(
+            h.journal()
+                .iter()
+                .filter(|e| *e == "device:pod-credential:deliver")
+                .count(),
+            1
+        );
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn confirmation_reconnect_rejects_replaced_device_identity() {
+    let h = Harness::new();
+    let mut script = Script::pod();
+    script.drop_after_op = Some("status");
+    script.drop_once = true;
+    let device = h.add_device("pod-a", script);
+    let id = to_authorization(&h).await;
+    // The initial handshake verified the original ID; a reconnect must verify it again.
+    device.script.lock().unwrap().device_id = "different-device";
+    authorize(&h, &id).await;
+    let failed = h.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["code"], "device_mismatch");
 }

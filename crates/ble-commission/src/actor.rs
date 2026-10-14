@@ -53,6 +53,8 @@ pub(crate) struct Actor {
     reply: Option<oneshot::Sender<()>>,
     pairing_code: Option<zeroize::Zeroizing<String>>,
     lan: bool,
+    lan_addresses: Vec<std::net::SocketAddr>,
+    confirmation_retries: u8,
 }
 
 async fn cancelled(cancel: &mut watch::Receiver<bool>) {
@@ -105,6 +107,8 @@ impl Actor {
             reply: None,
             pairing_code: None,
             lan: false,
+            lan_addresses: Vec::new(),
+            confirmation_retries: 0,
         };
         tokio::spawn(actor.run(commands));
     }
@@ -193,6 +197,7 @@ impl Actor {
             .cloned();
         let opened = if let Some(lan) = lan {
             self.lan = true;
+            self.lan_addresses = lan.addresses.clone();
             self.open_lan_addresses(&lan.addresses).await
         } else if self.peripheral_id.starts_with("lan:") {
             Err(OpenError::Link("Pod is no longer on this LAN".into()))
@@ -923,6 +928,7 @@ impl Actor {
                 return false;
             }
             self.lan = true;
+            self.lan_addresses = candidate.addresses;
             self.pod_info = Some(info);
             self.update(|live| {
                 live.device = Some(device_info);
@@ -1027,13 +1033,75 @@ impl Actor {
                     .map(str::to_string),
             )),
             Err(failure) => {
-                self.fail(error(
-                    CommissionErrorCode::DeliveryFailed,
-                    "The pod did not confirm delivery. Select it on your local network to check its state and retry.",
-                    Some(failure.to_string()),
-                ));
+                // Delivery is not replayed: the Pod may already have committed it.
+                if let Some(client) = self.reconnect_for_confirmation().await {
+                    if self.enter(Phase::Activating, None) {
+                        self.activate(client).await;
+                    }
+                } else if !self.over() {
+                    self.fail(error(
+                        CommissionErrorCode::DeliveryFailed,
+                        "The pod could not confirm setup. Check its screen before trying again.",
+                        Some(failure.to_string()),
+                    ));
+                }
             }
         }
+    }
+
+    /// Init mDNS disappears as soon as activation commits. Reconnect only to
+    /// this attempt's endpoint and recheck its authenticated identity; never
+    /// issue/deliver another credential while resolving an uncertain result.
+    async fn reconnect_for_confirmation(&mut self) -> Option<Arc<device::Client>> {
+        if !self.lan {
+            return None;
+        }
+        let expected = self.pod_info.clone()?;
+        let code = self.pairing_code.clone()?;
+        let pod_id = self.credential.as_ref()?.pod_id.clone();
+        while self.confirmation_retries < 3 && !self.over() {
+            self.confirmation_retries += 1;
+            if let Some(device) = self.device.take() {
+                device.link.disconnect().await;
+            }
+            self.sleep(TICK).await?;
+            let attempt = async {
+                let opened = self.open_lan_addresses(&self.lan_addresses).await.ok()?;
+                let client = opened.client.clone();
+                let patch = opened.patch_version;
+                self.device = Some(opened);
+                client
+                    .establish_sec2(SRP_USERNAME, &code, patch)
+                    .await
+                    .ok()?;
+                let value = client.call_json(POD_INFO_ENDPOINT, &json!({})).await.ok()?;
+                Some((client, device::pod_info(&value)?.0))
+            };
+            let result = tokio::time::timeout(Duration::from_secs(8), attempt).await;
+            let Ok(Some((client, info))) = result else {
+                continue;
+            };
+            if info.device_id != expected.device_id
+                || info.identity != expected.identity
+                || info.env != core_api::RuntimeEnv::current().as_str()
+                || info.pod_id.as_deref() != Some(&pod_id)
+            {
+                self.fail(error(
+                    CommissionErrorCode::DeviceMismatch,
+                    "The device identity or activation changed during setup.",
+                    None,
+                ));
+                return None;
+            }
+            if !matches!(
+                info.state.as_str(),
+                "activating" | "commissioned" | "failed"
+            ) {
+                return None;
+            }
+            return Some(client);
+        }
+        None
     }
 
     fn deadline(&self) -> i64 {
@@ -1047,7 +1115,7 @@ impl Actor {
         )
     }
 
-    async fn activate(&mut self, client: Arc<device::Client>) {
+    async fn activate(&mut self, mut client: Arc<device::Client>) {
         loop {
             if self.engine.now_ms() >= self.deadline() {
                 return self.activation_failed(NOT_ACTIVATED_DETAIL.into());
@@ -1064,7 +1132,14 @@ impl Actor {
             let status = match status {
                 Ok(status) => status,
                 Err(failure) => {
-                    return self.fail_disconnected(failure);
+                    if let Some(reconnected) = self.reconnect_for_confirmation().await {
+                        client = reconnected;
+                        continue;
+                    }
+                    if !self.over() {
+                        self.fail_disconnected(failure);
+                    }
+                    return;
                 }
             };
             match status.get("state").and_then(Value::as_str) {
