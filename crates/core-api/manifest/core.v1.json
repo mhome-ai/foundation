@@ -63,7 +63,7 @@
       "version": "storage.v2"
     },
     "hostDelivery": {
-      "externalProtocolVersion": 20,
+      "externalProtocolVersion": 21,
       "requestKind": "deliveryRequested",
       "connectionControlKind": "connectionControlRequested",
       "acceptanceBoundaries": [

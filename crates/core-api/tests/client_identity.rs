@@ -168,3 +168,25 @@ fn personal_clients_share_user_catalog_without_joining_space_group() {
         client.conversation_surface("tenant", "space").unwrap()
     );
 }
+
+#[test]
+fn external_session_wire_carries_the_verified_principal_and_rejects_legacy_user_sessions() {
+    let session = core_api::AuthenticatedSession {
+        tenant_id: "tenant".into(),
+        scope_id: "space".into(),
+        client: space_client(),
+        is_test: false,
+    };
+    let value = serde_json::to_value(&session).unwrap();
+    assert_eq!(value["client"]["principal"]["kind"], "space");
+    assert!(value.get("userId").is_none());
+    let decoded: core_api::AuthenticatedSession = serde_json::from_value(value).unwrap();
+    assert_eq!(decoded.client, session.client);
+    assert!(
+        serde_json::from_value::<core_api::AuthenticatedSession>(json!({
+            "tenantId":"tenant", "scopeId":"space", "userId":"owner", "isTest":false
+        }))
+        .is_err()
+    );
+    assert_eq!(core_api::EXTERNAL_CORE_PROTOCOL_VERSION, 21);
+}

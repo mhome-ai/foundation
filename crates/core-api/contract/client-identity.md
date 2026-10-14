@@ -33,27 +33,33 @@ the previous user-only Actor shape; this is a coordinated protocol cutover, not
 a backward-compatible extension. Conversation catalog ownership does not imply
 business operation authority.
 
-Credential issuance and general business ingress are a separate cutover. Existing
-`AuthenticatedSession`, ordinary MWS bridge metadata and
-`ServiceCoreInput::ClientRequest` still use user-based contracts. No runtime
-entrypoint accepts Space Client credentials merely because these types exist.
-Until business contexts, prepared actions and per-operation policies carry the
-principal, their user-only adapters must reject Space actors. Local direct Space
-Client event delivery also requires the corresponding authenticated presence
-registry; Cloud group delivery alone does not provide offline operation.
-There is no intended legacy-user fallback for a Space principal.
+Lion now issues `local_space_client_access` credentials for local Spaces and
+registers them through the authenticated Core Bridge before LAN delivery.
+External Core protocol 21 rejects older process contracts at startup.
+`AuthenticatedSession` and `ServiceCoreInput::ClientRequest` carry
+`AuthenticatedClient`. Core validates the credential against its local registry
+and active Hub, then carries the principal through WS presence, business context,
+prepared actions, dialogs, plugin dispatch and Agent requests. Space Clients
+receive no User identity or cloud refresh token. The detailed enrollment contract
+is [Pod commissioning](../../app-facade-api/contract/pod-commissioning-v1.md#8-space-client-local-credential).
 
-Host policy is already decided: Space Clients cannot manage Admin Hosts; they
+Ordinary cloud MWS relays remain User-only: Space Clients only connect to their
+bound local Core. There is no intended legacy-user fallback for a Space principal.
+Space operation admission denies personal/management/unknown targets, while
+plugin extensions enforce the exact permission declared by their Node session.
+Local presence includes Space Clients in Space-wide delivery and excludes them
+from personal recipient selection.
+
+Host policy remains: Space Clients cannot manage Admin Hosts; they
 have read-only Host-management access to a Host bound to the same Space. User
 writes to Space Hosts require current Space OWNER through Core. This does not
 define general Space business permissions. The agreed business hierarchy is
 [READ < WRITE < MANAGE](space-access.md), with Space Clients capped at WRITE.
 Ordinary business configuration such as dashboards and automations is writable;
-identity, credentials and infrastructure require management. The existing
-`SPACE_EXECUTE` classification also contains Host claim/runtime operations, and
-`SPACE_WRITE` contains both ordinary data edits and runtime configuration. Neither
-classification can be granted wholesale to a Space Client. API adapters must
-reclassify these operations by their actual effects before enabling the policy.
+identity, credentials and infrastructure require management. Host user administration is independent of business tokens. The current Core
+Host inventory adapter still creates User administration sessions and therefore
+denies Space callers until the separate Space-mode Host inventory is implemented.
+Instance/client read routes remain available without granting Host management.
 
 Device factory reset remains the supported way to clear device enrollment. It
 must stop old sessions, persist reset intent, erase device credentials and keys,
