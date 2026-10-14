@@ -32,9 +32,8 @@ impl PutArtifactRequest {
         self.lifecycle
             .validate_creation_id(self.creation_id.as_deref())
             .map_err(|_| invalid("invalid artifact creation ID"))?;
-        if self.mime_type.trim() != self.mime_type || self.mime_type.is_empty() {
-            return Err(invalid("artifact put MIME type is invalid"));
-        }
+        crate::validate_mime_type(&self.mime_type)
+            .map_err(|_| invalid("artifact put MIME type is invalid"))?;
         match self.kind {
             ArtifactKind::Image if !self.mime_type.starts_with("image/") => {
                 return Err(invalid("artifact put image MIME type is invalid"));

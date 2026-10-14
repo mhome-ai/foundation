@@ -125,7 +125,11 @@
         "mimeType": {
           "type": "string",
           "minLength": 3,
-          "maxLength": 255
+          "maxLength": 255,
+          "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$",
+          "not": {
+            "pattern": "\\s"
+          }
         },
         "dataBase64": {
           "type": "string",

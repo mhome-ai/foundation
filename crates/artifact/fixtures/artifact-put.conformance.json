@@ -76,6 +76,22 @@
         "dataBase64": "eA==",
         "durationMillis": 9007199254740991
       }
+    },
+    {
+      "name": "mime-maximum-length",
+      "value": {
+        "kind": "AUDIO",
+        "dataBase64": "eA==",
+        "mimeType": "audio/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    {
+      "name": "mime-structured-suffix",
+      "value": {
+        "kind": "AUDIO",
+        "dataBase64": "eA==",
+        "mimeType": "audio/vnd.example+json"
+      }
     }
   ],
   "invalid": [
@@ -201,6 +217,46 @@
         "mimeType": "audio/ogg",
         "dataBase64": "eA==",
         "durationMillis": 9007199254740992
+      }
+    },
+    {
+      "name": "mime-missing-subtype",
+      "value": {
+        "kind": "AUDIO",
+        "dataBase64": "eA==",
+        "mimeType": "audio/"
+      }
+    },
+    {
+      "name": "mime-parameters",
+      "value": {
+        "kind": "AUDIO",
+        "dataBase64": "eA==",
+        "mimeType": "audio/ogg;codecs=opus"
+      }
+    },
+    {
+      "name": "mime-too-long",
+      "value": {
+        "kind": "AUDIO",
+        "dataBase64": "eA==",
+        "mimeType": "audio/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    {
+      "name": "mime-uppercase",
+      "value": {
+        "kind": "AUDIO",
+        "dataBase64": "eA==",
+        "mimeType": "audio/OGG"
+      }
+    },
+    {
+      "name": "mime-trailing-newline",
+      "value": {
+        "kind": "AUDIO",
+        "dataBase64": "eA==",
+        "mimeType": "audio/ogg\n"
       }
     }
   ]

@@ -8,6 +8,96 @@ use serde_json::{json, Value};
 
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 
+#[test]
+fn mime_rules_match_metadata_before_upload_for_every_lifecycle() {
+    let put_schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-put.v1.schema.json")).unwrap();
+    let upload_schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-upload.v1.schema.json")).unwrap();
+    let put_validator = jsonschema::validator_for(&put_schema).unwrap();
+    let upload_validator = jsonschema::validator_for(&upload_schema).unwrap();
+
+    for (kind, code, media_type) in [
+        ("IMAGE", "i", "image"),
+        ("AUDIO", "a", "audio"),
+        ("VIDEO", "v", "video"),
+        ("FILE", "f", "application"),
+    ] {
+        for (mime, valid) in [
+            (format!("{media_type}/x"), true),
+            (format!("{media_type}/vnd.example+json"), true),
+            (format!("{media_type}/x!#$&^_.+-09"), true),
+            (
+                format!("{media_type}/{}", "x".repeat(254 - media_type.len())),
+                true,
+            ),
+            (
+                format!("{media_type}/{}", "x".repeat(255 - media_type.len())),
+                false,
+            ),
+            (format!("{media_type}/"), false),
+            (format!("{media_type}/ogg;codecs=opus"), false),
+            (format!("{media_type}/a/b"), false),
+            (format!("{media_type}/X"), false),
+            (format!("{}/x", media_type.to_ascii_uppercase()), false),
+            (format!("{media_type}/x\n"), false),
+            (format!(" {media_type}/x"), false),
+            (format!("{media_type}/x y"), false),
+            (format!("{media_type}/音频"), false),
+            (format!("{media_type}x"), false),
+            ("/x".to_string(), false),
+            (String::new(), false),
+        ] {
+            let mut metadata = json!({"k":code, "m":mime, "s":1});
+            if matches!(kind, "IMAGE" | "VIDEO") {
+                metadata["w"] = 1.into();
+                metadata["h"] = 1.into();
+            }
+            assert_eq!(
+                serde_json::from_value::<ArtifactMetadata>(metadata).is_ok(),
+                valid,
+                "metadata {kind} {mime:?}"
+            );
+            for lifecycle in ["std", "tmp", "man"] {
+                let mut put = json!({"kind":kind, "mimeType":mime, "dataBase64":"eA==", "lifecycle":lifecycle});
+                if lifecycle == "man" {
+                    put["creationId"] = "caller-A".into();
+                }
+                let mut upload = put.clone();
+                upload.as_object_mut().unwrap().remove("dataBase64");
+                upload["sizeBytes"] = 1.into();
+                upload["sha256"] = "a".repeat(64).into();
+                assert_eq!(
+                    serde_json::from_value::<PutArtifactRequest>(put.clone())
+                        .unwrap()
+                        .decode()
+                        .is_ok(),
+                    valid,
+                    "put {kind} {lifecycle} {mime:?}"
+                );
+                assert_eq!(
+                    serde_json::from_value::<PrepareArtifactUploadRequest>(upload.clone())
+                        .unwrap()
+                        .validate()
+                        .is_ok(),
+                    valid,
+                    "upload {kind} {lifecycle} {mime:?}"
+                );
+                assert_eq!(
+                    put_validator.is_valid(&put),
+                    valid,
+                    "put schema {kind} {mime:?}"
+                );
+                assert_eq!(
+                    upload_validator.is_valid(&upload),
+                    valid,
+                    "upload schema {kind} {mime:?}"
+                );
+            }
+        }
+    }
+}
+
 fn rejects_null<T: DeserializeOwned>(base: Value, fields: &[&str]) {
     assert!(serde_json::from_value::<T>(base.clone()).is_ok());
     for field in fields {

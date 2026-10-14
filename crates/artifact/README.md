@@ -20,6 +20,13 @@ Capability media values (`Image`, `Audio`) use `MediaReference`: exactly `{ "uri
 
 Upload/import preserves bytes. Callers perform conversion before upload. Public ingress is limited to 1 MiB; internal producers retain their own limits. The shared reference and storage contracts do not impose the public ingress limit.
 
+`put` and `upload/prepare` require canonical lowercase MIME types matching the URI
+metadata grammar: a nonempty type and subtype, one slash, and at most 255 ASCII
+characters. Parameters, whitespace and uppercase letters are rejected before
+decoding content or issuing an upload grant, for every lifecycle. Callers must
+send `audio/ogg`, for example, rather than `audio/OGG` or `audio/ogg;codecs=opus`.
+Image content is still inspected by storage to determine its actual format.
+
 ### Lifecycle and resource identity
 
 `put`, explicit HTTP `import`, and `upload/prepare` accept `lifecycle`: `std`, `tmp`,
