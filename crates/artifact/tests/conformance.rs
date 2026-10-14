@@ -347,11 +347,7 @@ fn modes_and_manual_retries_are_explicit_in_rust_and_schema() {
                     .map(|v| v.validate().is_ok())
                     .unwrap_or(false),
                 _ => serde_json::from_value::<ImportArtifactRequest>(value.clone())
-                    .map(|v| {
-                        v.policy()
-                            .validate_creation_id(v.creation_id.as_deref())
-                            .is_ok()
-                    })
+                    .map(|v| v.validate().is_ok())
                     .unwrap_or(false),
             };
             assert_eq!(rust_valid, valid, "{operation}: {value}");
@@ -384,6 +380,25 @@ fn identity_and_retention_form_four_independent_resource_namespaces() {
             assert_eq!(parsed.creation_id(), creation.as_deref());
             assert_eq!(parsed.sha256(), "a".repeat(64));
             assert!(ArtifactReference::parse(&uri.replace("//v3/", "//v2/")).is_err());
+        }
+    }
+}
+
+#[test]
+fn import_mime_corpus_matches_schema_and_rust() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/artifact-import.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    let corpus: Value =
+        serde_json::from_str(include_str!("../fixtures/artifact-import.conformance.json")).unwrap();
+    for (group, valid) in [("valid", true), ("invalid", false)] {
+        for case in corpus[group].as_array().unwrap() {
+            let value = &case["value"];
+            assert_eq!(validator.is_valid(value), valid, "schema: {}", case["name"]);
+            let accepted =
+                serde_json::from_value::<artifact_api::ImportArtifactRequest>(value.clone())
+                    .is_ok_and(|request| request.validate().is_ok());
+            assert_eq!(accepted, valid, "Rust: {}", case["name"]);
         }
     }
 }

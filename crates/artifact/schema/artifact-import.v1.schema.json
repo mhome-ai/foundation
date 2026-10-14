@@ -24,7 +24,11 @@
     "mimeType": {
       "type": "string",
       "minLength": 3,
-      "maxLength": 255
+      "maxLength": 255,
+      "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$",
+      "not": {
+        "pattern": "[^a-z0-9!#$&^_.+/\\-]"
+      }
     },
     "creationId": {
       "type": "string",
@@ -79,6 +83,45 @@
           }
         }
       }
+    },
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "kind": {
+              "const": "IMAGE"
+            },
+            "mimeType": {
+              "type": "string",
+              "pattern": "^image/"
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "AUDIO"
+            },
+            "mimeType": {
+              "type": "string",
+              "pattern": "^audio/"
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "FILE"
+            },
+            "mimeType": {
+              "type": "string",
+              "not": {
+                "pattern": "^video/"
+              }
+            }
+          }
+        }
+      ]
     }
   ]
 }

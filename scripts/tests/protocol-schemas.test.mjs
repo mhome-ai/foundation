@@ -35,7 +35,7 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
   });
 }
 
-for (const name of ["artifactPut", "artifactResolve", "artifactUpload"]) {
+for (const name of ["artifactPut", "artifactResolve", "artifactUpload", "artifactImport"]) {
   test(`${name} accepts valid fixtures and rejects invalid fixtures in AJV`, () => {
     const config = PROTOCOL_PACKAGES.artifact;
     const validate = compiler().compile(

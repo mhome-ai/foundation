@@ -17,6 +17,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       artifactReference: "fixtures/artifact-reference.conformance.json",
       artifactResolve: "fixtures/artifact-resolve.conformance.json",
       artifactPut: "fixtures/artifact-put.conformance.json",
+      artifactImport: "fixtures/artifact-import.conformance.json",
       artifactUpload: "fixtures/artifact-upload.conformance.json",
     }),
   }),

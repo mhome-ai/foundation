@@ -84,3 +84,5 @@ Only `tmp` responses contain `expiresAtUnixMs`. Native transport descriptors ret
 Forwarding services must preserve the owner's policy and URI. Each storage implementation
 must adopt the identity/retention contract before consuming this protocol release; a shared cloud
 service must not emulate temporary storage with an uncoordinated process-local map.
+
+Explicit import `mimeType` overrides must use the same canonical lowercase MIME and kind rules as uploads. Importers normalize the source HTTP Content-Type only when no override is supplied.

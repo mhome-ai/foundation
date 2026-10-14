@@ -1,0 +1,331 @@
+{
+  "valid": [
+    {
+      "name": "IMAGE inferred MIME",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content"
+      }
+    },
+    {
+      "name": "IMAGE explicit canonical MIME",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "image/png"
+      }
+    },
+    {
+      "name": "AUDIO inferred MIME",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content"
+      }
+    },
+    {
+      "name": "AUDIO explicit canonical MIME",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "audio/ogg"
+      }
+    },
+    {
+      "name": "FILE inferred MIME",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content"
+      }
+    },
+    {
+      "name": "FILE explicit canonical MIME",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "text/plain"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "IMAGE invalid MIME ''",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": ""
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME ' '",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": " "
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME 'IMAGE/PNG'",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "IMAGE/PNG"
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME ' image/png '",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": " image/png "
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME 'image/png\\n'",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "image/png\n"
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME 'image/png;charset=utf-8'",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "image/png;charset=utf-8"
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME 'image/png/'",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "image/png/"
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME '猫/x'",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "猫/x"
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME 'video/mp4'",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "video/mp4"
+      }
+    },
+    {
+      "name": "IMAGE invalid MIME 'text/plain'",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "text/plain"
+      }
+    },
+    {
+      "name": "IMAGE null MIME",
+      "value": {
+        "kind": "IMAGE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": null
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME ''",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": ""
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME ' '",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": " "
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME 'AUDIO/OGG'",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "AUDIO/OGG"
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME ' audio/ogg '",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": " audio/ogg "
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME 'audio/ogg\\n'",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "audio/ogg\n"
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME 'audio/ogg;charset=utf-8'",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "audio/ogg;charset=utf-8"
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME 'audio/ogg/'",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "audio/ogg/"
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME '猫/x'",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "猫/x"
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME 'video/mp4'",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "video/mp4"
+      }
+    },
+    {
+      "name": "AUDIO invalid MIME 'text/plain'",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "text/plain"
+      }
+    },
+    {
+      "name": "AUDIO null MIME",
+      "value": {
+        "kind": "AUDIO",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": null
+      }
+    },
+    {
+      "name": "FILE invalid MIME ''",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": ""
+      }
+    },
+    {
+      "name": "FILE invalid MIME ' '",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": " "
+      }
+    },
+    {
+      "name": "FILE invalid MIME 'TEXT/PLAIN'",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "TEXT/PLAIN"
+      }
+    },
+    {
+      "name": "FILE invalid MIME ' text/plain '",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": " text/plain "
+      }
+    },
+    {
+      "name": "FILE invalid MIME 'text/plain\\n'",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "text/plain\n"
+      }
+    },
+    {
+      "name": "FILE invalid MIME 'text/plain;charset=utf-8'",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "text/plain;charset=utf-8"
+      }
+    },
+    {
+      "name": "FILE invalid MIME 'text/plain/'",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "text/plain/"
+      }
+    },
+    {
+      "name": "FILE invalid MIME '猫/x'",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "猫/x"
+      }
+    },
+    {
+      "name": "FILE invalid MIME 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    {
+      "name": "FILE invalid MIME 'video/mp4'",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": "video/mp4"
+      }
+    },
+    {
+      "name": "FILE null MIME",
+      "value": {
+        "kind": "FILE",
+        "sourceUrl": "https://example.test/content",
+        "mimeType": null
+      }
+    }
+  ]
+}

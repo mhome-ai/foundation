@@ -59,6 +59,32 @@ pub struct ImportArtifactRequest {
 }
 
 impl ImportArtifactRequest {
+    /// Validate caller metadata before any source lookup. HTTP response MIME
+    /// headers are normalized separately by the importer when no override is given.
+    pub fn validate(&self) -> Result<(), ArtifactReferenceError> {
+        self.policy()
+            .validate_creation_id(self.creation_id.as_deref())?;
+        if self.kind == ArtifactKind::Video {
+            return Err(crate::invalid("video artifact imports are not supported"));
+        }
+        if let Some(mime) = &self.mime_type {
+            crate::validate_mime_type(mime)?;
+            match self.kind {
+                ArtifactKind::Image if !mime.starts_with("image/") => {
+                    return Err(crate::invalid("image artifact MIME type is invalid"));
+                }
+                ArtifactKind::Audio if !mime.starts_with("audio/") => {
+                    return Err(crate::invalid("audio artifact MIME type is invalid"));
+                }
+                ArtifactKind::File if mime.starts_with("video/") => {
+                    return Err(crate::invalid("video artifacts are not supported"));
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
     pub const fn policy(&self) -> crate::ArtifactPolicy {
         crate::ArtifactPolicy::new(self.identity, self.retention)
     }
