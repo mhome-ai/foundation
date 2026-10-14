@@ -22,7 +22,7 @@
     {
       "name": "file-response",
       "value": {
-        "uri": "meow-artifact://v2/tenant/scope/std/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
         "kind": "FILE",
         "mimeType": "application/pdf",
         "sizeBytes": 30
@@ -33,9 +33,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "dataBase64": "eA==",
-        "creationId": "550E8400-e29b-41d4-a716-446655440000"
+        "creationId": "550E8400-e29b-41d4-a716-446655440000",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -43,9 +44,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "dataBase64": "eA==",
-        "creationId": "A"
+        "creationId": "A",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -53,9 +55,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "dataBase64": "eA==",
-        "creationId": "caller_A-1"
+        "creationId": "caller_A-1",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -63,9 +66,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "dataBase64": "eA==",
-        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -108,6 +112,30 @@
         "mimeType": "text/plain",
         "dataBase64": "TWFu"
       }
+    },
+    {
+      "name": "manual-temporary-request",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 1200,
+        "identity": "man",
+        "retention": "tmp",
+        "creationId": "Caller-A"
+      }
+    },
+    {
+      "name": "manual-temporary-response",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/tmp/man/Caller-A/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "kind": "FILE",
+        "mimeType": "application/pdf",
+        "sizeBytes": 30,
+        "identity": "man",
+        "retention": "tmp",
+        "expiresAtUnixMs": 2000000000000
+      }
     }
   ],
   "invalid": [
@@ -125,8 +153,9 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
-        "dataBase64": "eA=="
+        "dataBase64": "eA==",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -134,9 +163,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "dataBase64": "eA==",
-        "creationId": ""
+        "creationId": "",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -144,9 +174,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "dataBase64": "eA==",
-        "creationId": "A\n"
+        "creationId": "A\n",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -154,9 +185,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "dataBase64": "eA==",
-        "creationId": "../A"
+        "creationId": "../A",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -164,9 +196,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "dataBase64": "eA==",
-        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -174,9 +207,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "dataBase64": "eA==",
-        "creationId": "猫"
+        "creationId": "猫",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -184,9 +218,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "std",
         "dataBase64": "eA==",
-        "creationId": "caller-A"
+        "creationId": "caller-A",
+        "identity": "auto",
+        "retention": "std"
       }
     },
     {
@@ -194,9 +229,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "tmp",
         "dataBase64": "eA==",
-        "creationId": "caller-A"
+        "creationId": "caller-A",
+        "identity": "auto",
+        "retention": "tmp"
       }
     },
     {
@@ -379,6 +415,56 @@
         "kind": "FILE",
         "mimeType": "text/plain",
         "dataBase64": "===="
+      }
+    },
+    {
+      "name": "reject-lifecycle-std",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 1200,
+        "lifecycle": "std"
+      }
+    },
+    {
+      "name": "reject-identity-None",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 1200,
+        "identity": null
+      }
+    },
+    {
+      "name": "reject-retention-None",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 1200,
+        "retention": null
+      }
+    },
+    {
+      "name": "reject-identity-tmp",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 1200,
+        "identity": "tmp"
+      }
+    },
+    {
+      "name": "reject-retention-man",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "dataBase64": "eA==",
+        "durationMillis": 1200,
+        "retention": "man"
       }
     }
   ]

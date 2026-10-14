@@ -39,7 +39,9 @@ impl MediaReference {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ImportArtifactRequest {
     #[serde(default)]
-    pub lifecycle: crate::ArtifactLifecycle,
+    pub identity: crate::ArtifactIdentity,
+    #[serde(default)]
+    pub retention: crate::ArtifactRetention,
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
@@ -54,6 +56,12 @@ pub struct ImportArtifactRequest {
         deserialize_with = "crate::deserialize_optional_non_null"
     )]
     pub mime_type: Option<String>,
+}
+
+impl ImportArtifactRequest {
+    pub const fn policy(&self) -> crate::ArtifactPolicy {
+        crate::ArtifactPolicy::new(self.identity, self.retention)
+    }
 }
 
 #[cfg(test)]

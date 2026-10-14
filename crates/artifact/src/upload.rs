@@ -9,7 +9,9 @@ use crate::ArtifactKind;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PrepareArtifactUploadRequest {
     #[serde(default)]
-    pub lifecycle: crate::ArtifactLifecycle,
+    pub identity: crate::ArtifactIdentity,
+    #[serde(default)]
+    pub retention: crate::ArtifactRetention,
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
@@ -30,7 +32,7 @@ pub struct PrepareArtifactUploadRequest {
 
 impl PrepareArtifactUploadRequest {
     pub fn validate(&self) -> Result<(), PrepareArtifactUploadValidationError> {
-        self.lifecycle
+        self.policy()
             .validate_creation_id(self.creation_id.as_deref())
             .map_err(|_| invalid("invalid artifact creation ID"))?;
         crate::validate_mime_type(&self.mime_type)
@@ -112,6 +114,12 @@ fn invalid(message: &'static str) -> PrepareArtifactUploadValidationError {
     PrepareArtifactUploadValidationError(message)
 }
 
+impl PrepareArtifactUploadRequest {
+    pub const fn policy(&self) -> crate::ArtifactPolicy {
+        crate::ArtifactPolicy::new(self.identity, self.retention)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -119,7 +127,9 @@ mod tests {
     #[test]
     fn validates_upload_metadata() {
         let request = PrepareArtifactUploadRequest {
-            lifecycle: crate::ArtifactLifecycle::Std,
+            identity: crate::ArtifactPolicy::AUTO_STD.identity,
+
+            retention: crate::ArtifactPolicy::AUTO_STD.retention,
             creation_id: None,
             kind: ArtifactKind::Audio,
             mime_type: "audio/ogg".to_string(),
@@ -133,7 +143,9 @@ mod tests {
     #[test]
     fn rejects_malformed_hashes_and_kind_mismatch() {
         let mut request = PrepareArtifactUploadRequest {
-            lifecycle: crate::ArtifactLifecycle::Std,
+            identity: crate::ArtifactPolicy::AUTO_STD.identity,
+
+            retention: crate::ArtifactPolicy::AUTO_STD.retention,
             creation_id: None,
             kind: ArtifactKind::Audio,
             mime_type: "image/png".to_string(),

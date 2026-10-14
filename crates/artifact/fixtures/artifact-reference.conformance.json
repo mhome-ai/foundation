@@ -3,7 +3,7 @@
   "valid": [
     {
       "name": "image",
-      "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
       "kind": "image",
       "mimeType": "image/png",
       "sizeBytes": 12,
@@ -12,7 +12,7 @@
     },
     {
       "name": "audio",
-      "uri": "meow-artifact://v2/tenant/scope/std/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/eyJrIjoiYSIsIm0iOiJhdWRpby9vZ2ciLCJzIjoyMCwiZCI6MTUwMH0",
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/eyJrIjoiYSIsIm0iOiJhdWRpby9vZ2ciLCJzIjoyMCwiZCI6MTUwMH0",
       "kind": "audio",
       "mimeType": "audio/ogg",
       "sizeBytes": 20,
@@ -20,7 +20,7 @@
     },
     {
       "name": "video",
-      "uri": "meow-artifact://v2/tenant/scope/std/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd/eyJrIjoidiIsIm0iOiJ2aWRlby9tcDQiLCJzIjo0MCwidyI6MTkyMCwiaCI6MTA4MCwiZCI6MjAwMH0",
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd/eyJrIjoidiIsIm0iOiJ2aWRlby9tcDQiLCJzIjo0MCwidyI6MTkyMCwiaCI6MTA4MCwiZCI6MjAwMH0",
       "kind": "video",
       "mimeType": "video/mp4",
       "sizeBytes": 40,
@@ -30,14 +30,14 @@
     },
     {
       "name": "file",
-      "uri": "meow-artifact://v2/tenant/scope/std/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
       "kind": "file",
       "mimeType": "application/pdf",
       "sizeBytes": 30
     },
     {
       "name": "tmp identity",
-      "uri": "meow-artifact://v2/tenant/scope/tmp/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "uri": "meow-artifact://v3/tenant/scope/tmp/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
       "kind": "image",
       "mimeType": "image/png",
       "sizeBytes": 12,
@@ -46,7 +46,7 @@
     },
     {
       "name": "man identity",
-      "uri": "meow-artifact://v2/tenant/scope/man/1234567890abcdef1234567890abcdef/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "uri": "meow-artifact://v3/tenant/scope/std/man/1234567890abcdef1234567890abcdef/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
       "kind": "image",
       "mimeType": "image/png",
       "sizeBytes": 12,
@@ -55,7 +55,7 @@
     },
     {
       "name": "man UUID",
-      "uri": "meow-artifact://v2/tenant/scope/man/550E8400-e29b-41d4-a716-446655440000/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "uri": "meow-artifact://v3/tenant/scope/std/man/550E8400-e29b-41d4-a716-446655440000/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
       "kind": "image",
       "mimeType": "image/png",
       "sizeBytes": 12,
@@ -64,7 +64,7 @@
     },
     {
       "name": "man short",
-      "uri": "meow-artifact://v2/tenant/scope/man/A/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "uri": "meow-artifact://v3/tenant/scope/std/man/A/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
       "kind": "image",
       "mimeType": "image/png",
       "sizeBytes": 12,
@@ -73,7 +73,7 @@
     },
     {
       "name": "man custom",
-      "uri": "meow-artifact://v2/tenant/scope/man/caller-A_1/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "uri": "meow-artifact://v3/tenant/scope/std/man/caller-A_1/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
       "kind": "image",
       "mimeType": "image/png",
       "sizeBytes": 12,
@@ -82,7 +82,16 @@
     },
     {
       "name": "man max length",
-      "uri": "meow-artifact://v2/tenant/scope/man/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "uri": "meow-artifact://v3/tenant/scope/std/man/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+      "kind": "image",
+      "mimeType": "image/png",
+      "sizeBytes": 12,
+      "width": 2,
+      "height": 3
+    },
+    {
+      "name": "manual-temporary-resource",
+      "uri": "meow-artifact://v3/tenant/scope/tmp/man/Caller-A/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
       "kind": "image",
       "mimeType": "image/png",
       "sizeBytes": 12,
@@ -93,79 +102,87 @@
   "invalid": [
     {
       "name": "file-with-video-mime",
-      "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ2aWRlby9tcDQiLCJzIjoxMH0"
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ2aWRlby9tcDQiLCJzIjoxMH0"
     },
     {
       "name": "image-with-duration",
-      "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMCwidyI6MSwiaCI6MSwiZCI6MX0"
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMCwidyI6MSwiaCI6MSwiZCI6MX0"
     },
     {
       "name": "uppercase-digest",
-      "uri": "meow-artifact://v2/tenant/scope/std/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MX0"
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MX0"
     },
     {
       "name": "javascript-unsafe-size",
-      "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6OTAwNzE5OTI1NDc0MDk5Mn0"
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6OTAwNzE5OTI1NDc0MDk5Mn0"
     },
     {
       "name": "oversized-image-dimension",
-      "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMCwidyI6MjE0NzQ4MzY0OCwiaCI6MX0"
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMCwidyI6MjE0NzQ4MzY0OCwiaCI6MX0"
     },
     {
       "name": "padded-base64url",
-      "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MX0="
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MX0="
     },
     {
       "name": "leading-whitespace",
-      "uri": " meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MX0"
+      "uri": " meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MX0"
     },
     {
       "name": "reordered-metadata",
-      "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJtIjoidGV4dC9wbGFpbiIsImsiOiJmIiwicyI6MX0"
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJtIjoidGV4dC9wbGFpbiIsImsiOiJmIiwicyI6MX0"
     },
     {
       "name": "duplicate-metadata-field",
-      "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MSwicyI6MX0"
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJ0ZXh0L3BsYWluIiwicyI6MSwicyI6MX0"
     },
     {
       "name": "unknown lifecycle",
-      "uri": "meow-artifact://v2/tenant/scope/unknown/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/unknown/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
       "name": "standard cannot carry manual identity",
-      "uri": "meow-artifact://v2/tenant/scope/std/1234567890abcdef1234567890abcdef/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/std/auto/1234567890abcdef1234567890abcdef/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
       "name": "man ID empty",
-      "uri": "meow-artifact://v2/tenant/scope/man//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/std/man//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
       "name": "man ID overlong",
-      "uri": "meow-artifact://v2/tenant/scope/man/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/std/man/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
       "name": "man ID slash",
-      "uri": "meow-artifact://v2/tenant/scope/man/caller/id/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/std/man/caller/id/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
       "name": "man ID dot",
-      "uri": "meow-artifact://v2/tenant/scope/man/../aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/std/man/../aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
       "name": "man ID percent",
-      "uri": "meow-artifact://v2/tenant/scope/man/caller%2Fid/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/std/man/caller%2Fid/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
       "name": "man ID space",
-      "uri": "meow-artifact://v2/tenant/scope/man/caller id/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/std/man/caller id/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
       "name": "man ID unicode",
-      "uri": "meow-artifact://v2/tenant/scope/man/猫/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/std/man/\u732b/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     },
     {
       "name": "man ID newline",
-      "uri": "meow-artifact://v2/tenant/scope/man/A\n/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+      "uri": "meow-artifact://v3/tenant/scope/std/man/A\n/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "unknown-identity",
+      "uri": "meow-artifact://v3/tenant/scope/std/unknown/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+    },
+    {
+      "name": "v2-is-rejected",
+      "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
     }
   ]
 }

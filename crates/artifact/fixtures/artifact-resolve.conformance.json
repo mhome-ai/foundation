@@ -4,13 +4,13 @@
     {
       "name": "request",
       "value": {
-        "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30"
       }
     },
     {
       "name": "data-url-response",
       "value": {
-        "uri": "meow-artifact://v2/tenant/scope/std/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
         "kind": "FILE",
         "mimeType": "application/pdf",
         "sizeBytes": 30,
@@ -23,7 +23,7 @@
     {
       "name": "signed-url-response",
       "value": {
-        "uri": "meow-artifact://v2/tenant/scope/std/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/eyJrIjoiYSIsIm0iOiJhdWRpby9vZ2ciLCJzIjoyMCwiZCI6MTUwMH0",
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/eyJrIjoiYSIsIm0iOiJhdWRpby9vZ2ciLCJzIjoyMCwiZCI6MTUwMH0",
         "kind": "AUDIO",
         "mimeType": "audio/ogg",
         "sizeBytes": 20,
@@ -34,20 +34,36 @@
           "expiresAtUnixMs": 1900000000000
         }
       }
+    },
+    {
+      "name": "manual-temporary-response",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/tmp/man/Caller-A/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "kind": "FILE",
+        "mimeType": "application/pdf",
+        "sizeBytes": 30,
+        "delivery": {
+          "type": "DATA_URL",
+          "dataUrl": "data:application/pdf;base64,eA=="
+        },
+        "identity": "man",
+        "retention": "tmp",
+        "expiresAtUnixMs": 2000000000000
+      }
     }
   ],
   "invalid": [
     {
       "name": "unknown-request-field",
       "value": {
-        "uri": "meow-artifact://v2/tenant/scope/std/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
         "scopeId": "scope"
       }
     },
     {
       "name": "ambiguous-delivery",
       "value": {
-        "uri": "meow-artifact://v2/tenant/scope/std/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
         "kind": "FILE",
         "mimeType": "application/pdf",
         "sizeBytes": 30,
@@ -61,7 +77,7 @@
     {
       "name": "signed-url-without-expiry",
       "value": {
-        "uri": "meow-artifact://v2/tenant/scope/std/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
         "kind": "FILE",
         "mimeType": "application/pdf",
         "sizeBytes": 30,

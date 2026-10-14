@@ -26,14 +26,6 @@
       "minLength": 3,
       "maxLength": 255
     },
-    "lifecycle": {
-      "enum": [
-        "std",
-        "tmp",
-        "man"
-      ],
-      "default": "std"
-    },
     "creationId": {
       "type": "string",
       "minLength": 1,
@@ -41,18 +33,32 @@
       "not": {
         "pattern": "[^A-Za-z0-9_-]"
       }
+    },
+    "identity": {
+      "enum": [
+        "auto",
+        "man"
+      ],
+      "default": "auto"
+    },
+    "retention": {
+      "enum": [
+        "std",
+        "tmp"
+      ],
+      "default": "std"
     }
   },
   "allOf": [
     {
       "if": {
         "properties": {
-          "lifecycle": {
+          "identity": {
             "const": "man"
           }
         },
         "required": [
-          "lifecycle"
+          "identity"
         ]
       },
       "then": {

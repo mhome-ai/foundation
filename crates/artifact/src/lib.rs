@@ -5,8 +5,8 @@ use std::fmt;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-mod lifecycle;
-pub use lifecycle::ArtifactLifecycle;
+mod policy;
+pub use policy::{ArtifactIdentity, ArtifactPolicy, ArtifactRetention};
 mod media;
 mod put;
 mod resolve;
@@ -24,8 +24,8 @@ pub use upload::{
     PrepareArtifactUploadValidationError,
 };
 
-/// Prefix of the version 2 artifact URI format.
-pub const ARTIFACT_URL_PREFIX: &str = "meow-artifact://v2/";
+/// Prefix of the version 3 artifact URI format.
+pub const ARTIFACT_URL_PREFIX: &str = "meow-artifact://v3/";
 const MAX_URI_LENGTH: usize = 2_048;
 const MAX_SEGMENT_LENGTH: usize = 256;
 const MAX_MIME_LENGTH: usize = 255;
@@ -301,7 +301,7 @@ pub struct ArtifactReference {
     tenant_id: String,
     scope_id: String,
     sha256: String,
-    lifecycle: ArtifactLifecycle,
+    policy: ArtifactPolicy,
     creation_id: Option<String>,
     metadata: ArtifactMetadata,
 }
@@ -313,26 +313,26 @@ impl ArtifactReference {
         sha256: impl Into<String>,
         metadata: ArtifactMetadata,
     ) -> Result<Self, ArtifactReferenceError> {
-        Self::with_lifecycle(
+        Self::with_policy(
             tenant_id,
             scope_id,
             sha256,
             metadata,
-            ArtifactLifecycle::Std,
+            ArtifactPolicy::AUTO_STD,
             None,
         )
     }
 
-    pub fn with_lifecycle(
+    pub fn with_policy(
         tenant_id: impl Into<String>,
         scope_id: impl Into<String>,
         sha256: impl Into<String>,
         metadata: ArtifactMetadata,
-        lifecycle: ArtifactLifecycle,
+        policy: ArtifactPolicy,
         creation_id: Option<String>,
     ) -> Result<Self, ArtifactReferenceError> {
         let reference = Self {
-            lifecycle,
+            policy,
             creation_id,
             tenant_id: tenant_id.into(),
             scope_id: scope_id.into(),
@@ -351,31 +351,34 @@ impl ArtifactReference {
             .strip_prefix(ARTIFACT_URL_PREFIX)
             .ok_or_else(|| invalid("unsupported artifact URI"))?;
         let segments = path.split('/').collect::<Vec<_>>();
-        if segments.len() != 6 {
+        if segments.len() != 7 {
             return Err(invalid(
-                "artifact URI must contain tenant, scope, lifecycle, resource ID, digest, and metadata",
+                "artifact URI must contain tenant, scope, retention, identity, resource ID, digest, and metadata",
             ));
         }
         let metadata_bytes = URL_SAFE_NO_PAD
-            .decode(segments[5])
+            .decode(segments[6])
             .map_err(|_| invalid("artifact metadata is not valid base64url"))?;
         let metadata: ArtifactMetadata = serde_json::from_slice(&metadata_bytes)
             .map_err(|_| invalid("artifact metadata is invalid"))?;
-        let lifecycle = ArtifactLifecycle::from_code(segments[2])?;
-        let creation_id = if lifecycle == ArtifactLifecycle::Man {
-            Some(segments[3].to_owned())
+        let policy = ArtifactPolicy::new(
+            ArtifactIdentity::from_code(segments[3])?,
+            ArtifactRetention::from_code(segments[2])?,
+        );
+        let creation_id = if policy.identity == ArtifactIdentity::Man {
+            Some(segments[4].to_owned())
         } else {
-            if segments[3] != segments[4] {
+            if segments[4] != segments[5] {
                 return Err(invalid("artifact resource ID must equal its digest"));
             }
             None
         };
-        let reference = Self::with_lifecycle(
+        let reference = Self::with_policy(
             segments[0],
             segments[1],
-            segments[4],
+            segments[5],
             metadata,
-            lifecycle,
+            policy,
             creation_id,
         )?;
         if reference.uri()? != value {
@@ -389,10 +392,11 @@ impl ArtifactReference {
         let metadata = serde_json::to_vec(&self.metadata)
             .map_err(|_| invalid("artifact metadata cannot be encoded"))?;
         Ok(format!(
-            "{ARTIFACT_URL_PREFIX}{}/{}/{}/{}/{}/{}",
+            "{ARTIFACT_URL_PREFIX}{}/{}/{}/{}/{}/{}/{}",
             self.tenant_id,
             self.scope_id,
-            self.lifecycle.code(),
+            self.policy.retention.code(),
+            self.policy.identity.code(),
             self.resource_id(),
             self.sha256,
             URL_SAFE_NO_PAD.encode(metadata)
@@ -419,8 +423,8 @@ impl ArtifactReference {
         &self.metadata
     }
 
-    pub const fn lifecycle(&self) -> ArtifactLifecycle {
-        self.lifecycle
+    pub const fn policy(&self) -> ArtifactPolicy {
+        self.policy
     }
 
     pub fn resource_id(&self) -> &str {
@@ -446,7 +450,7 @@ impl ArtifactReference {
     }
 
     fn validate(&self) -> Result<(), ArtifactReferenceError> {
-        self.lifecycle
+        self.policy
             .validate_creation_id(self.creation_id.as_deref())?;
         validate_segment(&self.tenant_id, "tenant")?;
         validate_segment(&self.scope_id, "scope")?;
@@ -605,7 +609,7 @@ mod tests {
         assert_eq!(
             reference.uri().unwrap(),
             format!(
-                "meow-artifact://v2/tenant/scope/std/{0}/{0}/eyJrIjoiaSIsIm0iOiJpbWFnZS9qcGVnIiwicyI6MTAwLCJ3IjoxMCwiaCI6MTB9",
+                "meow-artifact://v3/tenant/scope/std/auto/{0}/{0}/eyJrIjoiaSIsIm0iOiJpbWFnZS9qcGVnIiwicyI6MTAwLCJ3IjoxMCwiaCI6MTB9",
                 "a".repeat(64)
             )
         );

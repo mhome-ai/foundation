@@ -49,12 +49,17 @@ fn kind_mime_and_duration_constraints_match_schema_for_every_lifecycle() {
             for duration in [None, Some(1)] {
                 let valid =
                     accepted_mimes.contains(&mime) && (duration.is_none() || allows_duration);
-                for lifecycle in ["std", "tmp", "man"] {
-                    let mut put = json!({"kind":kind, "mimeType":mime, "dataBase64":"eA==", "lifecycle":lifecycle});
+                for (identity, retention) in [
+                    ("auto", "std"),
+                    ("auto", "tmp"),
+                    ("man", "std"),
+                    ("man", "tmp"),
+                ] {
+                    let mut put = json!({"kind":kind, "mimeType":mime, "dataBase64":"eA==", "identity":identity, "retention":retention});
                     if let Some(duration) = duration {
                         put["durationMillis"] = duration.into();
                     }
-                    if lifecycle == "man" {
+                    if identity == "man" {
                         put["creationId"] = "caller-A".into();
                     }
                     let mut upload = put.clone();
@@ -81,7 +86,7 @@ fn kind_mime_and_duration_constraints_match_schema_for_every_lifecycle() {
                     ] {
                         assert_eq!(
                             accepted, valid,
-                            "{name}: {kind} {mime} {duration:?} {lifecycle}"
+                            "{name}: {kind} {mime} {duration:?} {identity}/{retention}"
                         );
                     }
                 }
@@ -140,9 +145,14 @@ fn mime_rules_match_metadata_before_upload_for_every_lifecycle() {
                 valid,
                 "metadata {kind} {mime:?}"
             );
-            for lifecycle in ["std", "tmp", "man"] {
-                let mut put = json!({"kind":kind, "mimeType":mime, "dataBase64":"eA==", "lifecycle":lifecycle});
-                if lifecycle == "man" {
+            for (identity, retention) in [
+                ("auto", "std"),
+                ("auto", "tmp"),
+                ("man", "std"),
+                ("man", "tmp"),
+            ] {
+                let mut put = json!({"kind":kind, "mimeType":mime, "dataBase64":"eA==", "identity":identity, "retention":retention});
+                if identity == "man" {
                     put["creationId"] = "caller-A".into();
                 }
                 let mut upload = put.clone();
@@ -155,7 +165,7 @@ fn mime_rules_match_metadata_before_upload_for_every_lifecycle() {
                         .decode()
                         .is_ok(),
                     valid,
-                    "put {kind} {lifecycle} {mime:?}"
+                    "put {kind} {identity}/{retention} {mime:?}"
                 );
                 assert_eq!(
                     serde_json::from_value::<PrepareArtifactUploadRequest>(upload.clone())
@@ -163,7 +173,7 @@ fn mime_rules_match_metadata_before_upload_for_every_lifecycle() {
                         .validate()
                         .is_ok(),
                     valid,
-                    "upload {kind} {lifecycle} {mime:?}"
+                    "upload {kind} {identity}/{retention} {mime:?}"
                 );
                 assert_eq!(
                     put_validator.is_valid(&put),
@@ -195,12 +205,17 @@ fn rejects_null<T: DeserializeOwned>(base: Value, fields: &[&str]) {
 
 #[test]
 fn request_fields_allow_omission_but_reject_explicit_null() {
-    for lifecycle in ["std", "tmp", "man"] {
+    for (identity, retention) in [
+        ("auto", "std"),
+        ("auto", "tmp"),
+        ("man", "std"),
+        ("man", "tmp"),
+    ] {
         let mut put = json!({
             "kind": "AUDIO", "mimeType": "audio/ogg", "dataBase64": "eA==",
-            "lifecycle": lifecycle
+            "identity": identity, "retention": retention
         });
-        if lifecycle == "man" {
+        if identity == "man" {
             put["creationId"] = "caller-A".into();
         }
         let mut upload = put.clone();
@@ -222,20 +237,23 @@ fn request_fields_allow_omission_but_reject_explicit_null() {
                 .validate()
                 .is_ok()
         );
-        rejects_null::<PutArtifactRequest>(put, &["lifecycle", "creationId", "durationMillis"]);
+        rejects_null::<PutArtifactRequest>(
+            put,
+            &["identity", "retention", "creationId", "durationMillis"],
+        );
         rejects_null::<PrepareArtifactUploadRequest>(
             upload,
-            &["lifecycle", "creationId", "durationMillis"],
+            &["identity", "retention", "creationId", "durationMillis"],
         );
         rejects_null::<ImportArtifactRequest>(
             import.clone(),
-            &["lifecycle", "creationId", "mimeType"],
+            &["identity", "retention", "creationId", "mimeType"],
         );
         let schema: Value =
             serde_json::from_str(include_str!("../schema/artifact-import.v1.schema.json")).unwrap();
         let validator = jsonschema::validator_for(&schema).unwrap();
         assert!(validator.is_valid(&import));
-        for field in ["lifecycle", "creationId", "mimeType"] {
+        for field in ["identity", "retention", "creationId", "mimeType"] {
             let mut value = import.clone();
             value[field] = Value::Null;
             assert!(!validator.is_valid(&value), "import {field}");

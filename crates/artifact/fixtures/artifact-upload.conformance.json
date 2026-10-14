@@ -29,10 +29,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "550E8400-e29b-41d4-a716-446655440000"
+        "creationId": "550E8400-e29b-41d4-a716-446655440000",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -40,10 +41,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "A"
+        "creationId": "A",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -51,10 +53,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "caller_A-1"
+        "creationId": "caller_A-1",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -62,10 +65,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -104,6 +108,19 @@
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "mimeType": "audio/vnd.example+json"
       }
+    },
+    {
+      "name": "manual-temporary-request",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 10800000,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 3600000,
+        "identity": "man",
+        "retention": "tmp",
+        "creationId": "Caller-A"
+      }
     }
   ],
   "invalid": [
@@ -130,9 +147,10 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
-        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -140,10 +158,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": ""
+        "creationId": "",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -151,10 +170,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "A\n"
+        "creationId": "A\n",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -162,10 +182,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "../A"
+        "creationId": "../A",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -173,10 +194,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        "creationId": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -184,10 +206,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "man",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "猫"
+        "creationId": "猫",
+        "identity": "man",
+        "retention": "std"
       }
     },
     {
@@ -195,10 +218,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "std",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "caller-A"
+        "creationId": "caller-A",
+        "identity": "auto",
+        "retention": "std"
       }
     },
     {
@@ -206,10 +230,11 @@
       "value": {
         "kind": "FILE",
         "mimeType": "text/plain",
-        "lifecycle": "tmp",
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "creationId": "caller-A"
+        "creationId": "caller-A",
+        "identity": "auto",
+        "retention": "tmp"
       }
     },
     {
@@ -360,6 +385,61 @@
         "sizeBytes": 1,
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "durationMillis": 1
+      }
+    },
+    {
+      "name": "reject-lifecycle-std",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 10800000,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 3600000,
+        "lifecycle": "std"
+      }
+    },
+    {
+      "name": "reject-identity-None",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 10800000,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 3600000,
+        "identity": null
+      }
+    },
+    {
+      "name": "reject-retention-None",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 10800000,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 3600000,
+        "retention": null
+      }
+    },
+    {
+      "name": "reject-identity-tmp",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 10800000,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 3600000,
+        "identity": "tmp"
+      }
+    },
+    {
+      "name": "reject-retention-man",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/ogg",
+        "sizeBytes": 10800000,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 3600000,
+        "retention": "man"
       }
     }
   ]

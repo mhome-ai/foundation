@@ -70,35 +70,22 @@ for (const name of ["artifactPut", "artifactResolve"]) {
       ({ value }) => value.uri && value.kind
     ).value;
     const expiresAtUnixMs = 1900000000000;
-    const temporaryResponse = {
-      ...response,
-      uri: response.uri.replace("/std/", "/tmp/"),
-    };
-    const manualResponse = {
-      ...response,
-      lifecycle: "man",
-      uri: response.uri.replace(
-        /\/std\/[a-f0-9]{64}\//,
-        "/man/0123456789abcdef0123456789abcdef/"
-      ),
-    };
-    assert.equal(
-      validate({ ...temporaryResponse, lifecycle: "tmp", expiresAtUnixMs }),
-      true
-    );
-    assert.equal(validate({ ...response, lifecycle: "std" }), true);
-    assert.equal(validate(manualResponse), true);
-    assert.equal(validate({ ...manualResponse, expiresAtUnixMs }), false);
-    assert.equal(validate({ ...temporaryResponse, lifecycle: "tmp" }), false);
-    assert.equal(validate({ ...response, expiresAtUnixMs }), false);
-    assert.equal(
-      validate({ ...response, lifecycle: "std", expiresAtUnixMs }),
-      false
-    );
-    assert.equal(
-      validate({ ...temporaryResponse, lifecycle: "tmp", expiresAtUnixMs: 0 }),
-      false
-    );
+    for (const identity of ["auto", "man"]) {
+      for (const retention of ["std", "tmp"]) {
+        const parts = response.uri.split("/");
+        parts[5] = retention;
+        parts[6] = identity;
+        if (identity === "man") parts[7] = "Caller-A";
+        const value = { ...response, identity, retention, uri: parts.join("/") };
+        delete value.expiresAtUnixMs;
+        assert.equal(validate(value), retention === "std");
+        assert.equal(validate({ ...value, expiresAtUnixMs }), retention === "tmp");
+        assert.equal(validate({ ...value, expiresAtUnixMs: 0 }), false);
+        assert.equal(validate({ ...value, identity: null }), false);
+        assert.equal(validate({ ...value, retention: null }), false);
+        assert.equal(validate({ ...value, lifecycle: "std" }), false);
+      }
+    }
   });
 }
 

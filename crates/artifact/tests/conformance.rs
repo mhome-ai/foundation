@@ -281,7 +281,7 @@ fn conversion_fields_are_rejected() {
 
 #[test]
 fn modes_and_manual_retries_are_explicit_in_rust_and_schema() {
-    use artifact_api::{ArtifactLifecycle, ImportArtifactRequest};
+    use artifact_api::{ArtifactPolicy, ImportArtifactRequest};
     use serde_json::json;
     let id = "0123456789abcdef0123456789abcdef";
     for (schema_text, base, operation) in [
@@ -332,7 +332,8 @@ fn modes_and_manual_retries_are_explicit_in_rust_and_schema() {
         ] {
             let mut value = base.clone();
             if let Some(mode) = mode {
-                value["lifecycle"] = json!(mode);
+                value["identity"] = json!(if mode == "man" { "man" } else { "auto" });
+                value["retention"] = json!(if mode == "man" { "std" } else { mode });
             }
             if let Some(id) = creation {
                 value["creationId"] = json!(id);
@@ -347,7 +348,7 @@ fn modes_and_manual_retries_are_explicit_in_rust_and_schema() {
                     .unwrap_or(false),
                 _ => serde_json::from_value::<ImportArtifactRequest>(value.clone())
                     .map(|v| {
-                        v.lifecycle
+                        v.policy()
                             .validate_creation_id(v.creation_id.as_deref())
                             .is_ok()
                     })
@@ -356,5 +357,33 @@ fn modes_and_manual_retries_are_explicit_in_rust_and_schema() {
             assert_eq!(rust_valid, valid, "{operation}: {value}");
         }
     }
-    assert_eq!(ArtifactLifecycle::default(), ArtifactLifecycle::Std);
+    assert_eq!(ArtifactPolicy::default(), ArtifactPolicy::AUTO_STD);
+}
+
+#[test]
+fn identity_and_retention_form_four_independent_resource_namespaces() {
+    use artifact_api::{ArtifactIdentity, ArtifactMetadata, ArtifactPolicy, ArtifactRetention};
+    let mut uris = std::collections::HashSet::new();
+    for identity in [ArtifactIdentity::Auto, ArtifactIdentity::Man] {
+        for retention in [ArtifactRetention::Std, ArtifactRetention::Tmp] {
+            let policy = ArtifactPolicy::new(identity, retention);
+            let creation = (identity == ArtifactIdentity::Man).then(|| "Caller-A".to_owned());
+            let reference = ArtifactReference::with_policy(
+                "tenant",
+                "scope",
+                "a".repeat(64),
+                ArtifactMetadata::file("text/plain", 1).unwrap(),
+                policy,
+                creation.clone(),
+            )
+            .unwrap();
+            let uri = reference.uri().unwrap();
+            assert!(uris.insert(uri.clone()));
+            let parsed = ArtifactReference::parse(&uri).unwrap();
+            assert_eq!(parsed.policy(), policy);
+            assert_eq!(parsed.creation_id(), creation.as_deref());
+            assert_eq!(parsed.sha256(), "a".repeat(64));
+            assert!(ArtifactReference::parse(&uri.replace("//v3/", "//v2/")).is_err());
+        }
+    }
 }

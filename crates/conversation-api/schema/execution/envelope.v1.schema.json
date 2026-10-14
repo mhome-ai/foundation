@@ -321,7 +321,7 @@
             },
             "uri": {
               "type": "string",
-              "pattern": "^meow-artifact://v2/"
+              "pattern": "^meow-artifact://v3/"
             }
           }
         },

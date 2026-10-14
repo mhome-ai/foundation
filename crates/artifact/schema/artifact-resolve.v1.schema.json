@@ -20,7 +20,7 @@
       "properties": {
         "uri": {
           "type": "string",
-          "pattern": "^meow-artifact://v2/",
+          "pattern": "^meow-artifact://v3/",
           "maxLength": 2048
         }
       }
@@ -38,7 +38,7 @@
       "properties": {
         "uri": {
           "type": "string",
-          "pattern": "^meow-artifact://v2/",
+          "pattern": "^meow-artifact://v3/",
           "maxLength": 2048
         },
         "kind": {
@@ -150,29 +150,35 @@
             }
           }
         },
-        "lifecycle": {
-          "enum": [
-            "std",
-            "tmp",
-            "man"
-          ],
-          "default": "std"
-        },
         "expiresAtUnixMs": {
           "type": "integer",
           "minimum": 1
+        },
+        "identity": {
+          "enum": [
+            "auto",
+            "man"
+          ],
+          "default": "auto"
+        },
+        "retention": {
+          "enum": [
+            "std",
+            "tmp"
+          ],
+          "default": "std"
         }
       },
       "allOf": [
         {
           "if": {
             "properties": {
-              "lifecycle": {
+              "retention": {
                 "const": "tmp"
               }
             },
             "required": [
-              "lifecycle"
+              "retention"
             ]
           },
           "then": {

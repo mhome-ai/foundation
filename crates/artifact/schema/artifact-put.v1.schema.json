@@ -23,7 +23,7 @@
       "properties": {
         "uri": {
           "type": "string",
-          "pattern": "^meow-artifact://v2/",
+          "pattern": "^meow-artifact://v3/",
           "maxLength": 2048
         },
         "kind": {
@@ -59,29 +59,35 @@
           "minimum": 1,
           "maximum": 9007199254740991
         },
-        "lifecycle": {
-          "enum": [
-            "std",
-            "tmp",
-            "man"
-          ],
-          "default": "std"
-        },
         "expiresAtUnixMs": {
           "type": "integer",
           "minimum": 1
+        },
+        "identity": {
+          "enum": [
+            "auto",
+            "man"
+          ],
+          "default": "auto"
+        },
+        "retention": {
+          "enum": [
+            "std",
+            "tmp"
+          ],
+          "default": "std"
         }
       },
       "allOf": [
         {
           "if": {
             "properties": {
-              "lifecycle": {
+              "retention": {
                 "const": "tmp"
               }
             },
             "required": [
-              "lifecycle"
+              "retention"
             ]
           },
           "then": {
@@ -145,14 +151,6 @@
           "minimum": 1,
           "maximum": 9007199254740991
         },
-        "lifecycle": {
-          "enum": [
-            "std",
-            "tmp",
-            "man"
-          ],
-          "default": "std"
-        },
         "creationId": {
           "type": "string",
           "minLength": 1,
@@ -160,18 +158,32 @@
           "not": {
             "pattern": "[^A-Za-z0-9_-]"
           }
+        },
+        "identity": {
+          "enum": [
+            "auto",
+            "man"
+          ],
+          "default": "auto"
+        },
+        "retention": {
+          "enum": [
+            "std",
+            "tmp"
+          ],
+          "default": "std"
         }
       },
       "allOf": [
         {
           "if": {
             "properties": {
-              "lifecycle": {
+              "identity": {
                 "const": "man"
               }
             },
             "required": [
-              "lifecycle"
+              "identity"
             ]
           },
           "then": {
