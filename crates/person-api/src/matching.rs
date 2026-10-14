@@ -25,7 +25,8 @@ pub struct GalleryEntry {
     #[serde(default)]
     pub provisional: bool,
     pub cluster_id: String,
-    pub person_id: Option<String>,
+    pub person_id: String,
+    pub kind: crate::PersonKind,
     pub centroid: Vec<f32>,
     pub exemplars: Vec<Vec<f32>>,
 }

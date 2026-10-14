@@ -1,13 +1,9 @@
 //! Pure matching used by Core; evidence producers do not choose matching policy.
-use person_api::{GalleryEntry, MatchPolicy};
+use person_api::{GalleryEntry, MatchPolicy, PersonKind};
 #[derive(Debug, Clone, PartialEq)]
 pub enum Match {
-    Known {
+    Identified {
         person_id: String,
-        cluster_id: String,
-        score: f32,
-    },
-    UnknownCluster {
         cluster_id: String,
         score: f32,
     },
@@ -50,7 +46,7 @@ pub fn identify(vector: &[f32], entries: &[GalleryEntry], policy: &MatchPolicy) 
     ranked.sort_by(|(a, x), (b, y)| y.total_cmp(x).then_with(|| a.cluster_id.cmp(&b.cluster_id)));
     let Some((best, value)) = ranked.iter().find(|(entry, value)| {
         *value
-            >= if entry.person_id.is_some() {
+            >= if entry.kind == PersonKind::Known {
                 policy.known_threshold
             } else {
                 policy.unknown_threshold
@@ -60,21 +56,15 @@ pub fn identify(vector: &[f32], entries: &[GalleryEntry], policy: &MatchPolicy) 
     };
     // Multiple pose clusters of the same named person are one identity, not competing people.
     if ranked.iter().any(|(other, s)| {
-        let same_person = best.person_id.is_some() && best.person_id == other.person_id;
+        let same_person = best.person_id == other.person_id;
         other.cluster_id != best.cluster_id && !same_person && *value - *s < policy.ambiguity_margin
     }) {
         return Match::Ambiguous;
     }
-    match &best.person_id {
-        Some(id) => Match::Known {
-            person_id: id.clone(),
-            cluster_id: best.cluster_id.clone(),
-            score: *value,
-        },
-        None => Match::UnknownCluster {
-            cluster_id: best.cluster_id.clone(),
-            score: *value,
-        },
+    Match::Identified {
+        person_id: best.person_id.clone(),
+        cluster_id: best.cluster_id.clone(),
+        score: *value,
     }
 }
 /// Recognition uses every candidate for ambiguity checks, including provisional ones.
@@ -82,9 +72,7 @@ pub fn identify(vector: &[f32], entries: &[GalleryEntry], policy: &MatchPolicy) 
 pub fn recognize(vector: &[f32], entries: &[GalleryEntry], policy: &MatchPolicy) -> Match {
     let matched = identify(vector, entries, policy);
     let cluster = match &matched {
-        Match::Known { cluster_id, .. } | Match::UnknownCluster { cluster_id, .. } => {
-            Some(cluster_id)
-        }
+        Match::Identified { cluster_id, .. } => Some(cluster_id),
         _ => None,
     };
     if cluster.is_some_and(|id| entries.iter().any(|e| &e.cluster_id == id && e.provisional)) {
@@ -114,7 +102,12 @@ mod tests {
         GalleryEntry {
             provisional: false,
             cluster_id: cluster.into(),
-            person_id: person.map(str::to_string),
+            person_id: person.unwrap_or(cluster).into(),
+            kind: if person.is_some() {
+                PersonKind::Known
+            } else {
+                PersonKind::Unknown
+            },
             centroid: vec![1., 0.],
             exemplars: vec![],
         }
@@ -127,7 +120,7 @@ mod tests {
                 &[entry("a", Some("p")), entry("b", Some("p"))],
                 &MatchPolicy::default()
             ),
-            Match::Known { .. }
+            Match::Identified { .. }
         ));
         assert_eq!(
             identify(
@@ -154,7 +147,12 @@ mod threshold_tests {
         let entry = |id: &str, person: Option<&str>, cos: f32| GalleryEntry {
             provisional: false,
             cluster_id: id.into(),
-            person_id: person.map(str::to_string),
+            person_id: person.unwrap_or(id).into(),
+            kind: if person.is_some() {
+                PersonKind::Known
+            } else {
+                PersonKind::Unknown
+            },
             centroid: vec![cos, (1. - cos * cos).sqrt()],
             exemplars: vec![],
         };
@@ -182,14 +180,16 @@ mod provisional_tests {
     fn provisional_competitor_prevents_false_known_and_cannot_identify_itself() {
         let known = GalleryEntry {
             cluster_id: "known".into(),
-            person_id: Some("alice".into()),
+            person_id: "alice".into(),
+            kind: PersonKind::Known,
             provisional: false,
             centroid: vector(0.),
             exemplars: vec![],
         };
         let provisional = GalleryEntry {
             cluster_id: "candidate".into(),
-            person_id: None,
+            person_id: "candidate".into(),
+            kind: PersonKind::Unknown,
             provisional: true,
             centroid: vector(55.),
             exemplars: vec![],
@@ -197,7 +197,7 @@ mod provisional_tests {
         let entries = vec![known, provisional];
         assert!(matches!(
             recognize(&vector(28.), &entries[..1], &MatchPolicy::default()),
-            Match::Known { .. }
+            Match::Identified { .. }
         ));
         assert_eq!(
             recognize(&vector(28.), &entries, &MatchPolicy::default()),
@@ -209,7 +209,7 @@ mod provisional_tests {
         );
         assert!(matches!(
             identify(&vector(55.), &entries[1..], &MatchPolicy::default()),
-            Match::UnknownCluster { .. }
+            Match::Identified { .. }
         ));
     }
 }

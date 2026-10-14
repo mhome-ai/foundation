@@ -7,13 +7,13 @@ pub const SUMMARY_IMAGES_BATCH_GET_TARGET: &str = "/app/person/summary-images/ba
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SummaryImagesInput {
-    /// Explicit `person:<id>` or `cluster:<id>` references. No count limit or pagination.
+    /// Canonical `h:<uuid>` Person references. No count limit or pagination.
     pub ids: Vec<String>,
 }
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SummaryImagesOutput {
-    /// Deduplicated in first-request order. Named cluster aliases share the Person URI.
+    /// Deduplicated in first-request order. Every identity has one Person URI.
     pub items: Vec<SummaryImage>,
     pub missing_ids: Vec<String>,
 }

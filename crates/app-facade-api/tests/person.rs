@@ -23,7 +23,7 @@ fn summary_batch_has_no_pagination_or_id_count_cap() {
         serde_json::from_str(include_str!("../schema/person.v1.schema.json")).unwrap();
     let validator = jsonschema::validator_for(&schema["$defs"]["SummaryImagesInput"]).unwrap();
     for count in [0, 51, 1000] {
-        let value = serde_json::json!({"ids": (0..count).map(|i| format!("cluster:{i}")).collect::<Vec<_>>()});
+        let value = serde_json::json!({"ids": (0..count).map(|i| format!("h:00000000-0000-0000-0000-{i:012x}")).collect::<Vec<_>>()});
         assert!(validator.is_valid(&value));
         assert_eq!(
             serde_json::from_value::<SummaryImagesInput>(value)
@@ -35,7 +35,7 @@ fn summary_batch_has_no_pagination_or_id_count_cap() {
     }
     assert!(!validator.is_valid(&serde_json::json!({"ids":["untyped"]})));
     assert!(!validator.is_valid(&serde_json::json!({"ids":[],"cursor":"next"})));
-    let output = serde_json::json!({"items":[{"id":"person:one","uri":"meow-artifact://scoped/image"}],"missingIds":["cluster:missing"]});
+    let output = serde_json::json!({"items":[{"id":"h:00000000-0000-0000-0000-000000000001","uri":"meow-artifact://scoped/image"}],"missingIds":["h:00000000-0000-0000-0000-000000000002"]});
     let value: SummaryImagesOutput = serde_json::from_value(output.clone()).unwrap();
     assert_eq!(serde_json::to_value(value).unwrap(), output);
     assert!(

@@ -28,14 +28,12 @@ pub enum LearningOutcome {
     deny_unknown_fields
 )]
 pub enum PersonDecision {
-    Known {
+    Identified {
         person_id: String,
         cluster_id: String,
         score: f32,
     },
-    Stranger {
-        cluster_id: Option<String>,
-    },
+    Stranger,
     Uncertain,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -64,13 +62,13 @@ mod tests {
     use super::*;
     #[test]
     fn decision_wire_contract_distinguishes_unknown_from_stranger() {
-        let known = PersonDecision::Known {
+        let known = PersonDecision::Identified {
             person_id: "person".into(),
             cluster_id: "cluster".into(),
             score: 0.9,
         };
         let value = serde_json::to_value(&known).unwrap();
-        assert_eq!(value["status"], "known");
+        assert_eq!(value["status"], "identified");
         assert_eq!(value["personId"], "person");
         assert!(value.get("person_id").is_none());
         assert_eq!(
@@ -79,7 +77,7 @@ mod tests {
         );
         assert_ne!(
             serde_json::to_value(PersonDecision::Uncertain).unwrap()["status"],
-            serde_json::to_value(PersonDecision::Stranger { cluster_id: None }).unwrap()["status"]
+            serde_json::to_value(PersonDecision::Stranger).unwrap()["status"]
         );
     }
 }

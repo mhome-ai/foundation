@@ -8,7 +8,7 @@ pub use learning::*;
 pub use matching::*;
 pub use model::*;
 pub use producer::*;
-pub const PROTOCOL_VERSION: &str = "person.v1";
+pub const PROTOCOL_VERSION: &str = "person.v2";
 pub const DESCRIBE_TARGET: &str = "/person/describe";
 pub const OBSERVE_TARGET: &str = "/person/observe";
 pub const MAX_SAMPLES_PER_BATCH: usize = 16;
