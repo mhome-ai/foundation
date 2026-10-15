@@ -1031,6 +1031,10 @@ pub enum ServiceCoreInput {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(
+    clippy::large_enum_variant,
+    reason = "Keep the public wire fields inline; boxing changes Rust callers for a bounded auth response"
+)]
 pub enum ServiceCoreResponse {
     ClientAuth {
         session: Option<AuthenticatedSession>,
