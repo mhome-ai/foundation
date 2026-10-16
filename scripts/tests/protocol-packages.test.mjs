@@ -4,6 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
+
 import { PROTOCOL_PACKAGES } from "../protocol-packages.mjs";
 import { stageProtocolPackage } from "../stage-protocol-package.mjs";
 
@@ -68,6 +71,54 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
     }
   });
 }
+
+test("stages a usable Pod Talk schema with its conversation fixtures", () => {
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "mhome-conversation-talk-protocol-")
+  );
+  try {
+    const staged = stageProtocolPackage(
+      "conversation",
+      path.join(tempRoot, "package")
+    );
+    const descriptor = JSON.parse(
+      fs.readFileSync(path.join(staged.stagingRoot, "protocol.json"), "utf8")
+    );
+    assert.equal(
+      typeof descriptor.schemas.podTalk,
+      "string",
+      "the published protocol must identify the canonical Pod Talk schema"
+    );
+    const schema = JSON.parse(
+      fs.readFileSync(
+        path.join(staged.stagingRoot, descriptor.schemas.podTalk),
+        "utf8"
+      )
+    );
+    const ajv = new Ajv2020({ allErrors: true, strict: true });
+    addFormats(ajv);
+    const validate = ajv.compile(schema);
+    const fixturesRoot = path.join(staged.stagingRoot, "fixtures/talk");
+    const fixtures = fs
+      .readdirSync(fixturesRoot)
+      .filter((file) => file.endsWith(".json"))
+      .sort();
+    assert.ok(fixtures.length > 0, "Pod Talk fixtures must be published");
+    for (const file of fixtures) {
+      const fixture = JSON.parse(
+        fs.readFileSync(path.join(fixturesRoot, file), "utf8")
+      );
+      assert.equal(
+        validate(fixture),
+        true,
+        `${file}: ${JSON.stringify(validate.errors)}`
+      );
+      assert.equal(validate({ ...fixture, unexpected: true }), false, file);
+    }
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
 
 test("refuses to overwrite a non-empty staging directory", () => {
   const tempRoot = fs.mkdtempSync(

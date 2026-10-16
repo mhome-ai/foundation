@@ -29,6 +29,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     schemas: Object.freeze({
       frame: "schema/conversation-frame.v2.schema.json",
       execution: "schema/execution/envelope.v1.schema.json",
+      podTalk: "schema/pod-talk.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",

@@ -1660,6 +1660,7 @@
           "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
         },
         "outcome": {
+          "type": "object",
           "allOf": [
             {
               "$ref": "#/$defs/outcome"
