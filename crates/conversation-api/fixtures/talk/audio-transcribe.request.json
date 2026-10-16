@@ -1,0 +1,9 @@
+{
+  "target": "/pod/talk/audio/transcribe",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "operationId": "operation",
+    "uri": "meow-artifact://v3/tenant/space/tmp/man/operation/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjozMjA0NCwiZCI6MTAwMH0"
+  }
+}

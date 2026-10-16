@@ -115,3 +115,47 @@ receipt by request ID, returning null admission for an unknown request. It recov
 missed `admission.changed` events without reenqueuing or guessing from an empty
 queue. Retry of the original submission still checks its original content, even
 when the queued execution content was later edited.
+
+## Pod Talk
+
+`talk` is a separate bounded presentation facade for small voice devices. Its
+targets appear under `podTalk` in the target manifest, with independent schema
+`schema/pod-talk.v1.schema.json` and cross-language examples in `fixtures/talk/`.
+The canonical `/chat/*` targets and Agent execution wire remain unchanged.
+
+Each view carries the authoritative owner, authenticated conversation surface,
+active thread, control version and exact decimal history version. Personal
+Clients retain their own `cp`; Space Clients share only `cg:space-clients` in the
+same tenant and scope. Admission receipts never establish a run outcome. Results
+are read by original request ID, including after active-thread rotation; unknown
+results remain unknown. Request cancellation may omit the thread and resolve it
+through the original durable admission. No automatic write replay is implied.
+
+When the active thread has no running, queued or pending request, a view's
+`settlement` carries the latest run's `requestId` and bounded `outcome`, even
+without assistant text. It is null in other phases. `interaction_required` is
+not a terminal outcome, and reply text alone does not establish success. This
+lets a restarted device or another Pod recover the same terminal presentation
+without persisting a local request. The context's thread identifies the
+settlement; archived-thread results never replace a different active view.
+
+Reply offsets count UTF-8 bytes in the immutable plain text identified by
+`contentRevision`. A single bounded window includes explicit next/previous
+offsets. Pending previews mark omissions and prohibit approving incomplete
+previews or unsupported client tasks. Spoken responses target the original
+thread, request and batch, with a second validation before canonical submission.
+
+The complete escaped MWS frame is limited to 64 KiB, changed notifications to
+2 KiB, transcripts to 4 KiB UTF-8 and reply windows to 16 KiB. Implementations
+must enforce bytes and parsing depth/node budgets in addition to schema string
+lengths. All egress paths to Pod, including bridged pushes and errors, must honor
+these limits before entering the physical WebSocket queue.
+
+Audio uses short-lived binary HTTP grants, not base64 in MWS. Input is mono
+16 kHz PCM16 WAV, 300–30,000 ms and at most 960,044 bytes; metadata, actual bytes
+and SHA-256 must agree. TTS references a formal assistant message, permits only
+finite PCM16 mono WAV at 16/24/48 kHz, at most 32 seconds and 1,536,044 bytes, and
+returns an Artifact reference or text-only reason. Media steps retain the same
+owner. Upload grants and download descriptors reuse the Artifact contract,
+including pinned host identity when the owner is a local Core. Resolve responses
+include the content digest and require signed URLs, never data URLs.

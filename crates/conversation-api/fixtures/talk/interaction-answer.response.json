@@ -1,0 +1,8 @@
+{
+  "target": "/pod/talk/interaction/answer",
+  "direction": "response",
+  "body": {
+    "operationId": "operation",
+    "disposition": "clarify"
+  }
+}

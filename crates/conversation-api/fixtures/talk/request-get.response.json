@@ -1,0 +1,34 @@
+{
+  "target": "/pod/talk/request/get",
+  "direction": "response",
+  "body": {
+    "context": {
+      "ownerId": "core:one",
+      "scopeId": "space",
+      "surfaceId": "cs1:cg:c3BhY2UtY2xpZW50cw",
+      "threadId": "thread",
+      "controlVersion": "00000000000000000001:00000000000000000002",
+      "historyVersion": "9007199254740993"
+    },
+    "requestId": "request",
+    "admission": "bound",
+    "phase": "settled",
+    "outcome": {
+      "status": "completed",
+      "errorCode": null,
+      "message": null
+    },
+    "pending": null,
+    "reply": {
+      "threadId": "thread",
+      "requestId": "request",
+      "messageId": "message",
+      "contentRevision": "revision",
+      "offset": 0,
+      "nextOffset": 6,
+      "previousOffset": null,
+      "text": "猫猫",
+      "hasUnsupportedParts": false
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "target": "/pod/talk/view/get",
+  "direction": "request",
+  "body": {}
+}

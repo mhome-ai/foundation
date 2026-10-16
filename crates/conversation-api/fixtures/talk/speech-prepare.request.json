@@ -1,0 +1,12 @@
+{
+  "target": "/pod/talk/speech/prepare",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "threadId": "thread",
+    "requestId": "request",
+    "messageId": "message",
+    "contentRevision": "revision",
+    "operationId": "operation"
+  }
+}

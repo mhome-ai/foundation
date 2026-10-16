@@ -1,0 +1,15 @@
+{
+  "target": "/pod/talk/reply/read",
+  "direction": "response",
+  "body": {
+    "threadId": "thread",
+    "requestId": "request",
+    "messageId": "message",
+    "contentRevision": "revision",
+    "offset": 6,
+    "nextOffset": null,
+    "previousOffset": 0,
+    "text": "done",
+    "hasUnsupportedParts": false
+  }
+}

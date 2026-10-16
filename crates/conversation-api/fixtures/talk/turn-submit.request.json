@@ -1,0 +1,10 @@
+{
+  "target": "/pod/talk/turn/submit",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "requestId": "request",
+    "text": "关灯",
+    "occurredAtUnixMs": 12345
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "target": "/pod/talk/interaction/answer",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "threadId": "thread",
+    "requestId": "request",
+    "batchId": "batch",
+    "operationId": "operation",
+    "text": "全部同意",
+    "occurredAtUnixMs": 12345
+  }
+}

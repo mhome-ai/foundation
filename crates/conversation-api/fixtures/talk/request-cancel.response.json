@@ -1,0 +1,9 @@
+{
+  "target": "/pod/talk/request/cancel",
+  "direction": "response",
+  "body": {
+    "requestId": "request",
+    "phase": "running",
+    "outcome": "cancelling"
+  }
+}

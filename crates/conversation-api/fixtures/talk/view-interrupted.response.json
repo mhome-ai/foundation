@@ -1,0 +1,34 @@
+{
+  "target": "/pod/talk/view/get",
+  "direction": "response",
+  "body": {
+    "context": {
+      "ownerId": "core:one",
+      "scopeId": "space",
+      "surfaceId": "cs1:cg:c3BhY2UtY2xpZW50cw",
+      "threadId": "thread",
+      "controlVersion": "00000000000000000001:00000000000000000002",
+      "historyVersion": "9007199254740993"
+    },
+    "capabilities": {
+      "submit": true,
+      "answer": true,
+      "transcribe": true,
+      "speak": true,
+      "unavailableReason": null
+    },
+    "phase": "settled",
+    "activeRequestId": null,
+    "queueCount": 0,
+    "pending": null,
+    "reply": null,
+    "settlement": {
+      "requestId": "request",
+      "outcome": {
+        "status": "interrupted",
+        "errorCode": null,
+        "message": null
+      }
+    }
+  }
+}

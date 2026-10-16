@@ -1,0 +1,12 @@
+{
+  "target": "/pod/talk/audio/upload/prepare",
+  "direction": "response",
+  "body": {
+    "uploadId": "operation",
+    "url": "https://core.example/audio/upload",
+    "headers": {
+      "Content-Type": "audio/wav"
+    },
+    "expiresAtUnixMs": 1800000000000
+  }
+}

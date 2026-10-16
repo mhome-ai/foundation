@@ -1,0 +1,9 @@
+{
+  "target": "/pod/talk/turn/submit",
+  "direction": "response",
+  "body": {
+    "requestId": "request",
+    "threadId": "thread",
+    "disposition": "scheduled"
+  }
+}

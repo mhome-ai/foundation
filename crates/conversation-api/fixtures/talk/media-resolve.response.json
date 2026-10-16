@@ -1,0 +1,22 @@
+{
+  "target": "/pod/talk/media/resolve",
+  "direction": "response",
+  "body": {
+    "descriptor": {
+      "uri": "meow-artifact://v3/tenant/space/tmp/man/operation/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjozMjA0NCwiZCI6MTAwMH0",
+      "kind": "AUDIO",
+      "mimeType": "audio/wav",
+      "sizeBytes": 32044,
+      "durationMillis": 1000,
+      "identity": "man",
+      "retention": "tmp",
+      "expiresAtUnixMs": 1800000000000,
+      "delivery": {
+        "type": "SIGNED_URL",
+        "url": "https://core.example/audio/read",
+        "expiresAtUnixMs": 1800000000000
+      }
+    },
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+}

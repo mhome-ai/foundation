@@ -1,0 +1,8 @@
+{
+  "target": "/pod/talk/request/get",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "requestId": "request"
+  }
+}

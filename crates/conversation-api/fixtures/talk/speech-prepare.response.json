@@ -1,0 +1,9 @@
+{
+  "target": "/pod/talk/speech/prepare",
+  "direction": "response",
+  "body": {
+    "operationId": "operation",
+    "uri": null,
+    "textOnlyReason": "unsupported_content"
+  }
+}

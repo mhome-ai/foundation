@@ -1,0 +1,9 @@
+{
+  "target": "/pod/talk/changed",
+  "direction": "event",
+  "body": {
+    "ownerId": "core:one",
+    "scopeId": "space",
+    "surfaceId": "cs1:cg:c3BhY2UtY2xpZW50cw"
+  }
+}

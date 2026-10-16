@@ -1,0 +1,45 @@
+{
+  "target": "/pod/talk/view/get",
+  "direction": "response",
+  "body": {
+    "context": {
+      "ownerId": "core:one",
+      "scopeId": "space",
+      "surfaceId": "cs1:cg:c3BhY2UtY2xpZW50cw",
+      "threadId": "thread",
+      "controlVersion": "00000000000000000001:00000000000000000002",
+      "historyVersion": "9007199254740993"
+    },
+    "capabilities": {
+      "submit": true,
+      "answer": true,
+      "transcribe": true,
+      "speak": true,
+      "unavailableReason": null
+    },
+    "phase": "pending",
+    "activeRequestId": "request",
+    "queueCount": 0,
+    "pending": {
+      "threadId": "thread",
+      "requestId": "request",
+      "batchId": "batch",
+      "text": "Turn off the light?",
+      "actionCount": 1,
+      "complete": true,
+      "canApprove": true
+    },
+    "reply": {
+      "threadId": "thread",
+      "requestId": "request",
+      "messageId": "message",
+      "contentRevision": "revision",
+      "offset": 0,
+      "nextOffset": 6,
+      "previousOffset": null,
+      "text": "猫猫",
+      "hasUnsupportedParts": false
+    },
+    "settlement": null
+  }
+}
