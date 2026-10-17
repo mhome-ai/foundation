@@ -42,7 +42,6 @@
           "target": "/app/integration/install"
         },
         "revision": 8,
-        "approval": "always",
         "interaction_kind": "user_action"
       }
     }

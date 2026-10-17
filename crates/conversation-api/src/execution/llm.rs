@@ -30,70 +30,8 @@ pub struct ToolDefinition {
 pub enum ToolEffect {
     /// Tool is safe to execute as a query.
     ReadOnly,
-    /// Tool requires prepare/commit semantics.
+    /// Tool can change application state; its implementation selects the execution flow.
     Mutating,
-}
-
-/// When a prepared tool operation requires a user decision.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ApprovalRequirement {
-    /// Operation never pauses for approval.
-    Never,
-    /// Operation pauses only when the run uses interactive access.
-    WhenInteractive,
-    /// Operation always pauses, including full-access runs.
-    Always,
-}
-
-impl ApprovalRequirement {
-    /// Relative strength used when the Agent computes approval per invocation.
-    #[must_use]
-    pub const fn rank(self) -> u8 {
-        match self {
-            Self::Never => 0,
-            Self::WhenInteractive => 1,
-            Self::Always => 2,
-        }
-    }
-}
-
-/// Whether approval is fixed by the schema or strengthened after canonical preparation.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-pub enum ApprovalPolicy {
-    /// Every invocation uses the same requirement.
-    Fixed {
-        /// Exact requirement for every invocation.
-        requirement: ApprovalRequirement,
-    },
-    /// App Facade preparation chooses a requirement no weaker than this minimum.
-    PerInvocation {
-        /// Minimum requirement the prepared action may declare.
-        minimum: ApprovalRequirement,
-    },
-}
-
-impl ApprovalPolicy {
-    /// Returns whether the prepared requirement is permitted by this declaration.
-    #[must_use]
-    pub const fn permits(self, requirement: ApprovalRequirement) -> bool {
-        match self {
-            Self::Fixed { requirement: fixed } => fixed.rank() == requirement.rank(),
-            Self::PerInvocation { minimum } => requirement.rank() >= minimum.rank(),
-        }
-    }
-
-    /// Returns whether every invocation is unconditionally approval-free.
-    #[must_use]
-    pub const fn is_fixed_never(self) -> bool {
-        matches!(
-            self,
-            Self::Fixed {
-                requirement: ApprovalRequirement::Never
-            }
-        )
-    }
 }
 
 /// Runtime policy declared by a tool implementation.
@@ -101,8 +39,6 @@ impl ApprovalPolicy {
 pub struct ToolPolicy {
     /// Side-effect class of the tool.
     pub effect: ToolEffect,
-    /// Approval rule for a concrete invocation.
-    pub approval: ApprovalPolicy,
     /// Whether the Agent declares independent calls safe for parallel execution.
     pub parallel_safe: bool,
 }

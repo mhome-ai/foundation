@@ -4,9 +4,7 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::execution::{
-    ActionId, ApprovalRequirement, ExternalError, InvocationContext, OperationId,
-};
+use crate::execution::{ActionId, ExternalError, InvocationContext, OperationId};
 
 /// Canonical App Facade request selected by Agent-owned tool code.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -39,8 +37,6 @@ pub struct PreparedAction {
     pub payload: Value,
     /// App Facade revision that must still be current when committing.
     pub revision: u64,
-    /// Approval requirement computed from the canonical prepared operation.
-    pub approval: ApprovalRequirement,
     /// Presentation/continuation kind for clients.
     pub interaction_kind: InteractionKind,
 }

@@ -44,8 +44,8 @@ Installation HITL previews use exactly one concrete target:
 `{ "type": "install_integration", "integrationId": "provider.example" }`.
 The same closed client-task contract is used by execution and conversation frames.
 The old plural task and array field are rejected; producers and consumers must
-adopt this contract together. Direct installation uses an ordinary approval
-without a client task. Connection tasks open the existing connection UI, then
+adopt this contract together. A confirmation for direct installation has no client task; the Agent Tool decides
+whether its trusted access mode requires that confirmation. Connection tasks open the existing connection UI, then
 the prepared action verifies authoritative installation state when the user continues.
 
 `RunErrorCode` is the closed catalog for `runOutcome.errorCode` and Agent `Failed.code`. Host

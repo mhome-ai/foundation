@@ -56,7 +56,6 @@
                 "canvasId": "canvas-1"
               },
               "revision": 1,
-              "approval": "when_interactive",
               "interaction_kind": "approval"
             }
           ],

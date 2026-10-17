@@ -858,7 +858,6 @@
         "preview",
         "payload",
         "revision",
-        "approval",
         "interaction_kind"
       ],
       "properties": {
@@ -875,13 +874,6 @@
         "revision": {
           "type": "integer",
           "minimum": 0
-        },
-        "approval": {
-          "enum": [
-            "never",
-            "when_interactive",
-            "always"
-          ]
         },
         "interaction_kind": {
           "enum": [

@@ -45,7 +45,6 @@
           "target": "/app/capability/invoke"
         },
         "revision": 7,
-        "approval": "when_interactive",
         "interaction_kind": "approval"
       }
     }
