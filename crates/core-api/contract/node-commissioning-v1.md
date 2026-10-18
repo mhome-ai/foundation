@@ -1,6 +1,6 @@
 # Node commissioning HTTP contract
 
-Scope: health, challenge, prepare, status, accept. All Node implementations adopt this contract. There is no Node commissioning cancel endpoint; cancelling a Core add session only stops that session and revokes its provisional credentials.
+Scope: metadata, health, challenge, prepare, status, accept. All Node implementations adopt this contract. There is no Node commissioning cancel endpoint; cancelling a Core add session only stops that session and revokes its provisional credentials.
 
 - Health uses ServiceStatusPayload, not the internal SDK state enum.
 - Challenge uses NodeChallengePayload camelCase JSON before signing. ES256 and Ed25519 are valid. The payload is distinct from snake_case JWT claims.
@@ -21,8 +21,8 @@ Core does not automatically retry commissioning requests. Pending readiness may 
 
 Each service keeps its own HTTPS port and uses its owning Host's P-256 TLS key.
 The signed `NodeChallengePayload.hostPublicKey` binds that TLS key to the selected
-Node commission identity, nonce, Host, scope and node type. Only the public challenge
-request may bootstrap TLS. Core verifies the existing Node evidence before passing
+Node commission identity, nonce, Host, scope and node type. Public challenge and metadata
+reads may bootstrap TLS; metadata alone does not authenticate a candidate. Core verifies the existing Node evidence before passing
 that proven key to the platform transport for prepare/status/accept. These token-bearing
 requests require strict HTTPS pinning and cannot fall back to discovery-provided keys
 or HTTP. The key is scoped to the attempt; no new long-lived candidate cache is needed.
@@ -40,3 +40,5 @@ field is prod; malformed fields fail parsing. Core, Node and authenticated Hub
 connections require matching environments before commissioning or admission.
 See [Local runtime environment](runtime-environment.md) for discovery namespaces,
 legacy prod compatibility, restored credentials and the cloud management boundary.
+
+Release identity and onboarding evidence follow [Node release metadata](node-metadata-v1.md).

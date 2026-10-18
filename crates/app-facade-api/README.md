@@ -69,23 +69,21 @@ Host inventory and management on the selected Hub through `/app/system/hosts/*`.
 A native Client remains the path when no local Hub is selected. Lion's legacy
 controller annotations and non-`/app/*` protocols are outside this contract.
 
-### System plugin catalog
+### Plugin catalog
 
-`/app/plugin/catalog/list` returns `manifest/plugin-catalog.v1.json` from Cloud,
-without requiring a local Space or connected Hub. Authentication and Space
-membership still apply. Core also serves this catalog for clients with an older
-routing manifest. The response schema is `schema/plugin-catalog.v1.schema.json`.
+`/app/plugin/catalog/list` reads publisher-signed platform indexes under
+`https://install.mhome.ai/plugins/stable/<platform>/catalog.bundle.json`.
+Cloud serves this browsing view without a connected Hub. Authentication and
+Space membership still apply. Core exposes the same response for local callers.
+The response schema is `schema/plugin-catalog.v1.schema.json`; `platformErrors`
+reports unavailable indexes while preserving results from other platforms.
 
-The catalog describes supported types, not installed software or bindings.
-`componentId` joins to Host runtime inspection; `nodeType` joins to existing
-Plugin candidate and installed/binding queries. Platform installability and
-versions come from the Host release catalog, not this directory.
-
-Core and Cloud embed generated copies. After editing the catalog, run
-`node scripts/sync-plugin-catalog.mjs --write <core-resource> <cloud-resource>`
-from the Foundation root; omit `--write` to check conformance. Resource paths are
-`src/application/plugin-catalog.v1.json` (Core) and
-`src/main/resources/app/plugin-catalog.v1.json` (Cloud module-service).
+Foundation defines contracts, not the list of Plugins. Plugin source owns its
+definition; releases publish it with each immutable per-version manifest.
+`componentId` joins Host inventory, and `nodeType` joins candidates and bindings.
+Catalog availability is a browsing hint. Binding uses `/node/metadata` from the
+actual running Node, verifies publisher evidence, and persists that definition
+with the binding. A cached latest catalog never overrides installed facts.
 
 ## Shared messaging codes (1.10)
 

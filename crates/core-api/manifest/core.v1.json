@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.39.0",
+  "contractVersion": "1.40.0",
   "protocols": {
     "agentGateway": {
       "submitTarget": "/agent/submit",
@@ -16,7 +16,10 @@
       "interactionFlowSchema": "schema/interaction-flow-node.v1.schema.json",
       "interactionFlowDefinitionTarget": "/{nodeType}/interaction-flow/definition",
       "interactionFlowExecuteTarget": "/{nodeType}/interaction-flow/execute",
-      "interactionFlowCloseTarget": "/{nodeType}/interaction-flow/close"
+      "interactionFlowCloseTarget": "/{nodeType}/interaction-flow/close",
+      "metadataTarget": "/node/metadata",
+      "metadataSchema": "schema/node-metadata.v1.schema.json",
+      "metadataContract": "contract/node-metadata-v1.md"
     },
     "cameraPlugin": {
       "version": "v1",

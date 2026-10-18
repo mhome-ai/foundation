@@ -10,6 +10,7 @@ pub mod local_client;
 pub mod messaging;
 pub mod node;
 mod node_commissioning;
+mod node_metadata;
 mod node_service;
 pub mod runtime_space;
 pub mod space_access;
@@ -20,6 +21,7 @@ mod storage;
 
 pub use delivery::*;
 pub use external_rpc::*;
+pub use node_metadata::*;
 pub use node_service::*;
 pub use recipient::*;
 pub use storage::*;
@@ -547,6 +549,8 @@ impl Default for MwsMessage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeAuthRequest {
+    /// Publisher-signed evidence for this running release, checked before auth succeeds.
+    pub metadata: NodeMetadata,
     /// Revision of this Node type's Core-facing contract, independent of package versions.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub core_protocol_version: Option<u32>,
@@ -566,6 +570,10 @@ pub struct NodeAuthRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeAuthResponse {
+    /// Exact release admitted by this authentication. Required when `ok` is true.
+    /// Transports carry this snapshot into connection registration unchanged.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub binding_metadata: Option<NodeBindingMetadata>,
     /// Echoed only after the actual Core accepts the Node contract revision.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub core_protocol_version: Option<u32>,
@@ -588,6 +596,32 @@ pub struct NodeAuthResponse {
     pub node_id: Option<String>,
 }
 
+impl NodeAuthResponse {
+    /// Check the Core's acknowledgement before opening business traffic or registering
+    /// a connection. Publisher trust is verified by Core, not by this transport helper.
+    pub fn admitted_metadata(
+        &self,
+        request: &NodeAuthRequest,
+    ) -> Result<&NodeBindingMetadata, String> {
+        let metadata = self
+            .binding_metadata
+            .as_ref()
+            .ok_or("Core did not acknowledge the Node release")?;
+        if !self.ok
+            || self.core_protocol_version != request.core_protocol_version
+            || metadata.core_protocol != request.core_protocol_version
+            || metadata.definition.node_type != request.node_type
+            || metadata.definition.service_id != request.metadata.service_id
+            || metadata.delivery != request.metadata.delivery
+            || metadata.version != request.metadata.service_version
+            || metadata.manifest_sha256 != request.metadata.release_manifest.sha256()
+        {
+            return Err("Core did not acknowledge this Node release and contract revision".into());
+        }
+        Ok(metadata)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeTokenIssueRequest {
@@ -596,6 +630,7 @@ pub struct NodeTokenIssueRequest {
     pub candidate_host_id: String,
     pub candidate_fingerprint: String,
     pub challenge: NodeChallengeEvidence,
+    pub metadata: NodeMetadata,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -798,6 +833,9 @@ pub struct NodeChallengePayload {
     pub host_id: String,
     pub fingerprint: String,
     pub service_instance_id: String,
+    /// Actual running version and exact publisher manifest, bound to this nonce.
+    pub service_version: String,
+    pub manifest_sha256: String,
     pub instance_policy: NodeInstancePolicy,
     pub instance_slot: String,
 }
@@ -851,6 +889,7 @@ pub struct NodeTokenListResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeInstanceListItem {
+    pub metadata: NodeBindingMetadata,
     pub node_id: String,
     pub node_type: String,
     pub hub_id: String,

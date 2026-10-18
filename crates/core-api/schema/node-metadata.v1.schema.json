@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "delivery",
+    "nodeType",
+    "serviceId",
+    "serviceVersion",
+    "releaseManifest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "meow.node.metadata.v1"
+    },
+    "delivery": {
+      "enum": [
+        "host",
+        "firmware"
+      ]
+    },
+    "nodeType": {
+      "type": "string",
+      "minLength": 1
+    },
+    "serviceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "serviceVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "releaseManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "manifest",
+        "signature"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "enum": [
+            "meow.plugin.manifest-bundle",
+            "meow.node.firmware-manifest-bundle"
+          ]
+        },
+        "manifest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signature": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

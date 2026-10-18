@@ -137,6 +137,7 @@ pub struct RegisterLocalAppClientRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegisterNodeConnectionRequest {
+    pub binding_metadata: crate::NodeBindingMetadata,
     pub ws_id: String,
     pub session_id: String,
     pub node_type: String,

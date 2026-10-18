@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.43.0",
+  "contractVersion": "1.44.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -33,7 +33,6 @@
     "plugin": {
       "extensionVersion": "v1",
       "targetPrefix": "/app/plugin",
-      "catalog": "manifest/plugin-catalog.v1.json",
       "catalogSchema": "schema/plugin-catalog.v1.schema.json",
       "exactRequestTargets": [
         "/app/plugin/catalog/list",

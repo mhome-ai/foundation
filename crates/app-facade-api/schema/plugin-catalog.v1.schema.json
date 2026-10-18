@@ -3,7 +3,8 @@
   "type": "object",
   "required": [
     "version",
-    "plugins"
+    "plugins",
+    "platformErrors"
   ],
   "additionalProperties": false,
   "properties": {
@@ -19,7 +20,12 @@
           "displayName",
           "description",
           "componentId",
-          "bindingCardinality"
+          "bindingCardinality",
+          "id",
+          "serviceId",
+          "kind",
+          "platforms",
+          "versions"
         ],
         "additionalProperties": false,
         "properties": {
@@ -44,8 +50,43 @@
               "single",
               "multiple"
             ]
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "serviceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "core",
+              "extension"
+            ]
+          },
+          "platforms": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "versions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         }
+      }
+    },
+    "platformErrors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
       }
     }
   }

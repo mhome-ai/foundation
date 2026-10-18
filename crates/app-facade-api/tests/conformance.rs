@@ -758,20 +758,25 @@ fn artifact_is_registered_as_a_scope_mode_app_facade_domain() {
 }
 
 #[test]
-fn plugin_catalog_is_valid_and_has_unique_types() {
-    let catalog: Value = serde_json::from_str(app_facade_api::plugin::SYSTEM_CATALOG_JSON).unwrap();
+fn plugin_catalog_is_dynamic_and_reports_platform_availability() {
     let schema: Value =
         serde_json::from_str(include_str!("../schema/plugin-catalog.v1.schema.json")).unwrap();
-    assert!(jsonschema::validator_for(&schema)
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    let mut catalog = serde_json::json!({"version":"1", "plugins":[{
+        "id":"provider-example", "nodeType":"provider-example", "serviceId":"provider-example",
+        "componentId":"node-provider-example", "kind":"extension", "bindingCardinality":"multiple",
+        "displayName":"Example", "description":"A provider-defined Plugin",
+        "platforms":["linux-arm64"], "versions":{"linux-arm64":"3.2.1"}
+    }], "platformErrors":{"darwin-arm64":"temporarily unavailable"}});
+    assert!(validator.is_valid(&catalog));
+    catalog["plugins"][0]
+        .as_object_mut()
         .unwrap()
-        .is_valid(&catalog));
-    let plugins = catalog["plugins"].as_array().unwrap();
-    assert!(!plugins.is_empty());
-    let types: BTreeSet<_> = plugins
-        .iter()
-        .map(|plugin| plugin["nodeType"].as_str().unwrap())
-        .collect();
-    assert_eq!(types.len(), plugins.len());
+        .remove("kind");
+    assert!(!validator.is_valid(&catalog));
+    assert!(
+        validator.is_valid(&serde_json::json!({"version":"1", "plugins":[], "platformErrors":{}}))
+    );
 }
 
 #[test]
