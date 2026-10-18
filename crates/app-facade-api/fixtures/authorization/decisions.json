@@ -1,0 +1,618 @@
+[
+  {
+    "name": "owner:/app/device/list",
+    "principal": {
+      "kind": "user",
+      "userId": "owner"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/device/list",
+    "allowed": true
+  },
+  {
+    "name": "owner:/app/capability/invoke",
+    "principal": {
+      "kind": "user",
+      "userId": "owner"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/capability/invoke",
+    "allowed": true
+  },
+  {
+    "name": "owner:/app/hub/restart",
+    "principal": {
+      "kind": "user",
+      "userId": "owner"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/hub/restart",
+    "allowed": true
+  },
+  {
+    "name": "owner:/app/user/profile/get",
+    "principal": {
+      "kind": "user",
+      "userId": "owner"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/user/profile/get",
+    "allowed": true
+  },
+  {
+    "name": "owner:/app/plugin/camera/device/list",
+    "principal": {
+      "kind": "user",
+      "userId": "owner"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/plugin/camera/device/list",
+    "allowed": true
+  },
+  {
+    "name": "owner:/unknown",
+    "principal": {
+      "kind": "user",
+      "userId": "owner"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/unknown",
+    "allowed": false
+  },
+  {
+    "name": "owner:/app/artifact/internal/read",
+    "principal": {
+      "kind": "user",
+      "userId": "owner"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/artifact/internal/read",
+    "allowed": false
+  },
+  {
+    "name": "member:/app/device/list",
+    "principal": {
+      "kind": "user",
+      "userId": "member"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/device/list",
+    "allowed": true
+  },
+  {
+    "name": "member:/app/capability/invoke",
+    "principal": {
+      "kind": "user",
+      "userId": "member"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/capability/invoke",
+    "allowed": true
+  },
+  {
+    "name": "member:/app/hub/restart",
+    "principal": {
+      "kind": "user",
+      "userId": "member"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/hub/restart",
+    "allowed": false
+  },
+  {
+    "name": "member:/app/user/profile/get",
+    "principal": {
+      "kind": "user",
+      "userId": "member"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/user/profile/get",
+    "allowed": true
+  },
+  {
+    "name": "member:/app/plugin/camera/device/list",
+    "principal": {
+      "kind": "user",
+      "userId": "member"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/plugin/camera/device/list",
+    "allowed": true
+  },
+  {
+    "name": "member:/unknown",
+    "principal": {
+      "kind": "user",
+      "userId": "member"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/unknown",
+    "allowed": false
+  },
+  {
+    "name": "member:/app/artifact/internal/read",
+    "principal": {
+      "kind": "user",
+      "userId": "member"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/artifact/internal/read",
+    "allowed": false
+  },
+  {
+    "name": "removed:/app/device/list",
+    "principal": {
+      "kind": "user",
+      "userId": "former"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/device/list",
+    "allowed": false
+  },
+  {
+    "name": "removed:/app/capability/invoke",
+    "principal": {
+      "kind": "user",
+      "userId": "former"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/capability/invoke",
+    "allowed": false
+  },
+  {
+    "name": "removed:/app/hub/restart",
+    "principal": {
+      "kind": "user",
+      "userId": "former"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/hub/restart",
+    "allowed": false
+  },
+  {
+    "name": "removed:/app/user/profile/get",
+    "principal": {
+      "kind": "user",
+      "userId": "former"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/user/profile/get",
+    "allowed": true
+  },
+  {
+    "name": "removed:/app/plugin/camera/device/list",
+    "principal": {
+      "kind": "user",
+      "userId": "former"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/plugin/camera/device/list",
+    "allowed": false
+  },
+  {
+    "name": "removed:/unknown",
+    "principal": {
+      "kind": "user",
+      "userId": "former"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/unknown",
+    "allowed": false
+  },
+  {
+    "name": "removed:/app/artifact/internal/read",
+    "principal": {
+      "kind": "user",
+      "userId": "former"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/artifact/internal/read",
+    "allowed": false
+  },
+  {
+    "name": "space:/app/device/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/device/list",
+    "allowed": true
+  },
+  {
+    "name": "space:/app/capability/invoke",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/capability/invoke",
+    "allowed": true
+  },
+  {
+    "name": "space:/app/hub/restart",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/hub/restart",
+    "allowed": false
+  },
+  {
+    "name": "space:/app/user/profile/get",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/user/profile/get",
+    "allowed": false
+  },
+  {
+    "name": "space:/app/plugin/camera/device/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/plugin/camera/device/list",
+    "allowed": true
+  },
+  {
+    "name": "space:/unknown",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/unknown",
+    "allowed": false
+  },
+  {
+    "name": "space:/app/artifact/internal/read",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/artifact/internal/read",
+    "allowed": false
+  },
+  {
+    "name": "space-cannot-borrow-owner:/app/device/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/device/list",
+    "allowed": true
+  },
+  {
+    "name": "space-cannot-borrow-owner:/app/capability/invoke",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/capability/invoke",
+    "allowed": true
+  },
+  {
+    "name": "space-cannot-borrow-owner:/app/hub/restart",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/hub/restart",
+    "allowed": false
+  },
+  {
+    "name": "space-cannot-borrow-owner:/app/user/profile/get",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/user/profile/get",
+    "allowed": false
+  },
+  {
+    "name": "space-cannot-borrow-owner:/app/plugin/camera/device/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/plugin/camera/device/list",
+    "allowed": true
+  },
+  {
+    "name": "space-cannot-borrow-owner:/unknown",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/unknown",
+    "allowed": false
+  },
+  {
+    "name": "space-cannot-borrow-owner:/app/artifact/internal/read",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/artifact/internal/read",
+    "allowed": false
+  },
+  {
+    "name": "foreign-space:/app/device/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "other"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/device/list",
+    "allowed": false
+  },
+  {
+    "name": "foreign-space:/app/capability/invoke",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "other"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/capability/invoke",
+    "allowed": false
+  },
+  {
+    "name": "foreign-space:/app/hub/restart",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "other"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/hub/restart",
+    "allowed": false
+  },
+  {
+    "name": "foreign-space:/app/user/profile/get",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "other"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/user/profile/get",
+    "allowed": false
+  },
+  {
+    "name": "foreign-space:/app/plugin/camera/device/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "other"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/plugin/camera/device/list",
+    "allowed": false
+  },
+  {
+    "name": "foreign-space:/unknown",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "other"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/unknown",
+    "allowed": false
+  },
+  {
+    "name": "foreign-space:/app/artifact/internal/read",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "other"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/artifact/internal/read",
+    "allowed": false
+  },
+  {
+    "name": "foreign-tenant:/app/device/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "other",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/device/list",
+    "allowed": false
+  },
+  {
+    "name": "foreign-tenant:/app/capability/invoke",
+    "principal": {
+      "kind": "space",
+      "tenantId": "other",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/capability/invoke",
+    "allowed": false
+  },
+  {
+    "name": "foreign-tenant:/app/hub/restart",
+    "principal": {
+      "kind": "space",
+      "tenantId": "other",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/hub/restart",
+    "allowed": false
+  },
+  {
+    "name": "foreign-tenant:/app/user/profile/get",
+    "principal": {
+      "kind": "space",
+      "tenantId": "other",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/user/profile/get",
+    "allowed": false
+  },
+  {
+    "name": "foreign-tenant:/app/plugin/camera/device/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "other",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/plugin/camera/device/list",
+    "allowed": false
+  },
+  {
+    "name": "foreign-tenant:/unknown",
+    "principal": {
+      "kind": "space",
+      "tenantId": "other",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/unknown",
+    "allowed": false
+  },
+  {
+    "name": "foreign-tenant:/app/artifact/internal/read",
+    "principal": {
+      "kind": "space",
+      "tenantId": "other",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/artifact/internal/read",
+    "allowed": false
+  }
+]

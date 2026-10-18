@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/delegated-call.v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "authority",
+    "call"
+  ],
+  "properties": {
+    "authority": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "service"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "principal"
+          ],
+          "properties": {
+            "kind": {
+              "const": "caller"
+            },
+            "principal": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "userId"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "user"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "tenantId",
+                    "scopeId"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "space"
+                    },
+                    "tenantId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "scopeId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "call": {
+      "$ref": "facade-call.v1.schema.json"
+    }
+  }
+}

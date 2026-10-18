@@ -95,3 +95,5 @@ Code creation may omit bot/account and group/surface identifiers. The receiving 
 Client sessions. Host inventory and operations use `/app/system/hosts/get` and
 `/app/system/hosts/runtime`, forwarding cloud-issued User tokens through the
 current Core. First claim is direct LAN only. See [SYSTEM.md](SYSTEM.md).
+
+Business operation permissions are declared once in [the authorization manifest](manifest/authorization.v1.json), consumed by Core and Lion. See [business authorization](contract/authorization-v1.md).

@@ -147,5 +147,7 @@
       "authorizationTarget": "/app/host/authorization",
       "authorizationSchema": "schema/host-authorization.v1.schema.json"
     }
-  }
+  },
+  "authorization": "manifest/authorization.v1.json",
+  "delegatedCallSchema": "schema/delegated-call.v1.schema.json"
 }

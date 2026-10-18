@@ -362,11 +362,12 @@ scan runs waits for it. `revision` increases on every observable change.
 `delivering` on it is `activateBefore` plus 30 seconds.
 
 Only the device's durable `commissioned` response confirms successful setup.
-Lost LAN delivery confirmation or activation status fails the attempt, even
-when Lion has already activated its credential. Expiry fails or times out the
-attempt. The commissioner does not recover interrupted setup through Lion's
-credential status. The user selects the network-ready device again, establishes
-a fresh LAN session and reads its actual activation status.
+Lost LAN confirmation triggers at most three reconnections to this attempt's
+endpoint. Each connection reestablishes channel security and checks device,
+environment and enrollment identity before reading status. Never issue or
+deliver a second credential during recovery. Failure to confirm, or expiry,
+ends the attempt; the user may then select the network-ready device again.
+Cloud state alone never confirms successful device setup.
 
 A refused `deliver` fails with `delivery_failed` carrying the pod's `reason`
 (`invalid_payload` or `wrong_state`) in `detail`. When the pod
