@@ -7,16 +7,33 @@ use app_facade_api::messaging::{
     ProviderAccountTestRequest, ProviderAccountTestResponse, ProviderAccountUpdateRequest,
     ProviderAccountUpdateResponse, ProviderListRequest, ProviderListResponse,
     ProviderPlacementRequest, RouteListRequest, RouteListResponse, RouteRequest,
-    RouteUpdateRequest, RouteUpdateResponse, SetupOptionsResponse, SetupResponse,
-    SetupStartRequest, SetupStatusRequest, SharedAccountGrantListRequest,
-    SharedAccountGrantListResponse, SharedAccountGrantRequest, SurfaceBindCodeCreateRequest,
-    SurfaceListRequest, SurfaceListResponse, SurfaceRequest, MANAGEMENT_TARGETS,
+    RouteUpdateRequest, RouteUpdateResponse, SetupCancelRequest, SetupOptionsResponse,
+    SetupResponse, SetupStartRequest, SetupStatusRequest, SetupSubmitRequest,
+    SharedAccountGrantListRequest, SharedAccountGrantListResponse, SharedAccountGrantRequest,
+    SurfaceBindCodeCreateRequest, SurfaceListRequest, SurfaceListResponse, SurfaceRequest,
+    MANAGEMENT_TARGETS,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::collections::BTreeSet;
 
 const VALID_FIXTURES: &[(&str, &str)] = &[
+    (
+        "setup-submit.request.json",
+        include_str!("../fixtures/setup-submit.request.json"),
+    ),
+    (
+        "setup-submit.response.json",
+        include_str!("../fixtures/setup-submit.response.json"),
+    ),
+    (
+        "setup-cancel.request.json",
+        include_str!("../fixtures/setup-cancel.request.json"),
+    ),
+    (
+        "setup-cancel.response.json",
+        include_str!("../fixtures/setup-cancel.response.json"),
+    ),
     (
         "identity-code-failed.response.json",
         include_str!("../fixtures/identity-code-failed.response.json"),
@@ -348,6 +365,8 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
     body::<SetupStartRequest>("setup-start.request.json");
     body::<SetupResponse>("setup-start.response.json");
     body::<SetupStatusRequest>("setup-status.request.json");
+    body::<SetupSubmitRequest>("setup-submit.request.json");
+    body::<SetupCancelRequest>("setup-cancel.request.json");
     body::<SetupResponse>("setup-status.response.json");
     body::<SurfaceListRequest>("surface-list.request.json");
     body::<SurfaceListResponse>("surface-list.response.json");

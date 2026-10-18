@@ -41,7 +41,8 @@
     "deliveryMode": {
       "enum": [
         "unrestricted",
-        "session_window"
+        "session_window",
+        "reply_context"
       ]
     },
     "projectionUnsupportedReason": {
@@ -197,7 +198,9 @@
         "actor.link_code.create",
         "identity_code.status",
         "actor.link.list",
-        "actor.link.delete"
+        "actor.link.delete",
+        "setup.submit",
+        "setup.cancel"
       ]
     },
     "frontendProvider": {
@@ -2186,6 +2189,12 @@
         },
         {
           "$ref": "#/$defs/actorLinkDeleteRequest"
+        },
+        {
+          "$ref": "#/$defs/setupSubmitRequest"
+        },
+        {
+          "$ref": "#/$defs/setupCancelRequest"
         }
       ]
     },
@@ -2259,6 +2268,12 @@
         },
         {
           "$ref": "#/$defs/actorLinkDeleteResponse"
+        },
+        {
+          "$ref": "#/$defs/setupSubmitResponse"
+        },
+        {
+          "$ref": "#/$defs/setupCancelResponse"
         }
       ]
     },
@@ -2588,6 +2603,128 @@
           }
         }
       ]
+    },
+    "setupSubmitBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "placement",
+        "setupId",
+        "data"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "setupId": {
+          "$ref": "#/$defs/id"
+        },
+        "data": {
+          "$ref": "#/$defs/extension"
+        }
+      }
+    },
+    "setupSubmitRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/submit"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/setupSubmitBody"
+        }
+      }
+    },
+    "setupSubmitResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/submit"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "setup"
+          ],
+          "properties": {
+            "setup": {
+              "$ref": "#/$defs/setupState"
+            }
+          }
+        }
+      }
+    },
+    "setupCancelRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/cancel"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/setupStatusBody"
+        }
+      }
+    },
+    "setupCancelResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/setup/cancel"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "setup"
+          ],
+          "properties": {
+            "setup": {
+              "$ref": "#/$defs/setupState"
+            }
+          }
+        }
+      }
     }
   }
 }

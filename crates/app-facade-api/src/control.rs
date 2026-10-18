@@ -148,6 +148,8 @@ pub enum ContentCapability {
 pub enum DeliveryMode {
     Unrestricted,
     SessionWindow,
+    /// Delivery requires an inbound reply context, with no promised fixed window.
+    ReplyContext,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -180,6 +182,10 @@ pub enum ManagementOperation {
     SetupStart,
     #[serde(rename = "setup.status")]
     SetupStatus,
+    #[serde(rename = "setup.submit")]
+    SetupSubmit,
+    #[serde(rename = "setup.cancel")]
+    SetupCancel,
     #[serde(rename = "surface.list")]
     SurfaceList,
     #[serde(rename = "surface.dismiss")]
@@ -455,6 +461,18 @@ pub struct SetupStatusRequest {
     pub placement: Placement,
     pub setup_id: String,
 }
+
+/// Submit input to an existing provider setup; never creates a second session.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SetupSubmitRequest {
+    pub provider: String,
+    pub placement: Placement,
+    pub setup_id: String,
+    pub data: Value,
+}
+
+pub type SetupCancelRequest = SetupStatusRequest;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

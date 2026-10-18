@@ -1,0 +1,9 @@
+{
+  "target": "/app/messaging/setup/cancel",
+  "direction": "request",
+  "body": {
+    "provider": "wechat_ilink",
+    "placement": "local",
+    "setupId": "setup-1"
+  }
+}

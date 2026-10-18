@@ -1,0 +1,11 @@
+{
+  "target": "/app/messaging/setup/submit",
+  "direction": "response",
+  "body": {
+    "setup": {
+      "setupId": "setup-1",
+      "status": "pending",
+      "providerData": {}
+    }
+  }
+}

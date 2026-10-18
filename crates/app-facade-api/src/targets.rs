@@ -14,6 +14,8 @@ pub const ROUTE_UPDATE_TARGET: &str = "/app/messaging/route/update";
 pub const ROUTE_DELETE_TARGET: &str = "/app/messaging/route/delete";
 pub const SETUP_OPTIONS_TARGET: &str = "/app/messaging/setup/options";
 pub const SETUP_START_TARGET: &str = "/app/messaging/setup/start";
+pub const SETUP_SUBMIT_TARGET: &str = "/app/messaging/setup/submit";
+pub const SETUP_CANCEL_TARGET: &str = "/app/messaging/setup/cancel";
 pub const SETUP_STATUS_TARGET: &str = "/app/messaging/setup/status";
 pub const SURFACE_LIST_TARGET: &str = "/app/messaging/surface/list";
 pub const SURFACE_DISMISS_TARGET: &str = "/app/messaging/surface/dismiss";
@@ -40,6 +42,8 @@ pub const MANAGEMENT_TARGETS: &[&str] = &[
     SETUP_OPTIONS_TARGET,
     SETUP_START_TARGET,
     SETUP_STATUS_TARGET,
+    SETUP_SUBMIT_TARGET,
+    SETUP_CANCEL_TARGET,
     SURFACE_LIST_TARGET,
     SURFACE_DISMISS_TARGET,
     SURFACE_BIND_CODE_CREATE_TARGET,
@@ -74,6 +78,8 @@ pub fn required_management_operation(target: &str) -> Option<ManagementOperation
         SETUP_OPTIONS_TARGET => SetupOptions,
         SETUP_START_TARGET => SetupStart,
         SETUP_STATUS_TARGET => SetupStatus,
+        SETUP_SUBMIT_TARGET => SetupSubmit,
+        SETUP_CANCEL_TARGET => SetupCancel,
         SURFACE_LIST_TARGET => SurfaceList,
         SURFACE_DISMISS_TARGET => SurfaceDismiss,
         SURFACE_BIND_CODE_CREATE_TARGET => SurfaceBindCodeCreate,
