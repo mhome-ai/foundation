@@ -4,10 +4,22 @@
   "title": "Native-client pod commissioning session snapshot",
   "type": "object",
   "additionalProperties": false,
-  "required": ["sessionId", "revision", "state", "candidate", "expiresAtMs"],
+  "required": [
+    "sessionId",
+    "revision",
+    "state",
+    "candidate",
+    "expiresAtMs"
+  ],
   "properties": {
-    "sessionId": { "type": "string", "minLength": 1 },
-    "revision": { "type": "integer", "minimum": 0 },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
     "state": {
       "enum": [
         "connecting",
@@ -27,17 +39,42 @@
         "timed_out"
       ]
     },
-    "candidate": { "$ref": "pod-discovery.v1.schema.json#/$defs/candidate" },
-    "expiresAtMs": { "type": "integer", "minimum": 0 },
+    "candidate": {
+      "$ref": "pod-discovery.v1.schema.json#/$defs/candidate"
+    },
+    "expiresAtMs": {
+      "type": "integer",
+      "minimum": 0
+    },
     "device": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["deviceId", "model", "firmwareVersion", "wifiConfigured"],
+      "required": [
+        "deviceId",
+        "model",
+        "firmwareVersion",
+        "wifiConfigured",
+        "dependentHost"
+      ],
       "properties": {
-        "deviceId": { "type": "string", "minLength": 1 },
-        "model": { "type": "string", "minLength": 1 },
-        "firmwareVersion": { "type": "string", "minLength": 1 },
-        "wifiConfigured": { "type": "boolean" }
+        "deviceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "firmwareVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wifiConfigured": {
+          "type": "boolean"
+        },
+        "dependentHost": {
+          "type": "boolean"
+        }
       }
     },
     "networks": {
@@ -45,44 +82,93 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["ssid", "rssi", "secured"],
+        "required": [
+          "ssid",
+          "rssi",
+          "secured"
+        ],
         "properties": {
-          "ssid": { "type": "string", "minLength": 1 },
-          "rssi": { "type": "integer" },
-          "secured": { "type": "boolean" }
+          "ssid": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rssi": {
+            "type": "integer"
+          },
+          "secured": {
+            "type": "boolean"
+          }
         }
       }
     },
     "authorization": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["userId", "userName", "scopes", "defaultScopeId"],
+      "required": [
+        "userId",
+        "userName",
+        "scopes",
+        "defaultScopeId"
+      ],
       "properties": {
-        "userId": { "type": "string", "minLength": 1 },
-        "userName": { "type": "string" },
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "userName": {
+          "type": "string"
+        },
         "scopes": {
           "type": "array",
           "minItems": 1,
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["scopeId", "name", "local"],
+            "required": [
+              "scopeId",
+              "name",
+              "local",
+              "owner"
+            ],
             "properties": {
-              "scopeId": { "type": "string", "minLength": 1 },
-              "name": { "type": "string" },
-              "local": { "type": "boolean" }
+              "scopeId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string"
+              },
+              "local": {
+                "type": "boolean"
+              },
+              "owner": {
+                "type": "boolean"
+              }
             }
           }
         },
-        "defaultScopeId": { "type": "string", "minLength": 1 }
+        "defaultScopeId": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
-    "podId": { "type": "string", "minLength": 1 },
-    "mode": { "enum": ["reprovision"] },
+    "podId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "reprovision"
+      ]
+    },
     "error": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["code", "message"],
+      "required": [
+        "code",
+        "message"
+      ],
       "properties": {
         "code": {
           "enum": [
@@ -102,47 +188,187 @@
             "session_timeout"
           ]
         },
-        "message": { "type": "string" },
-        "detail": { "type": "string" }
+        "message": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        }
       }
     }
   },
   "allOf": [
     {
-      "if": { "properties": { "state": { "enum": ["failed", "timed_out"] } } },
-      "then": { "properties": { "error": {} }, "required": ["error"] }
+      "if": {
+        "properties": {
+          "state": {
+            "enum": [
+              "failed",
+              "timed_out"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "error": {}
+        },
+        "required": [
+          "error"
+        ]
+      }
     },
     {
       "if": {
         "properties": {
-          "state": { "not": { "enum": ["failed", "timed_out", "awaiting_code", "awaiting_wifi"] } }
+          "state": {
+            "not": {
+              "enum": [
+                "failed",
+                "timed_out",
+                "awaiting_code",
+                "awaiting_wifi"
+              ]
+            }
+          }
         }
       },
-      "then": { "not": { "properties": { "error": {} }, "required": ["error"] } }
-    },
-    {
-      "if": { "properties": { "state": { "const": "awaiting_code" } }, "required": ["error"] },
-      "then": { "properties": { "error": { "type": "object", "properties": { "code": { "const": "code_rejected" } } } } }
-    },
-    {
-      "if": { "properties": { "state": { "const": "awaiting_wifi" } }, "required": ["error"] },
       "then": {
-        "properties": {
-          "error": { "type": "object", "properties": { "code": { "enum": ["wifi_auth_failed", "wifi_not_found", "wifi_failed"] } } }
+        "not": {
+          "properties": {
+            "error": {}
+          },
+          "required": [
+            "error"
+          ]
         }
       }
     },
     {
-      "if": { "properties": { "state": { "const": "awaiting_authorization" } } },
-      "then": { "properties": { "authorization": {} }, "required": ["authorization"] }
+      "if": {
+        "properties": {
+          "state": {
+            "const": "awaiting_code"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "then": {
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "const": "code_rejected"
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "if": { "properties": { "state": { "const": "completed" } }, "not": { "properties": { "mode": {} }, "required": ["mode"] } },
-      "then": { "properties": { "podId": {} }, "required": ["podId"] }
+      "if": {
+        "properties": {
+          "state": {
+            "const": "awaiting_wifi"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "then": {
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "enum": [
+                  "wifi_auth_failed",
+                  "wifi_not_found",
+                  "wifi_failed"
+                ]
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "if": { "properties": { "mode": {} }, "required": ["mode"] },
-      "then": { "not": { "anyOf": [{ "properties": { "podId": {} }, "required": ["podId"] }, { "properties": { "authorization": {} }, "required": ["authorization"] }] } }
+      "if": {
+        "properties": {
+          "state": {
+            "const": "awaiting_authorization"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "authorization": {}
+        },
+        "required": [
+          "authorization"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "completed"
+          }
+        },
+        "not": {
+          "properties": {
+            "mode": {}
+          },
+          "required": [
+            "mode"
+          ]
+        }
+      },
+      "then": {
+        "properties": {
+          "podId": {}
+        },
+        "required": [
+          "podId"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {}
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "properties": {
+                "podId": {}
+              },
+              "required": [
+                "podId"
+              ]
+            },
+            {
+              "properties": {
+                "authorization": {}
+              },
+              "required": [
+                "authorization"
+              ]
+            }
+          ]
+        }
+      }
     }
   ]
 }

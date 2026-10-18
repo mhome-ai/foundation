@@ -10,8 +10,29 @@ fn native_requests_match_shared_schema_and_action_manifest() {
     let manifest: Value =
         serde_json::from_str(include_str!("../contract/host-management-v1.json")).unwrap();
     let actions = [
+        A::AdministratorRequest {
+            proof: "proof".into(),
+        },
+        A::AdministratorRequestStatus {
+            proof: "proof".into(),
+        },
+        A::AdministratorRequestCancel {
+            proof: "proof".into(),
+        },
+        A::Administrators,
+        A::AdministratorDecide {
+            request_id: "request".into(),
+            approve: true,
+        },
+        A::AdministratorRemove {
+            user_id: "bob".into(),
+        },
         A::Inspect,
         A::Metrics,
+        A::ConfigureService {
+            service_id: "core".into(),
+            enabled: true,
+        },
         A::Plan {
             components: vec!["core"],
             all: false,

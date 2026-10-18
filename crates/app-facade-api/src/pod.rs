@@ -69,12 +69,10 @@ pub const CODE_ATTEMPTS: u32 = 5;
 pub const SESSION_LIFETIME_MS: i64 = 600_000;
 /// After `activateBefore` the commissioner waits this long before giving up.
 pub const ACTIVATION_GRACE_MS: i64 = 30_000;
-pub const CREDENTIAL_STATUS_POLL_MS: i64 = 5_000;
 
 /// Lion paths, relative to `cloudApi` (`https://…/api/v1`).
-pub const CREDENTIAL_ISSUE_PATH: &str = "pod/credential/issue";
+pub const USER_LOGIN_APPROVE_PATH: &str = "pod/login/approve";
 pub const SPACE_CREDENTIAL_ISSUE_PATH: &str = "pod/space/credential/issue";
-pub const CREDENTIAL_STATUS_PATH: &str = "pod/credential/status";
 
 /// Activation error codes a pod reports in `failed`.
 pub const ACTIVATION_ERROR_CODES: &[&str] = &[
@@ -360,6 +358,7 @@ pub struct CommissionError {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PodDeviceInfo {
+    pub dependent_host: bool,
     pub device_id: String,
     pub model: String,
     pub firmware_version: String,
@@ -380,6 +379,8 @@ pub struct AuthorizationScope {
     pub scope_id: String,
     pub name: String,
     pub local: bool,
+    /// UI eligibility only; Lion independently verifies current ownership.
+    pub owner: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -543,6 +544,8 @@ pub struct PodIdentity {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PodInfo {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_binding: Option<core_api::device_binding::DeviceBinding>,
     pub protocol: u32,
     pub env: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -569,7 +572,7 @@ impl PodInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub struct CredentialIssueRequest {
+pub struct PodEnrollmentRequest {
     pub device_id: String,
     pub model: String,
     pub platform: String,
@@ -581,10 +584,10 @@ pub struct CredentialIssueRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct CredentialIssueResponse {
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct UserLoginApproval {
     pub pod_id: String,
-    pub refresh_token: String,
+    pub login_grant: String,
     /// Epoch milliseconds.
     pub activate_before: i64,
 }
@@ -613,33 +616,6 @@ pub struct HubIdentity {
     pub fingerprint: String,
     pub host_id: String,
     pub host_public_key: core_api::host::auth::PublicKey,
-}
-
-/// Body of the owner's `credential/status` call.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct CredentialPodRequest {
-    pub pod_id: String,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum CredentialStatus {
-    Pending,
-    Active,
-    /// No such credential for this user: never issued, cleaned up, expired while
-    /// pending, or owned by someone else.
-    Absent,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct CredentialStatusResponse {
-    pub pod_id: String,
-    pub status: CredentialStatus,
-    /// Epoch milliseconds, present when `active`.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub activated_at: Option<i64>,
 }
 
 #[cfg(test)]

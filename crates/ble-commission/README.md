@@ -109,3 +109,17 @@ A pod whose `pod-info` reports `"mode":"reprovision"` is in a Wi-Fi change
 window: the session only joins the new network, waits for the pod to save it,
 then completes with `"mode":"reprovision"` and no `podId`. No credential is
 issued and the cloud is not called.
+
+## Hub initialization
+
+`hub::Commissioning` implements the native `/local/hub/*` setup facade for desktop,
+Android and iOS. `hub::Platform` supplies account-scoped discovery, cloud state,
+cloud authorization, direct LAN HTTPS and business-connection scheduling. This
+protocol is independent of Host administration: a Space owner can initialize a
+Hub on an already running Core without becoming that machine's administrator.
+
+The engine verifies the Core's signed challenge against the actual TLS peer and
+runtime Space policy before sending secrets. Platform adapters reject route/login
+replacement, redirects and proxy use. Confirm starts one fixed ten-minute attempt;
+fresh retry retires the previous local job. Cloud/Core attempt IDs fence late work.
+Status reconciles the exact committed Hub even if the setup response was lost.

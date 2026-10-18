@@ -11,6 +11,7 @@ pub mod messaging;
 pub mod node;
 mod node_commissioning;
 mod node_service;
+pub mod runtime_space;
 pub mod space_access;
 pub mod webhook;
 pub use node_commissioning::*;
@@ -783,6 +784,7 @@ pub struct NodeChallengeEvidence {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeChallengePayload {
+    pub runtime_space_policy: runtime_space::RuntimeSpacePolicy,
     #[serde(default, skip_serializing_if = "RuntimeEnv::is_prod")]
     pub env: RuntimeEnv,
     /// TLS key of the Host running this Node, covered by the Node signature.
@@ -1255,30 +1257,32 @@ pub struct HubMdnsInstanceRecord {
     pub scope_name: String,
 }
 
-/// Binds an unconfigured Core's commission identity to its Host TLS key.
-/// The non-UTF8 domain prefix cannot be requested through the legacy nonce signer.
+/// Binds commissioning to the Host TLS identity, environment and immutable
+/// runtime policy. The non-UTF8 domain cannot be requested as a plain nonce.
 pub fn hub_commission_tls_payload(
     nonce: &str,
     host_id: &str,
     key: &host::auth::PublicKey,
-) -> Vec<u8> {
-    let mut out = b"\xffmeow-hub-tls-v1\0".to_vec();
-    for field in [nonce, host_id, key.x.as_str(), key.y.as_str()] {
-        out.extend_from_slice(&(field.len() as u64).to_be_bytes());
-        out.extend_from_slice(field.as_bytes());
-    }
-    out
-}
-
-pub fn hub_commission_tls_payload_for_env(
-    nonce: &str,
-    host_id: &str,
-    key: &host::auth::PublicKey,
     env: RuntimeEnv,
+    policy: &runtime_space::RuntimeSpacePolicy,
 ) -> Vec<u8> {
-    let mut out = hub_commission_tls_payload(nonce, host_id, key);
-    if !env.is_prod() {
-        let field = env.as_str();
+    let mut out = b"\xffmeow-hub-tls-v2\0".to_vec();
+    let (mode, tenant, scope) = match policy {
+        runtime_space::RuntimeSpacePolicy::Multi {} => ("multi", "", ""),
+        runtime_space::RuntimeSpacePolicy::Single { space } => {
+            ("single", space.tenant_id.as_str(), space.scope_id.as_str())
+        }
+    };
+    for field in [
+        nonce,
+        host_id,
+        key.x.as_str(),
+        key.y.as_str(),
+        env.as_str(),
+        mode,
+        tenant,
+        scope,
+    ] {
         out.extend_from_slice(&(field.len() as u64).to_be_bytes());
         out.extend_from_slice(field.as_bytes());
     }
@@ -1349,3 +1353,4 @@ mod tests {
         assert!(serde_json::from_value::<NodeOnboardingStartRequest>(invalid).is_err());
     }
 }
+pub mod device_binding;

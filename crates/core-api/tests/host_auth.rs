@@ -12,7 +12,7 @@ fn set(version: u64, keys: Vec<SigningKey>) -> SigningKeySet {
     SigningKeySet { version, keys }
 }
 #[test]
-fn authoritative_rotation_requires_refresh_only_for_retired_bindings() {
+fn authoritative_rotation_rejects_disabled_token_keys() {
     let old = set(1, vec![key("one", SigningKeyStatus::Active)]);
     let overlap = set(
         2,
@@ -22,7 +22,7 @@ fn authoritative_rotation_requires_refresh_only_for_retired_bindings() {
         ],
     );
     overlap.validate_update(Some(&old)).unwrap();
-    assert!(overlap.permits_binding("one"));
+    assert!(overlap.permits_token("one"));
     let disabled = set(
         3,
         vec![
@@ -31,8 +31,8 @@ fn authoritative_rotation_requires_refresh_only_for_retired_bindings() {
         ],
     );
     disabled.validate_update(Some(&overlap)).unwrap();
-    assert!(!disabled.permits_binding("one"));
-    assert!(disabled.permits_binding("two"));
+    assert!(!disabled.permits_token("one"));
+    assert!(disabled.permits_token("two"));
     assert!(old.validate_update(Some(&disabled)).is_err());
     let mut resurrect = overlap.clone();
     resurrect.version = 4;
@@ -58,7 +58,7 @@ fn missing_and_disabled_keys_cannot_authorize_clients() {
     let old = set(1, vec![key("one", SigningKeyStatus::Active)]);
     let next = set(2, vec![key("two", SigningKeyStatus::Active)]);
     next.validate_update(Some(&old)).unwrap();
-    assert!(!next.permits_binding("one"));
+    assert!(!next.permits_token("one"));
     let tombstones = set(
         3,
         vec![
@@ -88,35 +88,28 @@ fn malformed_or_rebound_keys_fail_before_cache_update() {
     }
 }
 #[test]
-fn wire_reauth_code_is_specific_and_space_free() {
-    let error = AuthError {
-        code: ErrorCode::HostReauthRequired,
-        host_id: "host".into(),
-        boot_id: "boot".into(),
-        request_id: "request".into(),
-        key_set_version: 2,
-    };
-    let json = serde_json::to_value(error).unwrap();
-    assert_eq!(json["code"], "HOST_REAUTH_REQUIRED");
-    assert!(json.get("spaceId").is_none());
-}
-#[test]
-fn a_claim_carries_the_bluetooth_token_only_when_there_is_one() {
-    let plain = ClaimRequest {
-        env: core_api::RuntimeEnv::Prod,
-        proof: "grant".into(),
-        claim_token: None,
-    };
+fn claim_wire_requires_environment_exchange_and_rejects_old_protocol_fields() {
+    use core_api::host::access::ClaimRequest;
+    let wire = serde_json::json!({"env": "prod", "proof": "grant", "exchangeKey": "ephemeral", "claimToken": null});
+    let request: ClaimRequest = serde_json::from_value(wire.clone()).unwrap();
+    assert!(request.claim_token.is_none());
+    assert_eq!(serde_json::to_value(request).unwrap(), wire);
+    for field in ["env", "exchangeKey"] {
+        let mut missing = wire.clone();
+        missing.as_object_mut().unwrap().remove(field);
+        assert!(serde_json::from_value::<ClaimRequest>(missing).is_err());
+    }
+    let mut old = wire.clone();
+    old["clientPublicKey"] = "old-key".into();
+    assert!(serde_json::from_value::<ClaimRequest>(old).is_err());
+    let mut bluetooth = wire;
+    bluetooth["claimToken"] = "token".into();
     assert_eq!(
-        serde_json::to_value(plain).unwrap(),
-        serde_json::json!({ "proof": "grant" })
+        serde_json::from_value::<ClaimRequest>(bluetooth)
+            .unwrap()
+            .claim_token
+            .as_deref(),
+        Some("token")
     );
-    let request: ClaimRequest =
-        serde_json::from_value(serde_json::json!({ "proof": "grant", "claimToken": "t" })).unwrap();
-    assert_eq!(request.claim_token.as_deref(), Some("t"));
-    assert!(serde_json::from_value::<ClaimRequest>(
-        serde_json::json!({ "proof": "grant", "hostId": "h" })
-    )
-    .is_err());
     assert_eq!(CLAIM_TOKEN_REQUIRED, "HOST_CLAIM_TOKEN_REQUIRED");
 }

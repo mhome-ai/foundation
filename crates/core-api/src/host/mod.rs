@@ -1,4 +1,5 @@
-//! Host observations and local OS authorization contracts. No Space identities.
+//! Host observations, runtime management and User authorization contracts.
+pub mod access;
 pub mod auth;
 pub mod management;
 pub mod network;

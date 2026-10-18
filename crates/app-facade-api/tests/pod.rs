@@ -1,13 +1,12 @@
 use app_facade_api::pod::{
-    CommissionSession, CommissionState, CredentialStatus, CredentialStatusResponse, DeviceKind,
-    DiscoverySnapshot, RequestErrorReason, ACTIVATION_ERROR_CODES, ACTIVATION_GRACE_MS,
-    APP_CAPABILITY, APP_INFO_LABEL, APP_INFO_LOCKED, APP_INFO_LOCKED_FOR_MS, BLE_COMPANY_ID,
-    BLE_SERVICE_UUID, CANDIDATE_TTL_MS, CODE_ATTEMPTS, CREDENTIAL_ISSUE_PATH,
-    CREDENTIAL_REFUSAL_REASONS, CREDENTIAL_STATUS_PATH, CREDENTIAL_STATUS_POLL_MS,
-    CUSTOM_ENDPOINT_MAX_BYTES, DISCOVERY_EVENT_INTERVAL_MS, DISCOVERY_LEASE_MS, EVENT_TARGETS,
-    LAN_CREDENTIAL_MAX_BYTES, LOCAL_TARGETS, NOT_ACTIVATED_DETAIL, POD_ENDPOINT_UUIDS,
-    POD_MODE_REPROVISION, SECURITY_VERSION, SESSION_LIFETIME_MS, SPACE_CREDENTIAL_ISSUE_PATH,
-    SRP_USERNAME, STANDARD_ENDPOINT_UUIDS,
+    CommissionSession, CommissionState, DeviceKind, DiscoverySnapshot, RequestErrorReason,
+    ACTIVATION_ERROR_CODES, ACTIVATION_GRACE_MS, APP_CAPABILITY, APP_INFO_LABEL, APP_INFO_LOCKED,
+    APP_INFO_LOCKED_FOR_MS, BLE_COMPANY_ID, BLE_SERVICE_UUID, CANDIDATE_TTL_MS, CODE_ATTEMPTS,
+    CREDENTIAL_REFUSAL_REASONS, CUSTOM_ENDPOINT_MAX_BYTES, DISCOVERY_EVENT_INTERVAL_MS,
+    DISCOVERY_LEASE_MS, EVENT_TARGETS, LAN_CREDENTIAL_MAX_BYTES, LOCAL_TARGETS,
+    NOT_ACTIVATED_DETAIL, POD_ENDPOINT_UUIDS, POD_MODE_REPROVISION, SECURITY_VERSION,
+    SESSION_LIFETIME_MS, SPACE_CREDENTIAL_ISSUE_PATH, SRP_USERNAME, STANDARD_ENDPOINT_UUIDS,
+    USER_LOGIN_APPROVE_PATH,
 };
 use serde_json::Value;
 
@@ -54,9 +53,10 @@ fn manifest_matches_the_rust_contract() {
     let session = &manifest["session"];
     assert_eq!(session["lifetimeMs"], SESSION_LIFETIME_MS);
     assert_eq!(session["activationGraceMs"], ACTIVATION_GRACE_MS);
-    assert_eq!(session["credentialStatusPollMs"], CREDENTIAL_STATUS_POLL_MS);
-    assert_eq!(manifest["cloud"]["issue"], CREDENTIAL_ISSUE_PATH);
-    assert_eq!(manifest["cloud"]["status"], CREDENTIAL_STATUS_PATH);
+    assert_eq!(
+        manifest["cloud"]["userLoginApprove"],
+        USER_LOGIN_APPROVE_PATH
+    );
     assert_eq!(manifest["cloud"]["spaceIssue"], SPACE_CREDENTIAL_ISSUE_PATH);
     assert_eq!(
         manifest["lan"]["credentialMaxBytes"],
@@ -95,36 +95,22 @@ fn manifest_matches_the_rust_contract() {
     {
         assert!(contract.contains(code), "{code}");
     }
-    assert!(contract.contains(CREDENTIAL_STATUS_PATH));
+    assert!(contract.contains(USER_LOGIN_APPROVE_PATH));
 }
 
 #[test]
-fn credential_status_matches_its_schema() {
-    let schema: Value = serde_json::from_str(include_str!(
-        "../schema/pod-credential-status.v1.schema.json"
-    ))
-    .unwrap();
-    let validator = jsonschema::validator_for(&schema).unwrap();
-    for (raw, status) in [
-        (
-            serde_json::json!({ "podId": "p", "status": "active", "activatedAt": 1791300000000i64 }),
-            CredentialStatus::Active,
-        ),
-        (
-            serde_json::json!({ "podId": "p", "status": "pending" }),
-            CredentialStatus::Pending,
-        ),
-        (
-            serde_json::json!({ "podId": "p", "status": "absent" }),
-            CredentialStatus::Absent,
-        ),
-    ] {
-        assert!(validator.is_valid(&raw), "{raw}");
-        let parsed: CredentialStatusResponse = serde_json::from_value(raw).unwrap();
-        assert_eq!(parsed.status, status);
-    }
-    assert!(!validator.is_valid(&serde_json::json!({ "podId": "p", "status": "active" })));
-    assert!(!validator.is_valid(&serde_json::json!({ "podId": "p", "status": "revoked" })));
+fn user_login_approval_has_no_legacy_refresh_credential() {
+    use app_facade_api::pod::UserLoginApproval;
+    let value = serde_json::json!({"podId":"p", "loginGrant":"one-time", "activateBefore":1791300000000i64});
+    let approval: UserLoginApproval = serde_json::from_value(value.clone()).unwrap();
+    assert_eq!(serde_json::to_value(approval).unwrap(), value);
+    assert!(serde_json::from_value::<UserLoginApproval>(
+        serde_json::json!({"podId":"p", "refreshToken":"old", "activateBefore":1})
+    )
+    .is_err());
+    let mut extra = value;
+    extra["refreshToken"] = "old".into();
+    assert!(serde_json::from_value::<UserLoginApproval>(extra).is_err());
 }
 
 #[test]

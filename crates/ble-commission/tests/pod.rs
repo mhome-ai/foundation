@@ -7,7 +7,7 @@ use app_facade_api::pod::{
     CommissionSession, DeviceKind, BLE_FLAG_COMMISSIONABLE, COMMISSION_CHANGED_EVENT,
 };
 use serde_json::{json, Value};
-use support::{session_id, Activation, Harness, Script, CODE};
+use support::{account, session_id, Activation, Harness, Script, CODE};
 
 const POD: DeviceKind = DeviceKind::Pod;
 
@@ -84,8 +84,13 @@ async fn commissions_a_pod_end_to_end() {
     assert_eq!(device.scans.load(Ordering::SeqCst), 1);
     assert_eq!(device.connects.load(Ordering::SeqCst), 2);
     let calls = harness.cloud.calls.lock().unwrap().clone();
-    assert_eq!(calls[0].path, "pod/credential/issue");
-    assert_eq!(calls[0].scope_id.as_deref(), Some("scope-a"));
+    assert_eq!(calls[0].path, "pod/login/approve");
+    assert_eq!(calls[0].scope_id, None);
+    let delivered = device.deliveries.lock().unwrap();
+    assert_eq!(delivered[0]["loginGrant"], "login-approval-1");
+    assert_eq!(delivered[0]["scopeId"], "scope-a");
+    assert!(delivered[0].get("refreshToken").is_none());
+    drop(delivered);
     assert_eq!(calls[0].context, "ctx-1");
     assert_eq!(calls[0].body["clientId"], "client-1");
     assert_eq!(calls[0].body["identity"]["keyId"], "p256:abc");
@@ -387,18 +392,17 @@ async fn a_loopback_cloud_is_refused_before_issuing() {
     harness.cloud.endpoints.lock().unwrap().api = "http://192.168.0.10:8080/api/v1".into();
     authorize(&harness, &id).await;
     harness.wait_state(POD, "completed").await;
-    assert!(harness.cloud.calls.lock().unwrap()[0].path == "pod/credential/issue");
+    assert!(harness.cloud.calls.lock().unwrap()[0].path == "pod/login/approve");
 }
 
 #[tokio::test(start_paused = true)]
-async fn lost_device_confirmation_fails_even_when_cloud_is_active() {
+async fn login_approval_does_not_replace_device_confirmation() {
     for op in ["deliver", "status"] {
         let harness = Harness::new();
         let mut script = Script::pod();
         script.activation = Activation::Never;
         script.drop_after_op = Some(op);
         harness.add_device("pod-a", script);
-        *harness.cloud.status.lock().unwrap() = "active";
         let id = to_authorization(&harness).await;
         authorize(&harness, &id).await;
         let failed = harness
@@ -799,7 +803,7 @@ async fn lost_confirmation_recovers_without_init_advertisement_or_duplicate_deli
             h.cloud
                 .paths()
                 .iter()
-                .filter(|p| *p == "pod/credential/issue")
+                .filter(|p| *p == "pod/login/approve")
                 .count(),
             1
         );
@@ -829,7 +833,7 @@ async fn confirmation_reconnect_rejects_replaced_device_identity() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn space_mode_uses_separate_issuance_and_only_offers_local_spaces() {
+async fn space_mode_uses_separate_issuance_and_only_offers_owned_local_spaces() {
     let harness = Harness::new();
     let device = harness.add_device("pod-a", Script::pod());
     let id = to_authorization(&harness).await;
@@ -857,4 +861,100 @@ async fn space_mode_uses_separate_issuance_and_only_offers_local_spaces() {
     for key in ["podId", "refreshToken", "cloudApi", "cloudWs", "userId"] {
         assert!(deliveries[0].get(key).is_none());
     }
+}
+
+#[tokio::test(start_paused = true)]
+async fn member_cannot_initialize_a_space_client_even_when_the_space_is_local() {
+    let harness = Harness::new();
+    harness.add_device("pod-a", Script::pod());
+    let mut member = account("user-generation");
+    for scope in &mut member.scopes {
+        scope.owner = false;
+    }
+    *harness.cloud.account.lock().unwrap() = Some(member);
+    let id = to_authorization(&harness).await;
+    let rejected = harness
+        .core
+        .handle(
+            "/local/pod/commission/authorize",
+            &json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}).to_string(),
+        )
+        .await;
+    assert!(rejected.is_err());
+    assert!(harness.cloud.paths().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn combined_product_binds_before_first_hub_and_space_credential() {
+    let harness = Harness::new();
+    harness
+        .cloud
+        .account
+        .lock()
+        .unwrap()
+        .as_mut()
+        .unwrap()
+        .scopes[0]
+        .local = false;
+    harness.add_device("pod-a", Script::product());
+    let id = to_authorization(&harness).await;
+    let prompt = harness.wait_state(POD, "awaiting_authorization").await;
+    assert_eq!(prompt["device"]["dependentHost"], true);
+    assert!(harness
+        .call(
+            "/local/pod/commission/authorize",
+            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"user"})
+        )
+        .await
+        .is_err());
+    assert!(harness
+        .call(
+            "/local/pod/commission/authorize",
+            json!({"sessionId":id,"scopeId":"scope-b","clientMode":"space"})
+        )
+        .await
+        .is_err());
+    harness
+        .ok(
+            "/local/pod/commission/authorize",
+            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+        )
+        .await;
+    let done = harness
+        .wait(POD, |s| s["state"] == "completed" || s["state"] == "failed")
+        .await;
+    assert_eq!(
+        done["state"],
+        "completed",
+        "{done}; {:?}",
+        harness.journal()
+    );
+    valid(&done);
+    assert!(harness.position("device:pod-credential:bind") < harness.position("product:hub-ready"));
+    assert!(
+        harness.position("product:hub-ready")
+            < harness.position("cloud:pod/space/credential/issue")
+    );
+    assert!(!harness
+        .cloud
+        .paths()
+        .iter()
+        .any(|p| p == "pod/login/approve"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn combined_product_rejects_a_different_client_before_cloud_claim() {
+    let harness = Harness::new();
+    let mut script = Script::product();
+    script.wrong_product_binding = true;
+    harness.add_device("pod-a", script);
+    let id = to_authorization(&harness).await;
+    harness
+        .ok(
+            "/local/pod/commission/authorize",
+            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+        )
+        .await;
+    harness.wait_state(POD, "failed").await;
+    assert!(harness.cloud.calls.lock().unwrap().is_empty());
 }

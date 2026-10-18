@@ -50,6 +50,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/host-provisioning-v1.md",
     ]),
     schemas: Object.freeze({
+      hostAuthorization: "schema/host-authorization.v1.schema.json",
+      hostAccess: "schema/host-access.v1.schema.json",
       capabilityDescriptor: "schema/capability-descriptor.v1.schema.json",
       call: "schema/facade-call.v1.schema.json",
       frame: "schema/messaging-frame.v3.schema.json",
@@ -59,7 +61,6 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       localHubState: "schema/local-hub-state.v1.schema.json",
       podDiscovery: "schema/pod-discovery.v1.schema.json",
       podCommission: "schema/pod-commission.v1.schema.json",
-      podCredentialStatus: "schema/pod-credential-status.v1.schema.json",
       hostProvision: "schema/host-provision.v1.schema.json",
       systemClients: "schema/system-clients.v1.schema.json",
       systemHosts: "schema/system-hosts.v1.schema.json",
@@ -71,6 +72,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     fixtures: Object.freeze({
       valid: "fixtures",
       invalid: "fixtures/invalid",
+      hostAccess: "schema/host-access.v1.schema.json",
       capabilityDescriptor: "fixtures/capability-descriptor.conformance.json",
       interactionFlow: "fixtures/interaction-flow.conformance.json",
     }),

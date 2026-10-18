@@ -136,11 +136,13 @@ only the canonical DTOs cross HTTP/IPC boundaries. The permissions contract is i
 `contract/host-permissions.md`; runtime permission handlers remain a separate
 implementation step. The existing Core external runtime protocol stays at 15.
 
-## Offline Host authorization (core-api 1.15.0)
+## Host management authorization
 
-`host::auth` is the language-neutral Client–Host authorization payload contract.
-See [`contract/host-offline-auth.md`](contract/host-offline-auth.md). This crate
-does not implement signing, key storage, or transport.
+`host::access` owns cloud-issued short User tokens, fixed Admin/Space modes,
+signed challenge/claim/receipt types and permissions. `host::auth` owns Host public
+keys and the cloud signing-key directory. See
+[`contract/host-management-auth.md`](contract/host-management-auth.md).
+Business Client–Core identities are a separate protocol.
 
 ## Native Client Host management
 
@@ -153,4 +155,4 @@ Desktop/CLI use Clientd IPC `host.list` and `host.runtime`; mobile Clients expos
 same operations through `hostList` / `hostRuntime`. None accepts a Space ID. Clients
 discover `_mhome-host._tcp`, verify reply Host IDs, and unwrap the HTTP runtime envelope.
 Install/restart submissions are not automatically replayed after transport failure.
-Existing LAN access semantics remain; this release does not add a trust/pairing protocol.
+First claim is direct LAN only; daily User management can use the current Core as a token-forwarding proxy.

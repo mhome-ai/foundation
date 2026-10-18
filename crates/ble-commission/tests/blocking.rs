@@ -121,7 +121,6 @@ fn a_blocking_platform_commissions_a_pod_on_its_own_runtime() {
     let cloud = Arc::new(FakeCloud::new(journal.clone()));
     let sink = Arc::new(FakeSink::new(journal.clone()));
     let device = FakeDevice::new(Script::pod(), journal.clone());
-    device.attach(cloud.clone());
     central
         .devices
         .lock()
@@ -177,5 +176,5 @@ fn a_blocking_platform_commissions_a_pod_on_its_own_runtime() {
     assert_eq!(done["podId"], "pod-1");
     assert!(radio.calls.lock().unwrap().contains(&true));
     assert!(!sink.events.lock().unwrap().is_empty());
-    assert_eq!(cloud.paths()[0], "pod/credential/issue");
+    assert_eq!(cloud.paths()[0], "pod/login/approve");
 }

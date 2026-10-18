@@ -25,6 +25,8 @@ serde_json = "1"
 sha2 = "0.10"
 
 [features]
+local-state = ["dep:fs2", "dep:tempfile", "dep:libc", "dep:windows-sys"]
+authority = ["local-state", "tls-server", "dep:reqwest", "reqwest/json", "dep:tokio-util", "dep:jsonwebtoken", "dep:tracing", "dep:libc", "dep:windows-sys", "tokio/sync", "tokio/rt", "tokio/macros", "axum/json"]
 file-gateway = ["tls-server", "dep:reqwest", "dep:tokio-util", "dep:futures-util", "dep:async-stream"]
 tls-server = ["tls", "dep:axum"]
 tls = ["dep:fs2", "dep:tempfile", "dep:rustls", "dep:rustls-pemfile", "dep:rcgen", "dep:x509-parser", "dep:tokio-rustls", "dep:tokio"]
@@ -93,3 +95,20 @@ optional = true
 [dependencies.async-stream]
 version = "0.3"
 optional = true
+
+[dependencies.jsonwebtoken]
+version = "9"
+optional = true
+[dependencies.tracing]
+version = "0.1"
+optional = true
+[target.'cfg(unix)'.dependencies.libc]
+version = "0.2"
+optional = true
+[target.'cfg(windows)'.dependencies.windows-sys]
+version = "0.61"
+features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_System_Threading"]
+optional = true
+[dev-dependencies.rsa]
+version = "0.9"
+features = ["pem"]

@@ -14,6 +14,7 @@ include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
 name = "ble_commission"
 
 [dependencies]
+host-protocol = { package = "mhome-host-auth", version = "=1.6.12", path = "../host-auth" }
 app-facade-api = { package = "mhome-app-facade-api", version = "=1.42.2", path = "../app-facade-api" }
 async-trait = "0.1"
 core-api = { package = "mhome-core-api", version = "=1.38.4", path = "../core-api" }
@@ -26,6 +27,8 @@ tracing = "0.1"
 reqwest = { version = "0.12", default-features = false }
 zeroize = "1"
 uuid = { version = "1.11", features = ["v4"] }
+base64 = "0.22"
+ed25519-dalek = "2"
 
 [dev-dependencies]
 prost = "0.13"

@@ -3,7 +3,7 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
 use std::time::Duration;
 
-use app_facade_api::pod::{CredentialIssueRequest, CredentialIssueResponse, CREDENTIAL_ISSUE_PATH};
+use app_facade_api::pod::{PodEnrollmentRequest, UserLoginApproval, USER_LOGIN_APPROVE_PATH};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
@@ -59,20 +59,12 @@ pub(crate) async fn post<T: DeserializeOwned>(
     serde_json::from_value(value).map_err(|error| CallError::Unreadable(error.to_string()))
 }
 
-pub(crate) async fn issue(
+pub(crate) async fn approve_login(
     cloud: &Arc<dyn Cloud>,
     context: &str,
-    scope_id: &str,
-    request: &CredentialIssueRequest,
-) -> Result<CredentialIssueResponse, CallError> {
-    post(
-        cloud,
-        context,
-        CREDENTIAL_ISSUE_PATH,
-        Some(scope_id),
-        request,
-    )
-    .await
+    request: &PodEnrollmentRequest,
+) -> Result<UserLoginApproval, CallError> {
+    post(cloud, context, USER_LOGIN_APPROVE_PATH, None, request).await
 }
 
 /// Whether the host of `url` is `localhost`, in `127.0.0.0/8` or `::1`.

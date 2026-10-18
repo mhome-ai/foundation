@@ -33,61 +33,23 @@ pub fn certificate(key: &SigningKey) -> Result<(String, String)> {
     Ok((params.self_signed(&pair)?.pem(), pem))
 }
 
-/// Embedded Android Host: Core and Camera may start in either order, in separate processes.
-/// The shared app-private directory and file lock give them one durable Host identity.
-/// Desktop Hosts use their authority store, which additionally owns the authorization ACL.
-pub fn prepare_app_identity(root: &Path, host_id: &str) -> Result<()> {
-    use crate::signatures::{decode_key, encode_key, new_key};
-    use fs2::FileExt;
-    use std::{fs, io::Write};
-    ensure!(!host_id.is_empty(), "Host ID is required");
-    fs::create_dir_all(root)?;
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        fs::set_permissions(root, fs::Permissions::from_mode(0o700))?;
-    }
-    let lock = fs::OpenOptions::new()
-        .create(true)
-        .truncate(false)
-        .read(true)
-        .write(true)
-        .open(root.join("identity.lock"))?;
-    lock.lock_exclusive()?;
-    let write = |name: &str, bytes: &[u8]| -> Result<()> {
-        let mut file = tempfile::NamedTempFile::new_in(root)?;
-        file.write_all(bytes)?;
-        file.as_file().sync_all()?;
-        file.persist(root.join(name)).map_err(|e| e.error)?;
-        #[cfg(unix)]
-        fs::File::open(root)?.sync_all()?;
-        Ok(())
-    };
-    let key = match fs::read(root.join("identity.json")) {
-        Ok(bytes) => {
-            let state: serde_json::Value = serde_json::from_slice(&bytes)?;
-            ensure!(
-                state["host_id"].as_str() == Some(host_id),
-                "Host identity mismatch"
-            );
-            decode_key(state["private_key"].as_str().context("Host key missing")?)?
-        }
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            ensure!(
-                !root.join(KEY_FILE).exists() && !root.join(CERT_FILE).exists(),
-                "Host identity missing; refusing to replace existing TLS identity"
-            );
-            let key = new_key();
-            let state = serde_json::json!({"host_id":host_id,"private_key":encode_key(&key)?,
-                "users":{},"clients":{},"local_transactions":{},"completed_authorizations":{}});
-            write("identity.json", &serde_json::to_vec(&state)?)?;
-            key
-        }
-        Err(e) => return Err(e.into()),
-    };
-    let (cert, key) = certificate(&key)?;
-    write(KEY_FILE, key.as_bytes())?;
-    write(CERT_FILE, cert.as_bytes())
+/// Child services consume the identity already created by their Host. They
+/// never initialize or repair Host security state themselves.
+pub fn require_host_identity(root: &Path, host_id: &str) -> Result<()> {
+    let state: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("identity.json"))?)?;
+    ensure!(
+        state["host_id"].as_str() == Some(host_id),
+        "Host identity mismatch"
+    );
+    let key =
+        crate::signatures::decode_key(state["private_key"].as_str().context("Host key missing")?)?;
+    ensure!(
+        load_public_key(root)? == crate::signatures::public_key(key.verifying_key()),
+        "Host TLS identity mismatch"
+    );
+    load_server(root)?;
+    Ok(())
 }
 
 pub fn certificate_public_key(der: &[u8]) -> Result<PublicKey> {
@@ -336,25 +298,21 @@ mod tests {
         assert!(!handshake(new_key(), pin).await);
     }
     #[test]
-    fn embedded_services_share_one_identity_and_never_replace_an_orphaned_key() {
+    fn child_services_require_host_identity_and_never_create_one() {
         let dir = tempfile::tempdir().unwrap();
-        let root = dir.path().join("host");
-        let threads: Vec<_> = (0..4)
-            .map(|_| {
-                let root = root.clone();
-                std::thread::spawn(move || prepare_app_identity(&root, "host").unwrap())
-            })
-            .collect();
-        for task in threads {
-            task.join().unwrap();
-        }
-        let before = load_public_key(&root).unwrap();
-        prepare_app_identity(&root, "host").unwrap();
-        assert_eq!(load_public_key(&root).unwrap(), before);
-        assert!(prepare_app_identity(&root, "another-host").is_err());
-        std::fs::remove_file(root.join("identity.json")).unwrap();
-        assert!(prepare_app_identity(&root, "host").is_err());
-        assert_eq!(load_public_key(&root).unwrap(), before);
+        assert!(require_host_identity(dir.path(), "host").is_err());
+        assert!(!dir.path().join("identity.json").exists());
+        let key = new_key();
+        let (cert, pem) = certificate(&key).unwrap();
+        std::fs::write(dir.path().join(KEY_FILE), pem).unwrap();
+        std::fs::write(dir.path().join(CERT_FILE), cert).unwrap();
+        assert!(require_host_identity(dir.path(), "host").is_err());
+        std::fs::write(dir.path().join("identity.json"), serde_json::to_vec(&serde_json::json!({"host_id":"host", "private_key":crate::signatures::encode_key(&key).unwrap()})).unwrap()).unwrap();
+        require_host_identity(dir.path(), "host").unwrap();
+        assert!(require_host_identity(dir.path(), "other").is_err());
+        let (other_cert, _) = certificate(&new_key()).unwrap();
+        std::fs::write(dir.path().join(CERT_FILE), other_cert).unwrap();
+        assert!(require_host_identity(dir.path(), "host").is_err());
     }
     #[test]
     fn mismatched_certificate_and_private_key_cannot_start_a_listener() {

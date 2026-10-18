@@ -135,6 +135,17 @@ pub struct CloudEndpoints {
 
 #[async_trait]
 pub trait Cloud: Send + Sync + 'static {
+    async fn setup_product_hub(
+        &self,
+        _context: &str,
+        _scope: &str,
+        _host_id: &str,
+        _host_key: &str,
+    ) -> Result<(), CloudError> {
+        Err(CloudError::Unreachable(
+            "Product Hub setup is unavailable".into(),
+        ))
+    }
     async fn account(&self) -> Option<Account>;
     /// `POST {api}/{path}` with the account's bearer token, the `ScopeId`
     /// header when `scope_id` is set, and a JSON body.
@@ -187,6 +198,17 @@ pub trait BlockingLink: Send + Sync + 'static {
 }
 
 pub trait BlockingCloud: Send + Sync + 'static {
+    fn setup_product_hub(
+        &self,
+        _context: String,
+        _scope: String,
+        _host_id: String,
+        _host_key: String,
+    ) -> Result<(), CloudError> {
+        Err(CloudError::Unreachable(
+            "Product Hub setup is unavailable".into(),
+        ))
+    }
     fn account(&self) -> Option<Account>;
     fn post_json(
         &self,
@@ -282,6 +304,25 @@ impl<T: BlockingLink + ?Sized> Link for Blocking<T> {
 
 #[async_trait]
 impl<T: BlockingCloud + ?Sized> Cloud for Blocking<T> {
+    async fn setup_product_hub(
+        &self,
+        context: &str,
+        scope: &str,
+        host_id: &str,
+        host_key: &str,
+    ) -> Result<(), CloudError> {
+        let (context, scope, host_id, host_key) = (
+            context.to_owned(),
+            scope.to_owned(),
+            host_id.to_owned(),
+            host_key.to_owned(),
+        );
+        off_runtime(&self.0, move |cloud| {
+            cloud.setup_product_hub(context, scope, host_id, host_key)
+        })
+        .await
+        .unwrap_or_else(|| Err(CloudError::Unreachable("Product setup stopped".into())))
+    }
     async fn account(&self) -> Option<Account> {
         off_runtime(&self.0, |cloud| cloud.account())
             .await

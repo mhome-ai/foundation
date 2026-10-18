@@ -399,12 +399,18 @@ async fn authorize(
         if live.busy {
             return Err(busy());
         }
-        let offered = live.authorization.as_ref().is_some_and(|prompt| {
-            prompt.scopes.iter().any(|scope| {
-                scope.scope_id == scope_id
-                    && (client_mode == app_facade_api::pod::ClientMode::User || scope.local)
-            })
-        });
+        let dependent = live
+            .device
+            .as_ref()
+            .is_some_and(|device| device.dependent_host);
+        let offered = (!dependent || client_mode == app_facade_api::pod::ClientMode::Space)
+            && live.authorization.as_ref().is_some_and(|prompt| {
+                prompt.scopes.iter().any(|scope| {
+                    scope.scope_id == scope_id
+                        && (client_mode == app_facade_api::pod::ClientMode::User
+                            || (scope.local || dependent) && scope.owner)
+                })
+            });
         if !offered {
             return Err(RequestError::rejected(
                 Reason::ScopeNotOffered,

@@ -156,8 +156,8 @@ mod tests {
             Some(RELAYABLE_HUB)
         );
         assert_eq!(
-            route_policy_for_target(crate::system::HOSTS_CLAIM_TARGET),
-            Some(RELAYABLE_HUB)
+            route_policy_for_target("/app/host/access/issue"),
+            Some(DIRECT_CLOUD)
         );
         assert_eq!(
             route_policy_for_target("/app/device/list"),

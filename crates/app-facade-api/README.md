@@ -46,7 +46,7 @@ requests carry a stable `details.reason`. See
 [the contract](contract/pod-commissioning-v1.md). Targets, BLE constants, session
 timings and request reasons are in `manifest/pod-targets.v1.json`; snapshots use
 `schema/pod-discovery.v1.schema.json` and `schema/pod-commission.v1.schema.json`;
-the owner's credential status is `schema/pod-credential-status.v1.schema.json`.
+User Pod enrollment uses a one-time login approval; activation is confirmed on the paired device.
 
 `host_provision` (1.34.0) defines BLE Wi-Fi provisioning of embedded Hosts
 (`/local/host/provision/*`) on the same BLE layer; discovery candidates carry
@@ -94,7 +94,6 @@ Code creation may omit bot/account and group/surface identifiers. The receiving 
 ## Space runtime observations
 
 `/app/system/instances/get` reads Space instances; `/app/system/clients/get` reads
-client sessions; `/app/system/hosts/get`, `/app/system/hosts/runtime`, and
-`/app/system/hosts/claim` are Hub-vantage Host inventory, management, and
-first-claim. These remain Hub-owned with cloud relay and Space membership. See
-[SYSTEM.md](SYSTEM.md).
+Client sessions. Host inventory and operations use `/app/system/hosts/get` and
+`/app/system/hosts/runtime`, forwarding cloud-issued User tokens through the
+current Core. First claim is direct LAN only. See [SYSTEM.md](SYSTEM.md).

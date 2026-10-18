@@ -12,6 +12,7 @@ mod discovery;
 mod endpoints;
 mod engine;
 mod facade;
+pub mod hub;
 mod lan;
 mod platform;
 mod session;
@@ -119,3 +120,5 @@ impl Drop for Commissioning {
         }
     }
 }
+
+mod product;

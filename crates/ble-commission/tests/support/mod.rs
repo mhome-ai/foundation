@@ -1,7 +1,7 @@
 //! A fake platform and a fake pod/Host built on the protocomm device side.
 #![allow(dead_code)]
 
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -90,6 +90,8 @@ pub struct Script {
     pub device_id: &'static str,
     pub env: &'static str,
     pub initial_state: &'static str,
+    pub product_key: Option<String>,
+    pub wrong_product_binding: bool,
 }
 
 impl Script {
@@ -114,9 +116,29 @@ impl Script {
             device_id: "a0b1c2d3e4f5",
             env: "prod",
             initial_state: "advertising",
+            product_key: None,
+            wrong_product_binding: false,
         }
     }
 
+    pub fn product() -> Self {
+        Self {
+            product_key: Some(
+                host_protocol::signatures::encode_key(&host_protocol::signatures::new_key())
+                    .unwrap(),
+            ),
+            ..Self::pod()
+        }
+    }
+    fn product_binding(&self) -> Value {
+        let Some(encoded) = &self.product_key else {
+            return Value::Null;
+        };
+        let key = host_protocol::signatures::decode_key(encoded).unwrap();
+        json!({"version":1,"env":self.env,"generation":"product-generation",
+            "client":{"id":self.device_id,"keyId":"p256:abc"},
+            "host":{"id":"product-host","keyId":host_protocol::signatures::key_id(key.verifying_key())},"space":null})
+    }
     pub fn host() -> Self {
         Self {
             kind: DeviceKind::Host,
@@ -155,7 +177,6 @@ pub struct FakeDevice {
     pub connects: AtomicU32,
     pub scans: AtomicU32,
     journal: Journal,
-    cloud: Mutex<Option<Arc<FakeCloud>>>,
 }
 
 impl FakeDevice {
@@ -183,12 +204,7 @@ impl FakeDevice {
             connects: AtomicU32::new(0),
             scans: AtomicU32::new(0),
             journal,
-            cloud: Mutex::new(None),
         })
-    }
-
-    pub fn attach(&self, cloud: Arc<FakeCloud>) {
-        *self.cloud.lock().unwrap() = Some(cloud);
     }
 
     pub fn drop_link(&self) {
@@ -406,6 +422,7 @@ impl FakeDevice {
         let response = match (endpoint, op.as_str()) {
             ("pod-info", _) => json!({
                 "protocol": 1,
+                "deviceBinding":script.product_binding(),
                 "env": script.env,
                 "deviceId": script.device_id,
                 "podId": if matches!(state.pod_state, "activating" | "commissioned") { Some("pod-1") } else { None },
@@ -417,6 +434,33 @@ impl FakeDevice {
                 "state": info_state,
                 "mode": script.reprovision.map(|_| "reprovision"),
             }),
+            ("pod-credential", "prepareBinding") => {
+                use host_protocol::signatures::*;
+                let key = decode_key(script.product_key.as_ref().unwrap()).unwrap();
+                let mut binding = script.product_binding();
+                if script.wrong_product_binding {
+                    binding["client"]["id"] = json!("another-client");
+                }
+                let now = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs();
+                let proof = json!({"deviceBinding":binding,"status":{"hostId":"product-host","hostKeyId":key_id(key.verifying_key()),
+                    "env":script.env,"mode":"spaceDep","generation":"product-generation","claim":null},
+                    "hostName":"Product","hostPublicKey":public_key(key.verifying_key()),"probeId":request["request"]["probeId"],
+                    "exchangeKeyHash":request["request"]["exchangeKeyHash"],"iat":now,"exp":now+300});
+                json!({"proof":sign_jws(&key,core_api::host::access::CHALLENGE_TYPE,&proof).unwrap()})
+            }
+            ("pod-credential", "bind") => {
+                use host_protocol::signatures::*;
+                let key = decode_key(script.product_key.as_ref().unwrap()).unwrap();
+                let proof = request["request"]["proof"].as_str().unwrap();
+                let grant: Value = serde_json::from_str(proof).unwrap();
+                let challenge = jws_payload_json(grant["challenge"].as_str().unwrap()).unwrap();
+                let mut status = challenge["status"].clone();
+                status["claim"] = json!({"kind":"space","space":{"tenantId":"tenant","scopeId":grant["scopeId"]}});
+                json!({"proof":sign_jws(&key,core_api::host::access::RECEIPT_TYPE,&json!({"proof":proof,"status":status,"userId":"user-1"})).unwrap()})
+            }
             ("pod-credential", "deliver") => {
                 self.deliveries.lock().unwrap().push(request.clone());
                 if script.deliver_ok && script.reprovision.is_none() {
@@ -434,9 +478,6 @@ impl FakeDevice {
                             if state.activation_polls > after_polls =>
                         {
                             state.pod_state = "commissioned";
-                            if let Some(cloud) = self.cloud.lock().unwrap().as_ref() {
-                                cloud.activate();
-                            }
                         }
                         Activation::Failed(code) => {
                             return (
@@ -677,9 +718,6 @@ pub struct FakeCloud {
     pub account: Mutex<Option<Account>>,
     pub endpoints: Mutex<CloudEndpoints>,
     pub calls: Mutex<Vec<CloudCall>>,
-    /// Lion's view of the issued credential.
-    pub status: Mutex<&'static str>,
-    pub statuses: Mutex<VecDeque<&'static str>>,
     pub issue_delay: Mutex<Duration>,
     pub fail_issue: AtomicBool,
     clock: Clock,
@@ -695,17 +733,11 @@ impl FakeCloud {
                 ws: "wss://cloud.example/ws".into(),
             }),
             calls: Mutex::new(Vec::new()),
-            status: Mutex::new("pending"),
-            statuses: Mutex::new(VecDeque::new()),
             issue_delay: Mutex::new(Duration::from_millis(100)),
             fail_issue: AtomicBool::new(false),
             clock: Clock::new(),
             journal,
         }
-    }
-
-    pub fn activate(&self) {
-        *self.status.lock().unwrap() = "active";
     }
 
     pub fn paths(&self) -> Vec<String> {
@@ -737,11 +769,13 @@ pub fn account(context: &str) -> Account {
                 scope_id: "scope-a".into(),
                 name: "Home".into(),
                 local: true,
+                owner: true,
             },
             AuthorizationScope {
                 scope_id: "scope-b".into(),
                 name: "Cabin".into(),
                 local: false,
+                owner: false,
             },
         ],
         active_scope_id: Some("scope-b".into()),
@@ -770,6 +804,8 @@ impl Cloud for FakeCloud {
         });
         note(&self.journal, format!("cloud:{path}"));
         let body = match path {
+            "/host/authorizations/claim" => json!({"claimId":"product-claim","proof":body}),
+            "/host/authorizations/commit-claim" => json!({"ok":true}),
             "pod/space/credential/issue" => json!({
                 "credentialId":"space-credential", "appClientId":"a:space-device", "jwtToken":"space-jwt",
                 "activateBefore":self.clock.now_ms()+600_000,
@@ -777,7 +813,7 @@ impl Cloud for FakeCloud {
                     "keyId":"p256:key", "algorithm":"ES256", "publicKeyX":"x", "publicKeyY":"y", "fingerprint":"key",
                     "hostId":"host", "hostPublicKey":{"x":"x","y":"y"}}
             }),
-            "pod/credential/issue" => {
+            "pod/login/approve" => {
                 let delay = *self.issue_delay.lock().unwrap();
                 tokio::time::sleep(delay).await;
                 if self.fail_issue.load(Ordering::SeqCst) {
@@ -785,18 +821,10 @@ impl Cloud for FakeCloud {
                 } else {
                     json!({
                         "podId": "pod-1",
-                        "refreshToken": "refresh-1",
+                        "loginGrant": "login-approval-1",
                         "activateBefore": self.clock.now_ms() + 600_000,
                     })
                 }
-            }
-            "pod/credential/status" => {
-                let scripted = self.statuses.lock().unwrap().pop_front();
-                let status = scripted.unwrap_or(*self.status.lock().unwrap());
-                if status == "unreachable" {
-                    return Err(CloudError::Unreachable("offline".into()));
-                }
-                json!({ "podId": "pod-1", "status": status })
             }
             _ => json!({}),
         };
@@ -804,6 +832,29 @@ impl Cloud for FakeCloud {
             status: 200,
             body: body.to_string(),
         })
+    }
+
+    async fn setup_product_hub(
+        &self,
+        context: &str,
+        scope: &str,
+        host: &str,
+        _: &str,
+    ) -> Result<(), CloudError> {
+        assert_eq!(context, "ctx-1");
+        assert_eq!(host, "product-host");
+        note(&self.journal, "product:hub-ready");
+        self.account
+            .lock()
+            .unwrap()
+            .as_mut()
+            .unwrap()
+            .scopes
+            .iter_mut()
+            .find(|s| s.scope_id == scope)
+            .unwrap()
+            .local = true;
+        Ok(())
     }
 
     async fn client_id(&self) -> Option<String> {
@@ -899,7 +950,6 @@ impl Harness {
         let kind = script.kind;
         let wifi_configured = script.wifi_configured;
         let device = FakeDevice::new(script, self.journal.clone());
-        device.attach(self.cloud.clone());
         self.central
             .devices
             .lock()

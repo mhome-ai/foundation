@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "request": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "challenge",
+            "recoverIdentity"
+          ],
+          "properties": {
+            "action": {
+              "const": "prepare"
+            },
+            "challenge": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "recoverIdentity": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "requestId",
+            "proof"
+          ],
+          "properties": {
+            "action": {
+              "const": "commit"
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "proof": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            }
+          }
+        }
+      ]
+    }
+  }
+}

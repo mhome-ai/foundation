@@ -478,6 +478,7 @@ pub struct ExternalCoreRuntimeMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExternalCoreHealth {
+    pub runtime_space_policy: Option<crate::runtime_space::RuntimeSpacePolicy>,
     pub ok: bool,
     pub ready: bool,
     pub backend: String,

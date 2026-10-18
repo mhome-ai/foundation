@@ -1,55 +1,13 @@
-//! Host management policy, independent of token transport and persistence.
-//!
-//! A verified grant may restrict these rules, never widen them. In particular a
-//! Space Client remains read-only even if an issuer accidentally grants writes.
-//! Adapters authenticate controller kinds; request JSON cannot select a kind.
+//! Host management authorization. Every remote management caller is a User.
+//! The cloud verifies current Space ownership; Core only transports the token.
 
-use crate::token_session::{Binding, ControllerKind, Principal};
-use core_api::RuntimeEnv;
+pub use core_api::host::access::{AccessBinding, Claim, HostMode, Permission};
+use core_api::{
+    runtime_space::{RuntimeSpacePolicy, SpaceIdentity},
+    RuntimeEnv,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum HostMode {
-    Admin,
-    Space,
-}
-
-/// Personal Pods are User Clients. Shared Pods are Space Clients. A Core is
-/// neither: it is an independently authenticated management controller.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum ClientMode {
-    User,
-    Space,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "camelCase", deny_unknown_fields)]
-pub enum Claim {
-    Admin {
-        #[serde(rename = "userIds")]
-        user_ids: BTreeSet<String>,
-    },
-    Space {
-        #[serde(rename = "tenantId")]
-        tenant_id: String,
-        #[serde(rename = "spaceId")]
-        space_id: String,
-    },
-}
-
-/// The adapter must classify the actual action, not just its HTTP method. An
-/// installation plan writes durable state and is a ManageRuntime operation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum Permission {
-    Read,
-    ManageRuntime,
-    ManageAdministrators,
-    Reset,
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Denied {
@@ -59,12 +17,10 @@ pub enum Denied {
     BindingMismatch,
     PrincipalMismatch,
     NotAdministrator,
-    ReadOnlyClient,
     PermissionMissing,
     AlreadyClaimed,
     LastAdministrator,
 }
-
 impl std::fmt::Display for Denied {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Host authorization: {self:?}")
@@ -72,9 +28,6 @@ impl std::fmt::Display for Denied {
 }
 impl std::error::Error for Denied {}
 
-/// Persist this state before acknowledging a claim. `generation` changes on an
-/// explicit reset, not on access refresh, restart or administrator additions.
-/// Claim reservations and receipts belong to the adapter's durable transaction.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostPolicy {
@@ -90,25 +43,36 @@ fn valid_id(value: &str) -> bool {
 }
 
 impl HostPolicy {
+    pub(crate) fn validate_status(
+        status: &core_api::host::access::HostStatus,
+    ) -> Result<(), Denied> {
+        Self {
+            host_id: status.host_id.clone(),
+            env: status.env,
+            mode: status.mode,
+            generation: status.generation.clone(),
+            claim: status.claim.clone(),
+        }
+        .validate(status.mode)
+    }
+
     pub fn unclaimed(
         host_id: String,
         env: RuntimeEnv,
         mode: HostMode,
         generation: String,
     ) -> Result<Self, Denied> {
-        let state = Self {
+        let policy = Self {
             host_id,
             env,
             mode,
             generation,
             claim: None,
         };
-        state.validate(mode)?;
-        Ok(state)
+        policy.validate(mode)?;
+        Ok(policy)
     }
 
-    /// Check against the mode in the installed package on every load. A package
-    /// upgrade cannot reinterpret an existing binding as a different mode.
     pub fn validate(&self, installed_mode: HostMode) -> Result<(), Denied> {
         if self.mode != installed_mode {
             return Err(Denied::ModeChanged);
@@ -123,114 +87,128 @@ impl HostPolicy {
             {
                 Ok(())
             }
-            (
-                HostMode::Space,
-                Some(Claim::Space {
-                    tenant_id,
-                    space_id,
-                }),
-            ) if valid_id(tenant_id) && valid_id(space_id) => Ok(()),
+            (HostMode::SpaceSelf | HostMode::SpaceDep, Some(Claim::Space { space }))
+                if space.validate().is_ok() =>
+            {
+                Ok(())
+            }
             _ => Err(Denied::InvalidState),
         }
+    }
+
+    /// Construct an effective policy from the Client's canonical file. This
+    /// value is never persisted in Host state.
+    pub fn from_device_binding(
+        binding: &core_api::device_binding::DeviceBinding,
+    ) -> Result<Self, Denied> {
+        binding.validate().map_err(|_| Denied::InvalidState)?;
+        let host = binding.host.as_ref().ok_or(Denied::InvalidState)?;
+        let value = Self {
+            host_id: host.id.clone(),
+            env: binding.env,
+            mode: HostMode::SpaceDep,
+            generation: binding.generation.clone(),
+            claim: binding.space.clone().map(|space| Claim::Space { space }),
+        };
+        value.validate(HostMode::SpaceDep)?;
+        Ok(value)
     }
 
     pub fn mode(&self) -> HostMode {
         self.mode
     }
-
     pub fn generation(&self) -> &str {
         &self.generation
     }
-
     pub fn claim(&self) -> Option<&Claim> {
         self.claim.as_ref()
     }
 
-    /// Only call with the subject of a cryptographically verified first-claim
-    /// approval after checking its target, expiry, reservation and single use.
-    /// The store must serialize the check and persistence with concurrent claims.
-    pub fn claim_verified(&mut self, principal: &Principal) -> Result<(), Denied> {
+    pub fn status(&self, host_key_id: String) -> core_api::host::access::HostStatus {
+        core_api::host::access::HostStatus {
+            host_id: self.host_id.clone(),
+            host_key_id,
+            env: self.env,
+            mode: self.mode,
+            generation: self.generation.clone(),
+            claim: self.claim.clone(),
+        }
+    }
+
+    /// No effective policy means a single-Space Host is awaiting first claim.
+    /// Services must wait; it must never be interpreted as unrestricted.
+    pub fn runtime_policy(&self) -> Result<Option<RuntimeSpacePolicy>, Denied> {
         self.validate(self.mode)?;
-        let claim = match (self.mode, principal) {
-            (HostMode::Admin, Principal::User { user_id }) if valid_id(user_id) => Claim::Admin {
-                user_ids: BTreeSet::from([user_id.clone()]),
-            },
-            (
-                HostMode::Space,
-                Principal::Space {
-                    tenant_id,
-                    space_id,
-                },
-            ) if valid_id(tenant_id) && valid_id(space_id) => Claim::Space {
-                tenant_id: tenant_id.clone(),
-                space_id: space_id.clone(),
-            },
-            _ => return Err(Denied::PrincipalMismatch),
-        };
-        if let Some(existing) = &self.claim {
-            let same = match (existing, principal) {
-                (Claim::Admin { user_ids }, Principal::User { user_id }) => {
-                    user_ids.contains(user_id)
-                }
-                _ => existing == &claim,
-            };
-            return if same {
-                Ok(())
-            } else {
-                Err(Denied::AlreadyClaimed)
+        match (&self.mode, &self.claim) {
+            (HostMode::Admin, _) => Ok(Some(RuntimeSpacePolicy::Multi {})),
+            (HostMode::SpaceSelf | HostMode::SpaceDep, Some(Claim::Space { space })) => {
+                Ok(Some(RuntimeSpacePolicy::Single {
+                    space: space.clone(),
+                }))
+            }
+            (HostMode::SpaceSelf | HostMode::SpaceDep, None) => Ok(None),
+            _ => Err(Denied::InvalidState),
+        }
+    }
+
+    /// The adapter verifies cloud approval, target identity, current generation,
+    /// direct exchange binding and Client admission before persisting this change.
+    /// A fresh attempt may confirm the same binding, but never replace it or add
+    /// an administrator. Repeating onboarding does not depend on an old receipt.
+    pub fn claim_verified(
+        &mut self,
+        user_id: &str,
+        space: Option<&SpaceIdentity>,
+    ) -> Result<(), Denied> {
+        self.validate(self.mode)?;
+        if self.mode == HostMode::SpaceDep || !valid_id(user_id) {
+            return Err(Denied::PrincipalMismatch);
+        }
+        if let Some(claim) = &self.claim {
+            return match (claim, space) {
+                (Claim::Admin { user_ids }, None) if user_ids.contains(user_id) => Ok(()),
+                (Claim::Space { space: current }, Some(target)) if current == target => Ok(()),
+                _ => Err(Denied::AlreadyClaimed),
             };
         }
-        self.claim = Some(claim);
+        self.claim = Some(match (self.mode, space) {
+            (HostMode::Admin, None) => Claim::Admin {
+                user_ids: BTreeSet::from([user_id.to_string()]),
+            },
+            (HostMode::SpaceSelf, Some(space)) if space.validate().is_ok() => Claim::Space {
+                space: space.clone(),
+            },
+            _ => return Err(Denied::PrincipalMismatch),
+        });
         Ok(())
     }
 
-    /// Run after token/session verification and before dispatch, including
-    /// mediated operations. Core adapters must additionally enforce Owner for
-    /// human requests to Space Hosts; a Space Client may not borrow Core tokens.
+    /// Recheck current local ACL on every request, after cryptographic token
+    /// verification. A cached token never freezes administrator membership.
     pub fn authorize(
         &self,
-        binding: &Binding,
+        binding: &AccessBinding,
         granted: &BTreeSet<Permission>,
         action: Permission,
     ) -> Result<(), Denied> {
         self.validate(self.mode)?;
         if binding.host_id != self.host_id
             || binding.env != self.env
-            || binding.binding_generation != self.generation
-            || binding.validate().is_err()
+            || binding.generation != self.generation
+            || !valid_id(&binding.user_id)
         {
             return Err(Denied::BindingMismatch);
         }
         match (
             self.claim.as_ref().ok_or(Denied::Unclaimed)?,
-            &binding.principal,
-            binding.controller_kind,
+            &binding.space,
         ) {
-            (
-                Claim::Admin { user_ids },
-                Principal::User { user_id },
-                ControllerKind::UserClient | ControllerKind::Core,
-            ) => {
-                if !user_ids.contains(user_id) {
+            (Claim::Admin { user_ids }, None) => {
+                if !user_ids.contains(&binding.user_id) {
                     return Err(Denied::NotAdministrator);
                 }
             }
-            (
-                Claim::Space {
-                    tenant_id,
-                    space_id,
-                },
-                Principal::Space {
-                    tenant_id: caller_tenant,
-                    space_id: caller_space,
-                },
-                ControllerKind::SpaceClient | ControllerKind::Core,
-            ) if tenant_id == caller_tenant && space_id == caller_space => {
-                if binding.controller_kind == ControllerKind::SpaceClient
-                    && action != Permission::Read
-                {
-                    return Err(Denied::ReadOnlyClient);
-                }
+            (Claim::Space { space }, Some(target)) if space == target => {
                 if action == Permission::ManageAdministrators {
                     return Err(Denied::PrincipalMismatch);
                 }

@@ -61,13 +61,10 @@
   },
   "session": {
     "lifetimeMs": 600000,
-    "activationGraceMs": 30000,
-    "credentialStatusPollMs": 5000
+    "activationGraceMs": 30000
   },
   "cloud": {
-    "issue": "pod/credential/issue",
-    "status": "pod/credential/status",
-    "statusSchema": "schema/pod-credential-status.v1.schema.json",
+    "userLoginApprove": "pod/login/approve",
     "spaceIssue": "pod/space/credential/issue"
   },
   "activationErrorCodes": [

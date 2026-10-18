@@ -134,18 +134,17 @@ Session states, in order: `connecting`, `awaiting_code`, `securing`,
 (IPv4 only, possibly empty) and `claimToken` from the `finish` response; the
 commissioner sends `finish` (up to 3 times while the secure session lasts)
 before reporting it. `claimToken` is absent when `finish` could not be
-delivered, in a re-provision window, and with Hosts that predate claim tokens.
+delivered, in a re-provision window.
 No other state carries `claimToken`.
 
-The first claim (TOFU) of a Host that was provisioned over BLE must present this
-token: `/app/system/hosts/claim` takes `{"hostId","claimToken"?}` and the native
-`host.claim` passes it through to the Host's offline claim, `POST /v1/auth/claim`
-`{"proof","claimToken"?}` (`core-api` `host::auth::ClaimRequest`). Clients send
-`claimToken` only when they have one, because older Hosts reject unknown fields.
-While a token is outstanding the Host answers a claim without it, or with a
-different one, with 403 `{"code":"HOST_CLAIM_TOKEN_REQUIRED"}`. The token stays valid until a claim succeeds or the Host is
-factory reset; the UI claims automatically with it after `completed`. Hosts
-that were never provisioned over BLE keep the plain first claim.
+The first claim (TOFU) after BLE provisioning must include the returned token.
+Native `host.claim` passes it to `POST /v1/auth/claim`, alongside the environment,
+cloud proof and direct Client exchange secret (`core-api::host::access::ClaimRequest`).
+There is no Core-proxied first-claim route. The Host rejects a missing or incorrect
+provisioning token with 403 `HOST_CLAIM_TOKEN_REQUIRED`. The token remains valid
+until claim succeeds or factory reset. The App claims automatically after
+`completed`. Hosts that were not provisioned over BLE use the ordinary direct
+LAN claim flow. See the Foundation Host management authorization contract.
 
 Error codes are the pod session codes without the credential ones:
 `bluetooth_unavailable`, `device_busy`, `disconnected`, `code_rejected` (retry

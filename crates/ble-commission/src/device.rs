@@ -139,6 +139,10 @@ pub(crate) fn pod_info(info: &Value) -> Option<(PodInfo, PodDeviceInfo)> {
         return None;
     }
     let device = PodDeviceInfo {
+        dependent_host: parsed
+            .device_binding
+            .as_ref()
+            .is_some_and(|binding| binding.host.is_some()),
         device_id: parsed.device_id.clone(),
         model: parsed.model.clone(),
         firmware_version: parsed.firmware_version.clone(),

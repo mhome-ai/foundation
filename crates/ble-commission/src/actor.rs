@@ -7,8 +7,8 @@ use std::time::Duration;
 
 use app_facade_api::host_provision::{is_claim_token, HostFinishResponse, HOST_INFO_ENDPOINT};
 use app_facade_api::pod::{
-    AuthorizationPrompt, ClientMode, CommissionError, CommissionErrorCode, CredentialIssueRequest,
-    DeviceKind, DiscoveryTransport, PodInfo, SessionMode, SpaceCredentialIssueResponse,
+    AuthorizationPrompt, ClientMode, CommissionError, CommissionErrorCode, DeviceKind,
+    DiscoveryTransport, PodEnrollmentRequest, PodInfo, SessionMode, SpaceCredentialIssueResponse,
     ACTIVATION_GRACE_MS, CODE_ATTEMPTS, NOT_ACTIVATED_DETAIL, POD_CREDENTIAL_ENDPOINT,
     POD_INFO_ENDPOINT, SPACE_CREDENTIAL_ISSUE_PATH, SRP_USERNAME,
 };
@@ -990,7 +990,38 @@ impl Actor {
             .engine
             .mutate(self.kind, &self.id, |live| live.candidate.name.clone())
             .unwrap_or_default();
-        let request = CredentialIssueRequest {
+        let dependent = info
+            .device_binding
+            .as_ref()
+            .is_some_and(|binding| binding.host.is_some());
+        if dependent {
+            if client_mode != ClientMode::Space
+                || !account
+                    .scopes
+                    .iter()
+                    .any(|s| s.scope_id == scope_id && s.owner)
+            {
+                return self.fail(issue_failed(Some(
+                    "Choose a Space you own for this device".into(),
+                )));
+            }
+            self.ack();
+            let prepared = self
+                .race(crate::product::prepare(
+                    &cloud,
+                    &account.context,
+                    &scope_id,
+                    &info,
+                    &client,
+                ))
+                .await;
+            match prepared {
+                Some(Ok(())) => {}
+                Some(Err(error)) => return self.fail(issue_failed(Some(error))),
+                None => return,
+            }
+        }
+        let request = PodEnrollmentRequest {
             device_id: info.device_id,
             model: info.model,
             platform: Some(info.platform)
@@ -1003,13 +1034,12 @@ impl Actor {
         };
         let (credential, deliver) = match client_mode {
             ClientMode::User => {
-                let issued = match cloud::issue(&cloud, &account.context, &scope_id, &request).await
-                {
+                let issued = match cloud::approve_login(&cloud, &account.context, &request).await {
                     Ok(issued) => issued,
                     Err(failure) => return self.fail(issue_failed(Some(failure.to_string()))),
                 };
                 let deliver = json!({"op":"deliver", "clientMode":"user", "podId":issued.pod_id,
-                    "refreshToken":issued.refresh_token, "scopeId":scope_id, "cloudApi":endpoints.api, "cloudWs":endpoints.ws});
+                    "loginGrant":issued.login_grant, "scopeId":scope_id, "cloudApi":endpoints.api, "cloudWs":endpoints.ws});
                 (
                     Credential {
                         pod_id: issued.pod_id,
@@ -1019,12 +1049,10 @@ impl Actor {
                 )
             }
             ClientMode::Space => {
-                if !account
-                    .scopes
-                    .iter()
-                    .any(|scope| scope.scope_id == scope_id && scope.local)
-                {
-                    return self.fail(issue_failed(Some("Choose a local Space".into())));
+                if !account.scopes.iter().any(|scope| {
+                    scope.scope_id == scope_id && (scope.local || dependent) && scope.owner
+                }) {
+                    return self.fail(issue_failed(Some("Choose a local Space you own".into())));
                 }
                 let issued: SpaceCredentialIssueResponse = match cloud::post(
                     &cloud,

@@ -1,11 +1,9 @@
-//! Offline Client–Host authorization. No Space, cloud session or transport ownership.
+//! Host public-key types and the cloud signing-key directory.
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
 pub const KEY_REFRESH_INTERVAL_SECONDS: u64 = 24 * 60 * 60;
-pub const REQUEST_WINDOW_SECONDS: u64 = 60;
-pub const ENROLLMENT_PROOF_TTL_SECONDS: u64 = 300;
-pub const PROTOCOL: &str = "meow-host-auth-v1";
+pub const CLAIM_TOKEN_REQUIRED: &str = "HOST_CLAIM_TOKEN_REQUIRED";
 
 /// Public P-256 point; x/y are exactly 32 bytes, base64url without padding.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -15,7 +13,7 @@ pub struct PublicKey {
     pub y: String,
 }
 
-/// Verification-only permits an overlap. Disabled never accepts proofs or bindings.
+/// Verification-only permits a signing-key overlap; disabled keys accept no proofs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SigningKeyStatus {
@@ -107,140 +105,9 @@ impl SigningKeySet {
         Ok(())
     }
 
-    pub fn permits_binding(&self, kid: &str) -> bool {
+    pub fn permits_token(&self, kid: &str) -> bool {
         self.keys
             .iter()
             .any(|key| key.kid == kid && key.status != SigningKeyStatus::Disabled)
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum ErrorCode {
-    HostReauthRequired,
-    HostEnrollmentRequired,
-    HostUserNotAuthorized,
-    HostContextChanged,
-    HostReplayDetected,
-    HostAuthUnavailable,
-    HostInvalidProof,
-}
-
-/// Only authenticated responses may drive refresh/retry. Rejections precede dispatch.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AuthError {
-    pub code: ErrorCode,
-    pub host_id: String,
-    pub boot_id: String,
-    pub request_id: String,
-    pub key_set_version: u64,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ContextRequest {
-    pub probe_id: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HostContext {
-    #[serde(default, skip_serializing_if = "crate::RuntimeEnv::is_prod")]
-    pub env: crate::RuntimeEnv,
-    pub protocol: String,
-    pub host_id: String,
-    pub boot_id: String,
-    pub probe_id: String,
-    pub server_time: u64,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct EnrollmentRequest {
-    pub proof: String,
-    pub client_signature: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct EnrollmentChallengeRequest {
-    pub user_id: String,
-    pub client_public_key: PublicKey,
-    pub probe_id: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct EnrollmentChallenge {
-    #[serde(default, skip_serializing_if = "crate::RuntimeEnv::is_prod")]
-    pub env: crate::RuntimeEnv,
-    pub host_id: String,
-    pub boot_id: String,
-    pub user_id: String,
-    pub client_public_key: PublicKey,
-    pub probe_id: String,
-    pub challenge: String,
-    pub expires_at: u64,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ClientBinding {
-    pub user_id: String,
-    pub client_public_key: PublicKey,
-    pub enrollment_kid: String,
-}
-
-/// Cloud claims are short-lived evidence for registration, never LAN bearer credentials.
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Grant {
-    pub sub: String,
-    pub aud: String,
-    pub jti: String,
-    pub iat: u64,
-    pub exp: u64,
-    pub host_id: String,
-    pub host_public_key: PublicKey,
-    pub client_public_key: Option<PublicKey>,
-    pub challenge: String,
-    pub boot_id: Option<String>,
-}
-/// `POST /v1/auth/claim`. A Host provisioned over Bluetooth refuses a claim
-/// without the token it handed out at setup with 403 `HOST_CLAIM_TOKEN_REQUIRED`.
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ClaimRequest {
-    #[serde(default, skip_serializing_if = "crate::RuntimeEnv::is_prod")]
-    pub env: crate::RuntimeEnv,
-    pub proof: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub claim_token: Option<String>,
-}
-
-pub const CLAIM_TOKEN_REQUIRED: &str = "HOST_CLAIM_TOKEN_REQUIRED";
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LocalAuthorization {
-    pub host_id: String,
-    pub host_name: String,
-    pub host_public_key: PublicKey,
-    pub transaction_id: String,
-    pub expires_at: u64,
-}
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Possession {
-    #[serde(default, skip_serializing_if = "crate::RuntimeEnv::is_prod")]
-    pub env: crate::RuntimeEnv,
-    pub proof_digest: String,
-}
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AuthorizationReceipt {
-    pub proof: String,
-    pub host_id: String,
-    pub user_id: String,
 }

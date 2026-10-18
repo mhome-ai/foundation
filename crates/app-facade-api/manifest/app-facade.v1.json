@@ -84,14 +84,11 @@
       "hostsSchema": "schema/system-hosts.v1.schema.json",
       "hostsRuntimeContract": "mhome.system.hosts.runtime.v1",
       "hostsRuntimeSchema": "schema/system-hosts-runtime.v1.schema.json",
-      "hostsClaimContract": "mhome.system.hosts.claim.v1",
-      "hostsClaimSchema": "schema/system-hosts-claim.v1.schema.json",
       "requestTargets": [
         "/app/system/instances/get",
         "/app/system/clients/get",
         "/app/system/hosts/get",
-        "/app/system/hosts/runtime",
-        "/app/system/hosts/claim"
+        "/app/system/hosts/runtime"
       ]
     },
     "integration": {
@@ -138,6 +135,15 @@
         "/app/user/profile/avatar/clear"
       ],
       "owner": "cloudAccount"
+    },
+    "hostManagement": {
+      "accessTarget": "/app/host/access/issue",
+      "accessSchema": "schema/host-access.v1.schema.json",
+      "principal": "user",
+      "issuer": "cloud",
+      "firstClaimTransport": "directLanOnly",
+      "authorizationTarget": "/app/host/authorization",
+      "authorizationSchema": "schema/host-authorization.v1.schema.json"
     }
   }
 }

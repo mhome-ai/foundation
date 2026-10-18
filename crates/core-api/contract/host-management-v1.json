@@ -44,6 +44,34 @@
     "restartOperation": {
       "path": "/v1/runtime",
       "method": "POST"
+    },
+    "administratorRemove": {
+      "path": "/v1/runtime",
+      "method": "POST"
+    },
+    "administratorRequest": {
+      "path": "/v1/auth/administrators",
+      "method": "POST"
+    },
+    "administratorRequestStatus": {
+      "path": "/v1/auth/administrators",
+      "method": "POST"
+    },
+    "administratorRequestCancel": {
+      "path": "/v1/auth/administrators",
+      "method": "POST"
+    },
+    "administrators": {
+      "path": "/v1/runtime",
+      "method": "POST"
+    },
+    "administratorDecide": {
+      "path": "/v1/runtime",
+      "method": "POST"
+    },
+    "configureService": {
+      "path": "/v1/runtime",
+      "method": "POST"
     }
   },
   "requestFields": [
@@ -53,7 +81,13 @@
     "all",
     "planId",
     "operationId",
-    "component"
+    "component",
+    "proof",
+    "userId",
+    "requestId",
+    "approve",
+    "serviceId",
+    "enabled"
   ],
   "listResponse": {
     "hosts": "array of HostListEntry",
@@ -65,8 +99,10 @@
     ],
     "info": "HostInfo or null",
     "infoError": "string or null",
-    "claimable": "boolean; verified empty-ACL challenge, not a permission result",
-    "identityUnverified": "boolean; blocks automatic TOFU and management; an explicit native reauthorization may start a new claim"
+    "claimable": "boolean; verified unclaimed Host status",
+    "identityUnverified": "boolean; blocks automatic TOFU and management; an explicit native reauthorization may start a new claim",
+    "authorization": "verified HostStatus or null: mode, claim, env, generation and host key id",
+    "claimPending": "boolean; this native Client has an unfinished claim that can be resumed"
   },
   "runtimeResponse": {
     "metrics": "HostMetrics",
@@ -78,13 +114,15 @@
     "mutationsAutomaticallyRetried": false
   },
   "claimRequest": {
-    "hostId": "non-empty string; no scope or endpoint accepted",
+    "hostId": "non-empty string; endpoint resolved from native LAN discovery",
     "claimToken": "optional string from a completed Bluetooth setup; forwarded to the Host claim unchanged",
-    "recoverIdentity": "optional boolean, default false; only an explicit user reauthorization may replace this account’s old Host key; never enable for background/Bluetooth automatic claim"
+    "recoverIdentity": "optional boolean, default false; only an explicit user reauthorization may replace this account\u2019s old Host key; never enable for background/Bluetooth automatic claim",
+    "scopeId": "optional selected Space id; required for Space Hosts. Cloud derives the tenant from the authenticated user and checks ownership."
   },
   "claimResponse": {
-    "claimed": "true only after Host persistence and cloud receipt commit",
+    "claimed": "true only after Host persistence and cloud receipt commit; false when explicit identity recovery submitted an administrator application awaiting approval/confirmation",
+    "application": "present for explicit recovery on an already claimed Admin Host; the Host administrator request result. The App confirms an approved receipt through /app/host/authorization before treating it as claimed",
     "hostId": "requested Host identity when supplied",
-    "identityConflict": "HOST_IDENTITY_CHANGED requires explicit reauthorization; failure never changes the trusted key"
+    "identityConflict": "HOST_IDENTITY_CHANGED requires explicit native LAN reauthorization. A new locally confirmed pin and unfinished-confirmation marker persist before submitting the mutation; retries remain bound to that pin. The cloud directory changes only after a Host approval receipt"
   }
 }

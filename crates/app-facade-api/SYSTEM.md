@@ -1,33 +1,36 @@
 # Space runtime observations
 
-- `/app/system/instances/get` returns `mhome.system.instances.v1`: the selected
-  Space's persisted Hub and active Node bindings, including disconnected instances.
-- `/app/system/clients/get` returns the selected Space's client sessions.
-- `/app/system/hosts/get` returns `mhome.system.hosts.v1`: Hub-vantage Host
-  discovery from the current Hub's host, plus signed `/info` for each reachable
-  Host. The Hub holds a Client key for the current Space member and enrolls it
-  on each Host.
-- `/app/system/hosts/runtime` returns `mhome.system.hosts.runtime.v1`: the same
-  Host inspect, metrics, plan, start, operation and restart actions as the
-  native Client `host.runtime` contract. The Hub uses that member's Hub-held
-  Client; the Host still authorizes the user.
-- `/app/system/hosts/claim` returns `mhome.system.hosts.claim.v1`: first-claim
-  an unused LAN Host for the current Space member. The Hub must reach the Host
-  on LAN, then the cloud binds that **user**, not Hub identity. Native Client
-  `host.claim` remains the same-machine path for any signed-in user. Claimed
-  Hosts stay on signed HTTP+auth. Unclaimed Hosts stay discoverable;
-  `claimable` is true when the Host ACL is empty. Signed `/info` failures stay
-  on `info.errorCode` (`unauthorized`, `enrollmentRequired`, `unreachable`,
-  `identityMismatch`).
-  One-click uses empty ACL; cloud refusal is an error after the click, not a
-  separate UI state.
-- Inventory takes empty input. Runtime takes the native Host management request
-  (`hostId` plus `action`). Claim takes `{ hostId, claimToken? }`; the first claim of a Host provisioned
-  over BLE needs the `claimToken` from that provisioning session. All require Space
-  membership and run on the Space Hub with cloud relay permitted. They are only
-  available for a local Space with a connected Hub. Host discovery does not
-  filter Space instances.
+- `/app/system/instances/get` returns the selected Space's persisted Hub and
+  active Node bindings, including disconnected instances.
+- `/app/system/clients/get` returns the selected Space's Client sessions.
+- `/app/system/hosts/get` discovers Hosts from the current Core's LAN. Its
+  optional `authorizations` map carries cloud-issued User Host tokens and pins
+  for authenticated information. Public signed challenges expose only claim
+  status. Other-Space Hosts are hidden.
+- `/app/system/hosts/runtime` forwards one Host action with its required
+  `authorization`. Core checks the original User, target Host and Space routing
+  binding. Host validates the cloud signature and its current policy. Core does
+  not hold a Host identity, private key, refresh token or independent authority.
 
-Native Client `host.list` / `host.claim` / `host.runtime` remain for machines
-that are not on a local Space Hub path. Retired `/app/system/host/*` targets
-stay removed.
+The Core proxy requires current Space read membership. Host tokens independently
+control management; Space Clients are denied both Host observation and operations.
+Read membership cannot create management authority. Native Clients prefer direct
+LAN; Web and off-LAN User Clients may use the current Space's Core via cloud relay.
+
+First claim is exclusively native Client to Host on LAN. There is no proxy claim
+route. Minimal discovery remains available before claim. Unauthorized information
+remains a visible denied observation, never permission to reclaim. Identity changes
+require explicit confirmation after device reset.
+
+`/app/host/access/issue` is a cloud-only User issuer. It validates the Host's signed
+challenge and current administrator/Space-owner authorization, returning a
+five-minute access token. Native direct management uses the corresponding REST
+issuer. Neither issuer represents Core or a Space Client as a user.
+
+`/app/host/authorization` is a cloud-only personal-Client coordinator for existing
+administrator requests. `prepare` issues a ten-minute User applicant credential;
+`commit` confirms a Host-signed approval receipt. The Host owns request status.
+Applicant actions use `/v1/auth/administrators` and cannot perform management.
+Listing requests/members, deciding requests and removing administrators require
+`manageAdministrators` and a current administrator. Neither the cloud coordinator
+nor the Core proxy can bypass Host consent or become an administrator.

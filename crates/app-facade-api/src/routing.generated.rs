@@ -17,6 +17,8 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/plugin/catalog/list",
     "/app/system/feedback/submit",
     "/app/timeline/entity/latest/list",
+    "/app/host/access/issue",
+    "/app/host/authorization",
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[
@@ -57,7 +59,6 @@ pub const CLOUD_RELAY_TARGETS: &[&str] = &[
     "/app/system/clients/get",
     "/app/system/hosts/get",
     "/app/system/hosts/runtime",
-    "/app/system/hosts/claim",
     "/app/person/summary-images/batch-get",
     "/app/person/status",
     "/app/person/list",

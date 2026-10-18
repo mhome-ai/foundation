@@ -17,15 +17,15 @@ Host discovery snapshots and explicit commissioning URLs obey the same boundary.
 
 The environment is authenticated at the existing connection/bootstrap boundaries:
 
-- Host contexts, enrollment challenges and possession proofs, claim challenges
-  and claim tickets, and signed management request identities.
+- Host signed challenges, claim/administrator grants, access tokens and receipts;
+  every management binding includes its environment.
 - Core setup/pairing requests and responses, including the signed Host TLS binding.
 - Hub WebSocket connection proofs; the environment is part of the signed payload.
 - Signed Node challenges and Hub-issued Node JWTs, including restored credentials.
 
-Missing env keeps the original prod signing payload byte-for-byte. Non-prod Hub
-connection and commission TLS proofs append one length-prefixed environment value
-after the existing fields. Receiving peers require their own environment before
+Hub connection proofs bind the selected environment. Core commissioning TLS
+proofs use the v2 framing and include environment plus runtime Space policy for
+all environments. Receiving peers require their own environment before
 using keys, provisioning, admitting credentials or executing management requests.
 Existing non-prod credentials missing env require pairing again; they are not
 automatically rewritten or deleted.

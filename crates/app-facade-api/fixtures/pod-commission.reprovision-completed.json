@@ -19,7 +19,8 @@
     "deviceId": "a0b1c2d3e4f5",
     "model": "S1",
     "firmwareVersion": "0.3.0",
-    "wifiConfigured": false
+    "wifiConfigured": false,
+    "dependentHost": false
   },
   "mode": "reprovision"
 }

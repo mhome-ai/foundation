@@ -1,19 +1,52 @@
-//! Space-owned runtime instances, Client sessions, and Hub-vantage Host inventory
-//! and management. The Hub acts as the current Space member against LAN Hosts.
-use core_api::host::management::HostRuntimeRequest;
+//! Space-owned runtime observations and User-requested Host proxying.
+//! Core forwards a short cloud access token; it never claims or impersonates a User.
+use core_api::host::management::{HostRuntimeAction, HostRuntimeRequest};
 use core_api::host::HostInfo;
+use core_api::host::{access::HostStatus, auth::PublicKey};
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 pub const INSTANCES_TARGET: &str = "/app/system/instances/get";
 pub const CLIENTS_TARGET: &str = "/app/system/clients/get";
+pub const HOST_AUTHORIZATION_TARGET: &str = "/app/host/authorization";
+pub const HOST_ACCESS_TARGET: &str = "/app/host/access/issue";
 pub const HOSTS_TARGET: &str = "/app/system/hosts/get";
 pub const HOSTS_RUNTIME_TARGET: &str = "/app/system/hosts/runtime";
-pub const HOSTS_CLAIM_TARGET: &str = "/app/system/hosts/claim";
 pub const INSTANCES_CONTRACT: &str = "mhome.system.instances.v1";
 pub const CLIENTS_CONTRACT: &str = "mhome.system.clients.v1";
 pub const HOSTS_CONTRACT: &str = "mhome.system.hosts.v1";
 pub const HOSTS_RUNTIME_CONTRACT: &str = "mhome.system.hosts.runtime.v1";
-pub const HOSTS_CLAIM_CONTRACT: &str = "mhome.system.hosts.claim.v1";
-pub type HostsRuntimeRequest = HostRuntimeRequest<String>;
+/// Credentials are supplied by the authenticated User Client, never minted by Core.
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HostAuthorization {
+    pub access_token: String,
+    pub host_public_key: PublicKey,
+}
+#[derive(Default, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HostsRequest {
+    #[serde(default)]
+    pub authorizations: BTreeMap<String, HostAuthorization>,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HostsRuntimeRequest {
+    pub host_id: String,
+    pub authorization: HostAuthorization,
+    #[serde(flatten)]
+    pub action: HostRuntimeAction<String>,
+}
+impl HostsRuntimeRequest {
+    pub fn into_host_request(self) -> (HostAuthorization, HostRuntimeRequest<String>) {
+        (
+            self.authorization,
+            HostRuntimeRequest {
+                host_id: self.host_id,
+                action: self.action,
+            },
+        )
+    }
+}
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct InstancesRequest {}
@@ -107,8 +140,8 @@ pub struct Clients {
     pub sessions: Vec<ClientSession>,
 }
 /// Hub-vantage machine observation. `source` is `local` for the Hub host or `mdns`
-/// for other LAN records. `/info` is signed LAN for every reachable Host.
-/// `claimable` is Host ACL empty; it is not an `/info` error.
+/// for other LAN records. Only status/challenge are public; `/info` needs a User token.
+/// First claim remains native Client-to-Host even when inventory comes through Core.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Host {
@@ -119,6 +152,8 @@ pub struct Host {
     pub reachable: bool,
     #[serde(default)]
     pub claimable: bool,
+    pub authorization: Option<HostStatus>,
+    pub challenge: Option<String>,
     pub info: Observation<HostInfo>,
 }
 #[derive(Debug, Serialize, Deserialize)]
@@ -139,20 +174,14 @@ pub struct HostsRuntime {
     pub host_id: String,
     pub result: serde_json::Value,
 }
-#[derive(Debug, Deserialize)]
+
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HostsClaimRequest {
-    pub host_id: String,
-    /// Required for the first claim of a Host provisioned over BLE.
-    #[serde(default)]
-    pub claim_token: Option<String>,
+pub struct HostAccessRequest {
+    pub challenge: String,
 }
-/// Hub-vantage first-claim of an unused LAN Host for the current Space member.
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct HostsClaim {
-    pub contract: String,
-    pub scope_id: String,
-    pub host_id: String,
-    pub claimed: bool,
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HostAccessResponse {
+    pub access_token: String,
 }

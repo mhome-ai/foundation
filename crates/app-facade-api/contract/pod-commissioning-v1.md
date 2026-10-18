@@ -130,7 +130,7 @@ the response also carries `"mode":"reprovision"` and `wifiConfigured` is false
 
 `pod-credential` requests:
 
-- `{"op":"deliver","clientMode":"user","podId","refreshToken","scopeId","cloudApi","cloudWs"}` →
+- `{"op":"deliver","clientMode":"user","podId","loginGrant","scopeId","cloudApi","cloudWs"}` →
   `{"ok":true,"state":"activating"}`. Accepted only in `wifi_connected` outside a
   Wi-Fi change window; otherwise `{"ok":false,"state":<current pod state>,"reason"}`
   with `reason` `invalid_payload` (a missing or malformed field, including a
@@ -220,136 +220,51 @@ Runtime states after commit:
   identity key and cached Hub tokens, reboot to `unprovisioned`. No cloud
   request is needed. Logout also clears local credentials without cloud revocation.
 
-Time sync uses SNTP; if NTP is unreachable the pod may use the `Date` header of a
-Lion HTTPS response. Activation proofs require a synced clock.
+Linux uses its OS time service and ESP uses background SNTP. User login proofs
+require usable UTC and cloud TLS retains normal CA and date validation. Space
+Client local authentication pins the enrolled Core identity and signs a fresh
+nonce; Core checks credential expiry with its own clock. HTTP `Date` is diagnostic
+and does not override the system clock or relax TLS validation.
 
-## 5. Lion credential API
+## 5. User Pod login approval
 
-All bodies are JSON. Errors use the standard Lion envelope
-`{"error","message","details"?}`. Credential failures are `UNAUTHORIZED` with one
-of these `message` values: `pod_credential_invalid` (unknown pod, wrong or
-revoked refresh token, or an owner account that no longer exists),
-`pod_proof_invalid`, `pod_proof_replayed`, `pod_activation_expired`. A pod treats
-`pod_credential_invalid` and `pod_activation_expired` as revocation. Renaming a
-pod the caller does not own, or that does not exist, is `NOT_FOUND` with
-`pod_not_found`.
+`POST /api/v1/pod/login/approve` uses the assisting App's ordinary User
+Authorization. Its body contains `deviceId`, `model`, `platform`,
+`firmwareVersion`, `name`, `identity` (P-256 keyId, alg, x, y, fingerprint), and
+optional `clientId`. It has no Space authorization header or issued-Space scope.
+Lion returns `{podId, loginGrant, activateBefore}`. The random approval expires
+in ten minutes and is bound to this User and the Pod identity key. It is not a
+login refresh token. The helper must never deliver its own login credentials.
 
-### Issue
+The App delivers the approval through the paired LAN channel. `scopeId` in the
+device delivery selects the initial UI Space; it does not constrain the User
+identity or grant Space authority. The device independently redeems the approval
+at `POST /api/v1/pod/login/redeem` with `{podId, loginGrant, proof}`. The proof is
+signed by the paired device's key with audience `user-device-login` and binds the
+approval. Lion coordinates Cognito CUSTOM_AUTH to create the device's own
+ordinary Cognito session. Approval redemption is single-use. Only the device
+stores the resulting refresh token, and refresh uses the standard User login
+endpoint. A failed attempt is retried with a new approval; no old protocol is
+accepted.
 
-`POST /api/v1/pod/credential/issue`, user `Authorization`, `ScopeId` header.
-
-```json
-{
-  "deviceId": "a0b1c2d3e4f5",
-  "model": "S1",
-  "platform": "esp32c5",
-  "firmwareVersion": "0.3.0",
-  "name": "MeowPod S1",
-  "identity": { "keyId": "p256:…", "alg": "ES256", "x": "…", "y": "…", "fingerprint": "…" },
-  "clientId": "issuing client id"
-}
-```
-
-`deviceId` matches `[A-Za-z0-9._:-]{1,64}`; `model` and `name` are 1–64
-characters, `platform` and `firmwareVersion` at most 64, `clientId` at most 128. Lion requires Space membership for `ScopeId`, validates the identity, and
-creates a `pending` credential that must activate before `activateBefore`
-(issue time + 10 minutes). Response `{"podId","refreshToken","activateBefore"}`.
-
-### Refresh and activation
-
-`POST /api/v1/pod/token/refresh`, body `{"podId","refreshToken","proof"}`.
-
-`proof` is a compact ES256 JWS signed by the identity key: header `kid=keyId`;
-claims `iss` and `sub` = `podId`, a single-valued `aud` = `pod-token-refresh`,
-`token_hash` = unpadded base64url SHA-256 of the UTF-8 refresh token (including
-`pod-`), `iat`, `exp` with `0 ≤ exp - iat ≤ 120 s`, and a unique `jti` of at most
-128 characters. Lion allows 120 s clock skew and remembers each `jti` for
-7 minutes (proof lifetime plus twice the skew, plus a minute), longer than any
-proof can be accepted; a reused `jti` in that window fails with
-`pod_proof_replayed`.
-
-Before the first successful refresh moves `pending` to `active`, Lion deletes every other
-credential with the same `identity.keyId` (whichever user holds it) and the same
-user's other credentials with the same `deviceId`. A `pending` credential past
-`activateBefore` is rejected and deleted. Revoked credentials are deleted, so a
-later refresh fails with `pod_credential_invalid`. Response
-`{"accessToken","expiresIn"}`.
-
-### Status
-
-`POST /api/v1/pod/credential/status`, user `Authorization`, body `{"podId"}` →
-`{"podId","status","activatedAt"?}` with `status` one of `pending`, `active`,
-`absent` (schema `schema/pod-credential-status.v1.schema.json`). `absent`
-covers no such credential, revoked, pending past `activateBefore`, and a
-credential owned by another user, so the answer never reveals other users'
-pods. `activatedAt` (epoch ms) is present when `active`. It is informational;
-commissioning success requires the device confirmation described in section 7.
-
-### Reset and cleanup
-
-There is no public Pod credential revocation endpoint and no App action that
-withdraws a Pod's access without contacting the device. Factory reset executes
-on the Pod itself. Remote reset, when provided, must reach an online Pod; a
-cloud-side deletion is not a successful reset. This contract currently exposes
-no remote reset target. Each setup creates a new Pod credential.
-
-### List and rename
-
-`POST /api/v1/pod/list` (user) returns `{"pods":[…]}`, the user's active pods
-and unexpired pending pods, each
-`{"podId","name","deviceId","model","platform","firmwareVersion","identityFingerprint","status","issuedAt","activatedAt"}`.
-`POST /api/v1/pod/rename` `{"podId","name"}` (user) returns the updated pod.
-
-### Tokens
-
-- Access: `pod-` + HS256 JWT. Claims: `iss`, `aud`, `sub` = `podId`, `user_id`,
-  `tenant_id`, `device_id`, `token_type` = `pod_access`, `iat`, `exp` (3600 s),
-  `jti`. The signing key is derived from the Hub secret with HMAC-SHA256 over the
-  label `mhome-pod-access-v1`, so Hub and pod tokens never verify as each other.
-- Refresh: `pod-` + 43-character base64url of 32 random bytes. Lion stores only
-  its SHA-256. It never rotates; the identity proof binds it to the device.
-- Pods send `Authorization: Bearer pod-…` (and `"token":"Bearer pod-…"` on the
-  WebSocket). `pod-` is dispatched by prefix before any JWT parsing. Only the cloud WebSocket
-  `/auth` and `/api/v1/hub/token/exchange` accept pod access tokens. Every other
-  API keeps accepting user tokens only. No target allowlist applies in v1.
-- Lion checks an access token against the stored credential on every use, so a
-  revoked or superseded credential stops working before its `exp`.
-- A pod session acts as its user across all of that user's Spaces. A cloud
-  WebSocket session authenticated with a pod access token remembers the `podId`
-  and the token `exp`. Lion closes it with a policy-violation close whose reason
-  is `POD_TOKEN_EXPIRED` at `exp` and `POD_REVOKED` when the pod is revoked;
-  revocations reach sessions on every Lion instance through a shared event
-  channel. Either close only ends that connection; whether the pod is revoked
-  is decided by its next refresh.
-- `/api/v1/hub/token/exchange` with a pod access token returns a Hub JWT with
-  `clientKind` = `pod` and `podId` claims and the same lifetime as a Hub JWT
-  for a user token.
-- Pod and ordinary Client local Hub JWTs have the same 100-year lifetime
-  (100 * 365 days). There is no per-Pod Hub revocation list or cloud-to-Hub
-  revocation sync. Local tokens are cleared on the Pod by reset/logout.
+`podId` identifies the enrollment/device-list entry, not the authenticated User.
+`POST /api/v1/pod/list` and `/api/v1/pod/rename` use the ordinary User login.
+There is no cloud credential-status polling or server-side Pod revocation flow.
+Factory reset clears device credentials and rotates the pairing identity.
 
 ## 6. Pod runtime authentication
 
-- Cloud `/auth`: `{"token":"Bearer pod-…","devToken":null,"source":"pod","deviceId","activeScope"}`,
-  then `/focus`. Lion rejects `source=pod` without a pod token, a pod token
-  with any other source, and a `deviceId` other than the one the credential was
-  issued to.
-- The pod refreshes its access token proactively, 2 minutes before `exp`, and
-  re-authenticates the cloud session with the new token. A refresh rejected
-  with `pod_credential_invalid` or `pod_activation_expired` moves the pod to
-  `needs_recommission`.
-- Space switching: the pod chooses among the Spaces returned by `/auth` and
-  re-sends `/focus`; it keeps one Hub JWT and Hub key per Hub and Space.
-- Local Hub: the Hub identity endpoint `POST /api/v1/hub/identity/get`
-  (`{"hubId","tenantId","scopeId"}`) is public and needs no token. The pod
-  proves the Hub identity, then authenticates to the local Hub the way a Client
-  does: the first local `/auth` carries its pod access token with
-  `source=cloud` (`clientSource=pod`, `deviceId`, `tenantId`, `scopeId`,
-  `hubId`). The Hub exchanges that token with the cloud and returns a
-  long-lived local Hub JWT in `jwtToken`, which the pod stores per Hub. Later
-  local `/auth` requests use only that JWT with `source=local`. When the stored
-  JWT is about to expire or the Hub rejects it, the pod discards it and
-  authenticates with `source=cloud` again.
+User Pods use ordinary Cognito User authentication for cloud business traffic.
+Local Core connections use the same Lion-issued local credentials and Core
+verification as other User Clients. Each credential retains the actual User
+principal; initial Space selection is not embedded in a special Pod login token.
+Space Pods use only their enrolled local Core and their Space credential; they
+receive no User login grant or Cognito session. See section 8 for Space enrollment.
+
+Setup succeeds only after the paired device reports `commissioned`, meaning its
+business connection has authenticated. Cloud approval issuance alone is not
+activation. Reset clears the local credentials; an unreachable device is not
+considered reset.
 
 ## 7. Native Client targets
 
@@ -480,7 +395,7 @@ The schemas are `schema/pod-discovery.v1.schema.json` and
 
 `POST /api/v1/pod/space/credential/issue` uses the assisting App's user
 `Authorization` and `ScopeId`, with the same device identity request as personal
-issuance. Any current member may assist. The Space must be local and have one
+issuance. Only the current Space owner may assist. The Space must be local and have one
 published Hub with business and Host TLS identities. Cloud Spaces must complete
 Hub setup first. The issuer creates a fresh `appClientId` (`a:<random id>`) and
 signs a local JWT using the existing Space signing key and local-client audience.

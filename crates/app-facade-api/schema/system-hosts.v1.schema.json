@@ -30,7 +30,9 @@
           "source",
           "reachable",
           "claimable",
-          "info"
+          "info",
+          "authorization",
+          "challenge"
         ],
         "properties": {
           "hostId": {
@@ -241,6 +243,125 @@
                 ]
               }
             }
+          },
+          "authorization": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "hostId",
+                  "hostKeyId",
+                  "env",
+                  "mode",
+                  "generation",
+                  "claim"
+                ],
+                "properties": {
+                  "hostId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "hostKeyId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "env": {
+                    "enum": [
+                      "prod",
+                      "dev",
+                      "e2e"
+                    ]
+                  },
+                  "mode": {
+                    "enum": [
+                      "admin",
+                      "spaceSelf",
+                      "spaceDep"
+                    ]
+                  },
+                  "generation": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "claim": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "kind",
+                          "userIds"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "const": "admin"
+                          },
+                          "userIds": {
+                            "type": "array",
+                            "minItems": 1,
+                            "uniqueItems": true,
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "kind",
+                          "space"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "const": "space"
+                          },
+                          "space": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "tenantId",
+                              "scopeId"
+                            ],
+                            "properties": {
+                              "tenantId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 256
+                              },
+                              "scopeId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 256
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "challenge": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       }

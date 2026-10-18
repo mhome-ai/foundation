@@ -1,34 +1,16 @@
-use core_api::RuntimeEnv;
-use host_auth::{
-    policy::{Denied, HostMode, HostPolicy, Permission},
-    token_session::{AuthorizationLease, Binding, ControllerKind, Principal, Session},
+use core_api::{
+    runtime_space::{RuntimeSpacePolicy, SpaceIdentity},
+    RuntimeEnv,
 };
+use host_auth::policy::{AccessBinding, Denied, HostMode, HostPolicy, Permission};
 use std::collections::BTreeSet;
 
-fn user() -> Principal {
-    Principal::User {
-        user_id: "alice".into(),
-    }
-}
-
-fn space() -> Principal {
-    Principal::Space {
+fn space() -> SpaceIdentity {
+    SpaceIdentity {
         tenant_id: "tenant-a".into(),
-        space_id: "home-a".into(),
+        scope_id: "space-a".into(),
     }
 }
-
-fn binding(principal: Principal, controller_kind: ControllerKind) -> Binding {
-    Binding {
-        host_id: "host-a".into(),
-        env: RuntimeEnv::Dev,
-        binding_generation: "generation-a".into(),
-        controller_id: "controller-a".into(),
-        controller_kind,
-        principal,
-    }
-}
-
 fn unclaimed(mode: HostMode) -> HostPolicy {
     HostPolicy::unclaimed(
         "host-a".into(),
@@ -38,18 +20,17 @@ fn unclaimed(mode: HostMode) -> HostPolicy {
     )
     .unwrap()
 }
-
-fn claimed(mode: HostMode) -> HostPolicy {
-    let mut host = unclaimed(mode);
-    host.claim_verified(&match mode {
-        HostMode::Admin => user(),
-        HostMode::Space => space(),
-    })
-    .unwrap();
-    host
+fn binding(user: &str, space: Option<SpaceIdentity>) -> AccessBinding {
+    AccessBinding {
+        host_id: "host-a".into(),
+        host_key_id: "key-a".into(),
+        env: RuntimeEnv::Dev,
+        generation: "generation-a".into(),
+        user_id: user.into(),
+        space,
+    }
 }
-
-fn all_permissions() -> BTreeSet<Permission> {
+fn permissions() -> BTreeSet<Permission> {
     BTreeSet::from([
         Permission::Read,
         Permission::ManageRuntime,
@@ -59,272 +40,168 @@ fn all_permissions() -> BTreeSet<Permission> {
 }
 
 #[test]
-fn management_matrix_distinguishes_clients_from_core_even_with_all_permissions() {
-    use ControllerKind::{Core, SpaceClient, UserClient};
-    use Denied::{PrincipalMismatch, ReadOnlyClient};
-    use HostMode::{Admin, Space};
-    use Permission::{ManageAdministrators, ManageRuntime, Read, Reset};
-
-    let cases = [
-        (Admin, user(), UserClient, Read, Ok(())),
-        (Admin, user(), UserClient, ManageRuntime, Ok(())),
-        (Admin, user(), UserClient, ManageAdministrators, Ok(())),
-        (Admin, user(), UserClient, Reset, Ok(())),
-        (Space, user(), UserClient, Read, Err(PrincipalMismatch)),
-        (
-            Space,
-            user(),
-            UserClient,
-            ManageRuntime,
-            Err(PrincipalMismatch),
-        ),
-        (Admin, space(), SpaceClient, Read, Err(PrincipalMismatch)),
-        (
-            Admin,
-            space(),
-            SpaceClient,
-            ManageRuntime,
-            Err(PrincipalMismatch),
-        ),
-        (Space, space(), SpaceClient, Read, Ok(())),
-        (
-            Space,
-            space(),
-            SpaceClient,
-            ManageRuntime,
-            Err(ReadOnlyClient),
-        ),
-        (
-            Space,
-            space(),
-            SpaceClient,
-            ManageAdministrators,
-            Err(ReadOnlyClient),
-        ),
-        (Space, space(), SpaceClient, Reset, Err(ReadOnlyClient)),
-        (Admin, user(), Core, ManageRuntime, Ok(())),
-        (Admin, space(), Core, ManageRuntime, Err(PrincipalMismatch)),
-        (Space, space(), Core, Read, Ok(())),
-        (Space, space(), Core, ManageRuntime, Ok(())),
-        (Space, space(), Core, Reset, Ok(())),
-        (
-            Space,
-            space(),
-            Core,
-            ManageAdministrators,
-            Err(PrincipalMismatch),
-        ),
-        (Space, user(), Core, ManageRuntime, Err(PrincipalMismatch)),
-    ];
-    for (mode, principal, kind, action, expected) in cases {
-        let caller = binding(principal, kind);
+fn admin_mode_requires_a_current_administrator_and_no_space_authority() {
+    let mut host = unclaimed(HostMode::Admin);
+    host.claim_verified("alice", None).unwrap();
+    for action in permissions() {
+        assert!(host
+            .authorize(&binding("alice", None), &permissions(), action)
+            .is_ok());
         assert_eq!(
-            claimed(mode).authorize(&caller, &all_permissions(), action),
-            expected,
-            "{mode:?}: {caller:?} -> {action:?}"
+            host.authorize(&binding("bob", None), &permissions(), action),
+            Err(Denied::NotAdministrator)
+        );
+        assert_eq!(
+            host.authorize(&binding("alice", Some(space())), &permissions(), action),
+            Err(Denied::PrincipalMismatch)
         );
     }
-}
-
-#[test]
-fn personal_pod_and_other_user_clients_share_admin_policy() {
-    let host = claimed(HostMode::Admin);
-    for id in ["desktop", "mobile", "personal-pod"] {
-        let mut caller = binding(user(), ControllerKind::UserClient);
-        caller.controller_id = id.into();
-        assert_eq!(
-            host.authorize(&caller, &all_permissions(), Permission::ManageRuntime),
-            Ok(())
-        );
-    }
-}
-
-#[test]
-fn permissions_can_narrow_policy_but_never_widen_it() {
-    let caller = binding(user(), ControllerKind::UserClient);
-    let host = claimed(HostMode::Admin);
+    host.add_verified_administrator("bob".into()).unwrap();
+    host.remove_verified_administrator("alice").unwrap();
     assert_eq!(
-        host.authorize(&caller, &BTreeSet::new(), Permission::Read),
-        Err(Denied::PermissionMissing)
+        host.authorize(&binding("alice", None), &permissions(), Permission::Read),
+        Err(Denied::NotAdministrator)
+    );
+    assert_eq!(
+        host.remove_verified_administrator("bob"),
+        Err(Denied::LastAdministrator)
+    );
+}
+
+#[test]
+fn space_mode_uses_verified_current_owner_without_persisting_that_user_as_owner() {
+    let mut host = unclaimed(HostMode::SpaceSelf);
+    host.claim_verified("alice", Some(&space())).unwrap();
+    for user in ["alice", "new-owner"] {
+        for action in [
+            Permission::Read,
+            Permission::ManageRuntime,
+            Permission::Reset,
+        ] {
+            assert!(host
+                .authorize(&binding(user, Some(space())), &permissions(), action)
+                .is_ok());
+        }
+    }
+    assert_eq!(
+        host.authorize(&binding("alice", None), &permissions(), Permission::Read),
+        Err(Denied::PrincipalMismatch)
     );
     assert_eq!(
         host.authorize(
-            &caller,
+            &binding("alice", Some(space())),
+            &permissions(),
+            Permission::ManageAdministrators
+        ),
+        Err(Denied::PrincipalMismatch)
+    );
+    let other = SpaceIdentity {
+        scope_id: "space-b".into(),
+        ..space()
+    };
+    assert_eq!(
+        host.authorize(
+            &binding("alice", Some(other)),
+            &permissions(),
+            Permission::Read
+        ),
+        Err(Denied::PrincipalMismatch)
+    );
+}
+
+#[test]
+fn identity_environment_generation_and_action_are_checked_even_for_an_owner() {
+    let mut host = unclaimed(HostMode::SpaceSelf);
+    host.claim_verified("alice", Some(&space())).unwrap();
+    let original = binding("alice", Some(space()));
+    let variants = [
+        AccessBinding {
+            host_id: "other".into(),
+            ..original.clone()
+        },
+        AccessBinding {
+            generation: "old-generation".into(),
+            ..original.clone()
+        },
+        AccessBinding {
+            env: RuntimeEnv::Prod,
+            ..original.clone()
+        },
+        AccessBinding {
+            user_id: String::new(),
+            ..original.clone()
+        },
+    ];
+    for invalid in variants {
+        assert_eq!(
+            host.authorize(&invalid, &permissions(), Permission::Read),
+            Err(Denied::BindingMismatch)
+        );
+    }
+    assert_eq!(
+        host.authorize(
+            &original,
             &BTreeSet::from([Permission::Read]),
             Permission::ManageRuntime
         ),
         Err(Denied::PermissionMissing)
     );
-    let stranger = binding(
-        Principal::User {
-            user_id: "bob".into(),
-        },
-        ControllerKind::UserClient,
-    );
+}
+
+#[test]
+fn mode_and_space_binding_cannot_change_without_reset() {
+    let mut host = unclaimed(HostMode::SpaceSelf);
+    assert!(host.runtime_policy().unwrap().is_none());
+    assert!(host.claim_verified("alice", None).is_err());
+    host.claim_verified("alice", Some(&space())).unwrap();
     assert_eq!(
-        host.authorize(&stranger, &all_permissions(), Permission::Read),
-        Err(Denied::NotAdministrator)
+        host.runtime_policy().unwrap(),
+        Some(RuntimeSpacePolicy::Single { space: space() })
+    );
+    // A fresh attempt confirms the immutable Space, including after ownership
+    // changes. Cloud verifies current ownership before issuing the proof.
+    host.claim_verified("alice", Some(&space())).unwrap();
+    host.claim_verified("bob", Some(&space())).unwrap();
+    let other = SpaceIdentity {
+        scope_id: "other".into(),
+        ..space()
+    };
+    assert_eq!(
+        host.claim_verified("alice", Some(&other)),
+        Err(Denied::AlreadyClaimed)
+    );
+    assert_eq!(host.validate(HostMode::Admin), Err(Denied::ModeChanged));
+    assert_eq!(
+        unclaimed(HostMode::Admin).runtime_policy().unwrap(),
+        Some(RuntimeSpacePolicy::Multi {})
     );
 }
 
 #[test]
-fn space_authority_cannot_cross_tenants_or_spaces() {
-    let host = claimed(HostMode::Space);
-    for kind in [ControllerKind::SpaceClient, ControllerKind::Core] {
-        for (tenant_id, space_id) in [("tenant-b", "home-a"), ("tenant-a", "home-b")] {
-            let caller = binding(
-                Principal::Space {
-                    tenant_id: tenant_id.into(),
-                    space_id: space_id.into(),
-                },
-                kind,
-            );
-            assert_eq!(
-                host.authorize(&caller, &all_permissions(), Permission::Read),
-                Err(Denied::PrincipalMismatch)
-            );
-        }
-    }
-}
-
-#[test]
-fn host_environment_and_reset_generation_are_authorization_boundaries() {
-    let host = claimed(HostMode::Admin);
-    let caller = binding(user(), ControllerKind::UserClient);
-    let mut another_host = caller.clone();
-    another_host.host_id = "host-b".into();
-    let mut another_env = caller.clone();
-    another_env.env = RuntimeEnv::Prod;
-    let mut old_generation = caller.clone();
-    old_generation.binding_generation = "before-reset".into();
-    let mut malformed = caller;
-    malformed.controller_id = " controller-a".into();
-    for caller in [another_host, another_env, old_generation, malformed] {
-        assert_eq!(
-            host.authorize(&caller, &all_permissions(), Permission::Read),
-            Err(Denied::BindingMismatch)
-        );
-    }
-}
-
-#[test]
-fn unclaimed_host_requires_first_claim_before_authenticated_operations() {
-    for (mode, principal, kind) in [
-        (HostMode::Admin, user(), ControllerKind::UserClient),
-        (HostMode::Space, space(), ControllerKind::Core),
-    ] {
-        assert_eq!(
-            unclaimed(mode).authorize(
-                &binding(principal, kind),
-                &all_permissions(),
-                Permission::Read
-            ),
-            Err(Denied::Unclaimed)
-        );
-    }
-}
-
-#[test]
-fn first_claim_is_mode_bound_idempotent_and_cannot_add_another_owner() {
-    for (mode, initial, wrong_mode, second) in [
-        (
-            HostMode::Admin,
-            user(),
-            space(),
-            Principal::User {
-                user_id: "bob".into(),
-            },
-        ),
-        (
-            HostMode::Space,
-            space(),
-            user(),
-            Principal::Space {
-                tenant_id: "tenant-a".into(),
-                space_id: "home-b".into(),
-            },
-        ),
-    ] {
-        let mut host = unclaimed(mode);
-        assert_eq!(
-            host.claim_verified(&wrong_mode),
-            Err(Denied::PrincipalMismatch)
-        );
-        assert!(host.claim().is_none());
-        host.claim_verified(&initial).unwrap();
-        let committed = host.clone();
-        assert_eq!(host.claim_verified(&initial), Ok(()));
-        assert_eq!(host.claim_verified(&second), Err(Denied::AlreadyClaimed));
-        assert_eq!(host, committed);
-    }
-}
-
-#[test]
-fn removed_admin_loses_access_despite_unexpired_session_and_last_admin_cannot_leave() {
-    const NOW: u64 = 1_800_000_000;
-    let mut host = claimed(HostMode::Admin);
-    let caller = binding(user(), ControllerKind::UserClient);
-    let lease = AuthorizationLease::from_verified_authority(NOW, NOW + 86_400, NOW).unwrap();
-    let (session, access) =
-        Session::establish(caller.clone(), "session-a".into(), lease, NOW).unwrap();
+fn fresh_admin_confirmation_cannot_add_or_restore_an_administrator() {
+    let mut host = unclaimed(HostMode::Admin);
+    host.claim_verified("alice", None).unwrap();
+    let original = host.clone();
+    host.claim_verified("alice", None).unwrap();
+    assert_eq!(host, original);
     assert_eq!(
-        host.remove_verified_administrator("alice"),
-        Err(Denied::LastAdministrator)
+        host.claim_verified("bob", None),
+        Err(Denied::AlreadyClaimed)
     );
     host.add_verified_administrator("bob".into()).unwrap();
     host.remove_verified_administrator("alice").unwrap();
-    assert_eq!(session.authorize(&caller, &access, NOW + 1), Ok(()));
     assert_eq!(
-        host.authorize(&caller, &all_permissions(), Permission::ManageRuntime),
-        Err(Denied::NotAdministrator)
-    );
-    assert_eq!(host.claim_verified(&user()), Err(Denied::AlreadyClaimed));
-    assert_eq!(
-        host.remove_verified_administrator("bob"),
-        Err(Denied::LastAdministrator)
-    );
-    assert_eq!(host.generation(), "generation-a");
-}
-
-#[test]
-fn administrator_enrollment_cannot_bypass_first_claim_or_space_mode() {
-    let mut host = unclaimed(HostMode::Admin);
-    assert_eq!(
-        host.add_verified_administrator("alice".into()),
-        Err(Denied::Unclaimed)
-    );
-    let mut host = claimed(HostMode::Space);
-    assert_eq!(
-        host.add_verified_administrator("alice".into()),
-        Err(Denied::PrincipalMismatch)
-    );
-    assert_eq!(
-        host.remove_verified_administrator("alice"),
-        Err(Denied::PrincipalMismatch)
+        host.claim_verified("alice", None),
+        Err(Denied::AlreadyClaimed)
     );
 }
 
 #[test]
-fn restored_mode_and_claim_are_validated_without_reinterpreting_ownership() {
-    for mode in [HostMode::Admin, HostMode::Space] {
-        let host = claimed(mode);
-        let encoded = serde_json::to_value(&host).unwrap();
-        let restored: HostPolicy = serde_json::from_value(encoded.clone()).unwrap();
-        assert_eq!(restored, host);
-        assert_eq!(restored.validate(mode), Ok(()));
-        let other_mode = match mode {
-            HostMode::Admin => HostMode::Space,
-            HostMode::Space => HostMode::Admin,
-        };
-        assert_eq!(restored.validate(other_mode), Err(Denied::ModeChanged));
-        let mut malformed = encoded;
-        malformed["mode"] = serde_json::to_value(other_mode).unwrap();
-        let malformed: HostPolicy = serde_json::from_value(malformed).unwrap();
-        assert_eq!(malformed.validate(other_mode), Err(Denied::InvalidState));
-    }
-    let mut empty_admins = serde_json::to_value(claimed(HostMode::Admin)).unwrap();
-    empty_admins["claim"]["userIds"] = serde_json::json!([]);
-    let mut host: HostPolicy = serde_json::from_value(empty_admins).unwrap();
-    assert_eq!(host.validate(HostMode::Admin), Err(Denied::InvalidState));
-    assert_eq!(host.claim_verified(&user()), Err(Denied::InvalidState));
+fn tokens_cannot_represent_space_clients_or_core_as_a_management_principal() {
+    let mut value = serde_json::to_value(binding("alice", Some(space()))).unwrap();
+    value["controllerKind"] = serde_json::json!("spaceClient");
+    assert!(serde_json::from_value::<AccessBinding>(value).is_err());
+    let mut value = serde_json::to_value(binding("alice", None)).unwrap();
+    value["principal"] = serde_json::json!({"kind":"core","hubId":"hub-a"});
+    assert!(serde_json::from_value::<AccessBinding>(value).is_err());
 }

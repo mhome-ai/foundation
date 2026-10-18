@@ -1,6 +1,6 @@
 use core_api::{
-    hub_commission_tls_payload, hub_commission_tls_payload_for_env,
-    hub_connection_proof_signing_payload, HubConnectionProofRequest, RuntimeEnv,
+    hub_commission_tls_payload, hub_connection_proof_signing_payload, HubConnectionProofRequest,
+    RuntimeEnv,
 };
 
 #[test]
@@ -41,18 +41,27 @@ fn non_prod_proofs_bind_the_environment_and_cannot_reuse_prod_bytes() {
 }
 
 #[test]
-fn first_pairing_keeps_prod_tls_proof_and_binds_non_prod_env() {
+fn first_pairing_binds_environment_and_runtime_space() {
+    use core_api::runtime_space::{RuntimeSpacePolicy, SpaceIdentity};
     let key = core_api::host::auth::PublicKey {
         x: "x".into(),
         y: "y".into(),
     };
-    let old = hub_commission_tls_payload("nonce", "host", &key);
-    assert_eq!(
-        old,
-        hub_commission_tls_payload_for_env("nonce", "host", &key, RuntimeEnv::Prod)
+    let multi = RuntimeSpacePolicy::Multi {};
+    let single = RuntimeSpacePolicy::Single {
+        space: SpaceIdentity {
+            tenant_id: "tenant".into(),
+            scope_id: "space".into(),
+        },
+    };
+    let prod = hub_commission_tls_payload("nonce", "host", &key, RuntimeEnv::Prod, &multi);
+    let dev = hub_commission_tls_payload("nonce", "host", &key, RuntimeEnv::Dev, &multi);
+    let bound = hub_commission_tls_payload("nonce", "host", &key, RuntimeEnv::Prod, &single);
+    assert_ne!(prod, dev);
+    assert_ne!(prod, bound);
+    assert_ne!(
+        bound,
+        hub_commission_tls_payload("nonce", "host", &key, RuntimeEnv::E2e, &single)
     );
-    let dev = hub_commission_tls_payload_for_env("nonce", "host", &key, RuntimeEnv::Dev);
-    let e2e = hub_commission_tls_payload_for_env("nonce", "host", &key, RuntimeEnv::E2e);
-    assert_ne!(old, dev);
-    assert_ne!(dev, e2e);
+    assert!(std::str::from_utf8(&prod).is_err());
 }

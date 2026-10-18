@@ -87,6 +87,8 @@ fn typed_system_responses_match_the_public_schemas() {
                 source: "local".into(),
                 reachable: true,
                 claimable: false,
+                authorization: None,
+                challenge: None,
                 info,
             }],
         })
@@ -103,16 +105,6 @@ fn typed_system_responses_match_the_public_schemas() {
         .unwrap(),
         include_str!("../schema/system-hosts-runtime.v1.schema.json"),
     );
-    conforms(
-        serde_json::to_value(HostsClaim {
-            contract: HOSTS_CLAIM_CONTRACT.into(),
-            scope_id: "s".into(),
-            host_id: "h".into(),
-            claimed: true,
-        })
-        .unwrap(),
-        include_str!("../schema/system-hosts-claim.v1.schema.json"),
-    );
 }
 #[test]
 fn host_management_uses_the_hosts_runtime_facade() {
@@ -122,5 +114,5 @@ fn host_management_uses_the_hosts_runtime_facade() {
     assert!(routing.contains(INSTANCES_TARGET));
     assert!(routing.contains(HOSTS_TARGET));
     assert!(routing.contains(HOSTS_RUNTIME_TARGET));
-    assert!(routing.contains(HOSTS_CLAIM_TARGET));
+    assert!(!routing.contains("/app/system/hosts/claim"));
 }
