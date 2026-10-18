@@ -68,6 +68,7 @@ pub trait Platform: Send + Sync + 'static {
     ) -> Result<Value, String>;
     /// Sends once, with no redirects/replay/proxy. Select the recorded LAN and
     /// reject network changes. `None` is allowed only for public challenge I/O.
+    #[allow(clippy::too_many_arguments)] // Keep the explicit transport and TLS inputs in the platform contract.
     async fn lan(
         &self,
         context: &str,
@@ -528,13 +529,13 @@ impl Commissioning {
         };
         let current = self.platform.view(&context, scope).await?;
         self.current(&context).await?;
-        if !self
+        if self
             .state
             .lock()
             .map_err(|_| "Hub setup state unavailable")?
             .operations
             .get(&key)
-            .is_some_and(|op| op.session_id == id)
+            .is_none_or(|op| op.session_id != id)
         {
             return Err("Hub setup was replaced by a newer attempt".into());
         }
@@ -656,6 +657,7 @@ impl Commissioning {
         self.current(&session.context).await?;
         Ok(result)
     }
+    #[allow(clippy::too_many_arguments)] // Mirror Platform::lan while enforcing account and TLS checks.
     async fn lan(
         &self,
         context: &str,

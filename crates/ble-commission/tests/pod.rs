@@ -86,11 +86,12 @@ async fn commissions_a_pod_end_to_end() {
     let calls = harness.cloud.calls.lock().unwrap().clone();
     assert_eq!(calls[0].path, "pod/login/approve");
     assert_eq!(calls[0].scope_id, None);
-    let delivered = device.deliveries.lock().unwrap();
-    assert_eq!(delivered[0]["loginGrant"], "login-approval-1");
-    assert_eq!(delivered[0]["scopeId"], "scope-a");
-    assert!(delivered[0].get("refreshToken").is_none());
-    drop(delivered);
+    {
+        let delivered = device.deliveries.lock().unwrap();
+        assert_eq!(delivered[0]["loginGrant"], "login-approval-1");
+        assert_eq!(delivered[0]["scopeId"], "scope-a");
+        assert!(delivered[0].get("refreshToken").is_none());
+    }
     assert_eq!(calls[0].context, "ctx-1");
     assert_eq!(calls[0].body["clientId"], "client-1");
     assert_eq!(calls[0].body["identity"]["keyId"], "p256:abc");
