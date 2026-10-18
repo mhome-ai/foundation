@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "valid": [
+    {
+      "name": "cancel upload",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1"
+      }
+    },
+    {
+      "name": "cancel acknowledgement",
+      "definition": "response",
+      "value": {}
+    }
+  ],
+  "invalid": [
+    {
+      "name": "empty ID",
+      "definition": "request",
+      "value": {
+        "uploadId": ""
+      }
+    },
+    {
+      "name": "cannot delete object",
+      "definition": "request",
+      "value": {
+        "uri": "meow-artifact://v3/..."
+      }
+    },
+    {
+      "name": "nonempty acknowledgement",
+      "definition": "response",
+      "value": {
+        "cancelled": true
+      }
+    },
+    {
+      "definition": "request",
+      "name": "array request",
+      "value": [
+        "u-1"
+      ]
+    },
+    {
+      "definition": "response",
+      "name": "array response",
+      "value": []
+    }
+  ]
+}

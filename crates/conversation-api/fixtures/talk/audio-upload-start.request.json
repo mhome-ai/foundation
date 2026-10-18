@@ -1,0 +1,8 @@
+{
+  "target": "/pod/talk/audio/upload/start",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "operationId": "operation"
+  }
+}

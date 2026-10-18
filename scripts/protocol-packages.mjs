@@ -4,6 +4,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     npmName: "@mhome/artifact-protocol",
     protocol: "mhome.artifact",
     manifest: "manifest/artifact.v1.json",
+    additionalFiles: Object.freeze(["contract/stream-upload-v1.md"]),
     schemas: Object.freeze({
       artifactMetadata: "schema/artifact-metadata.v1.schema.json",
       artifactResolve: "schema/artifact-resolve.v1.schema.json",
@@ -12,6 +13,10 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       artifactImport: "schema/artifact-import.v1.schema.json",
       mediaReference: "schema/media-reference.v1.schema.json",
       artifactUpload: "schema/artifact-upload.v1.schema.json",
+      artifactUploadStart: "schema/artifact-upload-start.v1.schema.json",
+      artifactUploadReceipt: "schema/artifact-upload-receipt.v1.schema.json",
+      artifactUploadComplete: "schema/artifact-upload-complete.v1.schema.json",
+      artifactUploadCancel: "schema/artifact-upload-cancel.v1.schema.json",
     }),
     fixtures: Object.freeze({
       artifactReference: "fixtures/artifact-reference.conformance.json",
@@ -19,6 +24,10 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       artifactPut: "fixtures/artifact-put.conformance.json",
       artifactImport: "fixtures/artifact-import.conformance.json",
       artifactUpload: "fixtures/artifact-upload.conformance.json",
+      artifactUploadStart: "fixtures/artifact-upload-start.conformance.json",
+      artifactUploadReceipt: "fixtures/artifact-upload-receipt.conformance.json",
+      artifactUploadComplete: "fixtures/artifact-upload-complete.conformance.json",
+      artifactUploadCancel: "fixtures/artifact-upload-cancel.conformance.json",
     }),
   }),
   conversation: Object.freeze({

@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.artifact.v1",
-  "contractVersion": "1.15.0",
+  "contractVersion": "1.16.0",
   "uriPrefix": "meow-artifact://v3/",
   "kinds": [
     "image",
@@ -35,6 +35,26 @@
     "target": "/artifact/delete",
     "requestSchema": "schema/artifact-resolve.v1.schema.json#/$defs/request",
     "responseSchema": "schema/artifact-delete.v1.schema.json",
+    "schemaVersion": 1
+  },
+  "uploadStart": {
+    "target": "/artifact/upload/start",
+    "schema": "schema/artifact-upload-start.v1.schema.json",
+    "schemaVersion": 1
+  },
+  "uploadComplete": {
+    "target": "/artifact/upload/complete",
+    "schema": "schema/artifact-upload-complete.v1.schema.json",
+    "schemaVersion": 1
+  },
+  "uploadCancel": {
+    "target": "/artifact/upload/cancel",
+    "schema": "schema/artifact-upload-cancel.v1.schema.json",
+    "schemaVersion": 1
+  },
+  "uploadStream": {
+    "contract": "contract/stream-upload-v1.md",
+    "receiptSchema": "schema/artifact-upload-receipt.v1.schema.json",
     "schemaVersion": 1
   }
 }

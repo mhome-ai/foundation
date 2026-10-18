@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "valid": [
+    {
+      "name": "final file metadata",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1",
+        "sizeBytes": 3,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "final audio metadata",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1",
+        "sizeBytes": 3,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 100
+      }
+    },
+    {
+      "name": "committed object",
+      "definition": "response",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/eyJrIjoiZiIsIm0iOiJhcHBsaWNhdGlvbi9wZGYiLCJzIjozMH0",
+        "kind": "FILE",
+        "mimeType": "application/pdf",
+        "sizeBytes": 30
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "empty content",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1",
+        "sizeBytes": 0,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "invalid digest",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1",
+        "sizeBytes": 3,
+        "sha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      }
+    },
+    {
+      "name": "null duration",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1",
+        "sizeBytes": 3,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": null
+      }
+    },
+    {
+      "name": "unsafe duration",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1",
+        "sizeBytes": 3,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "durationMillis": 9007199254740992
+      }
+    },
+    {
+      "name": "traversal ID",
+      "definition": "request",
+      "value": {
+        "uploadId": "../other",
+        "sizeBytes": 3,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "retention cannot change",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1",
+        "sizeBytes": 3,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retention": "std"
+      }
+    },
+    {
+      "name": "missing digest",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1",
+        "sizeBytes": 3
+      }
+    },
+    {
+      "name": "digest with trailing newline",
+      "definition": "request",
+      "value": {
+        "uploadId": "u-1",
+        "sizeBytes": 3,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+      }
+    },
+    {
+      "definition": "request",
+      "name": "array completion",
+      "value": [
+        "u-1",
+        3,
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    },
+    {
+      "name": "array completion response",
+      "definition": "response",
+      "value": [
+        "auto",
+        "std",
+        null,
+        "meow-artifact://v3/",
+        "FILE",
+        "text/plain",
+        3
+      ]
+    }
+  ]
+}

@@ -5,12 +5,22 @@ use std::fmt;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+#[macro_use]
+mod object_message;
+
 mod policy;
 pub use policy::{ArtifactIdentity, ArtifactPolicy, ArtifactRetention};
 mod media;
 mod put;
 mod resolve;
+mod stream_upload;
 mod upload;
+
+pub use stream_upload::{
+    ArtifactUploadReceipt, CancelArtifactUploadRequest, CancelArtifactUploadResponse,
+    CompleteArtifactUploadRequest, CompleteArtifactUploadResponse, StartArtifactUploadRequest,
+    StartArtifactUploadResponse,
+};
 
 pub use media::{ArtifactUri, ImportArtifactRequest, MediaReference};
 
@@ -643,19 +653,19 @@ mod tests {
     }
 }
 
+object_message! {
 /// TLS identity of a local file endpoint, delivered over the authenticated business channel.
 /// It grants no Host management authority. Public cloud URLs omit this field.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostTlsIdentity {
     pub host_id: String,
     pub public_key: HostTlsPublicKey,
 }
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+}
+object_message! {
 pub struct HostTlsPublicKey {
     pub x: String,
     pub y: String,
+}
 }
 
 /// Lifecycle operations use the same canonical, scope-checked URI as resolve.

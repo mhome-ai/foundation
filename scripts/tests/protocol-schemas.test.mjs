@@ -89,6 +89,23 @@ for (const name of ["artifactPut", "artifactResolve"]) {
   });
 }
 
+for (const name of ["artifactUploadStart", "artifactUploadReceipt", "artifactUploadComplete", "artifactUploadCancel"]) {
+  test(`${name} control messages match streaming fixtures in AJV`, () => {
+    const config = PROTOCOL_PACKAGES.artifact;
+    const schema = readJson(path.join(root, config.crateDir, config.schemas[name]));
+    const fixture = readJson(path.join(root, config.crateDir, config.fixtures[name]));
+    const ajv = compiler();
+    ajv.addSchema(schema);
+    for (const [section, expected] of [["valid", true], ["invalid", false]]) {
+      for (const item of fixture[section]) {
+        const ref = item.definition === "root" ? schema.$id : `${schema.$id}#/$defs/${item.definition}`;
+        const validate = ajv.getSchema(ref);
+        assert.equal(validate(item.value), expected, `${item.name}: ${JSON.stringify(validate.errors)}`);
+      }
+    }
+  });
+}
+
 test("password fields reject defaults and read-only values", () => {
   const config = PROTOCOL_PACKAGES.core;
   const schema = readJson(

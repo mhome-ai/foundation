@@ -60,8 +60,7 @@ impl PutArtifactRequest {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+object_message! {
 pub struct PutArtifactResponse {
     #[serde(default)]
     pub identity: crate::ArtifactIdentity,
@@ -95,6 +94,7 @@ pub struct PutArtifactResponse {
         deserialize_with = "crate::deserialize_optional_non_null"
     )]
     pub duration_millis: Option<u64>,
+}
 }
 
 impl PutArtifactResponse {

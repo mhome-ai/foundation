@@ -249,13 +249,13 @@
       "additionalProperties": false,
       "properties": {
         "target": {
-          "const": "/pod/talk/audio/upload/prepare"
+          "const": "/pod/talk/audio/upload/start"
         },
         "direction": {
           "const": "request"
         },
         "body": {
-          "$ref": "#/$defs/audio_upload_prepare_input"
+          "$ref": "#/$defs/audio_upload_start_input"
         }
       },
       "required": [
@@ -269,7 +269,7 @@
       "additionalProperties": false,
       "properties": {
         "target": {
-          "const": "/pod/talk/audio/upload/prepare"
+          "const": "/pod/talk/audio/upload/start"
         },
         "direction": {
           "const": "response"
@@ -1011,7 +1011,8 @@
         "uploadId",
         "url",
         "headers",
-        "expiresAtUnixMs"
+        "expiresAtUnixMs",
+        "maxSizeBytes"
       ],
       "properties": {
         "uploadId": {
@@ -1067,6 +1068,9 @@
               }
             }
           }
+        },
+        "maxSizeBytes": {
+          "const": 960000
         }
       }
     },
@@ -1511,7 +1515,7 @@
         "occurredAtUnixMs"
       ]
     },
-    "audio_upload_prepare_input": {
+    "audio_upload_start_input": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -1526,28 +1530,11 @@
           "minLength": 1,
           "maxLength": 256,
           "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
-        },
-        "sizeBytes": {
-          "type": "integer",
-          "minimum": 9644,
-          "maximum": 960044
-        },
-        "durationMs": {
-          "type": "integer",
-          "minimum": 300,
-          "maximum": 30000
-        },
-        "sha256": {
-          "type": "string",
-          "pattern": "^[a-f0-9]{64}$"
         }
       },
       "required": [
         "ownerId",
-        "operationId",
-        "sizeBytes",
-        "durationMs",
-        "sha256"
+        "operationId"
       ]
     },
     "audio_transcribe_input": {

@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schemas/artifact-upload-start.v1.schema.json",
+  "title": "Artifact upload start",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/request"
+    },
+    {
+      "$ref": "#/$defs/response"
+    }
+  ],
+  "$defs": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "mimeType",
+        "maxSizeBytes"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "IMAGE",
+            "AUDIO",
+            "VIDEO",
+            "FILE"
+          ]
+        },
+        "mimeType": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 255,
+          "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$",
+          "not": {
+            "pattern": "\\s"
+          }
+        },
+        "creationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "not": {
+            "pattern": "[^A-Za-z0-9_-]"
+          }
+        },
+        "identity": {
+          "enum": [
+            "auto",
+            "man"
+          ],
+          "default": "auto"
+        },
+        "retention": {
+          "enum": [
+            "std",
+            "tmp"
+          ],
+          "default": "std"
+        },
+        "maxSizeBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "identity": {
+                "const": "man"
+              }
+            },
+            "required": [
+              "identity"
+            ]
+          },
+          "then": {
+            "required": [
+              "creationId"
+            ],
+            "properties": {
+              "creationId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "creationId"
+              ],
+              "properties": {
+                "creationId": {}
+              }
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "kind": {
+                  "const": "IMAGE"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "pattern": "^image/"
+                }
+              }
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "AUDIO"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "pattern": "^audio/"
+                }
+              }
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "VIDEO"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "pattern": "^video/"
+                }
+              }
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "FILE"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "not": {
+                    "pattern": "^video/"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploadId",
+        "url",
+        "headers",
+        "expiresAtUnixMs",
+        "maxSizeBytes"
+      ],
+      "properties": {
+        "uploadId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "not": {
+            "pattern": "[^A-Za-z0-9_-]"
+          }
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https?://"
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "propertyNames": {
+            "not": {
+              "pattern": "^([cC][oO][nN][tT][eE][nN][tT]-[lL][eE][nN][gG][tT][hH]|[xX]-[mM][eE][oO][wW]-[cC][oO][nN][tT][eE][nN][tT]-[sS][hH][aA]256)$"
+            }
+          }
+        },
+        "expiresAtUnixMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "hostIdentity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hostId",
+            "publicKey"
+          ],
+          "properties": {
+            "hostId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "publicKey": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "x",
+                "y"
+              ],
+              "properties": {
+                "x": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{43}$",
+                  "minLength": 43,
+                  "maxLength": 43
+                },
+                "y": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{43}$",
+                  "minLength": 43,
+                  "maxLength": 43
+                }
+              }
+            }
+          }
+        },
+        "maxSizeBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      }
+    }
+  }
+}

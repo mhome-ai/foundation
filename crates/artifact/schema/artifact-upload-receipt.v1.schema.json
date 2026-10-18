@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schemas/artifact-upload-receipt.v1.schema.json",
+  "title": "Staged Artifact upload receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "uploadId",
+    "sizeBytes",
+    "sha256"
+  ],
+  "properties": {
+    "uploadId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "not": {
+        "pattern": "[^A-Za-z0-9_-]"
+      }
+    },
+    "sizeBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.conversation.targets.v1",
-  "contractVersion": "3.14.0",
+  "contractVersion": "3.15.0",
   "requestTargets": [
     "/chat/control/get",
     "/chat/thread/list",
@@ -30,7 +30,7 @@
       "/pod/talk/request/cancel",
       "/pod/talk/reply/read",
       "/pod/talk/interaction/answer",
-      "/pod/talk/audio/upload/prepare",
+      "/pod/talk/audio/upload/start",
       "/pod/talk/audio/transcribe",
       "/pod/talk/speech/prepare",
       "/pod/talk/media/resolve"

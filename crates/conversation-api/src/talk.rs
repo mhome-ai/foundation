@@ -9,7 +9,7 @@ pub const REQUEST_GET: &str = "/pod/talk/request/get";
 pub const REQUEST_CANCEL: &str = "/pod/talk/request/cancel";
 pub const REPLY_READ: &str = "/pod/talk/reply/read";
 pub const INTERACTION_ANSWER: &str = "/pod/talk/interaction/answer";
-pub const AUDIO_PREPARE: &str = "/pod/talk/audio/upload/prepare";
+pub const AUDIO_START: &str = "/pod/talk/audio/upload/start";
 pub const AUDIO_TRANSCRIBE: &str = "/pod/talk/audio/transcribe";
 pub const SPEECH_PREPARE: &str = "/pod/talk/speech/prepare";
 pub const MEDIA_RESOLVE: &str = "/pod/talk/media/resolve";
@@ -21,7 +21,7 @@ pub const REQUEST_TARGETS: &[&str] = &[
     REQUEST_CANCEL,
     REPLY_READ,
     INTERACTION_ANSWER,
-    AUDIO_PREPARE,
+    AUDIO_START,
     AUDIO_TRANSCRIBE,
     SPEECH_PREPARE,
     MEDIA_RESOLVE,
@@ -36,7 +36,7 @@ pub const TEXT_BYTES: usize = 4096;
 pub const REPLY_BYTES: usize = 16 * 1024;
 pub const PENDING_BYTES: usize = 4096;
 pub const ID_BYTES: usize = 256;
-pub const AUDIO_BYTES: u32 = 960_044;
+pub const RECORDING_BYTES: u32 = 960_000;
 pub const AUDIO_DURATION_MS: u32 = 30_000;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -213,12 +213,12 @@ pub struct AnswerReceipt {
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AudioPrepare {
+/// Starts PCM16 little-endian, mono 16 kHz ingestion. Raw samples are a MAN/TMP
+/// FILE Artifact (application/octet-stream); the Talk adapter packages WAV for ASR.
+/// Complete/cancel use the generic Artifact controls with the same verified Client.
+pub struct AudioStart {
     pub owner_id: String,
     pub operation_id: String,
-    pub size_bytes: u32,
-    pub duration_ms: u32,
-    pub sha256: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -257,7 +257,7 @@ pub struct MediaResolve {
     pub uri: String,
 }
 /// Finite binary HTTP grants reuse the Artifact contract and its pinned host identity.
-pub type UploadGrant = artifact_api::PrepareArtifactUploadResponse;
+pub type UploadGrant = artifact_api::StartArtifactUploadResponse;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ResolvedMedia {

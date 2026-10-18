@@ -35,37 +35,49 @@ impl PrepareArtifactUploadRequest {
         self.policy()
             .validate_creation_id(self.creation_id.as_deref())
             .map_err(|_| invalid("invalid artifact creation ID"))?;
-        crate::validate_mime_type(&self.mime_type)
-            .map_err(|_| invalid("artifact upload MIME type is invalid"))?;
-        match self.kind {
-            ArtifactKind::Image if !self.mime_type.starts_with("image/") => {
-                return Err(invalid("artifact upload image MIME type is invalid"));
-            }
-            ArtifactKind::Audio if !self.mime_type.starts_with("audio/") => {
-                return Err(invalid("artifact upload audio MIME type is invalid"));
-            }
-            ArtifactKind::Video if !self.mime_type.starts_with("video/") => {
-                return Err(invalid("artifact upload video MIME type is invalid"));
-            }
-            ArtifactKind::File if self.mime_type.starts_with("video/") => {
-                return Err(invalid("video artifacts are not supported"));
-            }
-            _ => {}
-        }
+        validate_content_type(self.kind, &self.mime_type)?;
         crate::validate_size_bytes(self.size_bytes).map_err(invalid)?;
-        if self.sha256.len() != 64
-            || !self
-                .sha256
-                .bytes()
-                .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
-        {
-            return Err(invalid(
-                "artifact upload SHA-256 must be 64 lowercase hexadecimal characters",
-            ));
-        }
+        validate_sha256(&self.sha256)?;
         crate::validate_duration_millis(self.kind, self.duration_millis).map_err(invalid)?;
         Ok(())
     }
+}
+
+pub(super) fn validate_content_type(
+    kind: ArtifactKind,
+    mime_type: &str,
+) -> Result<(), PrepareArtifactUploadValidationError> {
+    crate::validate_mime_type(mime_type)
+        .map_err(|_| invalid("artifact upload MIME type is invalid"))?;
+    match kind {
+        ArtifactKind::Image if !mime_type.starts_with("image/") => {
+            return Err(invalid("artifact upload image MIME type is invalid"));
+        }
+        ArtifactKind::Audio if !mime_type.starts_with("audio/") => {
+            return Err(invalid("artifact upload audio MIME type is invalid"));
+        }
+        ArtifactKind::Video if !mime_type.starts_with("video/") => {
+            return Err(invalid("artifact upload video MIME type is invalid"));
+        }
+        ArtifactKind::File if mime_type.starts_with("video/") => {
+            return Err(invalid("video artifacts are not supported"));
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+pub(super) fn validate_sha256(sha256: &str) -> Result<(), PrepareArtifactUploadValidationError> {
+    if sha256.len() != 64
+        || !sha256
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+    {
+        return Err(invalid(
+            "artifact upload SHA-256 must be 64 lowercase hexadecimal characters",
+        ));
+    }
+    Ok(())
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -110,7 +122,7 @@ impl fmt::Display for PrepareArtifactUploadValidationError {
 
 impl std::error::Error for PrepareArtifactUploadValidationError {}
 
-fn invalid(message: &'static str) -> PrepareArtifactUploadValidationError {
+pub(super) fn invalid(message: &'static str) -> PrepareArtifactUploadValidationError {
     PrepareArtifactUploadValidationError(message)
 }
 

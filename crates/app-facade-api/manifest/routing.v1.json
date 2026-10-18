@@ -30,7 +30,10 @@
       "/app/scope/context/get",
       "/app/artifact/put",
       "/app/artifact/import",
-      "/app/artifact/delete"
+      "/app/artifact/delete",
+      "/app/artifact/upload/start",
+      "/app/artifact/upload/complete",
+      "/app/artifact/upload/cancel"
     ],
     "hubPrefixes": [
       "/app/plugin/",

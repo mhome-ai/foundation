@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "valid": [
+    {
+      "name": "generated file",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 1024
+      }
+    },
+    {
+      "name": "manual temporary recording",
+      "definition": "request",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "audio/pcm",
+        "maxSizeBytes": 1024,
+        "identity": "man",
+        "retention": "tmp",
+        "creationId": "recording-1"
+      }
+    },
+    {
+      "name": "finite video contract",
+      "definition": "request",
+      "value": {
+        "kind": "VIDEO",
+        "mimeType": "video/mp4",
+        "maxSizeBytes": 1024
+      }
+    },
+    {
+      "name": "image",
+      "definition": "request",
+      "value": {
+        "kind": "IMAGE",
+        "mimeType": "image/png",
+        "maxSizeBytes": 1024
+      }
+    },
+    {
+      "name": "grant",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "content-type": "application/octet-stream"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 1900000000000
+      }
+    },
+    {
+      "name": "local TLS identity",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "content-type": "application/octet-stream"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 1900000000000,
+        "hostIdentity": {
+          "hostId": "h1",
+          "publicKey": {
+            "x": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "y": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          }
+        }
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "zero limit",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 0
+      }
+    },
+    {
+      "name": "unsafe limit",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 9007199254740992
+      }
+    },
+    {
+      "name": "null identity",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 1024,
+        "identity": null
+      }
+    },
+    {
+      "name": "missing manual creation ID",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 1024,
+        "identity": "man"
+      }
+    },
+    {
+      "name": "auto with creation ID",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 1024,
+        "creationId": "unexpected"
+      }
+    },
+    {
+      "name": "null creation ID",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 1024,
+        "creationId": null
+      }
+    },
+    {
+      "name": "business field",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 1024,
+        "conversationId": "c"
+      }
+    },
+    {
+      "name": "audio conversion field",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 1024,
+        "sampleRate": 16000
+      }
+    },
+    {
+      "name": "invalid MIME",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "Application/JSON",
+        "maxSizeBytes": 1024
+      }
+    },
+    {
+      "name": "wrong kind MIME",
+      "definition": "request",
+      "value": {
+        "kind": "AUDIO",
+        "mimeType": "application/octet-stream",
+        "maxSizeBytes": 1024
+      }
+    },
+    {
+      "name": "old prepare shape",
+      "definition": "request",
+      "value": {
+        "kind": "FILE",
+        "mimeType": "application/octet-stream",
+        "sizeBytes": 12,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "missing limit",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "content-type": "application/octet-stream"
+        },
+        "expiresAtUnixMs": 1900000000000
+      }
+    },
+    {
+      "name": "null TLS identity",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "content-type": "application/octet-stream"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 1900000000000,
+        "hostIdentity": null
+      }
+    },
+    {
+      "name": "unsafe expiry",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "content-type": "application/octet-stream"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 9007199254740992
+      }
+    },
+    {
+      "name": "invalid upload ID",
+      "definition": "response",
+      "value": {
+        "uploadId": "../x",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "content-type": "application/octet-stream"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 1900000000000
+      }
+    },
+    {
+      "name": "premature Content-Length",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "Content-Length": "1024"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 1900000000000
+      }
+    },
+    {
+      "name": "premature x-meow-content-sha256",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "x-meow-content-sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 1900000000000
+      }
+    },
+    {
+      "name": "TLS key with trailing newline",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "content-type": "application/octet-stream"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 1900000000000,
+        "hostIdentity": {
+          "hostId": "h1",
+          "publicKey": {
+            "x": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
+            "y": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          }
+        }
+      }
+    },
+    {
+      "definition": "request",
+      "name": "array start",
+      "value": [
+        "auto",
+        "std",
+        null,
+        "FILE",
+        "text/plain",
+        100
+      ]
+    },
+    {
+      "definition": "response",
+      "name": "array grant",
+      "value": [
+        null,
+        "u-1",
+        "https://example.test/upload",
+        {},
+        100,
+        10000
+      ]
+    },
+    {
+      "name": "array Host identity",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "content-type": "application/octet-stream"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 1900000000000,
+        "hostIdentity": [
+          "host",
+          {
+            "x": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "y": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ]
+      }
+    },
+    {
+      "name": "array Host public key",
+      "definition": "response",
+      "value": {
+        "uploadId": "u-1",
+        "url": "https://core.example/upload/u-1",
+        "headers": {
+          "content-type": "application/octet-stream"
+        },
+        "maxSizeBytes": 1024,
+        "expiresAtUnixMs": 1900000000000,
+        "hostIdentity": {
+          "hostId": "host",
+          "publicKey": [
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -13,6 +13,14 @@ embedding them in a control-plane message.
 Delivery is an explicit `DATA_URL` or `SIGNED_URL` union; a signed URL may point to a
 cloud object store or an authenticated local streaming endpoint.
 
+Finite producers whose length and digest are unknown at start use
+`/artifact/upload/start`, one binary HTTP PUT, then `/artifact/upload/complete`
+or `/artifact/upload/cancel`. Start declares a byte limit; completion confirms
+the sender's final size and digest. Staging does not publish a readable Artifact.
+The [streaming upload contract](contract/stream-upload-v1.md) specifies authority,
+completion replay, cancellation and storage boundaries. These shared definitions
+do not implement a runtime endpoint or change the existing known-file upload.
+
 Retention mode and resource identity are encoded in the reference. Exact TTL deadlines,
 filesystem paths, signed URLs, and cloud object keys remain runtime concerns.
 

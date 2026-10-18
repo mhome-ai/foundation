@@ -104,6 +104,7 @@ pub enum ExternalCoreMethod {
     AuthorizeArtifactRead,
     AuthorizeArtifactUpload,
     CommitArtifactUpload,
+    StreamArtifactUpload,
     DeviceIdentity,
     CommissionFingerprint,
     CommissionPublicKeyBase64,
@@ -687,4 +688,39 @@ mod tests {
             .is_err()
         );
     }
+}
+
+/// Host-to-Core bounded transfer commands. Public clients send a binary HTTP body.
+/// Only the owner keeps upload state, digest and staging content.
+pub const ARTIFACT_STREAM_CHUNK_BYTES: usize = 64 * 1024;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(
+    tag = "operation",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum ExternalArtifactStreamRequest {
+    Begin { grant: String, mime_type: String },
+    Append { grant: String, data_base64: String },
+    Finish { grant: String },
+    Abort { grant: String },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(
+    tag = "state",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum ExternalArtifactStreamResponse {
+    Receiving {
+        max_size_bytes: u64,
+    },
+    Accepted {},
+    Staged {
+        receipt: artifact_api::ArtifactUploadReceipt,
+    },
 }

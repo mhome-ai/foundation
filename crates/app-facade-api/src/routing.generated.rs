@@ -27,6 +27,9 @@ const SCOPE_MODE_TARGETS: &[&str] = &[
     "/app/artifact/put",
     "/app/artifact/import",
     "/app/artifact/delete",
+    "/app/artifact/upload/start",
+    "/app/artifact/upload/complete",
+    "/app/artifact/upload/cancel",
 ];
 
 const HUB_PREFIXES: &[&str] = &[

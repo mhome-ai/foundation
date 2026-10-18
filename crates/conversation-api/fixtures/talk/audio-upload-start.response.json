@@ -1,0 +1,13 @@
+{
+  "target": "/pod/talk/audio/upload/start",
+  "direction": "response",
+  "body": {
+    "uploadId": "operation",
+    "url": "https://core.example/audio/upload",
+    "headers": {
+      "Content-Type": "application/octet-stream"
+    },
+    "expiresAtUnixMs": 1800000000000,
+    "maxSizeBytes": 960000
+  }
+}
