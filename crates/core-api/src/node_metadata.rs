@@ -35,7 +35,7 @@ impl NodeBindingCardinality {
             Self::Multiple => "multiple",
         }
     }
-    pub fn binding_slot<'a>(self, service_instance_id: &'a str) -> &'a str {
+    pub fn binding_slot(self, service_instance_id: &str) -> &str {
         match self {
             Self::Single => "single",
             Self::Multiple => service_instance_id,
