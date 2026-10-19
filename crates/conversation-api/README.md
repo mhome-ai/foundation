@@ -40,13 +40,12 @@ Model data is re-exported from `llm-api`; there is one model-message representat
 messages intentionally use separate content types and never contain private model continuation.
 Runtime state machines, checkpoint formats, prompts and recovery policy remain in Agent Runtime.
 
-Installation HITL previews use exactly one concrete target:
-`{ "type": "install_integration", "integrationId": "provider.example" }`.
-The same closed client-task contract is used by execution and conversation frames.
-The old plural task and array field are rejected; producers and consumers must
-adopt this contract together. A confirmation for direct installation has no client task; the Agent Tool decides
-whether its trusted access mode requires that confirmation. Connection tasks open the existing connection UI, then
-the prepared action verifies authoritative installation state when the user continues.
+Connection HITL previews resume one exact lifecycle session:
+`{ "type": "connect_integration", "integrationId": "provider.example", "sessionId": "session" }`.
+The execution and conversation contracts use the same closed client-task shape.
+The UI reads and resumes that session; it never starts a replacement on reopening.
+The Agent verifies its authoritative completion result and Connection ID. Expired
+or lost sessions fail explicitly. Direct installation confirmations have no client task.
 
 `RunErrorCode` is the closed catalog for `runOutcome.errorCode` and Agent `Failed.code`. Host
 terminalize and Agent failures emit the same strings. `status` and `failure.source` are properties

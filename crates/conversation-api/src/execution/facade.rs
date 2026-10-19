@@ -101,17 +101,19 @@ mod tests {
             "Integration required",
             "Install it, then continue.",
         );
-        preview.client_task = Some(ClientTask::InstallIntegration {
+        preview.client_task = Some(ClientTask::ConnectIntegration {
             integration_id: String::new(),
+            session_id: "session".into(),
         });
         assert!(!preview.is_valid());
 
-        preview.client_task = Some(ClientTask::InstallIntegration {
+        preview.client_task = Some(ClientTask::ConnectIntegration {
             integration_id: "provider.example".to_owned(),
+            session_id: "session".into(),
         });
         assert!(preview.is_valid());
         let encoded = serde_json::to_value(preview).expect("serializes");
-        assert_eq!(encoded["clientTask"]["type"], "install_integration");
+        assert_eq!(encoded["clientTask"]["type"], "connect_integration");
         assert_eq!(encoded["clientTask"]["integrationId"], "provider.example");
     }
 }

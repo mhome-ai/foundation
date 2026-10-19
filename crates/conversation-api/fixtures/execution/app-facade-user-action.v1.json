@@ -34,12 +34,13 @@
           "proceedLabel": "Done, check installation",
           "rejectLabel": "Cancel",
           "clientTask": {
-            "type": "install_integration",
-            "integrationId": "provider.example"
+            "type": "connect_integration",
+            "integrationId": "provider.example",
+            "sessionId": "connection-session"
           }
         },
         "payload": {
-          "target": "/app/integration/install"
+          "target": "/app/integration/connect"
         },
         "revision": 8,
         "interaction_kind": "user_action"

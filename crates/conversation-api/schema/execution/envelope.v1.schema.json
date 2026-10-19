@@ -834,13 +834,19 @@
           "additionalProperties": false,
           "required": [
             "type",
-            "integrationId"
+            "integrationId",
+            "sessionId"
           ],
           "properties": {
             "type": {
-              "const": "install_integration"
+              "const": "connect_integration"
             },
             "integrationId": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "sessionId": {
               "type": "string",
               "minLength": 1,
               "pattern": "\\S"

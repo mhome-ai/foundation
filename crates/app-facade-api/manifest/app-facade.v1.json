@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.44.0",
+  "contractVersion": "1.45.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -96,7 +96,13 @@
     "integration": {
       "capabilitySchema": "schema/capability-descriptor.v1.schema.json",
       "requestTargets": [
+        "/app/integration/list",
         "/app/integration/detail/get",
+        "/app/integration/detail/batch",
+        "/app/integration/install",
+        "/app/integration/uninstall",
+        "/app/integration/connect",
+        "/app/integration/disconnect",
         "/app/integration/installed/list",
         "/app/integration/capability/detail/get"
       ],
