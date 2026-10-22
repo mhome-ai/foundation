@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "themeMode",
+        "effectiveThemeMode",
+        "primaryColor",
+        "background",
+        "cardOpacity",
+        "cardOpacityApplied"
+      ],
+      "properties": {
+        "themeMode": {
+          "enum": [
+            "auto",
+            "light",
+            "dark"
+          ]
+        },
+        "effectiveThemeMode": {
+          "enum": [
+            "light",
+            "dark"
+          ]
+        },
+        "primaryColor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "background": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "cardOpacity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "cardOpacityApplied": {
+          "type": "boolean"
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    }
+  }
+}

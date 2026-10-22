@@ -152,6 +152,14 @@
       "firstClaimTransport": "directLanOnly",
       "authorizationTarget": "/app/host/authorization",
       "authorizationSchema": "schema/host-authorization.v1.schema.json"
+    },
+    "clientAppearance": {
+      "schema": "schema/client-appearance.v1.schema.json",
+      "requestTargets": [
+        "/app/client/appearance/report"
+      ],
+      "owner": "authenticatedClient",
+      "persistence": "none"
     }
   },
   "authorization": "manifest/authorization.v1.json",

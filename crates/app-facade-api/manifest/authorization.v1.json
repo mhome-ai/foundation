@@ -50,6 +50,7 @@
     "/app/automation/verify": "spaceWrite",
     "/app/capability/invoke": "spaceWrite",
     "/app/capability/invoke/json": "spaceWrite",
+    "/app/client/appearance/report": "spaceRead",
     "/app/dashboard/canvas/brief/list": "spaceRead",
     "/app/dashboard/canvas/create": "spaceWrite",
     "/app/dashboard/canvas/delete": "spaceWrite",
