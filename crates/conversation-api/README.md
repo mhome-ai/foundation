@@ -40,12 +40,15 @@ Model data is re-exported from `llm-api`; there is one model-message representat
 messages intentionally use separate content types and never contain private model continuation.
 Runtime state machines, checkpoint formats, prompts and recovery policy remain in Agent Runtime.
 
-Connection HITL previews resume one exact lifecycle session:
-`{ "type": "connect_integration", "integrationId": "provider.example", "sessionId": "session" }`.
-The execution and conversation contracts use the same closed client-task shape.
-The UI reads and resumes that session; it never starts a replacement on reopening.
-The Agent verifies its authoritative completion result and Connection ID. Expired
-or lost sessions fail explicitly. Direct installation confirmations have no client task.
+HITL items share one public card contract: `kind` selects approval or user action; `card.type`
+selects trusted frontend presentation and `card.data` retains structured business data. Approval
+responses use approve/reject. User-action responses use continue with required `data` (null when
+no input is needed), or cancel. Public and execution requests carry the same typed `responses`.
+A saved tool handler produces one final result after acceptance; `FacadeResult` cannot suspend.
+Integration connection cards use `integration.connect` with `integrationId` and `sessionId` in
+data. The UI operates on that exact session. A status check returns its actual result once;
+only a new tool call can request further human interaction. Prepared approvals retain their
+business prepare/commit contract. Card state and responses are separate from model history.
 
 `RunErrorCode` is the closed catalog for `runOutcome.errorCode` and Agent `Failed.code`. Host
 terminalize and Agent failures emit the same strings. `status` and `failure.source` are properties
@@ -66,7 +69,7 @@ adopted by Lion and Cloud together before deployment.
 
 ### Strict execution envelope decoding
 
-Execution commands, events, facade responses and their typed nested objects reject undeclared fields, including null-valued unknown fields. Opaque JSON inputs/results and model continuation payloads remain extensible; known optional null fields remain accepted. Enforcement lives on the typed DTOs as well as the wire entry point because Serde's internally tagged enum buffering bypasses an outer `serde_ignored` observer. Tagged unit variants explicitly require an empty remaining map. This restores the existing wire-v1 contract without changing its message shape or major version.
+Execution commands, events, facade responses and their typed nested objects reject undeclared fields, including null-valued unknown fields. Opaque JSON inputs/results and model continuation payloads remain extensible; known optional null fields remain accepted. Enforcement lives on the typed DTOs as well as the wire entry point because Serde's internally tagged enum buffering bypasses an outer `serde_ignored` observer. Tagged unit variants explicitly require an empty remaining map. The enclosing wire envelope retains version 1; callers must adopt the current package contract together.
 
 ## Disposable execution presentation
 
@@ -141,7 +144,7 @@ settlement; archived-thread results never replace a different active view.
 Reply offsets count UTF-8 bytes in the immutable plain text identified by
 `contentRevision`. A single bounded window includes explicit next/previous
 offsets. Pending previews mark omissions and prohibit approving incomplete
-previews or unsupported client tasks. Spoken responses target the original
+cards or unsupported user actions. Spoken responses target the original
 thread, request and batch, with a second validation before canonical submission.
 
 The complete escaped MWS frame is limited to 64 KiB, changed notifications to

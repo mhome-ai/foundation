@@ -124,156 +124,6 @@
         }
       }
     },
-    "previewValue": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "type",
-            "text"
-          ],
-          "properties": {
-            "type": {
-              "const": "text"
-            },
-            "text": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "type",
-            "items"
-          ],
-          "properties": {
-            "type": {
-              "const": "text_list"
-            },
-            "items": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "type",
-            "value"
-          ],
-          "properties": {
-            "type": {
-              "const": "number"
-            },
-            "value": {
-              "type": "number"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "type",
-            "value"
-          ],
-          "properties": {
-            "type": {
-              "const": "bool"
-            },
-            "value": {
-              "type": "boolean"
-            }
-          }
-        }
-      ]
-    },
-    "interactionPreview": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "actionCode",
-        "title",
-        "message",
-        "tone",
-        "details",
-        "proceedLabel",
-        "rejectLabel"
-      ],
-      "properties": {
-        "actionCode": {
-          "$ref": "#/$defs/id"
-        },
-        "title": {
-          "$ref": "#/$defs/id"
-        },
-        "message": {
-          "type": "string"
-        },
-        "tone": {
-          "enum": [
-            "normal",
-            "danger"
-          ]
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "label",
-              "value"
-            ],
-            "properties": {
-              "label": {
-                "$ref": "#/$defs/id"
-              },
-              "value": {
-                "$ref": "#/$defs/previewValue"
-              }
-            }
-          }
-        },
-        "proceedLabel": {
-          "$ref": "#/$defs/id"
-        },
-        "rejectLabel": {
-          "$ref": "#/$defs/id"
-        },
-        "clientTask": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "type",
-            "integrationId",
-            "sessionId"
-          ],
-          "properties": {
-            "type": {
-              "const": "connect_integration"
-            },
-            "integrationId": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "\\S"
-            },
-            "sessionId": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "\\S"
-            }
-          }
-        }
-      }
-    },
     "pendingInteraction": {
       "type": "object",
       "additionalProperties": false,
@@ -301,30 +151,7 @@
           "type": "array",
           "minItems": 1,
           "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "actionId",
-              "kind",
-              "preview"
-            ],
-            "properties": {
-              "actionId": {
-                "$ref": "#/$defs/id"
-              },
-              "kind": {
-                "enum": [
-                  "approval",
-                  "user_action"
-                ]
-              },
-              "expiresAt": {
-                "$ref": "#/$defs/time"
-              },
-              "preview": {
-                "$ref": "#/$defs/interactionPreview"
-              }
-            }
+            "$ref": "#/$defs/interactionItem"
           }
         }
       }
@@ -2011,7 +1838,7 @@
           "required": [
             "threadId",
             "batchId",
-            "decisions"
+            "responses"
           ],
           "properties": {
             "threadId": {
@@ -2020,27 +1847,11 @@
             "batchId": {
               "$ref": "#/$defs/id"
             },
-            "decisions": {
+            "responses": {
               "type": "array",
               "minItems": 1,
               "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "actionId",
-                  "decision"
-                ],
-                "properties": {
-                  "actionId": {
-                    "$ref": "#/$defs/id"
-                  },
-                  "decision": {
-                    "enum": [
-                      "approve",
-                      "reject"
-                    ]
-                  }
-                }
+                "$ref": "#/$defs/interactionItemResponse"
               }
             }
           }
@@ -2574,7 +2385,7 @@
           "required": [
             "requestId",
             "batchId",
-            "decisions",
+            "responses",
             "occurredAtUnixMs"
           ],
           "properties": {
@@ -2584,32 +2395,16 @@
             "batchId": {
               "$ref": "#/$defs/id"
             },
-            "decisions": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "actionId",
-                  "decision"
-                ],
-                "properties": {
-                  "actionId": {
-                    "$ref": "#/$defs/id"
-                  },
-                  "decision": {
-                    "enum": [
-                      "approve",
-                      "reject"
-                    ]
-                  }
-                }
-              }
-            },
             "occurredAtUnixMs": {
               "type": "integer",
               "minimum": 0
+            },
+            "responses": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/interactionItemResponse"
+              }
             }
           }
         }
@@ -3014,6 +2809,248 @@
               ]
             }
           }
+        }
+      }
+    },
+    "interactionCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "title",
+        "message",
+        "tone",
+        "continueLabel",
+        "cancelLabel",
+        "data"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-z0-9._]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "message": {
+          "type": "string"
+        },
+        "tone": {
+          "enum": [
+            "normal",
+            "danger"
+          ]
+        },
+        "continueLabel": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "cancelLabel": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "data": {
+          "type": "object"
+        }
+      }
+    },
+    "interactionAnswer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "action"
+          ],
+          "properties": {
+            "action": {
+              "const": "approve"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "action"
+          ],
+          "properties": {
+            "action": {
+              "const": "reject"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "action",
+            "data"
+          ],
+          "properties": {
+            "action": {
+              "const": "continue"
+            },
+            "data": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "action"
+          ],
+          "properties": {
+            "action": {
+              "const": "cancel"
+            }
+          }
+        }
+      ]
+    },
+    "interactionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actionId",
+        "kind",
+        "card"
+      ],
+      "properties": {
+        "actionId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "enum": [
+            "approval",
+            "user_action"
+          ]
+        },
+        "expiresAt": {
+          "type": "string"
+        },
+        "card": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "title",
+            "message",
+            "tone",
+            "continueLabel",
+            "cancelLabel",
+            "data"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[a-z0-9._]+$"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "message": {
+              "type": "string"
+            },
+            "tone": {
+              "enum": [
+                "normal",
+                "danger"
+              ]
+            },
+            "continueLabel": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cancelLabel": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "data": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "interactionItemResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actionId",
+        "response"
+      ],
+      "properties": {
+        "actionId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "response": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "action"
+              ],
+              "properties": {
+                "action": {
+                  "const": "approve"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "action"
+              ],
+              "properties": {
+                "action": {
+                  "const": "reject"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "action",
+                "data"
+              ],
+              "properties": {
+                "action": {
+                  "const": "continue"
+                },
+                "data": {}
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "action"
+              ],
+              "properties": {
+                "action": {
+                  "const": "cancel"
+                }
+              }
+            }
+          ]
         }
       }
     }

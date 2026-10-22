@@ -13,20 +13,20 @@ pub mod llm;
 pub mod operational_context;
 pub mod storage;
 
-pub use crate::ConversationSurface;
-pub use agent::{
-    AccessMode, AgentCommand, Interaction, InteractionDecision, QueuedRun, RunOptions,
+pub use crate::{
+    ConversationSurface, InteractionAnswer, InteractionCard, InteractionKind, InteractionResponse,
+    InteractionTone, PendingInteractionItem,
 };
+pub use agent::{AccessMode, AgentCommand, Interaction, QueuedRun, RunOptions};
 pub use artifact_api::{
     ARTIFACT_URL_PREFIX, ArtifactKind, ArtifactMetadata, ArtifactReference, ArtifactUri,
 };
 pub use context::{Actor, InvocationContext, Scope};
 pub use error::{ExternalError, ExternalErrorKind};
-pub use event::{AgentEvent, AgentObservation, DurableEvent, EventPublisher, Observer};
-pub use facade::{
-    AppFacade, ClientTask, FacadeRequest, FacadeResult, InteractionKind, InteractionPreview,
-    InteractionTone, PreparedAction, PreviewDetail, PreviewValue,
+pub use event::{
+    AgentEvent, AgentObservation, DurableEvent, EventPublisher, InteractionRequest, Observer,
 };
+pub use facade::{AppFacade, FacadeRequest, FacadeResult, PreparedAction};
 pub use id::{
     ActionId, ClientId, EventId, MessageId, OperationId, RunId, ScopeId, TenantId, ThreadId, UserId,
 };

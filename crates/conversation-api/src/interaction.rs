@@ -1,22 +1,6 @@
+//! One-shot human interactions. Business cards and response validation belong to their owners.
 use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(tag = "type", rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
-pub enum PreviewValue {
-    Text { text: String },
-    TextList { items: Vec<String> },
-    Number { value: f64 },
-    Bool { value: bool },
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
-pub struct PreviewDetail {
-    pub label: String,
-    pub value: PreviewValue,
-}
+use serde_json::{Map, Value};
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -26,57 +10,88 @@ pub enum InteractionTone {
     Danger,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(
-    tag = "type",
-    rename_all = "snake_case",
-    rename_all_fields = "camelCase"
-)]
-#[serde(deny_unknown_fields)]
-pub enum ClientTask {
-    ConnectIntegration {
-        integration_id: String,
-        session_id: String,
-    },
-}
-
+/// A registered presentation type and its structured, business-owned data.
+/// `card_type` selects trusted client code; it is never a route, script or callback.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
-pub struct InteractionPreview {
-    pub action_code: String,
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct InteractionCard {
+    #[serde(rename = "type")]
+    pub card_type: String,
     pub title: String,
     pub message: String,
-    #[serde(default)]
     pub tone: InteractionTone,
-    #[serde(default)]
-    pub details: Vec<PreviewDetail>,
-    pub proceed_label: String,
-    pub reject_label: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub client_task: Option<ClientTask>,
+    pub continue_label: String,
+    pub cancel_label: String,
+    pub data: Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+impl InteractionCard {
+    #[must_use]
+    pub fn new(
+        card_type: impl Into<String>,
+        title: impl Into<String>,
+        message: impl Into<String>,
+    ) -> Self {
+        Self {
+            card_type: card_type.into(),
+            title: title.into(),
+            message: message.into(),
+            tone: InteractionTone::Normal,
+            continue_label: "Continue".into(),
+            cancel_label: "Cancel".into(),
+            data: Map::new(),
+        }
+    }
+
+    #[must_use]
+    pub fn is_valid(&self) -> bool {
+        !self.card_type.is_empty()
+            && self
+                .card_type
+                .bytes()
+                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == b'.' || c == b'_')
+            && !self.title.trim().is_empty()
+            && !self.continue_label.trim().is_empty()
+            && !self.cancel_label.trim().is_empty()
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum InteractionKind {
-    #[default]
     Approval,
     UserAction,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PendingInteractionItem {
     pub action_id: String,
     pub kind: InteractionKind,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub expires_at: Option<String>,
-    pub preview: InteractionPreview,
+    pub card: InteractionCard,
+}
+
+impl PendingInteractionItem {
+    #[must_use]
+    pub fn accepts(&self, response: &InteractionResponse) -> bool {
+        self.action_id == response.action_id
+            && matches!(
+                (self.kind, &response.response),
+                (
+                    InteractionKind::Approval,
+                    InteractionAnswer::Approve | InteractionAnswer::Reject
+                ) | (
+                    InteractionKind::UserAction,
+                    InteractionAnswer::Continue { .. } | InteractionAnswer::Cancel
+                )
+            )
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PendingInteraction {
     pub request_id: String,
     pub batch_id: String,
@@ -85,72 +100,24 @@ pub struct PendingInteraction {
     pub items: Vec<PendingInteractionItem>,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
-pub enum InteractionDecisionValue {
+/// A response consumes one interaction. It never requests another waiting phase.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
+pub enum InteractionAnswer {
+    #[serde(deserialize_with = "crate::execution::deserialize_empty_variant")]
     Approve,
+    #[serde(deserialize_with = "crate::execution::deserialize_empty_variant")]
     Reject,
+    Continue {
+        data: Value,
+    },
+    #[serde(deserialize_with = "crate::execution::deserialize_empty_variant")]
+    Cancel,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct InteractionDecision {
+pub struct InteractionResponse {
     pub action_id: String,
-    pub decision: InteractionDecisionValue,
-}
-
-impl Default for InteractionPreview {
-    fn default() -> Self {
-        Self::confirmation(
-            "interaction",
-            "Review action",
-            "Review this action before continuing.",
-        )
-    }
-}
-
-impl InteractionPreview {
-    #[must_use]
-    pub fn confirmation(
-        action_code: impl Into<String>,
-        title: impl Into<String>,
-        message: impl Into<String>,
-    ) -> Self {
-        Self {
-            action_code: action_code.into(),
-            title: title.into(),
-            message: message.into(),
-            tone: InteractionTone::Normal,
-            details: Vec::new(),
-            proceed_label: "Continue".to_owned(),
-            reject_label: "Cancel".to_owned(),
-            client_task: None,
-        }
-    }
-
-    /// Returns whether the facade supplied a complete display-only interaction contract.
-    #[must_use]
-    pub fn is_valid(&self) -> bool {
-        !self.action_code.trim().is_empty()
-            && !self.title.trim().is_empty()
-            && !self.proceed_label.trim().is_empty()
-            && !self.reject_label.trim().is_empty()
-            && self.details.iter().all(|detail| {
-                !detail.label.trim().is_empty()
-                    && match &detail.value {
-                        PreviewValue::Number { value } => value.is_finite(),
-                        PreviewValue::TextList { items } => {
-                            items.iter().all(|item| !item.trim().is_empty())
-                        }
-                        PreviewValue::Text { .. } | PreviewValue::Bool { .. } => true,
-                    }
-            })
-            && match &self.client_task {
-                Some(ClientTask::ConnectIntegration {
-                    integration_id,
-                    session_id,
-                }) => !integration_id.trim().is_empty() && !session_id.trim().is_empty(),
-                None => true,
-            }
-    }
+    pub response: InteractionAnswer,
 }

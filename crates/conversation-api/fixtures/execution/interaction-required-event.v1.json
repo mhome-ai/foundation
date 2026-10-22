@@ -39,26 +39,6 @@
         "event": {
           "type": "interaction_required",
           "batch_id": "batch-1",
-          "actions": [
-            {
-              "action_id": "action-1",
-              "operation_id": "operation-1",
-              "preview": {
-                "actionCode": "dashboard.canvas.delete",
-                "title": "Delete canvas",
-                "message": "Delete this canvas?",
-                "tone": "danger",
-                "details": [],
-                "proceedLabel": "Delete",
-                "rejectLabel": "Cancel"
-              },
-              "payload": {
-                "canvasId": "canvas-1"
-              },
-              "revision": 1,
-              "interaction_kind": "approval"
-            }
-          ],
           "usage": {
             "model_requests": 2,
             "reported_model_requests": 2,
@@ -71,7 +51,25 @@
             "tool_calls": 1,
             "window_truncations": 0,
             "trimmed_messages": 0
-          }
+          },
+          "items": [
+            {
+              "item": {
+                "actionId": "action-1",
+                "kind": "approval",
+                "card": {
+                  "type": "dashboard.canvas.delete",
+                  "title": "Delete canvas",
+                  "message": "Delete this canvas?",
+                  "tone": "danger",
+                  "continueLabel": "Delete",
+                  "cancelLabel": "Cancel",
+                  "data": {}
+                }
+              },
+              "prepared_action_id": "action-1"
+            }
+          ]
         }
       },
       "checkpoint": {

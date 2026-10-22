@@ -908,7 +908,7 @@ mod tests {
             include_str!("../../../fixtures/execution/observation.v1.json"),
             include_str!("../../../fixtures/execution/admission.v1.json"),
             include_str!("../../../fixtures/execution/app-facade-prepared.v1.json"),
-            include_str!("../../../fixtures/execution/app-facade-user-action.v1.json"),
+            include_str!("../../../fixtures/execution/user-action-required-event.v1.json"),
             include_str!("../../../fixtures/execution/event-ack.v1.json"),
             include_str!("../../../fixtures/execution/checkpoint-purge.v1.json"),
             include_str!("../../../fixtures/execution/checkpoint-purge-ack.v1.json"),
@@ -951,7 +951,7 @@ mod tests {
         for command in [
             serde_json::json!({"type": "cancel", "context": context}),
             serde_json::json!({"type": "submit_interaction", "context": context,
-                "interaction": {"batch_id": "batch-1", "decisions": [{"action_id": "action-1", "proceed": true}]}}),
+                "interaction": {"batch_id": "batch-1", "responses": [{"actionId": "action-1", "response": {"action":"approve"}}]}}),
         ] {
             let mut input = golden.clone();
             if command["type"] == "cancel" {

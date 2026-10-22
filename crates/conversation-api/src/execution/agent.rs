@@ -38,24 +38,14 @@ pub struct RunOptions {
     pub debug: bool,
 }
 
-/// Decision for one prepared action in a pending interaction batch.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct InteractionDecision {
-    /// Prepared action identifier.
-    pub action_id: crate::execution::ActionId,
-    /// Whether Runtime should commit or reject the action.
-    pub proceed: bool,
-}
-
 /// User decisions submitted to a waiting run.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Interaction {
     /// Batch identifier emitted by `InteractionRequired`.
     pub batch_id: MessageId,
-    /// One decision for every prepared action in the batch.
-    pub decisions: Vec<InteractionDecision>,
+    /// One response for every waiting item in the batch.
+    pub responses: Vec<crate::InteractionResponse>,
 }
 
 /// Durable request waiting to enter the Runtime execution loop.

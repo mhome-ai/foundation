@@ -4,9 +4,14 @@
   "body": {
     "requestId": "request-1",
     "batchId": "batch-1",
-    "decisions": [
-      { "actionId": "action-1", "decision": "approve" }
-    ],
-    "occurredAtUnixMs": 1787587200000
+    "occurredAtUnixMs": 1787587200000,
+    "responses": [
+      {
+        "actionId": "action-1",
+        "response": {
+          "action": "approve"
+        }
+      }
+    ]
   }
 }

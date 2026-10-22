@@ -1,0 +1,85 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "message-2",
+    "correlation_id": "correlation-1",
+    "causation_id": "message-1",
+    "sent_at_unix_ms": 1700000001000,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "event",
+    "payload": {
+      "event": {
+        "id": "event-1",
+        "sequence": 2,
+        "context": {
+          "scope": {
+            "tenant_id": "tenant-1",
+            "scope_id": "scope-1"
+          },
+          "actor": {
+            "principal": {
+              "kind": "user",
+              "userId": "user-1"
+            },
+            "client_id": "client-1",
+            "credential_id": null
+          },
+          "thread_id": "thread-1",
+          "run_id": "run-1",
+          "operation_id": "operation-1",
+          "deadline_unix_ms": null,
+          "traceparent": null,
+          "surface_id": "cs1:cp:dXNlci0x"
+        },
+        "event": {
+          "type": "interaction_required",
+          "batch_id": "batch-1",
+          "usage": {
+            "model_requests": 2,
+            "reported_model_requests": 2,
+            "input_tokens": 30,
+            "output_tokens": 6,
+            "cached_input_tokens": null,
+            "reasoning_output_tokens": null,
+            "peak_input_tokens": 20,
+            "credits": 3,
+            "tool_calls": 1,
+            "window_truncations": 0,
+            "trimmed_messages": 0
+          },
+          "items": [
+            {
+              "item": {
+                "actionId": "action-1",
+                "kind": "user_action",
+                "card": {
+                  "type": "integration.connect",
+                  "title": "Connect Integration",
+                  "message": "Complete this connection.",
+                  "tone": "normal",
+                  "continueLabel": "Done",
+                  "cancelLabel": "Cancel",
+                  "data": {
+                    "integrationId": "provider.example",
+                    "sessionId": "connection-session"
+                  }
+                }
+              },
+              "prepared_action_id": null
+            }
+          ]
+        }
+      },
+      "checkpoint": {
+        "object_key": "checkpoints/abc.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "format_version": 1
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-use crate::{InteractionDecision, MessageContent};
+use crate::{InteractionResponse, MessageContent};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -100,7 +100,7 @@ pub enum SessionStartReason {
 pub struct InteractionAnswerRequest {
     pub request_id: String,
     pub batch_id: String,
-    pub decisions: Vec<InteractionDecision>,
+    pub responses: Vec<InteractionResponse>,
     pub occurred_at_unix_ms: i64,
 }
 
@@ -164,5 +164,5 @@ pub struct RequestCancelRequest {
 pub struct InteractionSubmitRequest {
     pub thread_id: String,
     pub batch_id: String,
-    pub decisions: Vec<InteractionDecision>,
+    pub responses: Vec<InteractionResponse>,
 }

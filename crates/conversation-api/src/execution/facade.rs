@@ -18,9 +18,7 @@ pub struct FacadeRequest {
     pub input: Value,
 }
 
-pub use crate::{
-    ClientTask, InteractionKind, InteractionPreview, InteractionTone, PreviewDetail, PreviewValue,
-};
+pub use crate::{InteractionCard, InteractionKind, InteractionTone};
 
 /// Prepared operation awaiting an explicit commit or rejection.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -31,14 +29,12 @@ pub struct PreparedAction {
     /// Idempotency identifier supplied by Runtime.
     pub operation_id: OperationId,
     /// App Facade-generated preview suitable for user confirmation.
-    pub preview: InteractionPreview,
+    pub card: InteractionCard,
     /// Opaque execution plan. Runtime persists it but never exposes it to the model or UI.
     #[serde(default)]
     pub payload: Value,
     /// App Facade revision that must still be current when committing.
     pub revision: u64,
-    /// Presentation/continuation kind for clients.
-    pub interaction_kind: InteractionKind,
 }
 
 /// Structured result returned by an App Facade operation.
@@ -47,9 +43,6 @@ pub struct PreparedAction {
 pub struct FacadeResult {
     /// App Facade result payload.
     pub value: Value,
-    /// A new prepared continuation when committing a user action still requires user work.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub continuation: Option<PreparedAction>,
     /// New prompt-context generation when this operation changed Agent-visible facts.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub context_invalidation: Option<crate::execution::ContextInvalidation>,
@@ -88,32 +81,4 @@ pub trait AppFacade: Send + Sync {
         context: &InvocationContext,
         action: PreparedAction,
     ) -> Result<(), ExternalError>;
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn typed_preview_rejects_incomplete_client_work() {
-        let mut preview = InteractionPreview::confirmation(
-            "integration.install",
-            "Integration required",
-            "Install it, then continue.",
-        );
-        preview.client_task = Some(ClientTask::ConnectIntegration {
-            integration_id: String::new(),
-            session_id: "session".into(),
-        });
-        assert!(!preview.is_valid());
-
-        preview.client_task = Some(ClientTask::ConnectIntegration {
-            integration_id: "provider.example".to_owned(),
-            session_id: "session".into(),
-        });
-        assert!(preview.is_valid());
-        let encoded = serde_json::to_value(preview).expect("serializes");
-        assert_eq!(encoded["clientTask"]["type"], "connect_integration");
-        assert_eq!(encoded["clientTask"]["integrationId"], "provider.example");
-    }
 }

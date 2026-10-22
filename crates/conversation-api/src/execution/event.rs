@@ -5,9 +5,17 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::execution::{
-    EventId, ExternalError, InvocationContext, MessageId, PreparedAction, RuntimeSnapshot,
-    UsageSummary,
+    ActionId, EventId, ExternalError, InvocationContext, MessageId, RuntimeSnapshot, UsageSummary,
 };
+
+/// Private execution projection. Only `item` is exposed to clients.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct InteractionRequest {
+    pub item: crate::PendingInteractionItem,
+    /// Retire a real prepared record on conversation termination, never a business session.
+    pub prepared_action_id: Option<ActionId>,
+}
 
 /// Event emitted by the Runtime.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -22,7 +30,7 @@ pub enum AgentEvent {
         /// Batch identifier answered by `SubmitInteraction`.
         batch_id: MessageId,
         /// Prepared actions awaiting one decision each.
-        actions: Vec<PreparedAction>,
+        items: Vec<InteractionRequest>,
         /// Usage accumulated before Runtime suspended the run.
         usage: UsageSummary,
     },

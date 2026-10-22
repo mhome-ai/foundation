@@ -4,8 +4,13 @@
   "body": {
     "threadId": "thread-2",
     "batchId": "batch-1",
-    "decisions": [
-      { "actionId": "action-1", "decision": "approve" }
+    "responses": [
+      {
+        "actionId": "action-1",
+        "response": {
+          "action": "approve"
+        }
+      }
     ]
   }
 }

@@ -1,50 +1,72 @@
-use conversation_api::{ClientTask, InteractionPreview};
+use conversation_api::{
+    InteractionAnswer, InteractionCard, InteractionKind, InteractionResponse,
+    PendingInteractionItem,
+};
 use serde_json::{Value, json};
 
 #[test]
-fn connection_task_is_session_bound_and_identical_in_both_wire_contracts() {
+fn public_and_execution_cards_have_the_same_lossless_contract() {
     let frame: Value =
         serde_json::from_str(include_str!("../schema/conversation-frame.v2.schema.json")).unwrap();
     let execution: Value =
         serde_json::from_str(include_str!("../schema/execution/envelope.v1.schema.json")).unwrap();
-    let task = &frame["$defs"]["interactionPreview"]["properties"]["clientTask"];
     assert_eq!(
-        task,
-        &execution["$defs"]["interaction_preview"]["properties"]["clientTask"]
+        frame["$defs"]["interactionCard"],
+        execution["$defs"]["interactionCard"]
     );
-    let mut schema = task.clone();
-    schema["$defs"] = frame["$defs"].clone();
-    let validator = jsonschema::validator_for(&schema).unwrap();
+    let validator = jsonschema::validator_for(&frame["$defs"]["interactionCard"]).unwrap();
+    let card = json!({"type":"group.upsert","title":"Create group","message":"Review members","tone":"normal","continueLabel":"Create","cancelLabel":"Cancel","data":{"name":"Lights","members":[{"id":"d1","name":"Desk"}]}});
+    assert!(validator.is_valid(&card));
+    let typed: InteractionCard = serde_json::from_value(card.clone()).unwrap();
+    assert!(typed.is_valid());
+    assert_eq!(serde_json::to_value(typed).unwrap(), card);
+    let mut legacy = card.clone();
+    legacy["clientTask"] = json!({"type":"connect_integration"});
+    assert!(!validator.is_valid(&legacy));
+    assert!(serde_json::from_value::<InteractionCard>(legacy).is_err());
+}
 
-    let valid = json!({"type":"connect_integration", "integrationId":"provider.example", "sessionId":"session"});
-    assert!(validator.is_valid(&valid));
-    assert_eq!(
-        serde_json::from_value::<ClientTask>(valid.clone()).unwrap(),
-        ClientTask::ConnectIntegration {
-            integration_id: "provider.example".into(),
-            session_id: "session".into()
-        }
-    );
+#[test]
+fn responses_are_typed_and_bound_to_the_interaction_kind() {
+    let mut pending = PendingInteractionItem {
+        action_id: "a".into(),
+        kind: InteractionKind::Approval,
+        expires_at: None,
+        card: InteractionCard::new("room.delete", "Delete room", "Review"),
+    };
+    let answer = |response| InteractionResponse {
+        action_id: "a".into(),
+        response,
+    };
+    assert!(pending.accepts(&answer(InteractionAnswer::Approve)));
+    assert!(!pending.accepts(&answer(InteractionAnswer::Continue {
+        data: json!({"roomId":"other"})
+    })));
+    pending.kind = InteractionKind::UserAction;
+    assert!(pending.accepts(&answer(InteractionAnswer::Continue {
+        data: json!({"name":"Final name"})
+    })));
+    assert!(pending.accepts(&answer(InteractionAnswer::Cancel)));
+    assert!(!pending.accepts(&answer(InteractionAnswer::Approve)));
+    assert!(!pending.accepts(&InteractionResponse {
+        action_id: "stale".into(),
+        response: InteractionAnswer::Cancel
+    }));
     for invalid in [
-        json!({"type":"connect_integration", "integrationId":"a"}),
-        json!({"type":"connect_integration", "integrationId":"a", "sessionId":12}),
-        json!({"type":"install_integrations", "integrationIds":["provider.example"]}),
-        json!({"type":"install_integration", "integrationIds":["a", "b"]}),
-        json!({"type":"install_integration", "integrationId":["a"]}),
-        json!({"type":"install_integration"}),
-        json!({"type":"install_integration", "integrationId":"a", "integrationIds":["a"]}),
+        json!({"action":"approve","data":null}),
+        json!({"action":"reject","target":"/app/arbitrary"}),
+        json!({"action":"continue"}),
+        json!({"action":"cancel","data":{}}),
     ] {
-        assert!(!validator.is_valid(&invalid), "{invalid}");
-        assert!(serde_json::from_value::<ClientTask>(invalid).is_err());
+        assert!(
+            serde_json::from_value::<InteractionAnswer>(invalid.clone()).is_err(),
+            "{invalid}"
+        );
     }
-    for field in ["integrationId", "sessionId"] {
-        for id in ["", "  "] {
-            let mut invalid = valid.clone();
-            invalid[field] = json!(id);
-            assert!(!validator.is_valid(&invalid));
-            let mut preview = InteractionPreview::confirmation("install", "Install", "Review");
-            preview.client_task = Some(serde_json::from_value(invalid).unwrap());
-            assert!(!preview.is_valid());
-        }
-    }
+}
+
+#[test]
+fn facade_results_cannot_schedule_another_interaction() {
+    let value = json!({"value":{"status":"incomplete"},"continuation":null});
+    assert!(serde_json::from_value::<conversation_api::execution::FacadeResult>(value).is_err());
 }

@@ -21,19 +21,25 @@
           {
             "actionId": "action-1",
             "kind": "approval",
-            "preview": {
-              "actionCode": "room.delete",
+            "card": {
+              "type": "room.delete",
               "title": "Delete room",
               "message": "Delete room Kitchen",
               "tone": "danger",
-              "details": [{ "label": "Room", "value": { "type": "text", "text": "Kitchen" } }],
-              "proceedLabel": "Delete",
-              "rejectLabel": "Cancel"
+              "continueLabel": "Delete",
+              "cancelLabel": "Cancel",
+              "data": {
+                "Room": "Kitchen"
+              }
             }
           }
         ]
       },
-      "runOutcome": { "requestId": "request-1", "status": "interaction_required", "failure": null }
+      "runOutcome": {
+        "requestId": "request-1",
+        "status": "interaction_required",
+        "failure": null
+      }
     }
   }
 }
