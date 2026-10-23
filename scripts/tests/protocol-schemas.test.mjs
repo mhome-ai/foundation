@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
+import Ajv from "ajv";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 
@@ -15,22 +16,26 @@ const root = path.resolve(
 );
 const readJson = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 
-function compiler() {
-  const ajv = new Ajv2020({ allErrors: true, strict: true });
+function compiler(draft = "https://json-schema.org/draft/2020-12/schema") {
+  const Constructor = draft === "http://json-schema.org/draft-07/schema#" ? Ajv : Ajv2020;
+  const ajv = new Constructor({ allErrors: true, strict: true });
   addFormats(ajv);
   return ajv;
 }
 
 for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
   test(`${name} protocol schemas compile with strict consumer AJV settings`, () => {
-    const ajv = compiler();
+    const compilers = new Map();
     const schemas = [...new Set(Object.values(config.schemas))].map((file) => ({
       file,
       schema: readJson(path.join(root, config.crateDir, file)),
     }));
-    for (const { file, schema } of schemas) ajv.addSchema(schema, file);
-    for (const { file } of schemas) {
-      assert.equal(typeof ajv.getSchema(file), "function", file);
+    for (const { file, schema } of schemas) {
+      if (!compilers.has(schema.$schema)) compilers.set(schema.$schema, compiler(schema.$schema));
+      compilers.get(schema.$schema).addSchema(schema, file);
+    }
+    for (const { file, schema } of schemas) {
+      assert.equal(typeof compilers.get(schema.$schema).getSchema(file), "function", file);
     }
   });
 }

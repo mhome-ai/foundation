@@ -6,6 +6,7 @@ const CLOUD_PREFIXES: &[&str] = &[
     "/app/scope/",
     "/app/inspire/",
     "/app/user/",
+    "/app/card-skins/catalog/",
 ];
 
 /// Exact Cloud-owned operations outside Cloud-owned domains.

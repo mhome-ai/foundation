@@ -1,0 +1,79 @@
+{
+  "tenantId": "mlink",
+  "scopeId": "space-a",
+  "selection": {
+    "installations": [
+      {
+        "id": "evening",
+        "spaceId": "space-a",
+        "releaseId": "mlink:example.evening@1.0.0"
+      }
+    ],
+    "overrides": [
+      {
+        "spaceId": "space-a",
+        "patternId": "basic.device.onoff_brightness_color",
+        "installationId": "evening",
+        "rendererId": "evening-light",
+        "config": {
+          "accent": "#c04040"
+        }
+      }
+    ],
+    "releases": [
+      {
+        "id": "mlink:example.evening@1.0.0",
+        "baseUrl": "https://skins.example.test/evening/1.0.0/",
+        "manifest": {
+          "schemaVersion": 1,
+          "packageId": "example.evening",
+          "version": "1.0.0",
+          "name": "Evening cards",
+          "description": "Full-card skins for a color light, a playable speaker and a thermostat.",
+          "apiVersion": 1,
+          "entry": "skin.test.mjs",
+          "renderers": [
+            {
+              "id": "evening-light",
+              "name": "Evening light",
+              "description": "Example light renderer.",
+              "supportedPatterns": [
+                {
+                  "patternId": "basic.device.onoff_brightness_color",
+                  "contractId": "light",
+                  "contractVersion": 1
+                },
+                {
+                  "patternId": "basic.device.onoff_brightness_colorrgb",
+                  "contractId": "light",
+                  "contractVersion": 1
+                }
+              ],
+              "detail": {
+                "mode": "custom"
+              },
+              "configSchema": {
+                "type": "object",
+                "properties": {
+                  "accent": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          ],
+          "files": [
+            {
+              "path": "skin.test.mjs",
+              "mediaType": "text/javascript",
+              "sizeBytes": 1,
+              "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

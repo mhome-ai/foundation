@@ -11,7 +11,8 @@
     "cloudPrefixes": [
       "/app/scope/",
       "/app/inspire/",
-      "/app/user/"
+      "/app/user/",
+      "/app/card-skins/catalog/"
     ],
     "cloudTargets": [
       "/app/agent/context/get",

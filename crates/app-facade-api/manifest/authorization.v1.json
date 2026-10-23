@@ -378,7 +378,20 @@
     "/widget/history/list": "spaceRead",
     "/widget/list": "spaceRead",
     "/widget/names": "spaceRead",
-    "/widget/setting/update": "spaceWrite"
+    "/widget/setting/update": "spaceWrite",
+    "/app/card-skins/catalog/package/get": "userRead",
+    "/app/card-skins/catalog/package/create": "userWrite",
+    "/app/card-skins/catalog/package/update": "userWrite",
+    "/app/card-skins/catalog/release/list": "userRead",
+    "/app/card-skins/catalog/release/get": "userRead",
+    "/app/card-skins/catalog/publish/prepare": "userWrite",
+    "/app/card-skins/catalog/publish/complete": "userWrite",
+    "/app/card-skins/selection/get": "spaceRead",
+    "/app/card-skins/install": "spaceWrite",
+    "/app/card-skins/uninstall": "spaceWrite",
+    "/app/card-skins/upgrade": "spaceWrite",
+    "/app/card-skins/override/set": "spaceWrite",
+    "/app/card-skins/override/reset": "spaceWrite"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

@@ -167,6 +167,41 @@
       ],
       "owner": "authenticatedClient",
       "persistence": "none"
+    },
+    "cardSkins": {
+      "contract": "contract/card-skins-v1.md",
+      "packageSchema": "schema/card-skin-package.v1.schema.json",
+      "requestSchema": "schema/card-skins.v1.schema.json",
+      "requests": {
+        "/app/card-skins/catalog/package/get": "#/definitions/packageGet",
+        "/app/card-skins/catalog/package/create": "#/definitions/packageCreate",
+        "/app/card-skins/catalog/package/update": "#/definitions/packageUpdate",
+        "/app/card-skins/catalog/release/list": "#/definitions/packageGet",
+        "/app/card-skins/catalog/release/get": "#/definitions/releaseGet",
+        "/app/card-skins/catalog/publish/prepare": "#/definitions/publishPrepare",
+        "/app/card-skins/catalog/publish/complete": "#/definitions/publishComplete",
+        "/app/card-skins/selection/get": "#/definitions/empty",
+        "/app/card-skins/install": "#/definitions/install",
+        "/app/card-skins/uninstall": "#/definitions/uninstall",
+        "/app/card-skins/upgrade": "#/definitions/upgrade",
+        "/app/card-skins/override/set": "#/definitions/overrideSet",
+        "/app/card-skins/override/reset": "#/definitions/overrideReset"
+      },
+      "responses": {
+        "/app/card-skins/catalog/package/get": "#/definitions/packageSnapshot",
+        "/app/card-skins/catalog/package/create": "#/definitions/empty",
+        "/app/card-skins/catalog/package/update": "#/definitions/empty",
+        "/app/card-skins/catalog/release/list": "#/definitions/releaseList",
+        "/app/card-skins/catalog/release/get": "#/definitions/release",
+        "/app/card-skins/catalog/publish/prepare": "#/definitions/prepared",
+        "/app/card-skins/catalog/publish/complete": "#/definitions/release",
+        "/app/card-skins/selection/get": "#/definitions/selectionView",
+        "/app/card-skins/install": "#/definitions/empty",
+        "/app/card-skins/uninstall": "#/definitions/empty",
+        "/app/card-skins/upgrade": "#/definitions/empty",
+        "/app/card-skins/override/set": "#/definitions/empty",
+        "/app/card-skins/override/reset": "#/definitions/empty"
+      }
     }
   },
   "authorization": "manifest/authorization.v1.json",
