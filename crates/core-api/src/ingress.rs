@@ -7,6 +7,40 @@ use std::time::Duration;
 pub const CORE_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 pub const IPC_TIMEOUT_GRACE: Duration = Duration::from_secs(5);
 
+/// Rust validation may build a bundle for 180s. Leave time for analysis and the
+/// Core -> cloud round trip; callers add their own transport grace outside this.
+pub const SCRIPT_VALIDATION_TIMEOUT: Duration = Duration::from_secs(205);
+
+/// Select a longer budget only for validation carrying companion source. This
+/// recognizes wire envelopes, not authorization: ingress still validates them.
+pub fn script_validation_timeout(target: &str, payload: &str) -> Option<Duration> {
+    let (target, forwarded) = target
+        .strip_prefix("/invoke")
+        .or_else(|| target.strip_prefix("/dispatch/agent"))
+        .or_else(|| target.strip_prefix("/dispatch"))
+        .map_or((target, false), |target| (target, true));
+    if !matches!(
+        target,
+        "/app/automation/verify"
+            | "/bridge/automation/parse"
+            | "/bridge/automation/format"
+            | "/bridge/automation/verify"
+            | "/automation/format"
+    ) {
+        return None;
+    }
+    let root: serde_json::Value = serde_json::from_str(payload).ok()?;
+    let input = if forwarded {
+        root.get("call")?.get("input")?
+    } else if target.starts_with("/app/") {
+        root.get("input")?
+    } else {
+        &root
+    };
+    let scripts = input.get("script")?.get("scripts")?.as_object()?;
+    (!scripts.is_empty()).then_some(SCRIPT_VALIDATION_TIMEOUT)
+}
+
 pub fn request_timeout(target: &str) -> Duration {
     match target {
         "/harness/test/session/open" => Duration::from_secs(150),
@@ -16,9 +50,15 @@ pub fn request_timeout(target: &str) -> Duration {
 
 pub fn input_timeout(input: &ServiceCoreInput) -> Duration {
     match input {
-        ServiceCoreInput::ClientRequest { target, .. }
-        | ServiceCoreInput::ConversationRequest { target, .. }
-        | ServiceCoreInput::NodeRequest { target, .. } => request_timeout(target),
+        ServiceCoreInput::ClientRequest {
+            target, payload, ..
+        }
+        | ServiceCoreInput::ConversationRequest {
+            target, payload, ..
+        }
+        | ServiceCoreInput::NodeRequest {
+            target, payload, ..
+        } => script_validation_timeout(target, payload).unwrap_or_else(|| request_timeout(target)),
         _ => CORE_REQUEST_TIMEOUT,
     }
 }
@@ -121,6 +161,67 @@ pub fn node_response(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn rust_validation_budgets_follow_exact_routes_and_wire_envelopes() {
+        let input =
+            serde_json::json!({"script":{"script":"task: []","scripts":{"lighting":"source"}}});
+        let call = serde_json::json!({"control":{"mode":"direct"},"input":input});
+        for prefix in ["", "/invoke", "/dispatch", "/dispatch/agent"] {
+            let payload = if prefix.is_empty() {
+                call.clone()
+            } else {
+                serde_json::json!({"call":call})
+            };
+            assert_eq!(
+                script_validation_timeout(
+                    &format!("{prefix}/app/automation/verify"),
+                    &payload.to_string()
+                ),
+                Some(SCRIPT_VALIDATION_TIMEOUT)
+            );
+        }
+        for target in [
+            "/bridge/automation/parse",
+            "/bridge/automation/verify",
+            "/bridge/automation/format",
+            "/automation/format",
+        ] {
+            assert_eq!(
+                script_validation_timeout(target, &input.to_string()),
+                Some(SCRIPT_VALIDATION_TIMEOUT)
+            );
+        }
+        for payload in [
+            "invalid",
+            "{}",
+            r#"{"input":{"script":{"scripts":{}}}}"#,
+            r#"{"input":{"script":{"scripts":[]}}}"#,
+            r#"{"script":{"scripts":{"f":"source"}}}"#,
+        ] {
+            assert_eq!(
+                script_validation_timeout("/app/automation/verify", payload),
+                None
+            );
+        }
+        for target in [
+            "/app/automation/save",
+            "/app/automation/start",
+            "/app/automation/verify/extra",
+            "/app/room/list",
+        ] {
+            assert_eq!(script_validation_timeout(target, &call.to_string()), None);
+        }
+        let request = ServiceCoreInput::NodeRequest {
+            target: "/app/automation/verify".into(),
+            payload: call.to_string(),
+            control: None,
+            tenant_id: "tenant".into(),
+            scope_id: "scope".into(),
+            node_type: "test".into(),
+            node_id: "node".into(),
+        };
+        assert_eq!(input_timeout(&request), SCRIPT_VALIDATION_TIMEOUT);
+    }
     fn request(target: &str, kind: &str, payload: &str) -> MwsMessage {
         serde_json::from_value(serde_json::json!({"target":target,"type":kind,"payload":payload,"scopeId":"untrusted","sig":"s"})).unwrap()
     }
