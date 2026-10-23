@@ -82,6 +82,10 @@ pub struct CameraSettings {
     pub object_detection_mode: MonitoringMode,
     pub person_detection_mode: MonitoringMode,
     pub record_mode: RecordingMode,
+    /// Requested pre-event retention in seconds (0..=120), rounded to media fragments.
+    pub pre_roll_seconds: u32,
+    /// Requested post-event retention in seconds (0..=300), rounded to media fragments.
+    pub post_roll_seconds: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -111,6 +115,18 @@ pub struct CameraSettingsPatch {
         deserialize_with = "present_setting"
     )]
     pub record_mode: Option<RecordingMode>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "present_setting"
+    )]
+    pub pre_roll_seconds: Option<u32>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "present_setting"
+    )]
+    pub post_roll_seconds: Option<u32>,
 }
 
 fn present_setting<'de, D: serde::Deserializer<'de>, T: Deserialize<'de>>(
@@ -305,6 +321,68 @@ mod tests {
             }))
             .is_err()
         );
+    }
+
+    #[test]
+    fn recording_roll_settings_round_trip_without_changing_other_settings() {
+        for (pre, post) in [(0, 0), (8, 15), (120, 300)] {
+            let value = serde_json::json!({
+                "deviceId": "camera-1",
+                "settings": {"preRollSeconds": pre, "postRollSeconds": post}
+            });
+            let request: DeviceSettingsUpdateRequest =
+                serde_json::from_value(value.clone()).unwrap();
+            assert_eq!(request.settings.pre_roll_seconds, Some(pre));
+            assert_eq!(request.settings.post_roll_seconds, Some(post));
+            assert_eq!(request.settings.record_mode, None);
+            assert_eq!(serde_json::to_value(request).unwrap(), value);
+        }
+        for field in ["preRollSeconds", "postRollSeconds"] {
+            let value = serde_json::json!({
+                "deviceId": "camera-1", "settings": {field: 15}
+            });
+            let request: DeviceSettingsUpdateRequest =
+                serde_json::from_value(value.clone()).unwrap();
+            assert_eq!(serde_json::to_value(request).unwrap(), value);
+            for invalid in [
+                serde_json::Value::Null,
+                serde_json::json!(-1),
+                serde_json::json!(1.5),
+                serde_json::json!("15"),
+                serde_json::json!(u64::from(u32::MAX) + 1),
+            ] {
+                assert!(
+                    serde_json::from_value::<DeviceSettingsUpdateRequest>(serde_json::json!({
+                        "deviceId": "camera-1", "settings": {field: invalid}
+                    }))
+                    .is_err()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn settings_snapshot_requires_explicit_recording_roll_values() {
+        let value = serde_json::json!({
+            "deviceId": "camera-1", "revision": 1,
+            "settings": {
+                "watchMode": "off", "objectDetectionMode": "auto",
+                "personDetectionMode": "off", "recordMode": "event",
+                "preRollSeconds": 8, "postRollSeconds": 15
+            }
+        });
+        let response: DeviceSettingsResponse = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(response.settings.pre_roll_seconds, 8);
+        assert_eq!(response.settings.post_roll_seconds, 15);
+        assert_eq!(serde_json::to_value(response).unwrap(), value);
+        for field in ["preRollSeconds", "postRollSeconds"] {
+            let mut missing = value.clone();
+            missing["settings"].as_object_mut().unwrap().remove(field);
+            assert!(serde_json::from_value::<DeviceSettingsResponse>(missing).is_err());
+            let mut null = value.clone();
+            null["settings"][field] = serde_json::Value::Null;
+            assert!(serde_json::from_value::<DeviceSettingsResponse>(null).is_err());
+        }
     }
 
     #[test]

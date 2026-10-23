@@ -348,6 +348,16 @@
             "off",
             "event"
           ]
+        },
+        "preRollSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120
+        },
+        "postRollSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 300
         }
       },
       "additionalProperties": false,
@@ -355,7 +365,9 @@
         "watchMode",
         "objectDetectionMode",
         "personDetectionMode",
-        "recordMode"
+        "recordMode",
+        "preRollSeconds",
+        "postRollSeconds"
       ]
     },
     "cameraSettingsPatch": {
@@ -384,6 +396,16 @@
             "off",
             "event"
           ]
+        },
+        "preRollSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120
+        },
+        "postRollSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 300
         }
       },
       "additionalProperties": false,

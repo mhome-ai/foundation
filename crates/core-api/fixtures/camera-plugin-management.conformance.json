@@ -59,7 +59,9 @@
               "watchMode": "off",
               "objectDetectionMode": "off",
               "personDetectionMode": "off",
-              "recordMode": "off"
+              "recordMode": "off",
+              "preRollSeconds": 8,
+              "postRollSeconds": 15
             }
           }
         ]
@@ -90,7 +92,9 @@
           "watchMode": "off",
           "objectDetectionMode": "off",
           "personDetectionMode": "off",
-          "recordMode": "off"
+          "recordMode": "off",
+          "preRollSeconds": 8,
+          "postRollSeconds": 15
         }
       }
     },
@@ -122,6 +126,44 @@
         "devices": [],
         "onlineStates": [],
         "cameraSettings": []
+      }
+    },
+    {
+      "name": "recording without preroll or postroll",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "preRollSeconds": 0,
+          "postRollSeconds": 0
+        }
+      }
+    },
+    {
+      "name": "recording retention limits",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "preRollSeconds": 120,
+          "postRollSeconds": 300
+        }
+      }
+    },
+    {
+      "name": "update only preroll",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "preRollSeconds": 60
+        }
+      }
+    },
+    {
+      "name": "update only postroll",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "postRollSeconds": 30
+        }
       }
     }
   ],
@@ -182,6 +224,124 @@
         "deviceId": "camera-1",
         "settings": {
           "watchMode": "on"
+        }
+      }
+    },
+    {
+      "name": "preRollSeconds null",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "preRollSeconds": null
+        }
+      }
+    },
+    {
+      "name": "preRollSeconds negative",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "preRollSeconds": -1
+        }
+      }
+    },
+    {
+      "name": "preRollSeconds fractional",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "preRollSeconds": 1.5
+        }
+      }
+    },
+    {
+      "name": "preRollSeconds string",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "preRollSeconds": "15"
+        }
+      }
+    },
+    {
+      "name": "preRollSeconds above limit",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "preRollSeconds": 121
+        }
+      }
+    },
+    {
+      "name": "settings snapshot missing preRollSeconds",
+      "value": {
+        "deviceId": "camera-1",
+        "revision": 1,
+        "settings": {
+          "watchMode": "off",
+          "objectDetectionMode": "off",
+          "personDetectionMode": "off",
+          "recordMode": "off",
+          "postRollSeconds": 15
+        }
+      }
+    },
+    {
+      "name": "postRollSeconds null",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "postRollSeconds": null
+        }
+      }
+    },
+    {
+      "name": "postRollSeconds negative",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "postRollSeconds": -1
+        }
+      }
+    },
+    {
+      "name": "postRollSeconds fractional",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "postRollSeconds": 1.5
+        }
+      }
+    },
+    {
+      "name": "postRollSeconds string",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "postRollSeconds": "15"
+        }
+      }
+    },
+    {
+      "name": "postRollSeconds above limit",
+      "value": {
+        "deviceId": "camera-1",
+        "settings": {
+          "postRollSeconds": 301
+        }
+      }
+    },
+    {
+      "name": "settings snapshot missing postRollSeconds",
+      "value": {
+        "deviceId": "camera-1",
+        "revision": 1,
+        "settings": {
+          "watchMode": "off",
+          "objectDetectionMode": "off",
+          "personDetectionMode": "off",
+          "recordMode": "off",
+          "preRollSeconds": 8
         }
       }
     }

@@ -94,6 +94,26 @@ for (const name of ["artifactPut", "artifactResolve"]) {
   });
 }
 
+test("camera settings fixtures match the shared management schema in AJV", () => {
+  const config = PROTOCOL_PACKAGES.core;
+  const name = "cameraPluginManagement";
+  const validate = compiler().compile(
+    readJson(path.join(root, config.crateDir, config.schemas[name]))
+  );
+  const fixtures = readJson(
+    path.join(root, config.crateDir, config.fixtures[name])
+  );
+  for (const [section, expected] of [["valid", true], ["invalid", false]]) {
+    for (const item of fixtures[section]) {
+      assert.equal(
+        validate(item.value),
+        expected,
+        `${item.name}: ${JSON.stringify(validate.errors)}`
+      );
+    }
+  }
+});
+
 for (const name of ["artifactUploadStart", "artifactUploadReceipt", "artifactUploadComplete", "artifactUploadCancel"]) {
   test(`${name} control messages match streaming fixtures in AJV`, () => {
     const config = PROTOCOL_PACKAGES.artifact;
