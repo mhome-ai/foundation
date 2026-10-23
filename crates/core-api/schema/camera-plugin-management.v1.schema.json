@@ -19,7 +19,7 @@
       "$ref": "#/$defs/deviceListResponse"
     },
     {
-      "$ref": "#/$defs/deviceMutationResponse"
+      "$ref": "#/$defs/connectionMutationResponse"
     },
     {
       "$ref": "#/$defs/deviceSettingsResponse"
@@ -28,7 +28,19 @@
       "$ref": "#/$defs/errorResponse"
     },
     {
-      "$ref": "#/$defs/sourceIdRequest"
+      "$ref": "#/$defs/connectionIdRequest"
+    },
+    {
+      "$ref": "#/$defs/connectionDisconnectRequest"
+    },
+    {
+      "$ref": "#/$defs/connectionListResponse"
+    },
+    {
+      "$ref": "#/$defs/providerListResponse"
+    },
+    {
+      "$ref": "#/$defs/connectionDetailResponse"
     }
   ],
   "$defs": {
@@ -82,7 +94,7 @@
         "name",
         "capabilities",
         "health",
-        "sourceId",
+        "connectionId",
         "resolutionStatus"
       ],
       "properties": {
@@ -118,11 +130,8 @@
           "type": "string",
           "minLength": 1
         },
-        "sourceId": {
-          "type": [
-            "string",
-            "null"
-          ],
+        "connectionId": {
+          "type": "string",
           "minLength": 1
         },
         "resolutionStatus": {
@@ -173,7 +182,7 @@
         "devices",
         "onlineStates",
         "cameraSettings",
-        "sources"
+        "connections"
       ],
       "properties": {
         "providers": {
@@ -194,10 +203,10 @@
             "$ref": "#/$defs/onlineStateObservation"
           }
         },
-        "sources": {
+        "connections": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/homeAssistantSource"
+            "$ref": "#/$defs/cameraConnection"
           }
         },
         "cameraSettings": {
@@ -231,11 +240,12 @@
       },
       "additionalProperties": false
     },
-    "deviceMutationResponse": {
+    "connectionMutationResponse": {
       "type": "object",
       "required": [
         "deviceIds",
-        "changed"
+        "changed",
+        "connectionId"
       ],
       "properties": {
         "deviceIds": {
@@ -248,6 +258,10 @@
         },
         "changed": {
           "type": "boolean"
+        },
+        "connectionId": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "additionalProperties": false
@@ -274,25 +288,27 @@
       },
       "additionalProperties": false
     },
-    "sourceIdRequest": {
+    "connectionIdRequest": {
       "type": "object",
       "required": [
-        "sourceId"
+        "connectionId"
       ],
       "properties": {
-        "sourceId": {
+        "connectionId": {
           "type": "string",
           "minLength": 1
         }
       },
       "additionalProperties": false
     },
-    "homeAssistantSource": {
+    "cameraConnection": {
       "type": "object",
       "required": [
         "id",
         "name",
-        "deviceCount"
+        "deviceCount",
+        "provider",
+        "revision"
       ],
       "properties": {
         "id": {
@@ -318,6 +334,14 @@
             "string",
             "null"
           ]
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
         }
       },
       "additionalProperties": false
@@ -446,6 +470,87 @@
         },
         "settings": {
           "$ref": "#/$defs/cameraSettings"
+        }
+      },
+      "additionalProperties": false
+    },
+    "connectionDisconnectRequest": {
+      "type": "object",
+      "required": [
+        "connectionId",
+        "expectedRevision"
+      ],
+      "properties": {
+        "connectionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expectedDeviceIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "connectionListResponse": {
+      "type": "object",
+      "required": [
+        "connections"
+      ],
+      "properties": {
+        "connections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cameraConnection"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "providerListResponse": {
+      "type": "object",
+      "required": [
+        "providers"
+      ],
+      "properties": {
+        "providers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/providerCatalogItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "connectionDetailResponse": {
+      "type": "object",
+      "required": [
+        "connection",
+        "devices"
+      ],
+      "properties": {
+        "connection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/cameraConnection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "devices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cameraDevice"
+          }
         }
       },
       "additionalProperties": false

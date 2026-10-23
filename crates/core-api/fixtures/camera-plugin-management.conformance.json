@@ -38,7 +38,7 @@
               "state.cameraMotion"
             ],
             "health": "ready",
-            "sourceId": null,
+            "connectionId": "connection-1",
             "resolutionStatus": "ready"
           }
         ],
@@ -50,7 +50,7 @@
             "source": "onvif"
           }
         ],
-        "sources": [],
+        "connections": [],
         "cameraSettings": [
           {
             "deviceId": "camera-1",
@@ -80,7 +80,8 @@
         "deviceIds": [
           "camera-1"
         ],
-        "changed": true
+        "changed": true,
+        "connectionId": "connection-1"
       }
     },
     {
@@ -107,20 +108,22 @@
       }
     },
     {
-      "name": "remove-ha-source",
+      "name": "connection-detail-request",
       "value": {
-        "sourceId": "ha-1"
+        "connectionId": "ha-1"
       }
     },
     {
       "name": "connected-empty-ha",
       "value": {
         "providers": [],
-        "sources": [
+        "connections": [
           {
             "id": "ha-1",
             "name": "http://homeassistant.local:8123",
-            "deviceCount": 0
+            "deviceCount": 0,
+            "provider": "home_assistant",
+            "revision": 1
           }
         ],
         "devices": [],
@@ -185,12 +188,12 @@
             "name": "Front",
             "capabilities": [],
             "health": "unknown",
-            "sourceId": null,
+            "connectionId": "connection-1",
             "resolutionStatus": "ready"
           }
         ],
         "onlineStates": [],
-        "sources": [],
+        "connections": [],
         "cameraSettings": []
       }
     },
@@ -204,7 +207,7 @@
             "capabilities": [],
             "health": "ready",
             "sourceUid": "secret",
-            "sourceId": null,
+            "connectionId": "connection-1",
             "resolutionStatus": "ready"
           }
         ],
@@ -343,6 +346,19 @@
           "recordMode": "off",
           "preRollSeconds": 8
         }
+      }
+    },
+    {
+      "name": "old source request",
+      "value": {
+        "sourceId": "ha-1"
+      }
+    },
+    {
+      "name": "disconnect without valid revision",
+      "value": {
+        "connectionId": "connection-1",
+        "expectedRevision": 0
       }
     }
   ]

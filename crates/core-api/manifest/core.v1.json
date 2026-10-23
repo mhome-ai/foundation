@@ -30,13 +30,16 @@
       "routes": {
         "deviceList": "device/list",
         "managementSnapshot": "management/snapshot",
-        "deviceRemove": "device/remove",
-        "sourceRemove": "source/remove",
         "deviceSettingsGet": "device/settings/get",
-        "deviceSettingsUpdate": "device/settings/update"
+        "deviceSettingsUpdate": "device/settings/update",
+        "providerList": "provider/list",
+        "connectionList": "connection/list",
+        "connectionDetail": "connection/detail",
+        "connectionDisconnect": "connection/disconnect"
       },
       "flows": {
-        "deviceAdd": "device.add"
+        "connectionCreate": "connection.create",
+        "connectionReconfigure": "connection.reconfigure"
       }
     },
     "audioBridgePlugin": {

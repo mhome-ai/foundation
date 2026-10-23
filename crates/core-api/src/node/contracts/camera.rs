@@ -4,25 +4,32 @@ pub const VERSION: &str = crate::node::settings::VERSION;
 pub const NODE_TYPE: &str = "camera";
 pub const APP_TARGET_PREFIX: &str = "/app/plugin/camera/";
 pub const RUNTIME_TARGET_PREFIX: &str = "/camera/app/";
+pub const PROVIDER_LIST: &str = "provider/list";
+pub const APP_PROVIDER_LIST_TARGET: &str = "/app/plugin/camera/provider/list";
+pub const RUNTIME_PROVIDER_LIST_TARGET: &str = "/camera/app/provider/list";
+pub const CONNECTION_LIST: &str = "connection/list";
+pub const APP_CONNECTION_LIST_TARGET: &str = "/app/plugin/camera/connection/list";
+pub const RUNTIME_CONNECTION_LIST_TARGET: &str = "/camera/app/connection/list";
+pub const CONNECTION_DETAIL: &str = "connection/detail";
+pub const APP_CONNECTION_DETAIL_TARGET: &str = "/app/plugin/camera/connection/detail";
+pub const RUNTIME_CONNECTION_DETAIL_TARGET: &str = "/camera/app/connection/detail";
+pub const CONNECTION_DISCONNECT: &str = "connection/disconnect";
+pub const APP_CONNECTION_DISCONNECT_TARGET: &str = "/app/plugin/camera/connection/disconnect";
+pub const RUNTIME_CONNECTION_DISCONNECT_TARGET: &str = "/camera/app/connection/disconnect";
 pub const DEVICE_LIST: &str = "device/list";
 pub const MANAGEMENT_SNAPSHOT: &str = "management/snapshot";
-pub const SOURCE_REMOVE: &str = "source/remove";
-pub const RUNTIME_SOURCE_REMOVE_TARGET: &str = "/camera/app/source/remove";
-pub const APP_SOURCE_REMOVE_TARGET: &str = "/app/plugin/camera/source/remove";
-pub const DEVICE_REMOVE: &str = "device/remove";
 pub const DEVICE_SETTINGS_GET: &str = "device/settings/get";
 pub const DEVICE_SETTINGS_UPDATE: &str = "device/settings/update";
 pub const APP_DEVICE_LIST_TARGET: &str = "/app/plugin/camera/device/list";
 pub const APP_MANAGEMENT_SNAPSHOT_TARGET: &str = "/app/plugin/camera/management/snapshot";
-pub const APP_DEVICE_REMOVE_TARGET: &str = "/app/plugin/camera/device/remove";
 pub const APP_DEVICE_SETTINGS_GET_TARGET: &str = "/app/plugin/camera/device/settings/get";
 pub const APP_DEVICE_SETTINGS_UPDATE_TARGET: &str = "/app/plugin/camera/device/settings/update";
 pub const RUNTIME_DEVICE_LIST_TARGET: &str = "/camera/app/device/list";
 pub const RUNTIME_MANAGEMENT_SNAPSHOT_TARGET: &str = "/camera/app/management/snapshot";
-pub const RUNTIME_DEVICE_REMOVE_TARGET: &str = "/camera/app/device/remove";
 pub const RUNTIME_DEVICE_SETTINGS_GET_TARGET: &str = "/camera/app/device/settings/get";
 pub const RUNTIME_DEVICE_SETTINGS_UPDATE_TARGET: &str = "/camera/app/device/settings/update";
-pub const DEVICE_ADD_FLOW: &str = "device.add";
+pub const CONNECTION_CREATE_FLOW: &str = "connection.create";
+pub const CONNECTION_RECONFIGURE_FLOW: &str = "connection.reconfigure";
 pub const SETTINGS_STATUS: &str = crate::node::settings::STATUS;
 pub const SETTINGS_UPDATE: &str = crate::node::settings::UPDATE;
 pub const SETTINGS_REVERT: &str = crate::node::settings::REVERT;
@@ -38,8 +45,24 @@ pub struct EmptyRequest {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SourceIdRequest {
-    pub source_id: String,
+pub struct ConnectionIdRequest {
+    pub connection_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ConnectionDisconnectRequest {
+    pub connection_id: String,
+    pub expected_revision: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected_device_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ConnectionDetailResponse {
+    pub connection: Option<CameraConnection>,
+    pub devices: Vec<CameraDevice>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -156,7 +179,7 @@ pub struct ProviderCatalogItem {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CameraDevice {
-    pub source_id: Option<String>,
+    pub connection_id: String,
     pub resolution_status: CameraResolutionStatus,
     pub id: String,
     pub name: String,
@@ -199,8 +222,10 @@ pub enum CameraResolutionStatus {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HomeAssistantSource {
+pub struct CameraConnection {
     pub id: String,
+    pub provider: String,
+    pub revision: u64,
     pub name: String,
     pub device_count: usize,
     pub last_error: Option<String>,
@@ -210,7 +235,7 @@ pub struct HomeAssistantSource {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ManagementSnapshot {
-    pub sources: Vec<HomeAssistantSource>,
+    pub connections: Vec<CameraConnection>,
     pub providers: Vec<ProviderCatalogItem>,
     pub devices: Vec<CameraDevice>,
     pub online_states: Vec<OnlineStateObservation>,
@@ -226,7 +251,8 @@ pub struct DeviceListResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct DeviceMutationResponse {
+pub struct ConnectionMutationResponse {
+    pub connection_id: String,
     pub device_ids: Vec<String>,
     pub changed: bool,
 }
@@ -254,14 +280,20 @@ mod tests {
         assert_eq!(camera["runtimeTargetPrefix"], RUNTIME_TARGET_PREFIX);
         assert_eq!(camera["routes"]["deviceList"], DEVICE_LIST);
         assert_eq!(camera["routes"]["managementSnapshot"], MANAGEMENT_SNAPSHOT);
-        assert_eq!(camera["routes"]["deviceRemove"], DEVICE_REMOVE);
-        assert_eq!(camera["routes"]["sourceRemove"], SOURCE_REMOVE);
         assert_eq!(camera["routes"]["deviceSettingsGet"], DEVICE_SETTINGS_GET);
         assert_eq!(
             camera["routes"]["deviceSettingsUpdate"],
             DEVICE_SETTINGS_UPDATE
         );
-        assert_eq!(camera["flows"]["deviceAdd"], DEVICE_ADD_FLOW);
+        assert_eq!(camera["flows"]["connectionCreate"], CONNECTION_CREATE_FLOW);
+        assert_eq!(
+            camera["flows"]["connectionReconfigure"],
+            CONNECTION_RECONFIGURE_FLOW
+        );
+        assert_eq!(
+            camera["routes"]["connectionDisconnect"],
+            CONNECTION_DISCONNECT
+        );
         assert_eq!(
             APP_DEVICE_LIST_TARGET,
             format!("{APP_TARGET_PREFIX}{DEVICE_LIST}")
@@ -271,8 +303,8 @@ mod tests {
             format!("{APP_TARGET_PREFIX}{MANAGEMENT_SNAPSHOT}")
         );
         assert_eq!(
-            APP_DEVICE_REMOVE_TARGET,
-            format!("{APP_TARGET_PREFIX}{DEVICE_REMOVE}")
+            APP_CONNECTION_DISCONNECT_TARGET,
+            format!("{APP_TARGET_PREFIX}{CONNECTION_DISCONNECT}")
         );
         assert_eq!(
             APP_DEVICE_SETTINGS_GET_TARGET,
@@ -291,8 +323,8 @@ mod tests {
             format!("{RUNTIME_TARGET_PREFIX}{MANAGEMENT_SNAPSHOT}")
         );
         assert_eq!(
-            RUNTIME_DEVICE_REMOVE_TARGET,
-            format!("{RUNTIME_TARGET_PREFIX}{DEVICE_REMOVE}")
+            RUNTIME_CONNECTION_DISCONNECT_TARGET,
+            format!("{RUNTIME_TARGET_PREFIX}{CONNECTION_DISCONNECT}")
         );
         assert_eq!(
             RUNTIME_DEVICE_SETTINGS_GET_TARGET,
