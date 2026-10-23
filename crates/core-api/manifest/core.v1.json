@@ -49,7 +49,6 @@
         "deviceRefresh": "device/refresh",
         "devicePair": "device/pair",
         "deviceUnpair": "device/unpair",
-        "deviceTest": "device/test",
         "deviceListenSet": "device/listen",
         "smartSpeakerSnapshot": "smart-speaker/snapshot",
         "smartSpeakerCreate": "smart-speaker/create",

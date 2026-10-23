@@ -8,7 +8,6 @@ pub const DEVICE_SNAPSHOT: &str = "device/snapshot";
 pub const DEVICE_REFRESH: &str = "device/refresh";
 pub const DEVICE_PAIR: &str = "device/pair";
 pub const DEVICE_UNPAIR: &str = "device/unpair";
-pub const DEVICE_TEST: &str = "device/test";
 pub const DEVICE_LISTEN_SET: &str = "device/listen";
 pub const SMART_SPEAKER_SNAPSHOT: &str = "smart-speaker/snapshot";
 pub const SMART_SPEAKER_CREATE: &str = "smart-speaker/create";
@@ -206,7 +205,6 @@ mod tests {
         assert_eq!(contract["routes"]["deviceRefresh"], DEVICE_REFRESH);
         assert_eq!(contract["routes"]["devicePair"], DEVICE_PAIR);
         assert_eq!(contract["routes"]["deviceUnpair"], DEVICE_UNPAIR);
-        assert_eq!(contract["routes"]["deviceTest"], DEVICE_TEST);
         assert_eq!(contract["routes"]["deviceListenSet"], DEVICE_LISTEN_SET);
         assert_eq!(
             contract["routes"]["smartSpeakerSnapshot"],
