@@ -13,7 +13,6 @@
       "tenantId": "tenant-1",
       "userId": "mhome-user-1",
       "scopeId": "scope-1",
-      "enabled": false,
       "projections": {
         "notification": {
           "enabled": true,

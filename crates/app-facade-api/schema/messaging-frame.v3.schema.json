@@ -435,7 +435,6 @@
             "tenantId",
             "userId",
             "scopeId",
-            "enabled",
             "projections",
             "providerData"
           ],
@@ -467,9 +466,6 @@
             "displayName": {
               "$ref": "#/$defs/id"
             },
-            "enabled": {
-              "type": "boolean"
-            },
             "projections": {
               "$ref": "#/$defs/routeProjectionSettings"
             },
@@ -497,7 +493,6 @@
             "tenantId",
             "scopeId",
             "boundByUserId",
-            "enabled",
             "projections",
             "providerData"
           ],
@@ -528,9 +523,6 @@
             },
             "displayName": {
               "$ref": "#/$defs/id"
-            },
-            "enabled": {
-              "type": "boolean"
             },
             "projections": {
               "$ref": "#/$defs/routeProjectionSettings"
@@ -932,9 +924,6 @@
             "scopeId": {
               "$ref": "#/$defs/id"
             },
-            "enabled": {
-              "type": "boolean"
-            },
             "projections": {
               "$ref": "#/$defs/routeProjectionSettingsUpdate"
             }
@@ -961,9 +950,6 @@
             },
             "routeId": {
               "$ref": "#/$defs/id"
-            },
-            "enabled": {
-              "type": "boolean"
             },
             "projections": {
               "$ref": "#/$defs/routeProjectionSettingsUpdate"
@@ -1671,7 +1657,8 @@
         "body": {
           "$ref": "#/$defs/routeBody"
         }
-      }
+      },
+      "description": "Remove a shared conversation binding. Personal routes cannot be deleted."
     },
     "routeDeleteResponse": {
       "type": "object",

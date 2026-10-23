@@ -349,6 +349,7 @@ pub struct RouteListRequest {
     pub audience: Option<ConversationAudience>,
 }
 
+/// Identifies a shared conversation binding to remove. Personal routes cannot be deleted.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RouteRequest {
@@ -372,16 +373,12 @@ pub enum RouteUpdateRequest {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         scope_id: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
-        enabled: Option<bool>,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
         projections: Option<RouteProjectionSettingsUpdate>,
     },
     Shared {
         provider: String,
         placement: Placement,
         route_id: String,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        enabled: Option<bool>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         projections: Option<RouteProjectionSettingsUpdate>,
     },
@@ -407,7 +404,6 @@ pub enum MessagingRoute {
         scope_id: String,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         display_name: Option<String>,
-        enabled: bool,
         projections: RouteProjectionSettings,
         provider_data: Value,
     },
@@ -422,7 +418,6 @@ pub enum MessagingRoute {
         bound_by_user_id: String,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         display_name: Option<String>,
-        enabled: bool,
         projections: RouteProjectionSettings,
         provider_data: Value,
     },

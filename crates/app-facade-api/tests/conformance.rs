@@ -387,6 +387,35 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
 }
 
 #[test]
+fn routes_reject_activation_fields_in_requests_and_responses() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/messaging-frame.v3.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    for audience in ["personal", "shared"] {
+        let mut frame = serde_json::json!({
+            "target": "/app/messaging/route/update", "direction": "request",
+            "body": {"audience": audience, "provider": "telegram", "placement": "local", "routeId": "route"}
+        });
+        assert!(validator.is_valid(&frame));
+        assert!(serde_json::from_value::<RouteUpdateRequest>(frame["body"].clone()).is_ok());
+        frame["body"]["enabled"] = Value::Bool(false);
+        assert!(!validator.is_valid(&frame));
+        assert!(serde_json::from_value::<RouteUpdateRequest>(frame["body"].clone()).is_err());
+    }
+    let mut frame: Value =
+        serde_json::from_str(include_str!("../fixtures/route-list.response.json")).unwrap();
+    for index in 0..2 {
+        frame["body"]["routes"][index]["enabled"] = Value::Bool(true);
+        assert!(!validator.is_valid(&frame));
+        assert!(serde_json::from_value::<RouteListResponse>(frame["body"].clone()).is_err());
+        frame["body"]["routes"][index]
+            .as_object_mut()
+            .unwrap()
+            .remove("enabled");
+    }
+}
+
+#[test]
 fn invalid_frames_are_rejected() {
     let schema: Value =
         serde_json::from_str(include_str!("../schema/messaging-frame.v3.schema.json")).unwrap();
