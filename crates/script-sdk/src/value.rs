@@ -166,7 +166,13 @@ where
         match v {
             Value::Array(v) => v
                 .into_iter()
-                .map(|v| v.try_into().map_err(Into::into))
+                .enumerate()
+                .map(|(index, v)| {
+                    v.try_into().map_err(|error: T::Error| {
+                        let error: ScriptError = error.into();
+                        ScriptError::new(error.code, format!("[{index}]: {}", error.message))
+                    })
+                })
                 .collect(),
             _ => Err(type_error("Array")),
         }

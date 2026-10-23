@@ -1,14 +1,19 @@
 [package]
 name = "mhome-script-sdk"
-version = "0.1.0"
+version = "0.2.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
 description = "Automation script values, bounded binary codec and guest ABI"
 [dependencies]
+mhome-script-sdk-macros = { package = "mhome-script-sdk-macros", version = "=0.1.0", path = "../script-sdk-macros" }
 chrono = { version = "0.4", default-features = false, features = ["std"] }
 
 [[example]]
 name = "lighting"
+crate-type = ["cdylib"]
+
+[[example]]
+name = "typed-lighting"
 crate-type = ["cdylib"]

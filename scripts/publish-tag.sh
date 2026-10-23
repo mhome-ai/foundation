@@ -7,6 +7,11 @@ protocol=""
 npm_package=""
 
 case "${tag}" in
+  mhome-script-sdk-macros-v*)
+    package="mhome-script-sdk-macros"
+    manifest="crates/script-sdk-macros/Cargo.toml"
+    version="${tag#mhome-script-sdk-macros-v}"
+    ;;
   mhome-script-sdk-v*)
     package="mhome-script-sdk"
     manifest="crates/script-sdk/Cargo.toml"

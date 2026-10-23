@@ -1895,14 +1895,24 @@ dependencies = [
 
 [[package]]
 name = "mhome-script-sdk"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "chrono",
+ "mhome-script-sdk-macros",
+]
+
+[[package]]
+name = "mhome-script-sdk-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]
 name = "mhome-wasm-runtime"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "mhome-script-sdk",

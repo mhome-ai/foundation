@@ -1,6 +1,6 @@
 //! Process-wide Wasmtime engine. ABI adapters own their Linkers and Store state.
 use anyhow::{bail, ensure, Context, Result};
-use mhome_script_sdk::{codec, ScriptResult, Value};
+use mhome_script_sdk::{codec, ScriptContract, ScriptResult, Value};
 use std::{
     sync::{Arc, OnceLock},
     time::{Duration, Instant},
@@ -8,7 +8,8 @@ use std::{
 use tokio::sync::Semaphore;
 pub use tokio_util::sync::CancellationToken;
 use wasmtime::{
-    Config, Engine, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, UpdateDeadline,
+    Config, Engine, Instance, Linker, Module, Store, StoreLimits, StoreLimitsBuilder,
+    UpdateDeadline,
 };
 
 fn engine_config() -> Config {
@@ -134,12 +135,58 @@ impl ScriptModule {
             result = tokio::time::timeout(limits.timeout, call) => result.context("Wasm invocation timed out")?,
         }
     }
-    async fn invoke_bytes(
+    /// Reads the Rust-owned contract from this exact module, without invoking run.
+    /// Instantiation, metadata export and deallocation share one bounded Store.
+    pub async fn contract(
         &self,
-        input: &[u8],
+        limits: ScriptLimits,
+        cancel: CancellationToken,
+    ) -> Result<ScriptContract> {
+        ensure!(!cancel.is_cancelled(), "Wasm invocation cancelled");
+        ensure!(!limits.timeout.is_zero(), "Wasm invocation timed out");
+        let call = self.read_contract(&limits, cancel.clone());
+        tokio::select! {
+            biased;
+            _ = cancel.cancelled() => bail!("Wasm invocation cancelled"),
+            result = tokio::time::timeout(limits.timeout, call) => result.context("Wasm invocation timed out")?,
+        }
+    }
+    async fn read_contract(
+        &self,
         limits: &ScriptLimits,
         cancel: CancellationToken,
-    ) -> Result<ScriptResult> {
+    ) -> Result<ScriptContract> {
+        let (mut store, instance) = self.instantiate(limits, cancel).await?;
+        let abi = instance.get_typed_func::<(), i32>(&mut store, "script_abi_version")?;
+        let contract = instance.get_typed_func::<(), i64>(&mut store, "script_contract")?;
+        let dealloc = instance.get_typed_func::<(i32, i32), ()>(&mut store, "script_dealloc")?;
+        // Validate the full ABI without invoking allocation or business code.
+        instance.get_typed_func::<i32, i32>(&mut store, "script_alloc")?;
+        instance.get_typed_func::<(i32, i32), i64>(&mut store, "script_invoke")?;
+        let memory = instance
+            .get_memory(&mut store, "memory")
+            .context("script memory export missing")?;
+        ensure!(
+            abi.call_async(&mut store, ()).await? == mhome_script_sdk::ABI_VERSION,
+            "unsupported script ABI version"
+        );
+        let packed = contract.call_async(&mut store, ()).await? as u64;
+        let ptr = (packed >> 32) as usize;
+        let len = (packed & 0xffff_ffff) as usize;
+        ensure!(ptr != 0 && len != 0, "empty script contract");
+        checked_range(ptr, len, memory.data_size(&store), limits.wire.bytes)?;
+        let mut bytes = vec![0; len];
+        memory.read(&store, ptr, &mut bytes)?;
+        dealloc
+            .call_async(&mut store, (ptr as i32, len as i32))
+            .await?;
+        Ok(ScriptContract::decode(&bytes, limits.wire)?)
+    }
+    async fn instantiate(
+        &self,
+        limits: &ScriptLimits,
+        cancel: CancellationToken,
+    ) -> Result<(Store<StoreLimits>, Instance)> {
         let state = StoreLimitsBuilder::new()
             .memory_size(limits.memory_bytes)
             .table_elements(limits.table_elements)
@@ -153,6 +200,15 @@ impl ScriptModule {
         configure_store(&mut store, Some(limits.timeout), cancel);
         let linker = Linker::<StoreLimits>::new(engine());
         let instance = linker.instantiate_async(&mut store, &self.0).await?;
+        Ok((store, instance))
+    }
+    async fn invoke_bytes(
+        &self,
+        input: &[u8],
+        limits: &ScriptLimits,
+        cancel: CancellationToken,
+    ) -> Result<ScriptResult> {
+        let (mut store, instance) = self.instantiate(limits, cancel).await?;
         let abi = instance.get_typed_func::<(), i32>(&mut store, "script_abi_version")?;
         let alloc = instance.get_typed_func::<i32, i32>(&mut store, "script_alloc")?;
         let dealloc = instance.get_typed_func::<(i32, i32), ()>(&mut store, "script_dealloc")?;

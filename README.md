@@ -4,7 +4,8 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 
 ## Crates
 
-- `mhome-script-sdk`: Automation values, bounded binary codec, generated-wrapper helpers and guest ABI.
+- `mhome-script-sdk`: Automation values, Rust Input/Output contracts, bounded binary codec and guest ABI.
+- `mhome-script-sdk-macros`: Input/Output derives, re-exported by the Script SDK.
 - `mhome-wasm-runtime`: shared Wasmtime engine, per-call execution policies and Script ABI adapter.
 
 - `mhome-person-api`: Space-owned Person management, embedding contracts and authoritative observations.

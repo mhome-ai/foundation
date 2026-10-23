@@ -1,10 +1,14 @@
 //! Shared constant values and Automation Script ABI v1. No host IO is exposed.
 pub mod codec;
+pub mod contract;
 pub mod guest;
 mod value;
+pub use contract::{Field, FieldType, ScriptContract, ScriptField, ScriptInput, ScriptOutput};
+pub use mhome_script_sdk_macros::{ScriptInput, ScriptOutput};
 pub use value::*;
 
 pub const ABI_VERSION: i32 = 1;
+pub const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub type ScriptResult = Result<Value, ScriptError>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -54,7 +58,10 @@ impl Arguments {
                 ScriptError::new("INVALID_ARGUMENT", format!("missing argument {name}"))
             })?
             .try_into()
-            .map_err(Into::into)
+            .map_err(|error: T::Error| {
+                let error: ScriptError = error.into();
+                ScriptError::new(error.code, format!("argument {name}: {}", error.message))
+            })
     }
     pub fn take_value(&mut self, name: &str) -> Result<Value, ScriptError> {
         self.0
@@ -65,7 +72,13 @@ impl Arguments {
         if self.0.is_empty() {
             Ok(())
         } else {
-            Err(ScriptError::new("INVALID_ARGUMENT", "unexpected arguments"))
+            Err(ScriptError::new(
+                "INVALID_ARGUMENT",
+                format!(
+                    "unexpected arguments: {}",
+                    self.0.keys().cloned().collect::<Vec<_>>().join(", ")
+                ),
+            ))
         }
     }
 }
@@ -80,7 +93,7 @@ macro_rules! object {
 }
 pub mod prelude {
     pub use crate::{
-        object, Arguments, Duration, Image, Object, ScriptError, ScriptResult, Temperature,
-        Timestamp, Value,
+        object, Arguments, Duration, Image, Object, ScriptError, ScriptInput, ScriptOutput,
+        ScriptResult, Temperature, Timestamp, Value,
     };
 }

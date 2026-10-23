@@ -1,6 +1,6 @@
 [package]
 name = "mhome-wasm-runtime"
-version = "0.1.0"
+version = "0.2.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Shared Wasmtime engine and bounded script invocation"
 [dependencies]
 anyhow = "1"
-mhome-script-sdk = { package = "mhome-script-sdk", version = "=0.1.0", path = "../script-sdk" }
+mhome-script-sdk = { package = "mhome-script-sdk", version = "=0.2.0", path = "../script-sdk" }
 tokio = { version = "1", features = ["rt", "sync", "time", "macros"] }
 tokio-util = { version = "0.7", features = ["rt"] }
 [target.'cfg(not(target_os = "ios"))'.dependencies]
