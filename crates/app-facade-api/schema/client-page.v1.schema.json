@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "page",
+        "presentation"
+      ],
+      "properties": {
+        "page": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "presentation": {
+          "enum": [
+            "page",
+            "drawer"
+          ]
+        },
+        "payload": {
+          "type": "object"
+        }
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current"
+      ],
+      "properties": {
+        "current": {
+          "$ref": "#/$defs/view"
+        },
+        "base": {
+          "$ref": "#/$defs/view"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "current": {
+                "properties": {
+                  "presentation": {
+                    "const": "drawer"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "base"
+            ],
+            "properties": {
+              "base": {
+                "properties": {
+                  "presentation": {
+                    "const": "page"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "base"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    }
+  }
+}

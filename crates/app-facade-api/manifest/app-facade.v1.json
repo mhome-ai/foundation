@@ -160,6 +160,14 @@
       ],
       "owner": "authenticatedClient",
       "persistence": "none"
+    },
+    "clientPage": {
+      "schema": "schema/client-page.v1.schema.json",
+      "requestTargets": [
+        "/app/client/page/report"
+      ],
+      "owner": "authenticatedClient",
+      "persistence": "none"
     }
   },
   "authorization": "manifest/authorization.v1.json",
