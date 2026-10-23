@@ -7,7 +7,10 @@
       {
         "provider": "telegram",
         "deprecated": false,
-        "supportedPlacements": ["cloud", "local"]
+        "supportedPlacements": [
+          "cloud",
+          "local"
+        ]
       }
     ]
   }

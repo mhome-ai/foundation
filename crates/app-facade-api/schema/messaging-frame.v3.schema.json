@@ -192,13 +192,6 @@
         "setup.options",
         "setup.start",
         "setup.status",
-        "surface.list",
-        "surface.dismiss",
-        "surface.bind_code.create",
-        "actor.link_code.create",
-        "identity_code.status",
-        "actor.link.list",
-        "actor.link.delete",
         "setup.submit",
         "setup.cancel"
       ]
@@ -588,57 +581,6 @@
         }
       }
     },
-    "surfaceState": {
-      "enum": [
-        "pending",
-        "bound",
-        "dismissed"
-      ]
-    },
-    "messagingSurface": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement",
-        "accountId",
-        "surfaceId",
-        "state",
-        "firstSeenAtMs",
-        "lastSeenAtMs"
-      ],
-      "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
-        },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        },
-        "accountId": {
-          "$ref": "#/$defs/id"
-        },
-        "surfaceId": {
-          "$ref": "#/$defs/id"
-        },
-        "displayName": {
-          "$ref": "#/$defs/id"
-        },
-        "state": {
-          "$ref": "#/$defs/surfaceState"
-        },
-        "scopeId": {
-          "$ref": "#/$defs/id"
-        },
-        "firstSeenAtMs": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "lastSeenAtMs": {
-          "type": "integer",
-          "minimum": 0
-        }
-      }
-    },
     "challengeCode": {
       "type": "object",
       "additionalProperties": false,
@@ -998,122 +940,29 @@
         }
       }
     },
-    "surfaceListBody": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement"
-      ],
-      "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
-        },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        },
-        "accountId": {
-          "$ref": "#/$defs/id"
-        },
-        "state": {
-          "$ref": "#/$defs/surfaceState"
-        }
-      }
-    },
-    "surfaceBody": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement",
-        "surfaceId"
-      ],
-      "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
-        },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        },
-        "surfaceId": {
-          "$ref": "#/$defs/id"
-        }
-      }
-    },
-    "surfaceBindCodeBody": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement",
-        "scopeId"
-      ],
-      "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
-        },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        },
-        "scopeId": {
-          "$ref": "#/$defs/id"
-        }
-      }
-    },
     "actorLinkCodeBody": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement"
-      ],
-      "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
-        },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        }
-      }
+      "properties": {},
+      "required": []
     },
     "actorLinkListBody": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement"
-      ],
-      "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
-        },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        },
-        "accountId": {
-          "$ref": "#/$defs/id"
-        }
-      }
+      "properties": {},
+      "required": []
     },
     "actorLinkDeleteBody": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement",
-        "linkId"
-      ],
       "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
-        },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        },
         "linkId": {
           "$ref": "#/$defs/id"
         }
-      }
+      },
+      "required": [
+        "linkId"
+      ]
     },
     "providerListRequest": {
       "type": "object",
@@ -1827,147 +1676,6 @@
         }
       }
     },
-    "surfaceListRequest": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "direction",
-        "body"
-      ],
-      "properties": {
-        "target": {
-          "const": "/app/messaging/surface/list"
-        },
-        "direction": {
-          "const": "request"
-        },
-        "body": {
-          "$ref": "#/$defs/surfaceListBody"
-        }
-      }
-    },
-    "surfaceListResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "direction",
-        "body"
-      ],
-      "properties": {
-        "target": {
-          "const": "/app/messaging/surface/list"
-        },
-        "direction": {
-          "const": "response"
-        },
-        "body": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "surfaces"
-          ],
-          "properties": {
-            "surfaces": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/messagingSurface"
-              }
-            }
-          }
-        }
-      }
-    },
-    "surfaceDismissRequest": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "direction",
-        "body"
-      ],
-      "properties": {
-        "target": {
-          "const": "/app/messaging/surface/dismiss"
-        },
-        "direction": {
-          "const": "request"
-        },
-        "body": {
-          "$ref": "#/$defs/surfaceBody"
-        }
-      }
-    },
-    "surfaceDismissResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "direction",
-        "body"
-      ],
-      "properties": {
-        "target": {
-          "const": "/app/messaging/surface/dismiss"
-        },
-        "direction": {
-          "const": "response"
-        },
-        "body": {
-          "$ref": "#/$defs/mutationBody"
-        }
-      }
-    },
-    "surfaceBindCodeCreateRequest": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "direction",
-        "body"
-      ],
-      "properties": {
-        "target": {
-          "const": "/app/messaging/surface/bind-code/create"
-        },
-        "direction": {
-          "const": "request"
-        },
-        "body": {
-          "$ref": "#/$defs/surfaceBindCodeBody"
-        }
-      }
-    },
-    "surfaceBindCodeCreateResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "direction",
-        "body"
-      ],
-      "properties": {
-        "target": {
-          "const": "/app/messaging/surface/bind-code/create"
-        },
-        "direction": {
-          "const": "response"
-        },
-        "body": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "challenge"
-          ],
-          "properties": {
-            "challenge": {
-              "$ref": "#/$defs/challengeCode"
-            }
-          }
-        }
-      }
-    },
     "actorLinkCodeCreateRequest": {
       "type": "object",
       "additionalProperties": false,
@@ -1978,7 +1686,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/actor/link-code/create"
+          "const": "/app/messaging/link/code/create"
         },
         "direction": {
           "const": "request"
@@ -1998,7 +1706,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/actor/link-code/create"
+          "const": "/app/messaging/link/code/create"
         },
         "direction": {
           "const": "response"
@@ -2027,7 +1735,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/actor/link/list"
+          "const": "/app/messaging/link/list"
         },
         "direction": {
           "const": "request"
@@ -2047,7 +1755,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/actor/link/list"
+          "const": "/app/messaging/link/list"
         },
         "direction": {
           "const": "response"
@@ -2079,7 +1787,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/actor/link/delete"
+          "const": "/app/messaging/unlink"
         },
         "direction": {
           "const": "request"
@@ -2099,7 +1807,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/actor/link/delete"
+          "const": "/app/messaging/unlink"
         },
         "direction": {
           "const": "response"
@@ -2157,13 +1865,10 @@
           "$ref": "#/$defs/setupStatusRequest"
         },
         {
-          "$ref": "#/$defs/surfaceListRequest"
+          "$ref": "#/$defs/bindingListRequest"
         },
         {
-          "$ref": "#/$defs/surfaceDismissRequest"
-        },
-        {
-          "$ref": "#/$defs/surfaceBindCodeCreateRequest"
+          "$ref": "#/$defs/bindCodeCreateRequest"
         },
         {
           "$ref": "#/$defs/actorLinkCodeCreateRequest"
@@ -2182,6 +1887,9 @@
         },
         {
           "$ref": "#/$defs/setupCancelRequest"
+        },
+        {
+          "$ref": "#/$defs/unbindRequest"
         }
       ]
     },
@@ -2233,22 +1941,16 @@
           "$ref": "#/$defs/setupStatusResponse"
         },
         {
-          "$ref": "#/$defs/surfaceListResponse"
+          "$ref": "#/$defs/bindingListResponse"
         },
         {
-          "$ref": "#/$defs/surfaceDismissResponse"
-        },
-        {
-          "$ref": "#/$defs/surfaceBindCodeCreateResponse"
+          "$ref": "#/$defs/bindCodeCreateResponse"
         },
         {
           "$ref": "#/$defs/actorLinkCodeCreateResponse"
         },
         {
           "$ref": "#/$defs/identityCodeStatusResponse"
-        },
-        {
-          "$ref": "#/$defs/identityCodeStatusEventResponse"
         },
         {
           "$ref": "#/$defs/actorLinkListResponse"
@@ -2261,6 +1963,9 @@
         },
         {
           "$ref": "#/$defs/setupCancelResponse"
+        },
+        {
+          "$ref": "#/$defs/unbindResponse"
         }
       ]
     },
@@ -2349,8 +2054,6 @@
       "additionalProperties": false,
       "required": [
         "challengeId",
-        "provider",
-        "placement",
         "expiresAtMs",
         "lifecycle",
         "kind"
@@ -2361,9 +2064,6 @@
         },
         "provider": {
           "$ref": "#/$defs/providerId"
-        },
-        "placement": {
-          "$ref": "#/$defs/placement"
         },
         "accountId": {
           "$ref": "#/$defs/id"
@@ -2411,22 +2111,14 @@
     "identityCodeStatusBody": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "provider",
-        "placement",
-        "challengeId"
-      ],
       "properties": {
-        "provider": {
-          "$ref": "#/$defs/providerId"
-        },
-        "placement": {
-          "$ref": "#/$defs/placement"
-        },
         "challengeId": {
           "$ref": "#/$defs/id"
         }
-      }
+      },
+      "required": [
+        "challengeId"
+      ]
     },
     "identityCodeStatusResponseBody": {
       "type": "object",
@@ -2450,7 +2142,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/identity-code/status"
+          "const": "/app/messaging/code/status"
         },
         "direction": {
           "const": "request"
@@ -2470,27 +2162,7 @@
       ],
       "properties": {
         "target": {
-          "const": "/app/messaging/identity-code/status"
-        },
-        "direction": {
-          "const": "response"
-        },
-        "body": {
-          "$ref": "#/$defs/identityCodeStatusResponseBody"
-        }
-      }
-    },
-    "identityCodeStatusEventResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "direction",
-        "body"
-      ],
-      "properties": {
-        "target": {
-          "const": "/app/messaging/identity-code/changed"
+          "const": "/app/messaging/code/status"
         },
         "direction": {
           "const": "response"
@@ -2712,6 +2384,207 @@
           }
         }
       }
+    },
+    "bindingListBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {},
+      "required": []
+    },
+    "bindingListRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/binding/list"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/bindingListBody"
+        }
+      }
+    },
+    "bindingListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/binding/list"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bindings": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/messagingBinding"
+              }
+            }
+          },
+          "required": [
+            "bindings"
+          ]
+        }
+      }
+    },
+    "bindCodeBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "bindCodeCreateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/bind/code/create"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "$ref": "#/$defs/bindCodeBody"
+        }
+      }
+    },
+    "bindCodeCreateResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ],
+      "properties": {
+        "target": {
+          "const": "/app/messaging/bind/code/create"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "challenge"
+          ],
+          "properties": {
+            "challenge": {
+              "$ref": "#/$defs/challengeCode"
+            }
+          }
+        }
+      }
+    },
+    "messagingBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bindingId": {
+          "$ref": "#/$defs/id"
+        },
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "placement": {
+          "$ref": "#/$defs/placement"
+        },
+        "accountId": {
+          "$ref": "#/$defs/id"
+        },
+        "conversationId": {
+          "$ref": "#/$defs/id"
+        },
+        "scopeId": {
+          "$ref": "#/$defs/id"
+        },
+        "createdAtMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "displayName": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "bindingId",
+        "provider",
+        "placement",
+        "accountId",
+        "conversationId",
+        "scopeId",
+        "createdAtMs"
+      ]
+    },
+    "unbindRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "const": "/app/messaging/unbind"
+        },
+        "direction": {
+          "const": "request"
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bindingId": {
+              "$ref": "#/$defs/id"
+            }
+          },
+          "required": [
+            "bindingId"
+          ]
+        }
+      },
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ]
+    },
+    "unbindResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "const": "/app/messaging/unbind"
+        },
+        "direction": {
+          "const": "response"
+        },
+        "body": {
+          "$ref": "#/$defs/mutationBody"
+        }
+      },
+      "required": [
+        "target",
+        "direction",
+        "body"
+      ]
     }
   }
 }

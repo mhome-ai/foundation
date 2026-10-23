@@ -186,20 +186,6 @@ pub enum ManagementOperation {
     SetupSubmit,
     #[serde(rename = "setup.cancel")]
     SetupCancel,
-    #[serde(rename = "surface.list")]
-    SurfaceList,
-    #[serde(rename = "surface.dismiss")]
-    SurfaceDismiss,
-    #[serde(rename = "surface.bind_code.create")]
-    SurfaceBindCodeCreate,
-    #[serde(rename = "actor.link_code.create")]
-    ActorLinkCodeCreate,
-    #[serde(rename = "identity_code.status")]
-    IdentityCodeStatus,
-    #[serde(rename = "actor.link.list")]
-    ActorLinkList,
-    #[serde(rename = "actor.link.delete")]
-    ActorLinkDelete,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -503,69 +489,43 @@ pub struct SetupResponse {
     pub setup: SetupState,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum SurfaceState {
-    Pending,
-    Bound,
-    Dismissed,
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BindingListRequest {}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct UnbindRequest {
+    pub binding_id: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SurfaceListRequest {
-    pub provider: String,
-    pub placement: Placement,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub account_id: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub state: Option<SurfaceState>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct MessagingSurface {
+pub struct MessagingBinding {
+    pub binding_id: String,
     pub provider: String,
     pub placement: Placement,
     pub account_id: String,
-    pub surface_id: String,
+    pub conversation_id: String,
+    pub scope_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub display_name: Option<String>,
-    pub state: SurfaceState,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub scope_id: Option<String>,
-    pub first_seen_at_ms: i64,
-    pub last_seen_at_ms: i64,
+    pub created_at_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SurfaceListResponse {
-    pub surfaces: Vec<MessagingSurface>,
+pub struct BindingListResponse {
+    pub bindings: Vec<MessagingBinding>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SurfaceRequest {
-    pub provider: String,
-    pub placement: Placement,
-    pub surface_id: String,
-}
+pub struct BindCodeCreateRequest {}
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SurfaceBindCodeCreateRequest {
-    pub provider: String,
-    pub placement: Placement,
-    pub scope_id: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ActorLinkCodeCreateRequest {
-    pub provider: String,
-    pub placement: Placement,
-}
+pub struct ActorLinkCodeCreateRequest {}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -612,8 +572,8 @@ pub enum IdentityChallengeKind {
 pub struct IdentityCodeStatus {
     pub kind: IdentityChallengeKind,
     pub challenge_id: String,
-    pub provider: String,
-    pub placement: Placement,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub provider: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub account_id: Option<String>,
     pub expires_at_ms: i64,
@@ -647,8 +607,6 @@ pub enum IdentityCodeLifecycle {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IdentityCodeStatusRequest {
-    pub provider: String,
-    pub placement: Placement,
     pub challenge_id: String,
 }
 
@@ -660,24 +618,13 @@ pub struct IdentityCodeStatusResponse {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct IdentityCodeStatusEvent {
-    pub status: IdentityCodeStatus,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ChallengeCodeResponse {
     pub challenge: ChallengeCode,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ActorLinkListRequest {
-    pub provider: String,
-    pub placement: Placement,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub account_id: Option<String>,
-}
+pub struct ActorLinkListRequest {}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -702,7 +649,5 @@ pub struct ActorLinkListResponse {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ActorLinkDeleteRequest {
-    pub provider: String,
-    pub placement: Placement,
     pub link_id: String,
 }

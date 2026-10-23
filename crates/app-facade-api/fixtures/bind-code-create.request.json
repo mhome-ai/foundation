@@ -1,0 +1,5 @@
+{
+  "target": "/app/messaging/bind/code/create",
+  "direction": "request",
+  "body": {}
+}

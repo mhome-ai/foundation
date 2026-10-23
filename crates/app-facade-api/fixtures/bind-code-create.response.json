@@ -1,5 +1,5 @@
 {
-  "target": "/app/messaging/surface/bind-code/create",
+  "target": "/app/messaging/bind/code/create",
   "direction": "response",
   "body": {
     "challenge": {

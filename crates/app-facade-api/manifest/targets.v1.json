@@ -19,13 +19,13 @@
     "/app/messaging/setup/status",
     "/app/messaging/setup/submit",
     "/app/messaging/setup/cancel",
-    "/app/messaging/surface/list",
-    "/app/messaging/surface/dismiss",
-    "/app/messaging/surface/bind-code/create",
-    "/app/messaging/actor/link-code/create",
-    "/app/messaging/identity-code/status",
-    "/app/messaging/actor/link/list",
-    "/app/messaging/actor/link/delete"
+    "/app/messaging/unbind",
+    "/app/messaging/binding/list",
+    "/app/messaging/bind/code/create",
+    "/app/messaging/link/code/create",
+    "/app/messaging/code/status",
+    "/app/messaging/link/list",
+    "/app/messaging/unlink"
   ],
   "responseTargets": [
     "/app/messaging/provider/list",
@@ -45,15 +45,13 @@
     "/app/messaging/setup/status",
     "/app/messaging/setup/submit",
     "/app/messaging/setup/cancel",
-    "/app/messaging/surface/list",
-    "/app/messaging/surface/dismiss",
-    "/app/messaging/surface/bind-code/create",
-    "/app/messaging/actor/link-code/create",
-    "/app/messaging/identity-code/status",
-    "/app/messaging/actor/link/list",
-    "/app/messaging/actor/link/delete"
+    "/app/messaging/unbind",
+    "/app/messaging/binding/list",
+    "/app/messaging/bind/code/create",
+    "/app/messaging/link/code/create",
+    "/app/messaging/code/status",
+    "/app/messaging/link/list",
+    "/app/messaging/unlink"
   ],
-  "eventTargets": [
-    "/app/messaging/identity-code/changed"
-  ]
+  "eventTargets": []
 }

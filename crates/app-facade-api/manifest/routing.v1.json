@@ -24,7 +24,14 @@
       "/app/system/feedback/submit",
       "/app/timeline/entity/latest/list",
       "/app/host/access/issue",
-      "/app/host/authorization"
+      "/app/host/authorization",
+      "/app/messaging/link/code/create",
+      "/app/messaging/link/list",
+      "/app/messaging/unlink",
+      "/app/messaging/code/status",
+      "/app/messaging/binding/list",
+      "/app/messaging/bind/code/create",
+      "/app/messaging/unbind"
     ],
     "scopeModeTargets": [
       "/app/artifact/resolve",

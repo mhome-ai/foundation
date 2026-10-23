@@ -1,0 +1,7 @@
+{
+  "target": "/app/messaging/unbind",
+  "direction": "response",
+  "body": {
+    "success": true
+  }
+}

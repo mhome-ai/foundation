@@ -981,6 +981,9 @@ pub struct ServiceAppClientProjectionKey {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ServiceCoreInput {
+    MessagingCloudRequest {
+        request: messaging::MessagingCloudRequest,
+    },
     ClientAuth {
         message: MwsMessage,
         ws_id: String,
@@ -1077,6 +1080,9 @@ pub enum ServiceCoreInput {
     reason = "Keep the public wire fields inline; boxing changes Rust callers for a bounded auth response"
 )]
 pub enum ServiceCoreResponse {
+    MessagingCloudResponse {
+        value: serde_json::Value,
+    },
     ClientAuth {
         session: Option<AuthenticatedSession>,
         response: MwsMessage,

@@ -3,3 +3,6 @@ pub mod model;
 
 pub use commands::*;
 pub use model::*;
+
+mod relationships;
+pub use relationships::*;

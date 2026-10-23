@@ -1,5 +1,7 @@
 {
   "target": "/app/messaging/route/delete",
   "direction": "response",
-  "body": { "success": true }
+  "body": {
+    "success": true
+  }
 }

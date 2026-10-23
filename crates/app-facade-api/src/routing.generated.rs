@@ -21,6 +21,13 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/timeline/entity/latest/list",
     "/app/host/access/issue",
     "/app/host/authorization",
+    "/app/messaging/link/code/create",
+    "/app/messaging/link/list",
+    "/app/messaging/unlink",
+    "/app/messaging/code/status",
+    "/app/messaging/binding/list",
+    "/app/messaging/bind/code/create",
+    "/app/messaging/unbind",
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[
@@ -45,12 +52,7 @@ const HUB_PREFIXES: &[&str] = &[
     "/app/person/",
 ];
 
-const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
-    "/app/messaging/",
-];
+const REQUEST_PLACEMENT_PREFIXES: &[&str] = &["/app/messaging/"];
 
 /// Exact Hub-owned operations outside Hub-owned domains.
-pub const HUB_TARGETS: &[&str] = &[
-    "/app/hub/restart",
-    "/app/hub/status",
-];
+pub const HUB_TARGETS: &[&str] = &["/app/hub/restart", "/app/hub/status"];

@@ -1,5 +1,7 @@
 {
   "target": "/app/messaging/shared-account-grant/create",
   "direction": "response",
-  "body": { "success": true }
+  "body": {
+    "success": true
+  }
 }

@@ -10,7 +10,10 @@
     "projections": {
       "notification": {
         "enabled": true,
-        "levels": ["alert", "notify"]
+        "levels": [
+          "alert",
+          "notify"
+        ]
       },
       "dialog": {
         "enabled": true

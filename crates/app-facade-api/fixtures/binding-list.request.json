@@ -1,0 +1,5 @@
+{
+  "target": "/app/messaging/binding/list",
+  "direction": "request",
+  "body": {}
+}

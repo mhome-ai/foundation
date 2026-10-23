@@ -1,0 +1,18 @@
+{
+  "target": "/app/messaging/binding/list",
+  "direction": "response",
+  "body": {
+    "bindings": [
+      {
+        "bindingId": "binding",
+        "provider": "telegram",
+        "placement": "local",
+        "accountId": "bot",
+        "conversationId": "group",
+        "scopeId": "home",
+        "displayName": "Family",
+        "createdAtMs": 1
+      }
+    ]
+  }
+}

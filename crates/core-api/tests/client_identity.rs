@@ -188,5 +188,5 @@ fn external_session_wire_carries_the_verified_principal_and_rejects_legacy_user_
         }))
         .is_err()
     );
-    assert_eq!(core_api::EXTERNAL_CORE_PROTOCOL_VERSION, 21);
+    assert_eq!(core_api::EXTERNAL_CORE_PROTOCOL_VERSION, 22);
 }

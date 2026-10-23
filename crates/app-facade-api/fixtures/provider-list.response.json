@@ -10,13 +10,28 @@
         "deprecated": false,
         "available": true,
         "setupFlow": "pairing_code",
-        "audiences": ["personal", "shared"],
-        "inboundCapabilities": ["text", "audio", "action"],
-        "outboundCapabilities": ["text", "markdown", "action"],
+        "audiences": [
+          "personal",
+          "shared"
+        ],
+        "inboundCapabilities": [
+          "text",
+          "audio",
+          "action"
+        ],
+        "outboundCapabilities": [
+          "text",
+          "markdown",
+          "action"
+        ],
         "deliveryMode": "unrestricted",
         "projections": {
-          "notification": { "supported": true },
-          "dialog": { "supported": true }
+          "notification": {
+            "supported": true
+          },
+          "dialog": {
+            "supported": true
+          }
         },
         "managementOperations": [
           "provider_account.list",

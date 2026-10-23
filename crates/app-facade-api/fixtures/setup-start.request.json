@@ -4,6 +4,8 @@
   "body": {
     "provider": "telegram",
     "placement": "local",
-    "data": { "botToken": "secret" }
+    "data": {
+      "botToken": "secret"
+    }
   }
 }

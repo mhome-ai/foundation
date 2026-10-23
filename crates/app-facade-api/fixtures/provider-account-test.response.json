@@ -1,5 +1,9 @@
 {
   "target": "/app/messaging/provider-account/test",
   "direction": "response",
-  "body": { "result": { "reachable": true } }
+  "body": {
+    "result": {
+      "reachable": true
+    }
+  }
 }

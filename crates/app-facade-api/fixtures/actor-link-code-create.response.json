@@ -1,5 +1,5 @@
 {
-  "target": "/app/messaging/actor/link-code/create",
+  "target": "/app/messaging/link/code/create",
   "direction": "response",
   "body": {
     "challenge": {

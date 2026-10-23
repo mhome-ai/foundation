@@ -1,11 +1,10 @@
 {
-  "target": "/app/messaging/identity-code/status",
+  "target": "/app/messaging/code/status",
   "direction": "response",
   "body": {
     "status": {
       "challengeId": "challenge_01",
       "provider": "telegram",
-      "placement": "local",
       "accountId": "bot_a",
       "expiresAtMs": 1720000300000,
       "lifecycle": {

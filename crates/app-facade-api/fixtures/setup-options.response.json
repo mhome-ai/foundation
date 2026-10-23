@@ -1,5 +1,9 @@
 {
   "target": "/app/messaging/setup/options",
   "direction": "response",
-  "body": { "options": { "tokenRequired": true } }
+  "body": {
+    "options": {
+      "tokenRequired": true
+    }
+  }
 }

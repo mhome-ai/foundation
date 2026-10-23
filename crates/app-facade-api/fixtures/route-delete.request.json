@@ -1,5 +1,9 @@
 {
   "target": "/app/messaging/route/delete",
   "direction": "request",
-  "body": { "provider": "telegram", "placement": "cloud", "routeId": "route-2" }
+  "body": {
+    "provider": "telegram",
+    "placement": "cloud",
+    "routeId": "route-2"
+  }
 }

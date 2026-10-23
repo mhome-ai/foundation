@@ -1,1 +1,7 @@
-{"target":"/app/messaging/actor/link/delete","direction":"response","body":{"success":true}}
+{
+  "target": "/app/messaging/unlink",
+  "direction": "response",
+  "body": {
+    "success": true
+  }
+}

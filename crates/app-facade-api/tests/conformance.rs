@@ -1,23 +1,30 @@
 use app_facade_api::hub::{HubState, LocalHubState, APP_TARGETS, LOCAL_TARGETS};
 use app_facade_api::messaging::{
     ActorLinkChallengeResponse, ActorLinkCodeCreateRequest, ActorLinkDeleteRequest,
-    ActorLinkListRequest, ActorLinkListResponse, ChallengeCodeResponse, IdentityCodeStatusEvent,
-    IdentityCodeStatusRequest, IdentityCodeStatusResponse, MutationResponse,
-    ProviderAccountListResponse, ProviderAccountRequest, ProviderAccountStatusResponse,
-    ProviderAccountTestRequest, ProviderAccountTestResponse, ProviderAccountUpdateRequest,
-    ProviderAccountUpdateResponse, ProviderListRequest, ProviderListResponse,
-    ProviderPlacementRequest, RouteListRequest, RouteListResponse, RouteRequest,
-    RouteUpdateRequest, RouteUpdateResponse, SetupCancelRequest, SetupOptionsResponse,
-    SetupResponse, SetupStartRequest, SetupStatusRequest, SetupSubmitRequest,
+    ActorLinkListRequest, ActorLinkListResponse, BindCodeCreateRequest, BindingListRequest,
+    BindingListResponse, ChallengeCodeResponse, IdentityCodeStatusRequest,
+    IdentityCodeStatusResponse, MutationResponse, ProviderAccountListResponse,
+    ProviderAccountRequest, ProviderAccountStatusResponse, ProviderAccountTestRequest,
+    ProviderAccountTestResponse, ProviderAccountUpdateRequest, ProviderAccountUpdateResponse,
+    ProviderListRequest, ProviderListResponse, ProviderPlacementRequest, RouteListRequest,
+    RouteListResponse, RouteRequest, RouteUpdateRequest, RouteUpdateResponse, SetupCancelRequest,
+    SetupOptionsResponse, SetupResponse, SetupStartRequest, SetupStatusRequest, SetupSubmitRequest,
     SharedAccountGrantListRequest, SharedAccountGrantListResponse, SharedAccountGrantRequest,
-    SurfaceBindCodeCreateRequest, SurfaceListRequest, SurfaceListResponse, SurfaceRequest,
-    MANAGEMENT_TARGETS,
+    UnbindRequest, MANAGEMENT_TARGETS,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::collections::BTreeSet;
 
 const VALID_FIXTURES: &[(&str, &str)] = &[
+    (
+        "unbind.request.json",
+        include_str!("../fixtures/unbind.request.json"),
+    ),
+    (
+        "unbind.response.json",
+        include_str!("../fixtures/unbind.response.json"),
+    ),
     (
         "setup-submit.request.json",
         include_str!("../fixtures/setup-submit.request.json"),
@@ -167,28 +174,20 @@ const VALID_FIXTURES: &[(&str, &str)] = &[
         include_str!("../fixtures/setup-status.response.json"),
     ),
     (
-        "surface-list.request.json",
-        include_str!("../fixtures/surface-list.request.json"),
+        "binding-list.request.json",
+        include_str!("../fixtures/binding-list.request.json"),
     ),
     (
-        "surface-list.response.json",
-        include_str!("../fixtures/surface-list.response.json"),
+        "binding-list.response.json",
+        include_str!("../fixtures/binding-list.response.json"),
     ),
     (
-        "surface-dismiss.request.json",
-        include_str!("../fixtures/surface-dismiss.request.json"),
+        "bind-code-create.request.json",
+        include_str!("../fixtures/bind-code-create.request.json"),
     ),
     (
-        "surface-dismiss.response.json",
-        include_str!("../fixtures/surface-dismiss.response.json"),
-    ),
-    (
-        "surface-bind-code-create.request.json",
-        include_str!("../fixtures/surface-bind-code-create.request.json"),
-    ),
-    (
-        "surface-bind-code-create.response.json",
-        include_str!("../fixtures/surface-bind-code-create.response.json"),
+        "bind-code-create.response.json",
+        include_str!("../fixtures/bind-code-create.response.json"),
     ),
     (
         "actor-link-code-create.request.json",
@@ -205,10 +204,6 @@ const VALID_FIXTURES: &[(&str, &str)] = &[
     (
         "identity-code-status.response.json",
         include_str!("../fixtures/identity-code-status.response.json"),
-    ),
-    (
-        "identity-code-event.response.json",
-        include_str!("../fixtures/identity-code-event.response.json"),
     ),
     (
         "actor-link-list.request.json",
@@ -368,18 +363,17 @@ fn every_management_target_has_typed_request_and_response_fixtures() {
     body::<SetupSubmitRequest>("setup-submit.request.json");
     body::<SetupCancelRequest>("setup-cancel.request.json");
     body::<SetupResponse>("setup-status.response.json");
-    body::<SurfaceListRequest>("surface-list.request.json");
-    body::<SurfaceListResponse>("surface-list.response.json");
-    body::<SurfaceRequest>("surface-dismiss.request.json");
-    body::<MutationResponse>("surface-dismiss.response.json");
-    body::<SurfaceBindCodeCreateRequest>("surface-bind-code-create.request.json");
-    body::<ChallengeCodeResponse>("surface-bind-code-create.response.json");
+    body::<UnbindRequest>("unbind.request.json");
+    body::<MutationResponse>("unbind.response.json");
+    body::<BindingListRequest>("binding-list.request.json");
+    body::<BindingListResponse>("binding-list.response.json");
+    body::<BindCodeCreateRequest>("bind-code-create.request.json");
+    body::<ChallengeCodeResponse>("bind-code-create.response.json");
     body::<ActorLinkCodeCreateRequest>("actor-link-code-create.request.json");
     body::<ActorLinkChallengeResponse>("actor-link-code-create.response.json");
     body::<IdentityCodeStatusRequest>("identity-code-status.request.json");
     body::<IdentityCodeStatusResponse>("identity-code-status.response.json");
     body::<IdentityCodeStatusResponse>("identity-code-failed.response.json");
-    body::<IdentityCodeStatusEvent>("identity-code-event.response.json");
     body::<ActorLinkListRequest>("actor-link-list.request.json");
     body::<ActorLinkListResponse>("actor-link-list.response.json");
     body::<ActorLinkDeleteRequest>("actor-link-delete.request.json");
@@ -518,7 +512,17 @@ fn target_manifest_matches_rust_inventory() {
     for target in MANAGEMENT_TARGETS {
         assert_eq!(
             app_facade_api::messaging::required_management_operation(target).is_some(),
-            *target != app_facade_api::messaging::PROVIDER_LIST_TARGET,
+            ![
+                app_facade_api::messaging::PROVIDER_LIST_TARGET,
+                app_facade_api::messaging::BINDING_LIST_TARGET,
+                app_facade_api::messaging::BIND_CODE_CREATE_TARGET,
+                app_facade_api::messaging::ACTOR_LINK_LIST_TARGET,
+                app_facade_api::messaging::ACTOR_LINK_CODE_CREATE_TARGET,
+                app_facade_api::messaging::ACTOR_LINK_DELETE_TARGET,
+                app_facade_api::messaging::IDENTITY_CODE_STATUS_TARGET,
+                app_facade_api::messaging::UNBIND_TARGET
+            ]
+            .contains(target),
             "management capability mapping for {target}"
         );
     }
@@ -816,12 +820,10 @@ fn messaging_identity_codes_reject_the_retired_target_and_confirmation_contract(
         "provider":"telegram", "placement":"cloud", "accountId":"bot"
     }))
     .is_err());
-    assert!(
-        serde_json::from_value::<SurfaceBindCodeCreateRequest>(json!({
-            "provider":"telegram", "placement":"cloud", "scopeId":"space", "surfaceId":"group"
-        }))
-        .is_err()
-    );
+    assert!(serde_json::from_value::<BindCodeCreateRequest>(json!({
+        "provider":"telegram", "placement":"cloud", "scopeId":"space", "surfaceId":"group"
+    }))
+    .is_err());
     assert!(serde_json::from_value::<IdentityCodeStatusResponse>(json!({"claim":{}})).is_err());
     assert!(!MANAGEMENT_TARGETS.contains(&"/app/messaging/actor/link-claim/confirm"));
     assert!(!MANAGEMENT_TARGETS.contains(&"/app/messaging/actor/link-claim/status"));

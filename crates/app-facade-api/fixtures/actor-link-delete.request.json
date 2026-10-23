@@ -1,1 +1,7 @@
-{"target":"/app/messaging/actor/link/delete","direction":"request","body":{"provider":"telegram","placement":"local","linkId":"link_a"}}
+{
+  "target": "/app/messaging/unlink",
+  "direction": "request",
+  "body": {
+    "linkId": "link_a"
+  }
+}

@@ -17,14 +17,13 @@ pub const SETUP_START_TARGET: &str = "/app/messaging/setup/start";
 pub const SETUP_SUBMIT_TARGET: &str = "/app/messaging/setup/submit";
 pub const SETUP_CANCEL_TARGET: &str = "/app/messaging/setup/cancel";
 pub const SETUP_STATUS_TARGET: &str = "/app/messaging/setup/status";
-pub const SURFACE_LIST_TARGET: &str = "/app/messaging/surface/list";
-pub const SURFACE_DISMISS_TARGET: &str = "/app/messaging/surface/dismiss";
-pub const SURFACE_BIND_CODE_CREATE_TARGET: &str = "/app/messaging/surface/bind-code/create";
-pub const ACTOR_LINK_CODE_CREATE_TARGET: &str = "/app/messaging/actor/link-code/create";
-pub const IDENTITY_CODE_STATUS_TARGET: &str = "/app/messaging/identity-code/status";
-pub const IDENTITY_CODE_EVENT_TARGET: &str = "/app/messaging/identity-code/changed";
-pub const ACTOR_LINK_LIST_TARGET: &str = "/app/messaging/actor/link/list";
-pub const ACTOR_LINK_DELETE_TARGET: &str = "/app/messaging/actor/link/delete";
+pub const UNBIND_TARGET: &str = "/app/messaging/unbind";
+pub const BINDING_LIST_TARGET: &str = "/app/messaging/binding/list";
+pub const BIND_CODE_CREATE_TARGET: &str = "/app/messaging/bind/code/create";
+pub const ACTOR_LINK_CODE_CREATE_TARGET: &str = "/app/messaging/link/code/create";
+pub const IDENTITY_CODE_STATUS_TARGET: &str = "/app/messaging/code/status";
+pub const ACTOR_LINK_LIST_TARGET: &str = "/app/messaging/link/list";
+pub const ACTOR_LINK_DELETE_TARGET: &str = "/app/messaging/unlink";
 
 pub const MANAGEMENT_TARGETS: &[&str] = &[
     PROVIDER_LIST_TARGET,
@@ -44,16 +43,16 @@ pub const MANAGEMENT_TARGETS: &[&str] = &[
     SETUP_STATUS_TARGET,
     SETUP_SUBMIT_TARGET,
     SETUP_CANCEL_TARGET,
-    SURFACE_LIST_TARGET,
-    SURFACE_DISMISS_TARGET,
-    SURFACE_BIND_CODE_CREATE_TARGET,
+    UNBIND_TARGET,
+    BINDING_LIST_TARGET,
+    BIND_CODE_CREATE_TARGET,
     ACTOR_LINK_CODE_CREATE_TARGET,
     IDENTITY_CODE_STATUS_TARGET,
     ACTOR_LINK_LIST_TARGET,
     ACTOR_LINK_DELETE_TARGET,
 ];
 
-pub const EVENT_TARGETS: &[&str] = &[IDENTITY_CODE_EVENT_TARGET];
+pub const EVENT_TARGETS: &[&str] = &[];
 
 pub fn is_management_target(target: &str) -> bool {
     MANAGEMENT_TARGETS.contains(&target)
@@ -80,14 +79,7 @@ pub fn required_management_operation(target: &str) -> Option<ManagementOperation
         SETUP_STATUS_TARGET => SetupStatus,
         SETUP_SUBMIT_TARGET => SetupSubmit,
         SETUP_CANCEL_TARGET => SetupCancel,
-        SURFACE_LIST_TARGET => SurfaceList,
-        SURFACE_DISMISS_TARGET => SurfaceDismiss,
-        SURFACE_BIND_CODE_CREATE_TARGET => SurfaceBindCodeCreate,
-        ACTOR_LINK_CODE_CREATE_TARGET => ActorLinkCodeCreate,
-        IDENTITY_CODE_STATUS_TARGET => IdentityCodeStatus,
-        ACTOR_LINK_LIST_TARGET => ActorLinkList,
-        ACTOR_LINK_DELETE_TARGET => ActorLinkDelete,
-        PROVIDER_LIST_TARGET | IDENTITY_CODE_EVENT_TARGET => return None,
+        PROVIDER_LIST_TARGET => return None,
         _ => return None,
     })
 }

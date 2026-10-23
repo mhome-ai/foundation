@@ -6,7 +6,9 @@
       "setupId": "setup-1",
       "status": "action_required",
       "expiresAtMs": 1893456000000,
-      "providerData": { "pairingCode": "ABCD" }
+      "providerData": {
+        "pairingCode": "ABCD"
+      }
     }
   }
 }
