@@ -127,6 +127,12 @@ published directory. The App dashboard and Space management page consume these
 endpoints through the existing SDK transport port. The page supports installation,
 pattern selection, configuration, explicit version changes and uninstall. Visible
 clients refresh selection on reconnect, foregrounding and every 30 seconds;
-realtime notifications, publisher CLI and Agent/MCP/Skill surfaces remain future
-work. See the frontend's [card guide](../../../../pallas-cat/docs/cards/README.md)
-for its current authoring tools and management flow.
+realtime notifications remain future work. The standalone versioned Card DevKit
+provides project creation, metadata, typed builds, verification, real App preview
+and publication. The MeowLink CLI and Agent/MCP tools expose catalog queries and
+Space installation/override management; the external coding Agent Skill guides
+authoring with the DevKit. Built-in Agent project editing and compilation require
+a future local execution node. These source capabilities require their matching
+published artifacts and deployed services. See the frontend's
+[card guide](../../../../pallas-cat/docs/cards/README.md) for the authoring tools
+and management flow.
