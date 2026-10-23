@@ -46,10 +46,9 @@ fn summary_batch_has_no_pagination_or_id_count_cap() {
 }
 
 #[test]
-fn summary_references_are_hub_owned_and_relayable() {
-    use app_facade_api::routing::{route_policy_for_target, ExecutionSelector, RelayPolicy};
+fn summary_references_are_hub_owned() {
+    use app_facade_api::routing::{route_policy_for_target, ExecutionSelector};
     let policy =
         route_policy_for_target(app_facade_api::person::SUMMARY_IMAGES_BATCH_GET_TARGET).unwrap();
     assert_eq!(policy.execution, ExecutionSelector::Hub);
-    assert_eq!(policy.relay, RelayPolicy::CloudRelayAllowed);
 }

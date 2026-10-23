@@ -1,6 +1,6 @@
 use app_facade_api::{
     authorization::{required, OperationPolicy},
-    routing::{route_policy_for_target, ExecutionSelector, RelayPolicy},
+    routing::{route_policy_for_target, ExecutionSelector},
 };
 use serde_json::{json, Value};
 
@@ -22,5 +22,4 @@ fn client_appearance_report_is_scoped_and_cannot_choose_identity() {
     assert_eq!(required(target), Some(OperationPolicy::SpaceRead));
     let route = route_policy_for_target(target).unwrap();
     assert_eq!(route.execution, ExecutionSelector::ScopeMode);
-    assert_eq!(route.relay, RelayPolicy::DirectOnly);
 }

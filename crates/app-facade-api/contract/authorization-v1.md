@@ -29,8 +29,22 @@ their principal are rejected without legacy conversion.
 the exact `serviceOperations` allowlist. Client input never accepts this
 envelope, and Agent forwarding cannot select service authority. `MwsClientInfo`
 is routing metadata, not the authority for these business calls.
-The bridge accepts direct calls only. Local conversations and their prepared
-actions belong to Core; no cloud wrapper or second approval record is created.
+Internal `/dispatch/app/*` calls accept direct domain execution only. Public
+`/invoke/app/*` forwarding instead carries the complete `ForwardedCall` and enters
+the same Core action orchestration as LAN calls. These are distinct private
+operations, not compatibility formats. The latter preserves Client identity or
+trusted MCP/Agent invocation binding and returns a tagged JSON/text response.
+User Client cloud ingress and MCP require a User principal. A verified Agent run
+may carry its original Space principal only back to that bound Space; it does
+not issue a cloud credential to a Space Client or invent an acting User.
+
+Prepared state belongs to the operation's business executor. Changing Client
+transport does not create a second action record. MCP's cloud continuation owns
+its interaction/grant lifecycle, not a copy of Core business state. Agent adapters
+carry the executor's prepared reference rather than querying a cloud action table.
+Deploy this contract and its consumers together. Drain or expire pending
+interactions before cutover; do not translate old references, migrate action rows,
+or automatically replay operations after uncertain delivery.
 
 Host administration retains its independent authentication and ownership checks;
 the User policies on Host operations do not grant Host administration. Space Pod

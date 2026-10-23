@@ -18,38 +18,21 @@ pub enum ExecutionSelector {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum RelayPolicy {
-    /// The client must reach the selected executor directly.
-    DirectOnly,
-    /// A Hub-owned request may use the cloud connection as a transport relay.
-    CloudRelayAllowed,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RoutePolicy {
     pub execution: ExecutionSelector,
-    pub relay: RelayPolicy,
 }
 
-const DIRECT_CLOUD: RoutePolicy = RoutePolicy {
+const CLOUD: RoutePolicy = RoutePolicy {
     execution: ExecutionSelector::Cloud,
-    relay: RelayPolicy::DirectOnly,
 };
-const DIRECT_SCOPE: RoutePolicy = RoutePolicy {
+const SCOPE: RoutePolicy = RoutePolicy {
     execution: ExecutionSelector::ScopeMode,
-    relay: RelayPolicy::DirectOnly,
 };
-const DIRECT_HUB: RoutePolicy = RoutePolicy {
+const HUB: RoutePolicy = RoutePolicy {
     execution: ExecutionSelector::Hub,
-    relay: RelayPolicy::DirectOnly,
-};
-const RELAYABLE_HUB: RoutePolicy = RoutePolicy {
-    execution: ExecutionSelector::Hub,
-    relay: RelayPolicy::CloudRelayAllowed,
 };
 const REQUEST_PLACEMENT: RoutePolicy = RoutePolicy {
     execution: ExecutionSelector::RequestPlacement,
-    relay: RelayPolicy::DirectOnly,
 };
 
 include!("routing.generated.rs");
@@ -66,13 +49,13 @@ pub fn route_policy_for_target(target: &str) -> Option<RoutePolicy> {
 
     // Every exact exception is resolved before any domain prefix.
     if SCOPE_MODE_TARGETS.contains(&target) {
-        return Some(DIRECT_SCOPE);
+        return Some(SCOPE);
     }
     if CLOUD_TARGETS.contains(&target) {
-        return Some(DIRECT_CLOUD);
+        return Some(CLOUD);
     }
-    if CLOUD_RELAY_TARGETS.contains(&target) {
-        return Some(RELAYABLE_HUB);
+    if HUB_TARGETS.contains(&target) {
+        return Some(HUB);
     }
 
     if REQUEST_PLACEMENT_PREFIXES
@@ -82,16 +65,16 @@ pub fn route_policy_for_target(target: &str) -> Option<RoutePolicy> {
         return Some(REQUEST_PLACEMENT);
     }
     if HUB_PREFIXES.iter().any(|prefix| target.starts_with(prefix)) {
-        return Some(DIRECT_HUB);
+        return Some(HUB);
     }
     if CLOUD_PREFIXES
         .iter()
         .any(|prefix| target.starts_with(prefix))
     {
-        return Some(DIRECT_CLOUD);
+        return Some(CLOUD);
     }
 
-    Some(DIRECT_SCOPE)
+    Some(SCOPE)
 }
 
 /// Read request-controlled placement from the strict App Facade envelope.
@@ -109,19 +92,19 @@ mod tests {
     fn exact_exceptions_win_over_domain_defaults() {
         assert_eq!(
             route_policy_for_target("/app/scope/context/get"),
-            Some(DIRECT_SCOPE)
+            Some(SCOPE)
         );
         assert_eq!(
             route_policy_for_target(crate::plugin::ENABLED_LIST_TARGET),
-            Some(RELAYABLE_HUB)
+            Some(HUB)
         );
         assert_eq!(
             route_policy_for_target(crate::system::INSTANCES_TARGET),
-            Some(RELAYABLE_HUB)
+            Some(SCOPE)
         );
         assert_eq!(
             route_policy_for_target(crate::plugin::ENABLE_START_TARGET),
-            Some(DIRECT_HUB)
+            Some(HUB)
         );
     }
 
@@ -129,7 +112,7 @@ mod tests {
     fn domains_select_their_authoritative_executor() {
         assert_eq!(
             route_policy_for_target("/app/scope/member/list"),
-            Some(DIRECT_CLOUD)
+            Some(CLOUD)
         );
         assert_eq!(
             route_policy_for_target("/app/messaging/provider/list"),
@@ -137,32 +120,29 @@ mod tests {
         );
         assert_eq!(
             route_policy_for_target("/app/object-storage/session/acquire"),
-            Some(DIRECT_HUB)
+            Some(HUB)
         );
         assert_eq!(
             route_policy_for_target("/app/runtime/status/list"),
-            Some(DIRECT_HUB)
+            Some(HUB)
         );
         assert_eq!(
             route_policy_for_target(crate::system::INSTANCES_TARGET),
-            Some(RELAYABLE_HUB)
+            Some(SCOPE)
         );
         assert_eq!(
             route_policy_for_target(crate::system::HOSTS_TARGET),
-            Some(RELAYABLE_HUB)
+            Some(HUB)
         );
         assert_eq!(
             route_policy_for_target(crate::system::HOSTS_RUNTIME_TARGET),
-            Some(RELAYABLE_HUB)
+            Some(HUB)
         );
         assert_eq!(
             route_policy_for_target("/app/host/access/issue"),
-            Some(DIRECT_CLOUD)
+            Some(CLOUD)
         );
-        assert_eq!(
-            route_policy_for_target("/app/device/list"),
-            Some(DIRECT_SCOPE)
-        );
+        assert_eq!(route_policy_for_target("/app/device/list"), Some(SCOPE));
     }
 
     #[test]

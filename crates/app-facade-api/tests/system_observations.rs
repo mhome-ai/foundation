@@ -112,7 +112,13 @@ fn host_management_uses_the_hosts_runtime_facade() {
     assert!(!routing.contains("/app/system/host/"));
     assert!(!routing.contains("/app/system/inventory/"));
     assert!(routing.contains(INSTANCES_TARGET));
-    assert!(routing.contains(HOSTS_TARGET));
-    assert!(routing.contains(HOSTS_RUNTIME_TARGET));
+    for target in [HOSTS_TARGET, HOSTS_RUNTIME_TARGET] {
+        assert_eq!(
+            app_facade_api::routing::route_policy_for_target(target)
+                .unwrap()
+                .execution,
+            app_facade_api::routing::ExecutionSelector::Hub
+        );
+    }
     assert!(!routing.contains("/app/system/hosts/claim"));
 }

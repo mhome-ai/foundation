@@ -1,7 +1,8 @@
 # Client appearance
 
 `/app/client/appearance/report` uses the canonical FacadeCall envelope and the
-normal Space-mode, direct-only route. Its input is the six-field snapshot in
+normal Space-mode execution rule. User Client reports may enter directly or
+through authenticated Cloud forwarding, preserving the original live Client identity. Its input is the six-field snapshot in
 `schema/client-appearance.v1.schema.json`; success returns `{}`.
 
 Only the authenticated, live UI Client may report its own snapshot in the Space

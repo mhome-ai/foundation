@@ -13,12 +13,12 @@ const RULE_FIELDS = Object.freeze([
   "scopeModeTargets",
   "hubPrefixes",
   "requestPlacementPrefixes",
-  "cloudRelayTargets",
+  "hubTargets",
 ]);
 const EXACT_FIELDS = Object.freeze([
   "cloudTargets",
   "scopeModeTargets",
-  "cloudRelayTargets",
+  "hubTargets",
 ]);
 const PREFIX_FIELDS = Object.freeze([
   "cloudPrefixes",
@@ -31,7 +31,6 @@ function assertRoutingContract(manifest) {
     manifest.manifest !== "mhome.app-facade.routing.v1" ||
     manifest.targetPrefix !== "/app/" ||
     manifest.default?.execution !== "scopeMode" ||
-    manifest.default?.relay !== "directOnly" ||
     manifest.matching !== "exactBeforePrefix" ||
     manifest.placementJsonPointer !== "/input/placement"
   ) {
@@ -115,8 +114,8 @@ const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
 ${rules.requestPlacementPrefixes.map((value) => `    ${rustString(value)},`).join("\n")}
 ];
 
-/// Hub management operations for which Lion provides a transport relay.
-${rustSlice("CLOUD_RELAY_TARGETS", rules.cloudRelayTargets, "pub const")}
+/// Exact Hub-owned operations outside Hub-owned domains.
+${rustSlice("HUB_TARGETS", rules.hubTargets, "pub const")}
 `;
 }
 

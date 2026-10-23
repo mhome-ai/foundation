@@ -7,8 +7,9 @@ The package also carries the explicitly private `/local/*` native-daemon
 extension. `/app/*` is portable and may be routed according to the public
 routing manifest. `/local/*` is an exact allowlist for the current MeowLink
 native client process and must never be forwarded to cloud, Hub, or Host
-connections. Hub `/app/*` calls are direct-only `FacadeCall`s; Hub `/local/*`
-calls carry the domain input directly and never use the public envelope.
+connections. Hub `/app/*` calls use `FacadeCall`, whether delivered directly
+or forwarded by authenticated Cloud ingress. The separate Hub `/local/*`
+protocol carries domain input and never uses the public envelope.
 
 Every `/app/*` request uses the strict `FacadeCall` envelope. Invocation
 metadata lives in `control`; the domain request lives in `input`. The crate
@@ -57,13 +58,17 @@ claim of that Host requires. See [the contract](contract/host-provisioning-v1.md
 
 ## Routing contract
 
-`manifest/routing.v1.json` is the canonical client-side routing policy for the
+`manifest/routing.v1.json` is the shared business execution policy for the
 new `/app/*` facade. Ordinary operations follow the active Space mode. Only
 exceptional domains declare a fixed Cloud, Hub, or request-placement executor.
-Relay permission is separate from execution authority so a client
-cannot silently turn every Hub request into a cloud-proxied request.
+Cloud-capable User Clients may enter through Cloud for registered public control
+operations. Lion resolves the same execution rules before converting domain input,
+and forwards complete Core-owned calls through the authenticated Bridge. Runtime
+connection state, ingress restrictions, authorization, and surface exposure remain
+separate concerns. A transport change never changes business ownership or replays
+a request whose outcome is unknown.
 
-The checked-in Rust table is generated from that manifest, and non-Rust clients
+The checked-in Rust table is generated from that manifest, and Lion and non-Rust clients
 consume the same manifest from the npm protocol package. Local Spaces execute
 Host inventory and management on the selected Hub through `/app/system/hosts/*`.
 A native Client remains the path when no local Hub is selected. Lion's legacy

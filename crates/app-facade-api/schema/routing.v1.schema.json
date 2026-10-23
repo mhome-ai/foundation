@@ -14,23 +14,34 @@
     "rules"
   ],
   "properties": {
-    "manifest": { "const": "mhome.app-facade.routing.v1" },
+    "manifest": {
+      "const": "mhome.app-facade.routing.v1"
+    },
     "contractVersion": {
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
-    "targetPrefix": { "const": "/app/" },
+    "targetPrefix": {
+      "const": "/app/"
+    },
     "default": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["execution", "relay"],
+      "required": [
+        "execution"
+      ],
       "properties": {
-        "execution": { "const": "scopeMode" },
-        "relay": { "const": "directOnly" }
+        "execution": {
+          "const": "scopeMode"
+        }
       }
     },
-    "matching": { "const": "exactBeforePrefix" },
-    "placementJsonPointer": { "const": "/input/placement" },
+    "matching": {
+      "const": "exactBeforePrefix"
+    },
+    "placementJsonPointer": {
+      "const": "/input/placement"
+    },
     "rules": {
       "type": "object",
       "additionalProperties": false,
@@ -40,15 +51,27 @@
         "scopeModeTargets",
         "hubPrefixes",
         "requestPlacementPrefixes",
-        "cloudRelayTargets"
+        "hubTargets"
       ],
       "properties": {
-        "cloudPrefixes": { "$ref": "#/$defs/targetList" },
-        "cloudTargets": { "$ref": "#/$defs/targetList" },
-        "scopeModeTargets": { "$ref": "#/$defs/targetList" },
-        "hubPrefixes": { "$ref": "#/$defs/targetList" },
-        "requestPlacementPrefixes": { "$ref": "#/$defs/targetList" },
-        "cloudRelayTargets": { "$ref": "#/$defs/targetList" }
+        "cloudPrefixes": {
+          "$ref": "#/$defs/targetList"
+        },
+        "cloudTargets": {
+          "$ref": "#/$defs/targetList"
+        },
+        "scopeModeTargets": {
+          "$ref": "#/$defs/targetList"
+        },
+        "hubPrefixes": {
+          "$ref": "#/$defs/targetList"
+        },
+        "requestPlacementPrefixes": {
+          "$ref": "#/$defs/targetList"
+        },
+        "hubTargets": {
+          "$ref": "#/$defs/targetList"
+        }
       }
     }
   },

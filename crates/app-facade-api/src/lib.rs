@@ -30,3 +30,4 @@ pub mod user;
 
 pub mod authorization;
 pub mod delegation;
+pub mod forwarding;

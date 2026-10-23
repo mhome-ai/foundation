@@ -1,0 +1,418 @@
+[
+  {
+    "target": "/app/scope/create",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/scope/create",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/scope/create",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/scope/create",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/room/delete",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/room/delete",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/room/delete",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/room/delete",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/system/instances/get",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/system/instances/get",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/system/instances/get",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/system/instances/get",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/system/clients/get",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/system/clients/get",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/system/clients/get",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/system/clients/get",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/system/hosts/get",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/system/hosts/get",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/system/hosts/get",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/system/hosts/get",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/hub/status",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/hub/status",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/hub/status",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/hub/status",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/hub/restart",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/hub/restart",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/hub/restart",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/hub/restart",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/plugin/catalog/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/plugin/catalog/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/plugin/catalog/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/plugin/catalog/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/plugin/enable/start",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/plugin/enable/start",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/plugin/enable/start",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/plugin/enable/start",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/object-storage/folders/create",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/object-storage/folders/create",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/object-storage/folders/create",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/object-storage/folders/create",
+    "execution": "hub",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/artifact/resolve",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/artifact/resolve",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/artifact/resolve",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/artifact/resolve",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/messaging/provider/list",
+    "execution": "requestPlacement",
+    "placement": "local",
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/messaging/provider/list",
+    "execution": "requestPlacement",
+    "placement": "cloud",
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/messaging/provider/list",
+    "execution": "requestPlacement",
+    "placement": "local",
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/messaging/provider/list",
+    "execution": "requestPlacement",
+    "placement": "cloud",
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/messaging/provider/list",
+    "execution": "requestPlacement",
+    "placement": "local",
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/messaging/provider/list",
+    "execution": "requestPlacement",
+    "placement": "cloud",
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/messaging/provider/list",
+    "execution": "requestPlacement",
+    "placement": "local",
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/messaging/provider/list",
+    "execution": "requestPlacement",
+    "placement": "cloud",
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  }
+]

@@ -30,6 +30,8 @@ const SCOPE_MODE_TARGETS: &[&str] = &[
     "/app/artifact/upload/start",
     "/app/artifact/upload/complete",
     "/app/artifact/upload/cancel",
+    "/app/system/instances/get",
+    "/app/system/clients/get",
 ];
 
 const HUB_PREFIXES: &[&str] = &[
@@ -37,8 +39,6 @@ const HUB_PREFIXES: &[&str] = &[
     "/app/interaction-flow/",
     "/app/object-storage/",
     "/app/runtime/",
-    "/app/system/instances/",
-    "/app/system/clients/",
     "/app/system/hosts/",
     "/app/person/",
 ];
@@ -47,34 +47,8 @@ const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
     "/app/messaging/",
 ];
 
-/// Hub management operations for which Lion provides a transport relay.
-pub const CLOUD_RELAY_TARGETS: &[&str] = &[
-    "/app/plugin/candidate/list",
-    "/app/plugin/detail/get",
-    "/app/plugin/enabled/list",
-    "/app/object-storage/overview",
-    "/app/object-storage/folders/create",
-    "/app/object-storage/folders/get",
-    "/app/object-storage/folders/update",
-    "/app/object-storage/folders/list",
-    "/app/object-storage/settings/update",
-    "/app/system/instances/get",
-    "/app/system/clients/get",
-    "/app/system/hosts/get",
-    "/app/system/hosts/runtime",
-    "/app/person/summary-images/batch-get",
-    "/app/person/status",
-    "/app/person/list",
-    "/app/person/get",
-    "/app/person/reset",
-    "/app/person/clusters/list",
-    "/app/person/clusters/image",
-    "/app/person/backup/export",
-    "/app/person/backup/read",
-    "/app/person/backup/close",
-    "/app/person/backup/import/start",
-    "/app/person/backup/import/write",
-    "/app/person/backup/import/commit",
-    "/app/person/clusters/name",
-    "/app/person/clusters/delete",
+/// Exact Hub-owned operations outside Hub-owned domains.
+pub const HUB_TARGETS: &[&str] = &[
+    "/app/hub/restart",
+    "/app/hub/status",
 ];

@@ -498,7 +498,7 @@ fn target_manifest_matches_rust_inventory() {
 #[test]
 fn routing_manifest_matches_rust_policy() {
     use app_facade_api::routing::{
-        route_policy_for_target, ExecutionSelector, RelayPolicy, CLOUD_RELAY_TARGETS, CLOUD_TARGETS,
+        route_policy_for_target, ExecutionSelector, CLOUD_TARGETS, HUB_TARGETS,
     };
 
     let manifest: Value =
@@ -523,7 +523,6 @@ fn routing_manifest_matches_rust_policy() {
     assert_eq!(manifest["contractVersion"], env!("CARGO_PKG_VERSION"));
     assert_eq!(manifest["targetPrefix"], "/app/");
     assert_eq!(manifest["default"]["execution"], "scopeMode");
-    assert_eq!(manifest["default"]["relay"], "directOnly");
     assert_eq!(manifest["matching"], "exactBeforePrefix");
     assert_eq!(manifest["placementJsonPointer"], "/input/placement");
 
@@ -533,7 +532,7 @@ fn routing_manifest_matches_rust_policy() {
         "scopeModeTargets",
         "hubPrefixes",
         "requestPlacementPrefixes",
-        "cloudRelayTargets",
+        "hubTargets",
     ]
     .into_iter()
     .collect::<BTreeSet<_>>();
@@ -547,7 +546,7 @@ fn routing_manifest_matches_rust_policy() {
         expected_rule_groups
     );
 
-    let exact_groups = ["cloudTargets", "scopeModeTargets", "cloudRelayTargets"];
+    let exact_groups = ["cloudTargets", "scopeModeTargets", "hubTargets"];
     let mut exact_owners = std::collections::BTreeMap::new();
     for field in exact_groups {
         for target in strings(field) {
@@ -583,8 +582,8 @@ fn routing_manifest_matches_rust_policy() {
             .collect()
     );
     assert_eq!(
-        strings("cloudRelayTargets"),
-        CLOUD_RELAY_TARGETS
+        strings("hubTargets"),
+        HUB_TARGETS
             .iter()
             .map(|target| (*target).to_owned())
             .collect()
@@ -593,16 +592,14 @@ fn routing_manifest_matches_rust_policy() {
     for target in strings("cloudTargets") {
         let policy = route_policy_for_target(&target).unwrap();
         assert_eq!(policy.execution, ExecutionSelector::Cloud, "{target}");
-        assert_eq!(policy.relay, RelayPolicy::DirectOnly, "{target}");
     }
     for target in strings("scopeModeTargets") {
         let policy = route_policy_for_target(&target).unwrap();
         assert_eq!(policy.execution, ExecutionSelector::ScopeMode, "{target}");
     }
-    for target in strings("cloudRelayTargets") {
+    for target in strings("hubTargets") {
         let policy = route_policy_for_target(&target).unwrap();
         assert_eq!(policy.execution, ExecutionSelector::Hub, "{target}");
-        assert_eq!(policy.relay, RelayPolicy::CloudRelayAllowed, "{target}");
     }
     for prefix in strings("cloudPrefixes") {
         let policy = route_policy_for_target(&format!("{prefix}conformance-probe")).unwrap();
@@ -741,7 +738,7 @@ fn topology_snapshot_matches_public_schema() {
 #[test]
 fn artifact_is_registered_as_a_scope_mode_app_facade_domain() {
     use app_facade_api::artifact::{REQUEST_TARGETS, RESOLVE_TARGET};
-    use app_facade_api::routing::{route_policy_for_target, ExecutionSelector, RelayPolicy};
+    use app_facade_api::routing::{route_policy_for_target, ExecutionSelector};
 
     let manifest: Value =
         serde_json::from_str(include_str!("../manifest/app-facade.v1.json")).unwrap();
@@ -754,7 +751,6 @@ fn artifact_is_registered_as_a_scope_mode_app_facade_domain() {
     assert_eq!(RESOLVE_TARGET, "/app/artifact/resolve");
     let policy = route_policy_for_target(RESOLVE_TARGET).unwrap();
     assert_eq!(policy.execution, ExecutionSelector::ScopeMode);
-    assert_eq!(policy.relay, RelayPolicy::DirectOnly);
 }
 
 #[test]
@@ -804,7 +800,7 @@ fn messaging_identity_codes_reject_the_retired_target_and_confirmation_contract(
 
 #[test]
 fn user_profile_is_a_cloud_account_domain() {
-    use app_facade_api::routing::{route_policy_for_target, ExecutionSelector, RelayPolicy};
+    use app_facade_api::routing::{route_policy_for_target, ExecutionSelector};
     use app_facade_api::user::{
         CommitAvatarRequest, PrepareAvatarRequest, ProfileUpdateRequest, UserProfile,
         REQUEST_TARGETS,
@@ -822,7 +818,6 @@ fn user_profile_is_a_cloud_account_domain() {
     for target in REQUEST_TARGETS {
         let policy = route_policy_for_target(target).unwrap();
         assert_eq!(policy.execution, ExecutionSelector::Cloud, "{target}");
-        assert_eq!(policy.relay, RelayPolicy::DirectOnly, "{target}");
     }
 
     let schema: Value =
