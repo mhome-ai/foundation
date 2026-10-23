@@ -123,5 +123,10 @@ upload and error responses are `no-store`.
 Unfinished publishing sessions expire but their draft records and unreferenced
 objects are currently retained. This version provides no automatic garbage
 collector, package deletion or release deletion. Cleanup must never remove a
-published directory. Realtime notifications, App SDK consumers, the management
-page, publisher CLI and Agent/MCP/Skill surfaces are subsequent integration work.
+published directory. The App dashboard and Space management page consume these
+endpoints through the existing SDK transport port. The page supports installation,
+pattern selection, configuration, explicit version changes and uninstall. Visible
+clients refresh selection on reconnect, foregrounding and every 30 seconds;
+realtime notifications, publisher CLI and Agent/MCP/Skill surfaces remain future
+work. See the frontend's [card guide](../../../../pallas-cat/docs/cards/README.md)
+for its current authoring tools and management flow.
