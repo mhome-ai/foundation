@@ -8,7 +8,6 @@ pub const DETAIL_GET_TARGET: &str = "/app/plugin/detail/get";
 pub const CANDIDATE_LIST_TARGET: &str = "/app/plugin/candidate/list";
 pub const ENABLE_START_TARGET: &str = "/app/plugin/enable/start";
 pub const ENABLE_STATUS_TARGET: &str = "/app/plugin/enable/status";
-pub const ENABLE_CANCEL_TARGET: &str = "/app/plugin/enable/cancel";
 pub const DISABLE_TARGET: &str = "/app/plugin/disable";
 pub const PROFILE_UPDATE_TARGET: &str = "/app/plugin/profile/update";
 pub const SETTINGS_CHANGED_TARGET: &str = "/app/plugin/settings/changed";

@@ -180,7 +180,6 @@
     "/app/plugin/catalog/list": "spaceRead",
     "/app/plugin/detail/get": "spaceRead",
     "/app/plugin/disable": "spaceManage",
-    "/app/plugin/enable/cancel": "spaceManage",
     "/app/plugin/enable/start": "spaceManage",
     "/app/plugin/enable/status": "spaceManage",
     "/app/plugin/enabled/list": "spaceRead",

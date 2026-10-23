@@ -44,7 +44,6 @@
         "/app/plugin/candidate/list",
         "/app/plugin/enable/start",
         "/app/plugin/enable/status",
-        "/app/plugin/enable/cancel",
         "/app/plugin/disable",
         "/app/plugin/profile/update"
       ],
