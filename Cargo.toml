@@ -1,6 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
+  "crates/script-sdk",
+  "crates/wasm-runtime",
   "crates/person-api",
   "crates/face-matching",
   "crates/artifact",

@@ -4,6 +4,9 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 
 ## Crates
 
+- `mhome-script-sdk`: Automation values, bounded binary codec, generated-wrapper helpers and guest ABI.
+- `mhome-wasm-runtime`: shared Wasmtime engine, per-call execution policies and Script ABI adapter.
+
 - `mhome-person-api`: Space-owned Person management, embedding contracts and authoritative observations.
 - `mhome-face-matching`: shared pure matching over model-compatible galleries.
 
@@ -23,6 +26,8 @@ must not depend on Baycat, MeowCore, Agent, or cloud implementations, databases,
 product workflows. Shared wire contracts and deterministic domain models are allowed when they
 remain leaf libraries. A crate belongs here only when it has multiple repository consumers or
 defines a genuinely shared leaf contract.
+
+The script contract and validation commands are in [the Script SDK contract](crates/script-sdk/README.md).
 
 ## Development
 

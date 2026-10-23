@@ -7,6 +7,16 @@ protocol=""
 npm_package=""
 
 case "${tag}" in
+  mhome-script-sdk-v*)
+    package="mhome-script-sdk"
+    manifest="crates/script-sdk/Cargo.toml"
+    version="${tag#mhome-script-sdk-v}"
+    ;;
+  mhome-wasm-runtime-v*)
+    package="mhome-wasm-runtime"
+    manifest="crates/wasm-runtime/Cargo.toml"
+    version="${tag#mhome-wasm-runtime-v}"
+    ;;
   mhome-person-api-v*)
     package="mhome-person-api"
     manifest="crates/person-api/Cargo.toml"
