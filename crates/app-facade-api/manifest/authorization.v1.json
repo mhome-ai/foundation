@@ -2,7 +2,7 @@
   "contractVersion": "1.46.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
-    "/app/agent/credit/usage": "userRead",
+    "/app/agent/credit/usage": "spaceRead",
     "/app/agent/identity/get": "spaceRead",
     "/app/agent/identity/save": "spaceWrite",
     "/app/agent/llm/mapping/list": "spaceRead",

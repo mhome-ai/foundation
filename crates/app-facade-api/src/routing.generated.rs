@@ -11,6 +11,7 @@ const CLOUD_PREFIXES: &[&str] = &[
 /// Exact Cloud-owned operations outside Cloud-owned domains.
 pub const CLOUD_TARGETS: &[&str] = &[
     "/app/agent/context/get",
+    "/app/agent/credit/usage",
     "/app/hub/cache/clear",
     "/app/hub/get",
     "/app/hub/remove",

@@ -614,5 +614,41 @@
     "scopeId": "space",
     "target": "/app/artifact/internal/read",
     "allowed": false
+  },
+  {
+    "name": "credit-usage:owner",
+    "principal": {
+      "kind": "user",
+      "userId": "owner"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/agent/credit/usage",
+    "allowed": true
+  },
+  {
+    "name": "credit-usage:member",
+    "principal": {
+      "kind": "user",
+      "userId": "member"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/agent/credit/usage",
+    "allowed": true
+  },
+  {
+    "name": "credit-usage:nonmember",
+    "principal": {
+      "kind": "user",
+      "userId": "nonmember"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/agent/credit/usage",
+    "allowed": false
   }
 ]

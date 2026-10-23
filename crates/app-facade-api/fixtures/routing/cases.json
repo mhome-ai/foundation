@@ -414,5 +414,37 @@
     "hubReady": false,
     "cloudReady": false,
     "entry": "unavailable"
+  },
+  {
+    "target": "/app/agent/credit/usage",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/agent/credit/usage",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/agent/credit/usage",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/agent/credit/usage",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
   }
 ]
