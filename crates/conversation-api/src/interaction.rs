@@ -98,6 +98,9 @@ pub struct PendingInteraction {
     pub title: String,
     pub message: String,
     pub items: Vec<PendingInteractionItem>,
+    /// Persisted answers. Clients display the first item not present here.
+    /// Answer bodies remain private until the tool produces its final result.
+    pub answered_action_ids: Vec<String>,
 }
 
 /// A response consumes one interaction. It never requests another waiting phase.

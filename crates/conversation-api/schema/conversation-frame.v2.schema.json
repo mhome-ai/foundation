@@ -132,7 +132,8 @@
         "batchId",
         "title",
         "message",
-        "items"
+        "items",
+        "answeredActionIds"
       ],
       "properties": {
         "requestId": {
@@ -152,6 +153,13 @@
           "minItems": 1,
           "items": {
             "$ref": "#/$defs/interactionItem"
+          }
+        },
+        "answeredActionIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
           }
         }
       }

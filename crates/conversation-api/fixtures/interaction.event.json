@@ -33,7 +33,8 @@
               }
             }
           }
-        ]
+        ],
+        "answeredActionIds": []
       },
       "runOutcome": {
         "requestId": "request-1",

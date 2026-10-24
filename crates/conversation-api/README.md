@@ -50,6 +50,15 @@ data. The UI operates on that exact session. A status check returns its actual r
 only a new tool call can request further human interaction. Prepared approvals retain their
 business prepare/commit contract. Card state and responses are separate from model history.
 
+The Conversation backend accepts a nonempty subset of distinct known item answers, persists
+partial responses privately with their responder identities, and resumes Runtime only after
+all items are answered. Public `PendingInteraction.answeredActionIds` is required and carries
+only progress. Clients show the first unanswered item and advance after canonical acknowledgement.
+Identical retries by the same responder are idempotent; accepted answers cannot be edited.
+Runtime's execution command still carries the complete batch. User actions may open a shared
+frontend Operation that performs its business writes before returning a safe result. The
+saved handler validates or reads that result rather than repeating the write.
+
 `RunErrorCode` is the closed catalog for `runOutcome.errorCode` and Agent `Failed.code`. Host
 terminalize and Agent failures emit the same strings. `status` and `failure.source` are properties
 of the code; `failure.code` equals `errorCode`. User-visible copy stays in `runOutcome.message`,
