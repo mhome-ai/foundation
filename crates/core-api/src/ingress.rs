@@ -10,8 +10,10 @@ pub const IPC_TIMEOUT_GRACE: Duration = Duration::from_secs(5);
 /// Rust validation may build a bundle for 180s. Leave time for analysis and the
 /// Core -> cloud round trip; callers add their own transport grace outside this.
 pub const SCRIPT_VALIDATION_TIMEOUT: Duration = Duration::from_secs(205);
+/// Build (180s), installation (180s), analysis and database replacement.
+pub const SCRIPT_SAVE_TIMEOUT: Duration = Duration::from_secs(420);
 
-/// Select a longer budget only for validation carrying companion source. This
+/// Select build/install budgets for companion-source or stored-source operations. This
 /// recognizes wire envelopes, not authorization: ingress still validates them.
 pub fn script_validation_timeout(target: &str, payload: &str) -> Option<Duration> {
     let (target, forwarded) = target
@@ -19,14 +21,30 @@ pub fn script_validation_timeout(target: &str, payload: &str) -> Option<Duration
         .or_else(|| target.strip_prefix("/dispatch/agent"))
         .or_else(|| target.strip_prefix("/dispatch"))
         .map_or((target, false), |target| (target, true));
-    if !matches!(
+    // These routes resolve stored source, so the request cannot reveal companion functions.
+    if matches!(
         target,
-        "/app/automation/verify"
-            | "/bridge/automation/parse"
-            | "/bridge/automation/format"
-            | "/bridge/automation/verify"
-            | "/automation/format"
+        "/automation/snapshot/rollback"
+            | "/app/automation/snapshot/rollback"
+            | "/automation/overview/save"
+            | "/automation/copy"
+            | "/automation/enroll"
     ) {
+        return Some(SCRIPT_SAVE_TIMEOUT);
+    }
+    let saving = matches!(target, "/automation/save" | "/app/automation/save");
+    if !saving
+        && !matches!(
+            target,
+            "/app/automation/verify"
+                | "/bridge/automation/parse"
+                | "/bridge/automation/format"
+                | "/bridge/automation/verify"
+                | "/automation/format"
+                | "/bridge/automation/compile"
+                | "/bridge/agent/automation/compile"
+        )
+    {
         return None;
     }
     let root: serde_json::Value = serde_json::from_str(payload).ok()?;
@@ -38,7 +56,11 @@ pub fn script_validation_timeout(target: &str, payload: &str) -> Option<Duration
         &root
     };
     let scripts = input.get("script")?.get("scripts")?.as_object()?;
-    (!scripts.is_empty()).then_some(SCRIPT_VALIDATION_TIMEOUT)
+    (!scripts.is_empty()).then_some(if saving {
+        SCRIPT_SAVE_TIMEOUT
+    } else {
+        SCRIPT_VALIDATION_TIMEOUT
+    })
 }
 
 pub fn request_timeout(target: &str) -> Duration {
@@ -204,7 +226,6 @@ mod tests {
             );
         }
         for target in [
-            "/app/automation/save",
             "/app/automation/start",
             "/app/automation/verify/extra",
             "/app/room/list",
@@ -221,6 +242,45 @@ mod tests {
             node_id: "node".into(),
         };
         assert_eq!(input_timeout(&request), SCRIPT_VALIDATION_TIMEOUT);
+    }
+    #[test]
+    fn script_save_budgets_cover_build_install_and_stored_source_routes() {
+        for prefix in ["", "/invoke", "/dispatch", "/dispatch/agent"] {
+            let call = serde_json::json!({"input":{"script":{"scripts":{"f":"source"}}}});
+            let wire = if prefix.is_empty() {
+                call
+            } else {
+                serde_json::json!({"call":call})
+            };
+            assert_eq!(
+                script_validation_timeout(
+                    &format!("{prefix}/app/automation/save"),
+                    &wire.to_string()
+                ),
+                Some(SCRIPT_SAVE_TIMEOUT)
+            );
+        }
+        assert_eq!(
+            script_validation_timeout(
+                "/automation/save",
+                r#"{"script":{"scripts":{"f":"source"}}}"#
+            ),
+            Some(SCRIPT_SAVE_TIMEOUT)
+        );
+        assert_eq!(
+            script_validation_timeout("/automation/save", r#"{"script":{"scripts":{}}}"#),
+            None
+        );
+        for target in [
+            "/automation/snapshot/rollback",
+            "/app/automation/snapshot/rollback",
+            "/automation/overview/save",
+        ] {
+            assert_eq!(
+                script_validation_timeout(target, "{}"),
+                Some(SCRIPT_SAVE_TIMEOUT)
+            );
+        }
     }
     fn request(target: &str, kind: &str, payload: &str) -> MwsMessage {
         serde_json::from_value(serde_json::json!({"target":target,"type":kind,"payload":payload,"scopeId":"untrusted","sig":"s"})).unwrap()
