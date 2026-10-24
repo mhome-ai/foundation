@@ -1700,7 +1700,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.46.1"
+version = "1.47.0"
 dependencies = [
  "jsonschema",
  "mhome-artifact-api",
@@ -1723,7 +1723,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.6.5"
+version = "0.6.6"
 dependencies = [
  "async-trait",
  "base64 0.22.1",

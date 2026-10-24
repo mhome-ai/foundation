@@ -80,6 +80,74 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {}
+    },
+    "emptyRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "openRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "page"
+      ],
+      "properties": {
+        "page": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "\\S"
+        },
+        "payload": {
+          "type": "object"
+        }
+      }
+    },
+    "navigationResponse": {
+      "$ref": "#/$defs/request"
+    },
+    "catalogResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pages",
+        "pageDefinitions"
+      ],
+      "properties": {
+        "pages": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "pageDefinitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "page",
+              "title",
+              "payloadSchema"
+            ],
+            "properties": {
+              "page": {
+                "type": "string",
+                "minLength": 1
+              },
+              "title": {
+                "type": "string"
+              },
+              "payloadSchema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -52,7 +52,12 @@ const HUB_PREFIXES: &[&str] = &[
     "/app/person/",
 ];
 
-const REQUEST_PLACEMENT_PREFIXES: &[&str] = &["/app/messaging/"];
+const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
+    "/app/messaging/",
+];
 
 /// Exact Hub-owned operations outside Hub-owned domains.
-pub const HUB_TARGETS: &[&str] = &["/app/hub/restart", "/app/hub/status"];
+pub const HUB_TARGETS: &[&str] = &[
+    "/app/hub/restart",
+    "/app/hub/status",
+];

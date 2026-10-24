@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.46.1",
+  "contractVersion": "1.47.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -51,6 +51,9 @@
     "/app/capability/invoke": "spaceWrite",
     "/app/capability/invoke/json": "spaceWrite",
     "/app/client/appearance/report": "spaceRead",
+    "/app/client/page/list": "spaceRead",
+    "/app/client/page/current": "spaceRead",
+    "/app/client/page/open": "spaceWrite",
     "/app/client/page/report": "spaceRead",
     "/app/dashboard/canvas/brief/list": "spaceRead",
     "/app/dashboard/canvas/create": "spaceWrite",

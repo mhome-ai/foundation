@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.46.1",
+  "contractVersion": "1.47.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -163,7 +163,10 @@
     "clientPage": {
       "schema": "schema/client-page.v1.schema.json",
       "requestTargets": [
-        "/app/client/page/report"
+        "/app/client/page/report",
+        "/app/client/page/list",
+        "/app/client/page/current",
+        "/app/client/page/open"
       ],
       "owner": "authenticatedClient",
       "persistence": "none"

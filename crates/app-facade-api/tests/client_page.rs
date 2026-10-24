@@ -30,3 +30,41 @@ fn navigation_snapshot_contract_is_scoped_and_excludes_caller_identity() {
         ExecutionSelector::ScopeMode
     );
 }
+
+#[test]
+fn current_client_navigation_inputs_and_permissions_are_explicit() {
+    for (target, policy) in [
+        ("/app/client/page/list", OperationPolicy::SpaceRead),
+        ("/app/client/page/current", OperationPolicy::SpaceRead),
+        ("/app/client/page/open", OperationPolicy::SpaceWrite),
+    ] {
+        assert_eq!(required(target), Some(policy));
+        assert_eq!(
+            route_policy_for_target(target).unwrap().execution,
+            ExecutionSelector::ScopeMode
+        );
+    }
+    let mut schema: Value =
+        serde_json::from_str(include_str!("../schema/client-page.v1.schema.json")).unwrap();
+    for definition in ["emptyRequest", "openRequest"] {
+        schema["$ref"] = json!(format!("#/$defs/{definition}"));
+        let validator = jsonschema::validator_for(&schema).unwrap();
+        let mut valid = if definition == "emptyRequest" {
+            json!({})
+        } else {
+            json!({"page":"settings"})
+        };
+        assert!(validator.is_valid(&valid));
+        valid["clientId"] = json!("other");
+        assert!(!validator.is_valid(&valid));
+    }
+    schema["$ref"] = json!("#/$defs/openRequest");
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    for input in [
+        json!({"page":" "}),
+        json!({"page":"settings","payload":null}),
+        json!({"page":"settings","payload":[]}),
+    ] {
+        assert!(!validator.is_valid(&input));
+    }
+}
