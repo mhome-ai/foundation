@@ -57,7 +57,7 @@ impl Sec2Cipher {
         self.check_counter()?;
         let out = self
             .cipher
-            .encrypt(Nonce::from_slice(&self.nonce), plaintext)
+            .encrypt(&Nonce::from(self.nonce), plaintext)
             .map_err(|_| CipherError::Authentication)?;
         self.advance();
         Ok(out)
@@ -67,7 +67,7 @@ impl Sec2Cipher {
         self.check_counter()?;
         let out = self
             .cipher
-            .decrypt(Nonce::from_slice(&self.nonce), ciphertext)
+            .decrypt(&Nonce::from(self.nonce), ciphertext)
             .map_err(|_| CipherError::Authentication)?;
         self.advance();
         Ok(out)

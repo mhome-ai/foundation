@@ -193,7 +193,7 @@ pub(crate) fn networks(entries: Vec<ScanEntry>) -> Vec<WifiNetwork> {
             }),
         }
     }
-    networks.sort_by(|a, b| b.rssi.cmp(&a.rssi));
+    networks.sort_by_key(|network| std::cmp::Reverse(network.rssi));
     networks
 }
 

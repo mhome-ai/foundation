@@ -8,11 +8,10 @@ use p256::{ecdsa::SigningKey, pkcs8::EncodePrivateKey};
 use rustls::{
     client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier},
     crypto::{ring, verify_tls12_signature, verify_tls13_signature},
-    pki_types::{CertificateDer, PrivateKeyDer, ServerName, UnixTime},
+    pki_types::{pem::PemObject, CertificateDer, PrivateKeyDer, ServerName, UnixTime},
     ClientConfig, DigitallySignedStruct, Error, ServerConfig, SignatureScheme,
 };
 use std::{
-    io::BufReader,
     path::Path,
     sync::{Arc, Mutex},
 };
@@ -211,11 +210,12 @@ impl ServerCertVerifier for PeerPin {
 }
 
 pub fn server_config(cert_pem: &[u8], key_pem: &[u8]) -> Result<ServerConfig> {
-    let certs = rustls_pemfile::certs(&mut BufReader::new(cert_pem))
-        .collect::<std::io::Result<Vec<_>>>()?;
+    let certs = CertificateDer::pem_slice_iter(cert_pem).collect::<Result<Vec<_>, _>>()?;
     let cert = certs.first().context("Host certificate is missing")?;
     certificate_public_key(cert.as_ref())?;
-    let key: PrivateKeyDer<'static> = rustls_pemfile::private_key(&mut BufReader::new(key_pem))?
+    let key = PrivateKeyDer::pem_slice_iter(key_pem)
+        .next()
+        .transpose()?
         .context("Host private key is missing")?;
     Ok(
         ServerConfig::builder_with_provider(Arc::new(ring::default_provider()))
@@ -234,10 +234,62 @@ pub fn load_server(root: &Path) -> Result<ServerConfig> {
 
 pub fn load_public_key(root: &Path) -> Result<PublicKey> {
     let pem = std::fs::read(root.join(CERT_FILE))?;
-    let cert = rustls_pemfile::certs(&mut BufReader::new(pem.as_slice()))
+    let cert = CertificateDer::pem_slice_iter(&pem)
         .next()
         .context("Host certificate missing")??;
     certificate_public_key(cert.as_ref())
+}
+
+/// Bounded concurrent handshakes: a silent TCP peer must not block every service.
+#[cfg(feature = "tls-server")]
+pub struct Listener {
+    tcp: tokio::net::TcpListener,
+    acceptor: tokio_rustls::TlsAcceptor,
+    pending: tokio::task::JoinSet<
+        std::io::Result<(
+            tokio_rustls::server::TlsStream<tokio::net::TcpStream>,
+            std::net::SocketAddr,
+        )>,
+    >,
+}
+#[cfg(feature = "tls-server")]
+impl Listener {
+    pub fn new(tcp: tokio::net::TcpListener, config: ServerConfig) -> Self {
+        Self {
+            tcp,
+            acceptor: tokio_rustls::TlsAcceptor::from(Arc::new(config)),
+            pending: tokio::task::JoinSet::new(),
+        }
+    }
+}
+#[cfg(feature = "tls-server")]
+impl axum::serve::Listener for Listener {
+    type Io = tokio_rustls::server::TlsStream<tokio::net::TcpStream>;
+    type Addr = std::net::SocketAddr;
+    async fn accept(&mut self) -> (Self::Io, Self::Addr) {
+        loop {
+            tokio::select! {
+                result = self.pending.join_next(), if !self.pending.is_empty() => {
+                    if let Some(Ok(Ok(ready))) = result { return ready; }
+                }
+                result = self.tcp.accept(), if self.pending.len() < 128 => {
+                    match result {
+                        Ok((stream, address)) => {
+                            let acceptor = self.acceptor.clone();
+                            self.pending.spawn(async move {
+                                let tls = tokio::time::timeout(std::time::Duration::from_secs(5), acceptor.accept(stream)).await??;
+                                Ok((tls, address))
+                            });
+                        }
+                        Err(_) => tokio::time::sleep(std::time::Duration::from_millis(100)).await,
+                    }
+                }
+            }
+        }
+    }
+    fn local_addr(&self) -> std::io::Result<Self::Addr> {
+        self.tcp.local_addr()
+    }
 }
 
 #[cfg(test)]
@@ -319,57 +371,5 @@ mod tests {
         let (cert, _) = certificate(&new_key()).unwrap();
         let (_, key) = certificate(&new_key()).unwrap();
         assert!(server_config(cert.as_bytes(), key.as_bytes()).is_err());
-    }
-}
-
-/// Bounded concurrent handshakes: a silent TCP peer must not block every service.
-#[cfg(feature = "tls-server")]
-pub struct Listener {
-    tcp: tokio::net::TcpListener,
-    acceptor: tokio_rustls::TlsAcceptor,
-    pending: tokio::task::JoinSet<
-        std::io::Result<(
-            tokio_rustls::server::TlsStream<tokio::net::TcpStream>,
-            std::net::SocketAddr,
-        )>,
-    >,
-}
-#[cfg(feature = "tls-server")]
-impl Listener {
-    pub fn new(tcp: tokio::net::TcpListener, config: ServerConfig) -> Self {
-        Self {
-            tcp,
-            acceptor: tokio_rustls::TlsAcceptor::from(Arc::new(config)),
-            pending: tokio::task::JoinSet::new(),
-        }
-    }
-}
-#[cfg(feature = "tls-server")]
-impl axum::serve::Listener for Listener {
-    type Io = tokio_rustls::server::TlsStream<tokio::net::TcpStream>;
-    type Addr = std::net::SocketAddr;
-    async fn accept(&mut self) -> (Self::Io, Self::Addr) {
-        loop {
-            tokio::select! {
-                result = self.pending.join_next(), if !self.pending.is_empty() => {
-                    if let Some(Ok(Ok(ready))) = result { return ready; }
-                }
-                result = self.tcp.accept(), if self.pending.len() < 128 => {
-                    match result {
-                        Ok((stream, address)) => {
-                            let acceptor = self.acceptor.clone();
-                            self.pending.spawn(async move {
-                                let tls = tokio::time::timeout(std::time::Duration::from_secs(5), acceptor.accept(stream)).await??;
-                                Ok((tls, address))
-                            });
-                        }
-                        Err(_) => tokio::time::sleep(std::time::Duration::from_millis(100)).await,
-                    }
-                }
-            }
-        }
-    }
-    fn local_addr(&self) -> std::io::Result<Self::Addr> {
-        self.tcp.local_addr()
     }
 }

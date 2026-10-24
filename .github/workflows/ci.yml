@@ -26,7 +26,7 @@ jobs:
           echo "MHOME_SOURCE_HELPER=$helper" >> "$GITHUB_ENV"
           node "$helper" prepare foundation
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@1.94.0
+        uses: dtolnay/rust-toolchain@1.95.0
         with:
           components: clippy,rustfmt
           targets: wasm32-unknown-unknown

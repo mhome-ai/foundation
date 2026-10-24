@@ -32,6 +32,9 @@ The script contract and validation commands are in [the Script SDK contract](cra
 
 ## Development
 
+The shared Wasmtime 48 LTS runtime requires Rust 1.95.0 or newer. The repository
+toolchain and CI use 1.95.0.
+
 ```bash
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
