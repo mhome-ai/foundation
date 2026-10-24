@@ -31,7 +31,11 @@ pub struct ThreadSession {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(tag = "mode", rename_all = "snake_case")]
+#[serde(
+    tag = "mode",
+    rename_all = "snake_case",
+    rename_all_fields = "camelCase"
+)]
 pub enum ThreadSync {
     Unchanged {
         snapshot_version: u64,
@@ -42,7 +46,8 @@ pub enum ThreadSync {
         events: Vec<crate::SnapshotUpdatedEvent>,
     },
     Snapshot {
-        snapshot: ThreadSnapshot,
+        // Keep unchanged/delta responses independent of the full snapshot's size.
+        snapshot: Box<ThreadSnapshot>,
     },
 }
 

@@ -411,6 +411,52 @@ fn missing_surface_identity_is_rejected() {
 }
 
 #[test]
+fn thread_sync_variants_preserve_their_wire_contract() {
+    use conversation_api::{SnapshotUpdatedEvent, ThreadSync};
+    use serde_json::json;
+
+    let mut reply = fixture("thread-load.response.json");
+    let snapshot = body::<ThreadLoadResponse>("thread-load.response.json");
+    let event = body::<SnapshotUpdatedEvent>("interaction.event.json");
+    let validator = jsonschema::validator_for(
+        &serde_json::from_str::<Value>(include_str!("../schema/conversation-frame.v2.schema.json"))
+            .unwrap(),
+    )
+    .unwrap();
+    for (sync, expected) in [
+        (snapshot.sync, reply["body"]["sync"].clone()),
+        (
+            ThreadSync::Unchanged {
+                snapshot_version: 3,
+            },
+            json!({"mode": "unchanged", "snapshotVersion": 3}),
+        ),
+        (
+            ThreadSync::Delta {
+                base_snapshot_version: event.snapshot_version - 1,
+                snapshot_version: event.snapshot_version,
+                events: vec![event.clone()],
+            },
+            json!({
+                "mode": "delta",
+                "baseSnapshotVersion": event.snapshot_version - 1,
+                "snapshotVersion": event.snapshot_version,
+                "events": [event],
+            }),
+        ),
+    ] {
+        let encoded = serde_json::to_value(&sync).unwrap();
+        assert_eq!(encoded, expected);
+        assert_eq!(
+            serde_json::from_value::<ThreadSync>(encoded.clone()).unwrap(),
+            sync
+        );
+        reply["body"]["sync"] = encoded;
+        assert!(validator.is_valid(&reply));
+    }
+}
+
+#[test]
 fn conversation_events_reject_unknown_types_and_invalid_live_payloads() {
     let mut unknown = fixture("live.event.json")["body"].clone();
     unknown["type"] = Value::String("run.something_new".to_string());

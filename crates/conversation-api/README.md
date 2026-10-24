@@ -7,6 +7,11 @@ conversation events. `ConversationSurface` is a canonical value object whose str
 wire and persistence identity of one isolated conversation endpoint. The crate deliberately
 contains no Agent runtime, persistence, transport implementation, or messaging-provider SDK.
 
+`ThreadSync` returns unchanged, delta, or full-snapshot state. Rust stores the
+full snapshot in `Box<ThreadSnapshot>` so the other variants remain compact.
+The JSON response still contains the snapshot object directly; the allocation
+does not change its fields, synchronization behavior, or schema.
+
 `/chat/turn/submit` is the source-neutral application operation for callers that do not manage
 threads themselves. The Conversation implementation owns active-thread creation, idle rotation,
 pending-interaction policy, idempotency, and enqueueing for that operation.
