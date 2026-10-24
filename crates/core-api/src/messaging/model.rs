@@ -35,7 +35,7 @@ pub struct MessagingAddress {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MessagingModelError(&'static str);
+pub struct MessagingModelError(pub(super) &'static str);
 
 impl fmt::Display for MessagingModelError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -364,7 +364,7 @@ fn provider_id(value: String) -> Result<String, MessagingModelError> {
     Ok(normalized)
 }
 
-fn segment(value: String, error: &'static str) -> Result<String, MessagingModelError> {
+pub(super) fn segment(value: String, error: &'static str) -> Result<String, MessagingModelError> {
     segment_ref(&value, error)?;
     Ok(value)
 }
@@ -380,7 +380,10 @@ fn segment_ref(value: &str, error: &'static str) -> Result<(), MessagingModelErr
     Ok(())
 }
 
-fn optional_ref(value: &Option<String>, error: &'static str) -> Result<(), MessagingModelError> {
+pub(super) fn optional_ref(
+    value: &Option<String>,
+    error: &'static str,
+) -> Result<(), MessagingModelError> {
     if let Some(value) = value {
         segment_ref(value, error)?;
     }

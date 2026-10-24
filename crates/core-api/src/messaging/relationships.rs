@@ -1,5 +1,5 @@
 //! Host ingress and cloud-authoritative relationship replication. These are internal protocols.
-use super::NormalizedInbound;
+use super::{ExternalActor, MessagingAddress, MessagingModelError};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -73,7 +73,42 @@ pub struct IngressRedeem {
     pub resource_id: String,
     pub code: String,
     pub kind: IdentityCodeKind,
-    pub event: NormalizedInbound,
+    pub context: IdentityRedemptionContext,
+}
+
+/// Receiving identity facts for a parsed command. Message content and
+/// its schema belong to the receiving adapter, not to identity redemption.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct IdentityRedemptionContext {
+    pub event_id: String,
+    pub address: MessagingAddress,
+    pub actor: ExternalActor,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conversation_display_name: Option<String>,
+}
+
+impl IdentityRedemptionContext {
+    pub fn validate(self) -> Result<Self, MessagingModelError> {
+        let event_id = super::model::segment(self.event_id, "messaging event id is invalid")?;
+        let address = self.address.validate()?.base_address();
+        let actor = self.actor.validate()?;
+        if actor.provider != address.provider || actor.account_id != address.account_id {
+            return Err(MessagingModelError(
+                "messaging actor and address account do not match",
+            ));
+        }
+        super::model::optional_ref(
+            &self.conversation_display_name,
+            "messaging conversation display name is invalid",
+        )?;
+        Ok(Self {
+            event_id,
+            address,
+            actor,
+            conversation_display_name: self.conversation_display_name,
+        })
+    }
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

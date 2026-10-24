@@ -1,0 +1,21 @@
+{
+  "resourceId": "registered-instance",
+  "code": "EXAMPLECODE",
+  "kind": "bind",
+  "context": {
+    "eventId": "provider-event",
+    "address": {
+      "provider": "telegram",
+      "accountId": "bot",
+      "conversationId": "chat",
+      "audience": "shared"
+    },
+    "actor": {
+      "provider": "telegram",
+      "accountId": "bot",
+      "externalUserId": "sender",
+      "displayName": "Sender"
+    },
+    "conversationDisplayName": "Family"
+  }
+}

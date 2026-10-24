@@ -5,6 +5,15 @@ provider runtimes. Public `/app/*` contracts belong to
 `mhome-app-facade-api`; this crate owns internal MWS, authentication, LLM,
 Messaging normalization, Node runtime, and Storage contracts.
 
+`messaging::IngressRedeem` carries a parsed identity code and a dedicated
+`IdentityRedemptionContext`: event ID, receiving address, sender and optional
+conversation display name. Redemption is independent of normalized message
+content and its schema version. The receiver validates the context and authorizes
+the registered account before consuming the code. External protocol 23 requires
+Host and Core to use the dedicated context; cloud ingress must be upgraded with
+the local receiver. There is no full-message redemption compatibility path. The shared wire example is
+[`fixtures/messaging-redemption.json`](fixtures/messaging-redemption.json).
+
 The additive [`client_identity`](contract/client-identity.md) contract separates
 User and Space Client identity, installation ID and enrollment ID. Runtime ingress
 has not yet cut over to this contract; operation authorization remains separate.

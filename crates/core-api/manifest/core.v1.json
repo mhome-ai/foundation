@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.43.1",
+  "contractVersion": "1.44.0",
   "protocols": {
     "agentGateway": {
       "submitTarget": "/agent/submit",
@@ -68,7 +68,7 @@
       "version": "storage.v2"
     },
     "hostDelivery": {
-      "externalProtocolVersion": 22,
+      "externalProtocolVersion": 23,
       "requestKind": "deliveryRequested",
       "connectionControlKind": "connectionControlRequested",
       "acceptanceBoundaries": [
