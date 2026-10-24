@@ -49,6 +49,13 @@ timings and request reasons are in `manifest/pod-targets.v1.json`; snapshots use
 `schema/pod-discovery.v1.schema.json` and `schema/pod-commission.v1.schema.json`;
 User Pod enrollment uses a one-time login approval; activation is confirmed on the paired device.
 
+`/app/pod/list` reads registered Pod Clients in the active Space, including
+connections that are currently absent. `/app/host/list` reads historical Host
+registrations without granting management access; see the
+[Host directory contract](contract/host-directory-v1.md). Native commissioning
+uses the existing device protocols; the Agent resumes only after verifying the
+resulting registration. Host completion identifies both `hostId` and `env`.
+
 `host_provision` (1.34.0) defines BLE Wi-Fi provisioning of embedded Hosts
 (`/local/host/provision/*`) on the same BLE layer; discovery candidates carry
 `kind`. A completed session carries the one-time `claimToken` that the first

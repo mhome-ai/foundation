@@ -28,6 +28,8 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/messaging/binding/list",
     "/app/messaging/bind/code/create",
     "/app/messaging/unbind",
+    "/app/host/list",
+    "/app/pod/enrollment/get",
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[
@@ -41,6 +43,8 @@ const SCOPE_MODE_TARGETS: &[&str] = &[
     "/app/artifact/upload/cancel",
     "/app/system/instances/get",
     "/app/system/clients/get",
+    "/app/pod/list",
+    "/app/pod/space/enrollment/get",
 ];
 
 const HUB_PREFIXES: &[&str] = &[

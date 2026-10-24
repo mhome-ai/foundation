@@ -450,3 +450,25 @@ MANAGE, personal resources and Host user administration are rejected. It joins
 the canonical Space-client conversation group, never an initializer's threads.
 The billing owner fallback is not an acting identity. Host management tokens are
 independent and are never issued by this flow.
+
+## Registered Pod list
+
+`/app/pod/list` takes empty input and lists persisted Pod Clients in the current
+Space, including disconnected registrations. A personal caller sees their own
+User Pods and Space-owned Pods. Rows contain `appClientId`, `clientMode`,
+`scopeId`, `registered`, `connected` and `observationSource` (`hub` or `cloud`);
+the envelope includes `observedAtMs`. Connection status is observed from that
+execution endpoint, not a statement about physical power or LAN reachability.
+Native clients combine this result with their own discovery observations.
+Never merge a Bluetooth short ID with a registered identity without proof.
+This read does not issue credentials or change Pod identity.
+
+
+`appClientId` identifies a registered application client; it is not the enrollment
+`podId` used by native commissioning. The list does not invent that association.
+`/app/pod/enrollment/get` takes `{podId}` and returns `{podId, clientMode: "user",
+registered}` for the authenticated user's activated personal enrollment.
+`/app/pod/space/enrollment/get` takes the same input and checks the current Space's
+active local credential, returning `clientMode: "space"`; this read requires Space
+MANAGE. A cloud Space has no such local enrollment and returns `registered:false`.
+Both checks are read-only completion hooks. They do not issue or renew credentials.

@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.47.0",
+  "contractVersion": "1.48.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -27,7 +27,12 @@
     },
     "pod": {
       "targets": "manifest/pod-targets.v1.json",
-      "contract": "contract/pod-commissioning-v1.md"
+      "contract": "contract/pod-commissioning-v1.md",
+      "listTarget": "/app/pod/list",
+      "enrollmentTargets": [
+        "/app/pod/enrollment/get",
+        "/app/pod/space/enrollment/get"
+      ]
     },
     "hostProvision": {
       "targets": "manifest/host-provision-targets.v1.json",
@@ -150,7 +155,8 @@
       "issuer": "cloud",
       "firstClaimTransport": "directLanOnly",
       "authorizationTarget": "/app/host/authorization",
-      "authorizationSchema": "schema/host-authorization.v1.schema.json"
+      "authorizationSchema": "schema/host-authorization.v1.schema.json",
+      "listTarget": "/app/host/list"
     },
     "clientAppearance": {
       "schema": "schema/client-appearance.v1.schema.json",

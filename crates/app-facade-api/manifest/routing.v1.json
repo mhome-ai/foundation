@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.47.0",
+  "contractVersion": "1.48.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode"
@@ -31,7 +31,9 @@
       "/app/messaging/code/status",
       "/app/messaging/binding/list",
       "/app/messaging/bind/code/create",
-      "/app/messaging/unbind"
+      "/app/messaging/unbind",
+      "/app/host/list",
+      "/app/pod/enrollment/get"
     ],
     "scopeModeTargets": [
       "/app/artifact/resolve",
@@ -43,7 +45,9 @@
       "/app/artifact/upload/complete",
       "/app/artifact/upload/cancel",
       "/app/system/instances/get",
-      "/app/system/clients/get"
+      "/app/system/clients/get",
+      "/app/pod/list",
+      "/app/pod/space/enrollment/get"
     ],
     "hubPrefixes": [
       "/app/plugin/",
