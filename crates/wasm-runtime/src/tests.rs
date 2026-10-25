@@ -44,6 +44,76 @@ async fn success_uses_shared_engine() {
         Value::Null
     );
 }
+
+#[tokio::test]
+async fn supported_branch_table_preserves_in_range_and_default_targets() {
+    // Exercise both sides of the maximum supported table, including the
+    // out-of-range default branch. All targets return fixed guest integers.
+    const ENTRIES: i32 = 65_520;
+    let targets = "$even $odd ".repeat((ENTRIES / 2) as usize);
+    let module = Module::new(
+        engine(),
+        format!(
+            r#"(module
+                (func (export "dispatch") (param i32) (result i32)
+                    (block $odd
+                        (block $even
+                            local.get 0
+                            br_table {targets} $odd)
+                        i32.const 11
+                        return)
+                    i32.const 22))"#
+        ),
+    )
+    .unwrap();
+    let mut store = Store::new(engine(), ());
+    configure_store(
+        &mut store,
+        Some(Duration::from_secs(5)),
+        CancellationToken::new(),
+    );
+    let instance = Linker::new(engine())
+        .instantiate_async(&mut store, &module)
+        .await
+        .unwrap();
+    let dispatch = instance
+        .get_typed_func::<i32, i32>(&mut store, "dispatch")
+        .unwrap();
+    for (index, expected) in [
+        (0, 11),
+        (1, 22),
+        (32_768, 11),
+        (ENTRIES - 2, 11),
+        (ENTRIES - 1, 22),
+        (ENTRIES, 22),
+        (-1, 22),
+    ] {
+        assert_eq!(
+            dispatch.call_async(&mut store, index).await.unwrap(),
+            expected,
+            "branch table index {index}"
+        );
+    }
+}
+
+#[test]
+fn oversized_branch_tables_are_rejected_before_native_execution() {
+    // GHSA-mghf-wjfp-p5xm: a table above ~256K targets can overflow a
+    // native AArch64 conditional branch. Wasmtime 48.0.7 caps translation
+    // at 65,520 targets; check its boundary and the advisory-sized input.
+    for entries in [65_521, 270_000] {
+        let targets = "0 ".repeat(entries);
+        let error = Module::new(
+            engine(),
+            format!("(module (func (param i32) (block local.get 0 br_table {targets} 0)))"),
+        )
+        .unwrap_err();
+        let detail = format!("{error:#}");
+        assert!(detail.contains("br_table"), "{detail}");
+        assert!(detail.contains("implementation limit"), "{detail}");
+    }
+}
+
 #[tokio::test]
 async fn infinite_loop_and_start_function_time_out() {
     for bytes in [
