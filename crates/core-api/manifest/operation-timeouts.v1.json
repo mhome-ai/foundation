@@ -1,0 +1,27 @@
+{
+  "manifest": "mhome.operation-timeouts.v1",
+  "operations": {
+    "coreRequest": { "totalMs": 60000, "description": "Default Core request execution." },
+    "harnessSessionOpen": { "totalMs": 150000, "description": "Harness session initialization." },
+    "scriptValidation": { "totalMs": 205000, "description": "Companion Rust build and validation." },
+    "scriptSave": { "totalMs": 420000, "description": "Companion Rust build, installation and save." },
+    "coreBridgeRequest": { "totalMs": 35000, "description": "Core outgoing cloud request, including sending." },
+    "coreBridgeInbound": { "totalMs": 55000, "description": "Ordinary incoming Core Bridge request, including queueing." },
+    "nodeRequest": { "totalMs": 60000, "description": "Core outgoing Node request, including sending." },
+    "lionBridgeRequest": { "totalMs": 60000, "description": "Default Lion outgoing Hub request." },
+    "llmCloudCall": { "totalMs": 180000, "description": "Cloud model call preparation, execution and accounting." }
+  },
+  "waitProfiles": {
+    "hostIpc": { "graceMs": 5000 },
+    "coreBridge": { "graceMs": 10000 },
+    "client": { "graceMs": 35000 },
+    "lionForward": { "graceMs": 0, "overrides": { "scriptValidation": 25000, "scriptSave": 30000 } }
+  },
+  "selectors": {
+    "forwardPrefixes": ["/invoke", "/dispatch/agent", "/dispatch"],
+    "storedScriptSave": ["/automation/snapshot/rollback", "/app/automation/snapshot/rollback", "/automation/overview/save", "/automation/copy", "/automation/enroll"],
+    "sourceScriptSave": ["/automation/save", "/app/automation/save"],
+    "sourceScriptValidation": ["/app/automation/verify", "/bridge/automation/parse", "/bridge/automation/format", "/bridge/automation/verify", "/automation/format", "/bridge/automation/compile", "/bridge/agent/automation/compile"],
+    "ordinaryOverrides": { "/harness/test/session/open": "harnessSessionOpen" }
+  }
+}

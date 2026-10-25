@@ -1,0 +1,18 @@
+[
+  {"target":"/app/widget/list","payload":{},"operation":"coreRequest","totalMs":60000},
+  {"target":"/harness/test/session/open","payload":{},"operation":"harnessSessionOpen","totalMs":150000},
+  {"target":"/app/automation/save","payload":{"input":{"script":{"scripts":{"lighting":"source"}}}},"operation":"scriptSave","totalMs":420000,"lionWaitMs":450000},
+  {"target":"/app/automation/verify","payload":{"input":{"script":{"scripts":{"lighting":"source"}}}},"operation":"scriptValidation","totalMs":205000,"lionWaitMs":230000},
+  {"target":"/automation/save","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptSave","totalMs":420000},
+  {"target":"/invoke/app/automation/save","payload":{"call":{"input":{"script":{"scripts":{"lighting":"source"}}}}},"operation":"scriptSave","totalMs":420000},
+  {"target":"/dispatch/agent/app/automation/verify","payload":{"call":{"input":{"script":{"scripts":{"lighting":"source"}}}}},"operation":"scriptValidation","totalMs":205000},
+  {"target":"/dispatch/app/automation/save","payload":{"call":{"input":{"script":{"scripts":{"lighting":"source"}}}}},"operation":"scriptSave","totalMs":420000},
+  {"target":"/app/automation/save","payload":{"input":{"script":{"scripts":{}}}},"operation":"coreRequest","totalMs":60000},
+  {"target":"/app/automation/save","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"coreRequest","totalMs":60000},
+  {"target":"/app/automation/save","payload":{"input":{"script":{"scripts":[]}}},"operation":"coreRequest","totalMs":60000},
+  {"target":"/app/automation/snapshot/rollback","payload":{},"operation":"scriptSave","totalMs":420000},
+  {"target":"/automation/copy","payload":{},"operation":"scriptSave","totalMs":420000},
+  {"target":"/automation/enroll","payload":{},"operation":"scriptSave","totalMs":420000},
+  {"target":"/automation/overview/save","payload":{},"operation":"scriptSave","totalMs":420000},
+  {"target":"/bridge/automation/compile","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":205000}
+]

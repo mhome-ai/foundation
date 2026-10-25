@@ -5,7 +5,9 @@
     "generate:app-facade-routing": "node scripts/generate-app-facade-routing.mjs --write",
     "stage:protocol": "node scripts/stage-protocol-package.mjs",
     "test:protocol-packages": "node --test scripts/tests/*.test.mjs",
-    "verify:app-facade-routing": "node scripts/generate-app-facade-routing.mjs --check"
+    "verify:app-facade-routing": "node scripts/generate-app-facade-routing.mjs --check",
+    "generate:operation-timeouts": "node scripts/generate-operation-timeouts.mjs --write",
+    "verify:operation-timeouts": "node scripts/generate-operation-timeouts.mjs --check"
   },
   "devDependencies": {
     "ajv": "8.20.0",

@@ -165,3 +165,41 @@ same operations through `hostList` / `hostRuntime`. None accepts a Space ID. Cli
 discover `_mhome-host._tcp`, verify reply Host IDs, and unwrap the HTTP runtime envelope.
 Install/restart submissions are not automatically replayed after transport failure.
 First claim is direct LAN only; daily User management can use the current Core as a token-forwarding proxy.
+
+## Operation timeouts
+
+`manifest/operation-timeouts.v1.json` is the code-owned catalog of shared operation
+budgets, ingress selectors and caller reply-wait profiles. It has no runtime
+configuration or database dependency. Edit the catalog and run
+`npm run generate:operation-timeouts`; Rust consumes generated constants and Lion
+loads the same packaged JSON once at startup. Both replay the packaged
+`fixtures/operation-timeouts.conformance.json`. Java bindings reject unknown policy
+IDs instead of silently choosing a different limit.
+
+An execution budget and a reply wait are different: reply grace permits transfer
+of a completed result or timeout error; it never grants the callee more execution
+time. Existing domain-owned lifetimes (streams, subscriptions, long batch jobs)
+and implementation-specific step timeouts are not replaced by a default request
+budget. New shared operations need an explicit catalog entry and selector tests.
+
+`execution_budget::Budgeted<T>` adds optional `executionBudget: { remainingMs }`
+metadata alongside an object envelope's existing fields. Bridge uses it on MWS
+requests; Host IPC uses it alongside `input` in `HandleCoreInput`. It is not an
+App Facade `control` field or part of the business payload. Values are integral
+milliseconds in `0..=2147483647`; zero is expired. Missing metadata retains local
+policy. This additive metadata does not change external IPC protocol 23; both
+ends need the new implementation for remaining-budget propagation.
+
+Each process anchors received time to its monotonic clock, caps it by local policy,
+and passes the remaining budget to children. Sender queueing/upload, receiver
+queueing/download, attempts and backoff consume that same deadline. Round down
+when emitting milliseconds. Durable Lion peer relays also deduct queue age using
+the existing peer message timestamp/clock convention. Network transit and clock
+skew are not a strict global stop guarantee; the caller keeps its own deadline.
+Do not put a refreshed full duration around each retry.
+
+Timeout means that the caller stopped waiting and cancelled owned asynchronous
+work where supported. It does not roll back completed writes, stop arbitrary
+blocking code, or prove that detached work drained. Request-owned spawned tasks
+must explicitly carry the captured deadline. Responses and independent background
+jobs have their own lifetime. Migration freezing/drain remains a separate feature.

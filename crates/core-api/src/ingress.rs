@@ -4,70 +4,20 @@ use crate::{
 };
 use std::time::Duration;
 
-pub const CORE_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-pub const IPC_TIMEOUT_GRACE: Duration = Duration::from_secs(5);
+pub const CORE_REQUEST_TIMEOUT: Duration = crate::timeouts::Operation::CoreRequest.timeout();
+pub const IPC_TIMEOUT_GRACE: Duration =
+    crate::timeouts::WaitProfile::HostIpc.grace(crate::timeouts::Operation::CoreRequest);
+pub const SCRIPT_VALIDATION_TIMEOUT: Duration =
+    crate::timeouts::Operation::ScriptValidation.timeout();
+pub const SCRIPT_SAVE_TIMEOUT: Duration = crate::timeouts::Operation::ScriptSave.timeout();
 
-/// Rust validation may build a bundle for 180s. Leave time for analysis and the
-/// Core -> cloud round trip; callers add their own transport grace outside this.
-pub const SCRIPT_VALIDATION_TIMEOUT: Duration = Duration::from_secs(205);
-/// Build (180s), installation (180s), analysis and database replacement.
-pub const SCRIPT_SAVE_TIMEOUT: Duration = Duration::from_secs(420);
-
-/// Select build/install budgets for companion-source or stored-source operations. This
-/// recognizes wire envelopes, not authorization: ingress still validates them.
+/// Retains the existing ingress API; policy data and selectors have one shared source.
 pub fn script_validation_timeout(target: &str, payload: &str) -> Option<Duration> {
-    let (target, forwarded) = target
-        .strip_prefix("/invoke")
-        .or_else(|| target.strip_prefix("/dispatch/agent"))
-        .or_else(|| target.strip_prefix("/dispatch"))
-        .map_or((target, false), |target| (target, true));
-    // These routes resolve stored source, so the request cannot reveal companion functions.
-    if matches!(
-        target,
-        "/automation/snapshot/rollback"
-            | "/app/automation/snapshot/rollback"
-            | "/automation/overview/save"
-            | "/automation/copy"
-            | "/automation/enroll"
-    ) {
-        return Some(SCRIPT_SAVE_TIMEOUT);
-    }
-    let saving = matches!(target, "/automation/save" | "/app/automation/save");
-    if !saving
-        && !matches!(
-            target,
-            "/app/automation/verify"
-                | "/bridge/automation/parse"
-                | "/bridge/automation/format"
-                | "/bridge/automation/verify"
-                | "/automation/format"
-                | "/bridge/automation/compile"
-                | "/bridge/agent/automation/compile"
-        )
-    {
-        return None;
-    }
-    let root: serde_json::Value = serde_json::from_str(payload).ok()?;
-    let input = if forwarded {
-        root.get("call")?.get("input")?
-    } else if target.starts_with("/app/") {
-        root.get("input")?
-    } else {
-        &root
-    };
-    let scripts = input.get("script")?.get("scripts")?.as_object()?;
-    (!scripts.is_empty()).then_some(if saving {
-        SCRIPT_SAVE_TIMEOUT
-    } else {
-        SCRIPT_VALIDATION_TIMEOUT
-    })
+    crate::timeouts::script_operation(target, payload).map(|operation| operation.timeout())
 }
 
 pub fn request_timeout(target: &str) -> Duration {
-    match target {
-        "/harness/test/session/open" => Duration::from_secs(150),
-        _ => CORE_REQUEST_TIMEOUT,
-    }
+    crate::timeouts::ordinary_operation(target).timeout()
 }
 
 pub fn input_timeout(input: &ServiceCoreInput) -> Duration {

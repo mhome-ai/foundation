@@ -95,6 +95,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     protocol: "mhome.core",
     manifest: "manifest/core.v1.json",
     additionalFiles: Object.freeze([
+      "manifest/operation-timeouts.v1.json",
+      "fixtures/operation-timeouts.conformance.json",
       "contract/node-runtime-protocol-v1.json",
       "contract/node-service-protocol-v1.json",
       "contract/recipient-id-v1.md",
