@@ -720,6 +720,7 @@ pub struct FakeCloud {
     pub calls: Mutex<Vec<CloudCall>>,
     pub issue_delay: Mutex<Duration>,
     pub fail_issue: AtomicBool,
+    pub space_credential_window: Mutex<Option<(String, Option<i64>)>>,
     clock: Clock,
     journal: Journal,
 }
@@ -735,6 +736,7 @@ impl FakeCloud {
             calls: Mutex::new(Vec::new()),
             issue_delay: Mutex::new(Duration::from_millis(100)),
             fail_issue: AtomicBool::new(false),
+            space_credential_window: Mutex::new(None),
             clock: Clock::new(),
             journal,
         }
@@ -807,8 +809,8 @@ impl Cloud for FakeCloud {
             "/host/authorizations/claim" => json!({"claimId":"product-claim","proof":body}),
             "/host/authorizations/commit-claim" => json!({"ok":true}),
             "pod/space/credential/issue" => json!({
-                "credentialId":"space-credential", "appClientId":"a:space-device", "jwtToken":"space-jwt",
-                "activateBefore":self.clock.now_ms()+600_000,
+                "credentialState": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.0.clone()).unwrap_or("pending".into()), "credentialId":"space-credential", "appClientId":"a:space-device", "jwtToken":"space-jwt",
+                "activateBefore": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.1).unwrap_or(Some(self.clock.now_ms()+600_000)),
                 "hubIdentity":{"hubId":"hub","tenantId":"tenant","scopeId":scope_id.unwrap(),
                     "keyId":"p256:key", "algorithm":"ES256", "publicKeyX":"x", "publicKeyY":"y", "fingerprint":"key",
                     "hostId":"host", "hostPublicKey":{"x":"x","y":"y"}}

@@ -9,8 +9,8 @@ use app_facade_api::host_provision::{is_claim_token, HostFinishResponse, HOST_IN
 use app_facade_api::pod::{
     AuthorizationPrompt, ClientMode, CommissionError, CommissionErrorCode, DeviceKind,
     DiscoveryTransport, PodEnrollmentRequest, PodInfo, SessionMode, SpaceCredentialIssueResponse,
-    ACTIVATION_GRACE_MS, CODE_ATTEMPTS, NOT_ACTIVATED_DETAIL, POD_CREDENTIAL_ENDPOINT,
-    POD_INFO_ENDPOINT, SPACE_CREDENTIAL_ISSUE_PATH, SRP_USERNAME,
+    SpaceCredentialState, ACTIVATION_GRACE_MS, CODE_ATTEMPTS, NOT_ACTIVATED_DETAIL,
+    POD_CREDENTIAL_ENDPOINT, POD_INFO_ENDPOINT, SPACE_CREDENTIAL_ISSUE_PATH, SRP_USERNAME,
 };
 use protocomm::{ProtocommError, WifiFailure, WifiStatus};
 use serde_json::{json, Value};
@@ -37,7 +37,7 @@ const REPROVISION_POLLS: u32 = 30;
 
 struct Credential {
     pod_id: String,
-    activate_before: i64,
+    confirm_before: i64,
 }
 
 pub(crate) struct Actor {
@@ -442,7 +442,7 @@ impl Actor {
                     };
                     self.credential = Some(Credential {
                         pod_id,
-                        activate_before: self.engine.now_ms() + 120_000,
+                        confirm_before: self.engine.now_ms() + 120_000,
                     });
                 }
                 self.pod_info = Some(pod_info);
@@ -1043,7 +1043,7 @@ impl Actor {
                 (
                     Credential {
                         pod_id: issued.pod_id,
-                        activate_before: issued.activate_before,
+                        confirm_before: issued.activate_before + ACTIVATION_GRACE_MS,
                     },
                     deliver,
                 )
@@ -1069,19 +1069,24 @@ impl Actor {
                 if issued.hub_identity.scope_id != scope_id {
                     return self.fail(issue_failed(Some("Space binding mismatch".into())));
                 }
+                if !valid_space_credential_window(&issued, self.engine.now_ms()) {
+                    return self.fail(issue_failed(Some(
+                        "Invalid Space credential activation window".into(),
+                    )));
+                }
                 let deliver = json!({"op":"deliver", "clientMode":"space", "credentialId":issued.credential_id,
                     "appClientId":issued.app_client_id, "jwtToken":issued.jwt_token, "scopeId":scope_id,
                     "tenantId":issued.hub_identity.tenant_id, "hubIdentity":issued.hub_identity});
                 (
                     Credential {
                         pod_id: issued.credential_id,
-                        activate_before: issued.activate_before,
+                        confirm_before: self.engine.now_ms() + 120_000,
                     },
                     deliver,
                 )
             }
         };
-        let deadline = credential.activate_before + ACTIVATION_GRACE_MS;
+        let deadline = credential.confirm_before;
         self.credential = Some(credential);
         if !self.update(|live| {
             live.set(Phase::Delivering, None);
@@ -1184,7 +1189,7 @@ impl Actor {
                     .mutate(self.kind, &self.id, |live| live.expires_at_ms)
                     .unwrap_or(0)
             },
-            |credential| credential.activate_before + ACTIVATION_GRACE_MS,
+            |credential| credential.confirm_before,
         )
     }
 
@@ -1271,5 +1276,14 @@ impl Actor {
         self.engine.release(self.kind, &self.id);
         self.credential = None;
         self.pairing_code = None;
+    }
+}
+
+// Credential lifetime and this foreground commissioning attempt are independent.
+fn valid_space_credential_window(issued: &SpaceCredentialIssueResponse, now: i64) -> bool {
+    match (issued.credential_state, issued.activate_before) {
+        (SpaceCredentialState::Pending, Some(deadline)) => deadline > now,
+        (SpaceCredentialState::Active, None) => true,
+        _ => false,
     }
 }

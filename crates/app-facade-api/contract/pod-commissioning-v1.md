@@ -247,8 +247,15 @@ stores the resulting refresh token, and refresh uses the standard User login
 endpoint. A failed attempt is retried with a new approval; no old protocol is
 accepted.
 
-`podId` identifies the enrollment/device-list entry, not the authenticated User.
-`POST /api/v1/pod/list` and `/api/v1/pod/rename` use the ordinary User login.
+`podId` identifies a single approval attempt, not the durable device or authenticated
+User. The durable `registrationId` derives from the business User and the validated
+persistent device-key fingerprint. `POST /api/v1/pod/list` returns that ID;
+`/api/v1/pod/rename` accepts `{registrationId, name}` with ordinary User login.
+Successful authentication atomically creates the registration if absent and records
+completion on the consumed approval. Retries preserve the initial registration and
+current display name. Unauthenticated attempts create no device-list entry.
+The attempt receipt remains readable for one day after the approval's expiry;
+`expiresAt` still controls its ten-minute, single-use authentication window.
 There is no cloud credential-status polling or server-side Pod revocation flow.
 Factory reset clears device credentials and rotates the pairing identity.
 
@@ -359,7 +366,9 @@ scans for networks once on entering `awaiting_wifi`; a scan request while that
 scan runs waits for it. `revision` increases on every observable change.
 
 `expiresAtMs` is 10 minutes after `start` until delivery starts; from
-`delivering` on it is `activateBefore` plus 30 seconds.
+`delivering` on, User approval uses `activateBefore` plus 30 seconds; Space delivery
+gets a separate two-minute confirmation deadline. An active Space credential has no
+first-use deadline and never causes immediate completion or an expired attempt.
 
 Only the device's durable `commissioned` response confirms successful setup.
 Lost LAN confirmation triggers at most three reconnections to this attempt's
@@ -398,8 +407,10 @@ The schemas are `schema/pod-discovery.v1.schema.json` and
 `Authorization` and `ScopeId`, with the same device identity request as personal
 issuance. Only the current Space owner may assist. The Space must be local and have one
 published Hub with business and Host TLS identities. Cloud Spaces must complete
-Hub setup first. The issuer creates a fresh `appClientId` (`a:<random id>`) and
-signs a local JWT using the existing Space signing key and local-client audience.
+Hub setup first. The issuer derives `appClientId` from tenant, Space and the validated
+persistent device-key fingerprint. The same device in the same Space retains this
+ID across retries; a factory reset rotates its key. Candidate local JWTs use the
+existing Space signing key and local-client audience.
 
 Claims are `token_type: local_space_client_access`, `sub: <scopeId>`,
 `tenant_id`, `scope_id`, `hub_id`, `app_client_id`, `jti`, `iat`, `exp`, `is_test`.
@@ -410,11 +421,17 @@ Personal Pod issuance no longer stores `issuedScopeId`.
 
 Lion sends `{jwtToken, clientSource:"pod"}` to the authenticated Hub Bridge
 `/hub/client/space/register`. Core verifies signature, audience, issuer, current
-Hub, environment, Space and canonical installation ID, and stores a pending
-credential. First authentication must occur within ten minutes of JWT issuance.
-The response is `{credentialId, status:"pending", activateBefore}`. Lion returns
-`{credentialId, appClientId, jwtToken, activateBefore, hubIdentity}` only after
-registration succeeds. The Hub identity includes its business P-256 key and
+Hub, environment, Space and canonical installation ID. It reuses a valid current
+pending or active credential, or atomically selects a replacement after fresh owner
+authorization. Concurrent issuers receive the selected credential; a stale replacement
+cannot overwrite activation or revocation. Pending reuse retains its original
+first-authentication deadline, ten minutes after JWT issuance. Invalid, revoked,
+expired or differently bound credentials are not reused. Signature/key infrastructure
+failures propagate instead of being interpreted as absence.
+The Bridge returns `{credentialId, appClientId, jwtToken, status, activateBefore}`.
+Lion returns `{credentialId, appClientId, jwtToken, credentialState, activateBefore,
+hubIdentity}`. State is `pending` with its epoch-millisecond first-use deadline, or
+`active` with `activateBefore:null`. Issuance alone does not publish a device-list entry. The Hub identity includes its business P-256 key and
 Host TLS public key, bound to `tenantId`, `scopeId`, `hubId` and `hostId`.
 
 The secured LAN `pod-credential` delivery is:
@@ -430,8 +447,10 @@ bounded to 8192 bytes; BLE credential delivery remains disabled.
 
 The Pod discovers the matching runtime environment and Space's Hub, pins TLS,
 verifies the signed Hub proof, and authenticates with the local JWT and signed
-`appClientId`. Core atomically activates the pending credential after all binding
-checks. The Pod requires a Space principal for the same Space, installation and
+`appClientId`. After authentication checks succeed, Core atomically activates the
+credential and publishes the durable AppClient registration. Repeated authentication
+preserves the first activation; later offline or revoked credentials do not erase the
+registration. The Pod requires a Space principal for the same Space, installation and
 credential in the authenticated response, then durably saves the profile. Only
 then does LAN setup report completion. The LAN status field named `podId` is an
 enrollment correlation ID: for Space mode it carries `credentialId`, never the
@@ -467,7 +486,8 @@ This read does not issue credentials or change Pod identity.
 `appClientId` identifies a registered application client; it is not the enrollment
 `podId` used by native commissioning. The list does not invent that association.
 `/app/pod/enrollment/get` takes `{podId}` and returns `{podId, clientMode: "user",
-registered}` for the authenticated user's activated personal enrollment.
+registered}` from the authenticated user's successful receipt for that exact attempt.
+An older registration for the same device cannot complete a different attempt.
 `/app/pod/space/enrollment/get` takes the same input and checks the current Space's
 active local credential, returning `clientMode: "space"`; this read requires Space
 MANAGE. A cloud Space has no such local enrollment and returns `registered:false`.

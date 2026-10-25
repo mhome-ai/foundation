@@ -959,3 +959,56 @@ async fn combined_product_rejects_a_different_client_before_cloud_claim() {
     harness.wait_state(POD, "failed").await;
     assert!(harness.cloud.calls.lock().unwrap().is_empty());
 }
+
+#[tokio::test(start_paused = true)]
+async fn active_space_credential_has_a_fresh_confirmation_window_but_still_waits_for_device() {
+    let h = Harness::new();
+    h.add_device("pod-a", Script::pod());
+    *h.cloud.space_credential_window.lock().unwrap() = Some(("active".into(), None));
+    let id = to_authorization(&h).await;
+    h.ok(
+        "/local/pod/commission/authorize",
+        json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+    )
+    .await;
+    let done = h.wait_state(POD, "completed").await;
+    assert_eq!(done["podId"], "space-credential");
+}
+
+#[tokio::test(start_paused = true)]
+async fn invalid_space_credential_windows_never_reach_the_device() {
+    for window in [("pending", None), ("pending", Some(1)), ("active", Some(1))] {
+        let h = Harness::new();
+        let device = h.add_device("pod-a", Script::pod());
+        *h.cloud.space_credential_window.lock().unwrap() = Some((window.0.into(), window.1));
+        let id = to_authorization(&h).await;
+        h.ok(
+            "/local/pod/commission/authorize",
+            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+        )
+        .await;
+        h.wait_state(POD, "failed").await;
+        assert!(device.deliveries.lock().unwrap().is_empty());
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn active_space_credential_does_not_complete_a_device_that_never_authenticates() {
+    let h = Harness::new();
+    let mut script = Script::pod();
+    script.activation = Activation::Never;
+    h.add_device("pod-a", script);
+    *h.cloud.space_credential_window.lock().unwrap() = Some(("active".into(), None));
+    let id = to_authorization(&h).await;
+    h.ok(
+        "/local/pod/commission/authorize",
+        json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+    )
+    .await;
+    let failed = h
+        .wait(POD, |s| {
+            matches!(s["state"].as_str(), Some("failed" | "timed_out"))
+        })
+        .await;
+    assert_ne!(failed["state"], "completed");
+}

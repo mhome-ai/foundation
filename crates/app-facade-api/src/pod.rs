@@ -599,8 +599,17 @@ pub struct SpaceCredentialIssueResponse {
     pub credential_id: String,
     pub app_client_id: String,
     pub jwt_token: String,
-    pub activate_before: i64,
+    pub credential_state: SpaceCredentialState,
+    /// First-use deadline in epoch milliseconds; absent once already active.
+    pub activate_before: Option<i64>,
     pub hub_identity: HubIdentity,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum SpaceCredentialState {
+    Pending,
+    Active,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
