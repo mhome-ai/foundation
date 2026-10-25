@@ -15,5 +15,7 @@ pub mod authority;
 pub mod device_binding;
 #[cfg(feature = "local-state")]
 pub mod secure_file;
+#[cfg(feature = "local-state")]
+pub mod service_control;
 #[cfg(all(feature = "local-state", windows))]
 pub mod windows_security;

@@ -64,3 +64,26 @@ Storage sessions explicitly grant a same-origin `/storage/v1` prefix; ordinary f
 grants allow only GET/HEAD of their exact URL. Cloud file URLs keep normal CA trust.
 
 Run `cargo test -p mhome-host-auth --features file-gateway` for transport tests.
+
+
+## Managed service control (`local-state`)
+
+`service_control` stores Host-owned per-service intent in private, atomically
+replaced JSON. A separate, stable OS lock file coordinates every process:
+shared permits cover Space activation, binding writes and restoration; the Host
+uses a nonblocking exclusive permit to inspect usage and publish intent.
+Only Host initializes records and writes `enabled`. Readers reject missing or
+corrupt state. Platform defaults are supplied explicitly on first installation.
+
+Managed launchers supply both `MEOW_HOST_SERVICE_CONTROL_DIR` (an absolute
+shared directory) and `MEOW_HOST_SERVICE_ID`. Both absent denotes an explicitly
+standalone runtime; a partial context is an error. Embedded Android services use
+the Host security root, not their separate business workdirs.
+
+A usage query returns all durable Space bindings, including offline/incomplete
+ones, and unfinished local cleanup. Queries and teardown must not acquire the
+admission lock. Unknown usage refuses disable. After committing `enabled=false`,
+Host releases admission and stops the process under its per-service operation
+lock. Stop failure retains intent, allowing retry even if the process is already
+gone. Process death releases OS locks without erasing intent. Restart and upgrade
+use ordinary stop/start, preserve intent, and never bypass a disabled setting.

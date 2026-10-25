@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::{AuthRequest, AuthenticatedSession, ServiceCoreInput, ServiceCoreOutput};
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 23;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 24;
 /// Maximum single native artifact body, separate from the JSON control frame limit.
 pub const MAX_NATIVE_ARTIFACT_BYTES: usize = 50 * 1024 * 1024;
 pub const MAX_NATIVE_ARTIFACT_BASE64_BYTES: usize = MAX_NATIVE_ARTIFACT_BYTES.div_ceil(3) * 4;
@@ -117,6 +117,7 @@ pub enum ExternalCoreMethod {
     GeneralWebhookPayload,
     InvokeWasmPayload,
     Health,
+    ServiceUsage,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -620,7 +621,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 23);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 24);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");
