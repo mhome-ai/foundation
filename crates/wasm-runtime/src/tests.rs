@@ -45,12 +45,10 @@ async fn success_uses_shared_engine() {
     );
 }
 
-#[tokio::test]
-async fn supported_branch_table_preserves_in_range_and_default_targets() {
-    // Exercise both sides of the maximum supported table, including the
-    // out-of-range default branch. All targets return fixed guest integers.
-    const ENTRIES: i32 = 65_520;
-    let targets = "$even $odd ".repeat((ENTRIES / 2) as usize);
+async fn assert_branch_table_control_flow(entries: i32, may_reject: bool) {
+    let targets: String = (0..entries)
+        .map(|index| if index % 2 == 0 { "$even " } else { "$odd " })
+        .collect();
     let module = Module::new(
         engine(),
         format!(
@@ -64,8 +62,17 @@ async fn supported_branch_table_preserves_in_range_and_default_targets() {
                         return)
                     i32.const 22))"#
         ),
-    )
-    .unwrap();
+    );
+    let module = match module {
+        Ok(module) => module,
+        Err(error) if may_reject => {
+            let detail = format!("{error:#}");
+            assert!(detail.contains("br_table"), "{detail}");
+            assert!(detail.contains("implementation limit"), "{detail}");
+            return;
+        }
+        Err(error) => panic!("supported branch table was rejected: {error:#}"),
+    };
     let mut store = Store::new(engine(), ());
     configure_store(
         &mut store,
@@ -79,38 +86,33 @@ async fn supported_branch_table_preserves_in_range_and_default_targets() {
     let dispatch = instance
         .get_typed_func::<i32, i32>(&mut store, "dispatch")
         .unwrap();
-    for (index, expected) in [
-        (0, 11),
-        (1, 22),
-        (32_768, 11),
-        (ENTRIES - 2, 11),
-        (ENTRIES - 1, 22),
-        (ENTRIES, 22),
-        (-1, 22),
-    ] {
+    for index in [0, 1, 32_768, entries - 2, entries - 1, entries, -1] {
+        let expected = if (0..entries).contains(&index) && index % 2 == 0 {
+            11
+        } else {
+            22
+        };
         assert_eq!(
             dispatch.call_async(&mut store, index).await.unwrap(),
             expected,
-            "branch table index {index}"
+            "branch table index {index} of {entries}"
         );
     }
 }
 
-#[test]
-fn oversized_branch_tables_are_rejected_before_native_execution() {
-    // GHSA-mghf-wjfp-p5xm: a table above ~256K targets can overflow a
-    // native AArch64 conditional branch. Wasmtime 48.0.7 caps translation
-    // at 65,520 targets; check its boundary and the advisory-sized input.
+#[tokio::test]
+async fn supported_branch_table_preserves_in_range_and_default_targets() {
+    assert_branch_table_control_flow(65_520, false).await;
+}
+
+#[tokio::test]
+async fn oversized_branch_tables_are_rejected_or_preserve_control_flow() {
+    // GHSA-mghf-wjfp-p5xm: above ~256K targets the AArch64 default branch
+    // could overflow. 48.0.7 rejects oversized tables during translation;
+    // future compilers may safely support them, but must preserve every
+    // selected target. All targets here return fixed guest integers.
     for entries in [65_521, 270_000] {
-        let targets = "0 ".repeat(entries);
-        let error = Module::new(
-            engine(),
-            format!("(module (func (param i32) (block local.get 0 br_table {targets} 0)))"),
-        )
-        .unwrap_err();
-        let detail = format!("{error:#}");
-        assert!(detail.contains("br_table"), "{detail}");
-        assert!(detail.contains("implementation limit"), "{detail}");
+        assert_branch_table_control_flow(entries, true).await;
     }
 }
 
