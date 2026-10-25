@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-pub const VERSION: &str = crate::node::settings::VERSION;
+pub const VERSION: &str = "v1";
 pub const NODE_TYPE: &str = "camera";
 pub const APP_TARGET_PREFIX: &str = "/app/plugin/camera/";
 pub const RUNTIME_TARGET_PREFIX: &str = "/camera/app/";
@@ -30,15 +30,6 @@ pub const RUNTIME_DEVICE_SETTINGS_GET_TARGET: &str = "/camera/app/device/setting
 pub const RUNTIME_DEVICE_SETTINGS_UPDATE_TARGET: &str = "/camera/app/device/settings/update";
 pub const CONNECTION_CREATE_FLOW: &str = "connection.create";
 pub const CONNECTION_RECONFIGURE_FLOW: &str = "connection.reconfigure";
-pub const SETTINGS_STATUS: &str = crate::node::settings::STATUS;
-pub const SETTINGS_UPDATE: &str = crate::node::settings::UPDATE;
-pub const SETTINGS_REVERT: &str = crate::node::settings::REVERT;
-pub const SETTINGS_RETRY: &str = crate::node::settings::RETRY;
-pub const RECOGNITION_SECTION: &str = "recognition";
-
-pub type SettingsStatusRequest = crate::node::settings::StatusRequest;
-pub type RecognitionUpdateRequest = crate::node::settings::UpdateRequest<RecognitionSettings>;
-
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EmptyRequest {}
@@ -256,14 +247,6 @@ pub struct ConnectionMutationResponse {
     pub device_ids: Vec<String>,
     pub changed: bool,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RecognitionSettings {
-    pub enabled: bool,
-}
-
-pub type RecognitionCommandRequest = crate::node::settings::SectionCommandRequest;
 
 #[cfg(test)]
 mod tests {
