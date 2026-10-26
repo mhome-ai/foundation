@@ -110,3 +110,9 @@ Client sessions. Host inventory and operations use `/app/system/hosts/get` and
 current Core. First claim is direct LAN only. See [SYSTEM.md](SYSTEM.md).
 
 Business operation permissions are declared once in [the authorization manifest](manifest/authorization.v1.json), consumed by Core and Lion. See [business authorization](contract/authorization-v1.md).
+
+## Matter management reads
+
+`/app/matter/device/list` is the management inventory, grouped by Fabric node. It is distinct from the Plugin's Integration enumeration `/matter/device/list`. Its `sourceDeviceId` values identify Plugin projections, not Twin entities. Nodes without projected devices remain visible; `membershipComplete`, `inventoryComplete`, per-node completeness and `errors` describe partial observations. Lists omit endpoints and attribute payloads.
+
+`/app/matter/fabric/node/detail` accepts 1–20 unique `matterNodeIds`, returning an ordered item result or error for each ID. The request uses string IDs without numeric coercion. See `schema/matter-management.v1.schema.json`. All `/app/matter/` operations execute through the Space's Hub irrespective of scope execution mode. Node removal is a manual UI/CLI capability, not a delegated Agent/MCP tool.

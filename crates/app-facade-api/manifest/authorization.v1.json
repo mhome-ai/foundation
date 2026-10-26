@@ -151,7 +151,7 @@
     "/app/matter/commissionable/list": "spaceRead",
     "/app/matter/device/list": "spaceRead",
     "/app/matter/fabric/get": "spaceRead",
-    "/app/matter/fabric/node/get": "spaceRead",
+    "/app/matter/fabric/node/detail": "spaceRead",
     "/app/matter/fabric/node/remove": "spaceWrite",
     "/app/matter/onboarding/input": "spaceWrite",
     "/app/matter/onboarding/start": "spaceWrite",
