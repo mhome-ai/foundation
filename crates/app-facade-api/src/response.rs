@@ -94,9 +94,87 @@ pub fn essential(target: &str, data: &Value) -> Value {
     if target.starts_with("/app/dashboard/") {
         dashboard(data)
     } else {
-        data.clone()
+        automation(target, data)
     }
 }
+
+// Project only read DTO rows. Diagnostic detail retains its bounded evidence and logs.
+fn automation(target: &str, data: &Value) -> Value {
+    let (collection, fields): (&str, &[&str]) = match target {
+        "/app/automation/list" => (
+            "automations",
+            &["id", "name", "description", "type", "enabled", "singleUse"],
+        ),
+        "/app/automation/detail/get" => (
+            "automations",
+            &[
+                "id",
+                "name",
+                "description",
+                "type",
+                "enabled",
+                "singleUse",
+                "hasExpire",
+                "usedCapabilities",
+                "memberIds",
+                "inputVars",
+                "scriptHash",
+            ],
+        ),
+        "/app/automation/activity/now/list" => (
+            "automations",
+            &["automationId", "automationName", "automationType", "origin"],
+        ),
+        "/app/automation/activity/recent/list" => (
+            "activities",
+            &[
+                "activityId",
+                "automationId",
+                "automationName",
+                "automationType",
+                "origin",
+                "activityType",
+                "timestamp",
+                "instanceId",
+                "threadId",
+                "error",
+                "panic",
+            ],
+        ),
+        "/app/automation/diagnostic/list" => (
+            "diagnostics",
+            &[
+                "automationId",
+                "name",
+                "threadId",
+                "instanceId",
+                "timestamp",
+                "status",
+                "reportMode",
+                "logCount",
+                "omittedLogs",
+                "truncated",
+                "logsMissing",
+                "failure",
+            ],
+        ),
+        "/app/automation/snapshot/list" => (
+            "snapshots",
+            &["snapshotId", "createdAt", "description", "type"],
+        ),
+        _ => return data.clone(),
+    };
+    let mut result = data.clone();
+    if let Some(items) = result.get_mut(collection).and_then(Value::as_array_mut) {
+        for item in items {
+            if let Some(object) = item.as_object_mut() {
+                object.retain(|key, _| fields.contains(&key.as_str()));
+            }
+        }
+    }
+    result
+}
+
 fn dashboard(value: &Value) -> Value {
     match value {
         Value::Array(items) => Value::Array(items.iter().map(dashboard).collect()),

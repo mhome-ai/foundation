@@ -180,5 +180,327 @@
     "data": null,
     "status": "success",
     "essential": null
+  },
+  {
+    "name": "automation-list",
+    "target": "/app/automation/list",
+    "status": "success",
+    "data": {
+      "automations": [
+        {
+          "id": "a1",
+          "name": "Morning",
+          "description": "Turn on light",
+          "type": "TASK_FLOW",
+          "enabled": true,
+          "singleUse": false,
+          "createdAt": 1,
+          "tags": [
+            "internal"
+          ]
+        }
+      ]
+    },
+    "essential": {
+      "automations": [
+        {
+          "id": "a1",
+          "name": "Morning",
+          "description": "Turn on light",
+          "type": "TASK_FLOW",
+          "enabled": true,
+          "singleUse": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "automation-detail",
+    "target": "/app/automation/detail/get",
+    "status": "success",
+    "data": {
+      "automations": [
+        {
+          "id": "a1",
+          "name": "Morning",
+          "description": "Turn on light",
+          "type": "TASK_FLOW",
+          "enabled": true,
+          "singleUse": false,
+          "hasExpire": false,
+          "usedCapabilities": [
+            "light.command.on"
+          ],
+          "memberIds": [],
+          "inputVars": [
+            {
+              "name": "$room",
+              "type": "String",
+              "description": "Room"
+            }
+          ],
+          "scriptHash": "source-hash",
+          "script": {
+            "script": "private source",
+            "scripts": {
+              "function": "private"
+            }
+          },
+          "updatedAt": 2
+        }
+      ]
+    },
+    "essential": {
+      "automations": [
+        {
+          "id": "a1",
+          "name": "Morning",
+          "description": "Turn on light",
+          "type": "TASK_FLOW",
+          "enabled": true,
+          "singleUse": false,
+          "hasExpire": false,
+          "usedCapabilities": [
+            "light.command.on"
+          ],
+          "memberIds": [],
+          "inputVars": [
+            {
+              "name": "$room",
+              "type": "String",
+              "description": "Room"
+            }
+          ],
+          "scriptHash": "source-hash"
+        }
+      ]
+    }
+  },
+  {
+    "name": "automation-now",
+    "target": "/app/automation/activity/now/list",
+    "status": "success",
+    "data": {
+      "automations": [
+        {
+          "automationId": "a1",
+          "automationName": "Morning",
+          "automationType": "TASK_FLOW",
+          "origin": "RECURRING",
+          "description": "duplicate"
+        }
+      ]
+    },
+    "essential": {
+      "automations": [
+        {
+          "automationId": "a1",
+          "automationName": "Morning",
+          "automationType": "TASK_FLOW",
+          "origin": "RECURRING"
+        }
+      ]
+    }
+  },
+  {
+    "name": "automation-recent",
+    "target": "/app/automation/activity/recent/list",
+    "status": "success",
+    "data": {
+      "since": "10min",
+      "from": 0,
+      "until": 100,
+      "activities": [
+        {
+          "automationId": "a1",
+          "automationName": "Morning",
+          "automationType": "TASK_FLOW",
+          "origin": "RECURRING",
+          "activityType": "RUN_FAILED",
+          "timestamp": 100,
+          "instanceId": "run",
+          "threadId": 0,
+          "error": true,
+          "panic": false,
+          "actorUserId": "user",
+          "clientId": "client",
+          "description": "duplicate"
+        }
+      ]
+    },
+    "essential": {
+      "since": "10min",
+      "from": 0,
+      "until": 100,
+      "activities": [
+        {
+          "automationId": "a1",
+          "automationName": "Morning",
+          "automationType": "TASK_FLOW",
+          "origin": "RECURRING",
+          "activityType": "RUN_FAILED",
+          "timestamp": 100,
+          "instanceId": "run",
+          "threadId": 0,
+          "error": true,
+          "panic": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "automation-diagnostic-list",
+    "target": "/app/automation/diagnostic/list",
+    "status": "success",
+    "data": {
+      "diagnostics": [
+        {
+          "automationId": "a1",
+          "name": "Morning",
+          "threadId": 0,
+          "instanceId": "run",
+          "timestamp": 100,
+          "status": "failed",
+          "reportMode": "STD",
+          "logCount": 2,
+          "omittedLogs": 1,
+          "truncated": true,
+          "logsMissing": false,
+          "failure": {
+            "message": "device unavailable",
+            "code": "TIMEOUT"
+          },
+          "revision": 3,
+          "startedAt": 90,
+          "finishedAt": 100
+        }
+      ]
+    },
+    "essential": {
+      "diagnostics": [
+        {
+          "automationId": "a1",
+          "name": "Morning",
+          "threadId": 0,
+          "instanceId": "run",
+          "timestamp": 100,
+          "status": "failed",
+          "reportMode": "STD",
+          "logCount": 2,
+          "omittedLogs": 1,
+          "truncated": true,
+          "logsMissing": false,
+          "failure": {
+            "message": "device unavailable",
+            "code": "TIMEOUT"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "automation-diagnostic-detail",
+    "target": "/app/automation/diagnostic/detail",
+    "status": "success",
+    "data": {
+      "diagnostic": {
+        "automationId": "a1",
+        "name": "Morning",
+        "threadId": 0,
+        "instanceId": "run",
+        "timestamp": 100,
+        "status": "failed",
+        "reportMode": "STD",
+        "logCount": 2,
+        "omittedLogs": 1,
+        "truncated": true,
+        "logsMissing": false,
+        "failure": {
+          "message": "device unavailable",
+          "code": "TIMEOUT"
+        },
+        "revision": 3,
+        "startedAt": 90,
+        "finishedAt": 100
+      },
+      "logs": [
+        {
+          "level": "INFO",
+          "message": "Invoked device",
+          "context": {
+            "id": "light"
+          }
+        },
+        {
+          "level": "ERROR",
+          "message": "Timed out"
+        }
+      ]
+    },
+    "essential": {
+      "diagnostic": {
+        "automationId": "a1",
+        "name": "Morning",
+        "threadId": 0,
+        "instanceId": "run",
+        "timestamp": 100,
+        "status": "failed",
+        "reportMode": "STD",
+        "logCount": 2,
+        "omittedLogs": 1,
+        "truncated": true,
+        "logsMissing": false,
+        "failure": {
+          "message": "device unavailable",
+          "code": "TIMEOUT"
+        },
+        "revision": 3,
+        "startedAt": 90,
+        "finishedAt": 100
+      },
+      "logs": [
+        {
+          "level": "INFO",
+          "message": "Invoked device",
+          "context": {
+            "id": "light"
+          }
+        },
+        {
+          "level": "ERROR",
+          "message": "Timed out"
+        }
+      ]
+    }
+  },
+  {
+    "name": "automation-snapshot-list",
+    "target": "/app/automation/snapshot/list",
+    "status": "success",
+    "data": {
+      "automationId": "a1",
+      "snapshots": [
+        {
+          "snapshotId": "v1",
+          "createdAt": 90,
+          "description": "Prior behavior",
+          "type": "TASK_FLOW",
+          "script": {
+            "script": "private"
+          }
+        }
+      ]
+    },
+    "essential": {
+      "automationId": "a1",
+      "snapshots": [
+        {
+          "snapshotId": "v1",
+          "createdAt": 90,
+          "description": "Prior behavior",
+          "type": "TASK_FLOW"
+        }
+      ]
+    }
   }
 ]
