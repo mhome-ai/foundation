@@ -1,5 +1,5 @@
 use app_facade_api::{authorization, routing};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 fn validator(name: &str) -> jsonschema::Validator {
     let mut schema: Value =
         serde_json::from_str(include_str!("../schema/matter-management.v1.schema.json")).unwrap();
