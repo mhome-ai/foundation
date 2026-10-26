@@ -14,5 +14,11 @@
   {"target":"/automation/copy","payload":{},"operation":"scriptSave","totalMs":420000},
   {"target":"/automation/enroll","payload":{},"operation":"scriptSave","totalMs":420000},
   {"target":"/automation/overview/save","payload":{},"operation":"scriptSave","totalMs":420000},
-  {"target":"/bridge/automation/compile","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":205000}
+  {"target":"/bridge/automation/compile","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":205000},
+  {"target":"/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
+  {"target":"/invoke/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
+  {"target":"/dispatch/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
+  {"target":"/dispatch/agent/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
+  {"target":"/bridge/automation/parse","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":205000,"lionWaitMs":230000},
+  {"target":"/bridge/automation/format","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":205000,"lionWaitMs":230000}
 ]

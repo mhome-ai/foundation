@@ -2,6 +2,7 @@
   "manifest": "mhome.operation-timeouts.v1",
   "operations": {
     "coreRequest": { "totalMs": 60000, "description": "Default Core request execution." },
+    "entityRefresh": { "totalMs": 85000, "description": "Integration entity refresh including source loading and response preparation." },
     "harnessSessionOpen": { "totalMs": 150000, "description": "Harness session initialization." },
     "scriptValidation": { "totalMs": 205000, "description": "Companion Rust build and validation." },
     "scriptSave": { "totalMs": 420000, "description": "Companion Rust build, installation and save." },
@@ -15,13 +16,13 @@
     "hostIpc": { "graceMs": 5000 },
     "coreBridge": { "graceMs": 10000 },
     "client": { "graceMs": 35000 },
-    "lionForward": { "graceMs": 0, "overrides": { "scriptValidation": 25000, "scriptSave": 30000 } }
+    "lionForward": { "graceMs": 0, "overrides": { "entityRefresh": 5000, "scriptValidation": 25000, "scriptSave": 30000 } }
   },
   "selectors": {
     "forwardPrefixes": ["/invoke", "/dispatch/agent", "/dispatch"],
     "storedScriptSave": ["/automation/snapshot/rollback", "/app/automation/snapshot/rollback", "/automation/overview/save", "/automation/copy", "/automation/enroll"],
     "sourceScriptSave": ["/automation/save", "/app/automation/save"],
     "sourceScriptValidation": ["/app/automation/verify", "/bridge/automation/parse", "/bridge/automation/format", "/bridge/automation/verify", "/automation/format", "/bridge/automation/compile", "/bridge/agent/automation/compile"],
-    "ordinaryOverrides": { "/harness/test/session/open": "harnessSessionOpen" }
+    "ordinaryOverrides": { "/app/integration/entity/refresh": "entityRefresh", "/harness/test/session/open": "harnessSessionOpen" }
   }
 }

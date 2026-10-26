@@ -3,6 +3,7 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Operation {
     CoreRequest,
+    EntityRefresh,
     HarnessSessionOpen,
     ScriptValidation,
     ScriptSave,
@@ -17,6 +18,7 @@ impl Operation {
     pub const fn id(self) -> &'static str {
         match self {
             Self::CoreRequest => "coreRequest",
+            Self::EntityRefresh => "entityRefresh",
             Self::HarnessSessionOpen => "harnessSessionOpen",
             Self::ScriptValidation => "scriptValidation",
             Self::ScriptSave => "scriptSave",
@@ -31,6 +33,7 @@ impl Operation {
     pub const fn timeout(self) -> Duration {
         Duration::from_millis(match self {
             Self::CoreRequest => 60000,
+            Self::EntityRefresh => 85000,
             Self::HarnessSessionOpen => 150000,
             Self::ScriptValidation => 205000,
             Self::ScriptSave => 420000,
@@ -57,6 +60,7 @@ impl WaitProfile {
             (Self::HostIpc, _) => 5000,
             (Self::CoreBridge, _) => 10000,
             (Self::Client, _) => 35000,
+            (Self::LionForward, Operation::EntityRefresh) => 5000,
             (Self::LionForward, Operation::ScriptValidation) => 25000,
             (Self::LionForward, Operation::ScriptSave) => 30000,
             (Self::LionForward, _) => 0,
@@ -94,5 +98,6 @@ const SOURCE_SCRIPT_VALIDATION: &[&str] = &[
 ];
 
 const ORDINARY_OVERRIDES: &[(&str, Operation)] = &[
+    ("/app/integration/entity/refresh", Operation::EntityRefresh),
     ("/harness/test/session/open", Operation::HarnessSessionOpen),
 ];

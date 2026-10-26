@@ -33,6 +33,10 @@ pub fn script_operation(target: &str, payload: &str) -> Option<Operation> {
 }
 
 pub fn ordinary_operation(target: &str) -> Operation {
+    let target = FORWARD_PREFIXES
+        .iter()
+        .find_map(|prefix| target.strip_prefix(prefix))
+        .unwrap_or(target);
     ORDINARY_OVERRIDES
         .iter()
         .find(|(value, _)| *value == target)
