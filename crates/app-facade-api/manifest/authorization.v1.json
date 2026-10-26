@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.50.0",
+  "contractVersion": "1.51.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -36,8 +36,8 @@
     "/app/automation/description/update": "spaceWrite",
     "/app/automation/detail/get": "spaceRead",
     "/app/automation/details/batch-get": "spaceRead",
-    "/app/automation/history/brief/list": "spaceRead",
-    "/app/automation/history/list": "spaceRead",
+    "/app/automation/diagnostic/list": "spaceRead",
+    "/app/automation/diagnostic/detail": "spaceRead",
     "/app/automation/list": "spaceRead",
     "/app/automation/save": "spaceWrite",
     "/app/automation/search": "spaceRead",
@@ -283,8 +283,6 @@
     "/automation/enroll": "spaceWrite",
     "/automation/format": "spaceWrite",
     "/automation/get": "spaceRead",
-    "/automation/history/get": "spaceRead",
-    "/automation/history/list": "spaceRead",
     "/automation/info": "spaceRead",
     "/automation/list": "spaceRead",
     "/automation/names": "spaceRead",
