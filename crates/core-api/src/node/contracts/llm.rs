@@ -3,12 +3,11 @@ use serde::{Deserialize, Serialize};
 pub const VERSION: &str = crate::node::V1;
 pub const NODE_TYPE: &str = "llm";
 pub const RUNTIME_TARGET_PREFIX: &str = "/llm/app/";
-pub const RUNTIME_STATUS: &str = "runtime/status";
-pub const RUNTIME_RETRY: &str = "runtime/retry";
+pub const STATUS: &str = "status";
 pub const MODEL_LIST: &str = "model/list";
-pub const MODEL_DOWNLOAD: &str = "model/download";
-pub const MODEL_DOWNLOAD_STATUS: &str = "model/download/status";
-pub const MODEL_DOWNLOAD_CANCEL: &str = "model/download/cancel";
+pub const MODEL_INSTALL: &str = "model/install";
+pub const MODEL_INSTALL_STATUS: &str = "model/install/status";
+pub const MODEL_INSTALL_CANCEL: &str = "model/install/cancel";
 pub const MODEL_IMPORT_START: &str = "model/import/start";
 pub const MODEL_IMPORT_STATUS: &str = "model/import/status";
 pub const MODEL_IMPORT_FINALIZE: &str = "model/import/finalize";
@@ -25,7 +24,7 @@ pub struct EmptyRequest {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ModelDownloadRequest {
+pub struct ModelInstallRequest {
     pub model_id: String,
     pub idempotency_key: String,
 }
@@ -190,6 +189,21 @@ pub struct TtsSynthesizeResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn installation_requires_an_idempotency_key_and_rejects_execution_overrides() {
+        let value = serde_json::json!({"modelId":"qwen3:4b","idempotencyKey":"op-1"});
+        let request: ModelInstallRequest = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(request.model_id, "qwen3:4b");
+        assert_eq!(serde_json::to_value(request).unwrap(), value);
+        assert!(serde_json::from_value::<ModelInstallRequest>(
+            serde_json::json!({"modelId":"qwen3:4b"})
+        )
+        .is_err());
+        let mut invalid = value;
+        invalid["mode"] = serde_json::json!("direct");
+        assert!(serde_json::from_value::<ModelInstallRequest>(invalid).is_err());
+    }
 
     #[test]
     fn import_start_request_is_strict_and_uses_public_names() {
