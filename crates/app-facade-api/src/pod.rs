@@ -408,6 +408,9 @@ pub struct CommissionSession {
     pub authorization: Option<AuthorizationPrompt>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pod_id: Option<String>,
+    /// Credential ownership; required with a successful enrollment result.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub client_mode: Option<ClientMode>,
     /// Set once the pod reports a Wi-Fi change window: the session replaces
     /// the pod's network and issues no credential.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -449,11 +452,14 @@ impl CommissionSession {
             return Err("awaiting_authorization requires an authorization prompt");
         }
         if self.mode == Some(SessionMode::Reprovision) {
-            if self.authorization.is_some() || self.pod_id.is_some() {
+            if self.authorization.is_some() || self.pod_id.is_some() || self.client_mode.is_some() {
                 return Err("reprovision sessions issue no credential");
             }
-        } else if self.state == CommissionState::Completed && self.pod_id.is_none() {
-            return Err("completed sessions carry the issued podId");
+        } else if self.state == CommissionState::Completed
+            && (self.pod_id.as_deref().is_none_or(|id| id.trim().is_empty())
+                || self.client_mode.is_none())
+        {
+            return Err("completed sessions carry the issued podId and clientMode");
         }
         Ok(())
     }
@@ -550,6 +556,8 @@ pub struct PodInfo {
     pub env: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pod_id: Option<String>,
+    /// Present with the in-flight or completed credential identity.
+    pub client_mode: Option<ClientMode>,
     pub device_id: String,
     pub model: String,
     #[serde(default)]

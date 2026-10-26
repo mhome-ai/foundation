@@ -119,6 +119,7 @@ pub(crate) struct Live {
     pub device: Option<PodDeviceInfo>,
     pub authorization: Option<AuthorizationPrompt>,
     pub pod_id: Option<String>,
+    pub client_mode: Option<app_facade_api::pod::ClientMode>,
     pub mode: Option<SessionMode>,
     pub host: Option<HostDeviceInfo>,
     pub addresses: Vec<String>,
@@ -150,6 +151,7 @@ impl Live {
             networks: self.networks.clone(),
             authorization: self.authorization.clone(),
             pod_id: self.pod_id.clone(),
+            client_mode: self.client_mode,
             mode: self.mode,
             error: self.error.clone(),
         }

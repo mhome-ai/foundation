@@ -90,6 +90,7 @@ pub struct Script {
     pub device_id: &'static str,
     pub env: &'static str,
     pub initial_state: &'static str,
+    pub initial_client_mode: Option<&'static str>,
     pub product_key: Option<String>,
     pub wrong_product_binding: bool,
 }
@@ -116,6 +117,7 @@ impl Script {
             device_id: "a0b1c2d3e4f5",
             env: "prod",
             initial_state: "advertising",
+            initial_client_mode: Some("user"),
             product_key: None,
             wrong_product_binding: false,
         }
@@ -163,6 +165,7 @@ struct DeviceState {
     sta: Sta,
     configured: Option<(String, String)>,
     pod_state: &'static str,
+    client_mode: Option<String>,
     activation_polls: u32,
     wifi_save_polls: u32,
     rejections: u32,
@@ -193,6 +196,7 @@ impl FakeDevice {
                 sta,
                 configured: None,
                 pod_state: script.initial_state,
+                client_mode: script.initial_client_mode.map(str::to_owned),
                 activation_polls: 0,
                 wifi_save_polls: 0,
                 rejections: 0,
@@ -426,6 +430,7 @@ impl FakeDevice {
                 "env": script.env,
                 "deviceId": script.device_id,
                 "podId": if matches!(state.pod_state, "activating" | "commissioned") { Some("pod-1") } else { None },
+                "clientMode": if matches!(state.pod_state, "activating" | "commissioned") { state.client_mode.clone() } else { None },
                 "model": "S1",
                 "platform": "esp32c5",
                 "firmwareVersion": "0.3.0",
@@ -465,6 +470,7 @@ impl FakeDevice {
                 self.deliveries.lock().unwrap().push(request.clone());
                 if script.deliver_ok && script.reprovision.is_none() {
                     state.pod_state = "activating";
+                    state.client_mode = request["clientMode"].as_str().map(str::to_owned);
                     json!({ "ok": true, "state": "activating" })
                 } else {
                     json!({ "ok": false, "state": state.pod_state, "reason": "wrong_state" })

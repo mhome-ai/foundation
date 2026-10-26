@@ -77,6 +77,7 @@ async fn commissions_a_pod_end_to_end() {
     assert_eq!(issued["state"], "delivering");
     let done = harness.wait_state(POD, "completed").await;
     assert_eq!(done["podId"], "pod-1");
+    assert_eq!(done["clientMode"], "user");
     assert_eq!(done["networks"].as_array().unwrap().len(), 7);
     assert!(done.get("mode").is_none());
     valid(&done);
@@ -720,20 +721,28 @@ async fn lan_metadata_cannot_substitute_a_different_device_or_environment() {
 
 #[tokio::test(start_paused = true)]
 async fn retry_reads_committed_completion_without_issuing_another_credential() {
-    let h = Harness::new();
-    let mut script = Script::pod();
-    script.initial_state = "commissioned";
-    h.add_device("pod-a", script);
-    h.lan.advertise();
-    let s = h
-        .ok(
-            "/local/pod/commission/start",
-            json!({"candidateId":"lan:pod-a"}),
-        )
-        .await;
-    secure(&h, &session_id(&s)).await;
-    valid(&h.wait_state(POD, "completed").await);
-    assert!(h.cloud.calls.lock().unwrap().is_empty());
+    for initial_state in ["activating", "commissioned"] {
+        for mode in ["user", "space"] {
+            let h = Harness::new();
+            let mut script = Script::pod();
+            script.initial_state = initial_state;
+            script.initial_client_mode = Some(mode);
+            let device = h.add_device("pod-a", script);
+            h.lan.advertise();
+            let s = h
+                .ok(
+                    "/local/pod/commission/start",
+                    json!({"candidateId":"lan:pod-a"}),
+                )
+                .await;
+            secure(&h, &session_id(&s)).await;
+            let done = h.wait_state(POD, "completed").await;
+            valid(&done);
+            assert_eq!(done["clientMode"], mode);
+            assert!(h.cloud.calls.lock().unwrap().is_empty());
+            assert!(device.deliveries.lock().unwrap().is_empty());
+        }
+    }
 }
 
 #[tokio::test(start_paused = true)]
@@ -854,6 +863,7 @@ async fn space_mode_uses_separate_issuance_and_only_offers_owned_local_spaces() 
         .await;
     let done = harness.wait_state(POD, "completed").await;
     assert_eq!(done["podId"], "space-credential");
+    assert_eq!(done["clientMode"], "space");
     assert_eq!(harness.cloud.paths(), vec!["pod/space/credential/issue"]);
     let deliveries = device.deliveries.lock().unwrap();
     assert_eq!(deliveries.len(), 1);
@@ -973,6 +983,7 @@ async fn active_space_credential_has_a_fresh_confirmation_window_but_still_waits
     .await;
     let done = h.wait_state(POD, "completed").await;
     assert_eq!(done["podId"], "space-credential");
+    assert_eq!(done["clientMode"], "space");
 }
 
 #[tokio::test(start_paused = true)]
@@ -1011,4 +1022,25 @@ async fn active_space_credential_does_not_complete_a_device_that_never_authentic
         })
         .await;
     assert_ne!(failed["state"], "completed");
+}
+
+#[tokio::test(start_paused = true)]
+async fn committed_receipt_requires_a_known_client_mode() {
+    for mode in [None, Some("invalid")] {
+        let h = Harness::new();
+        let mut script = Script::pod();
+        script.initial_state = "commissioned";
+        script.initial_client_mode = mode;
+        h.add_device("pod-a", script);
+        h.lan.advertise();
+        let s = h
+            .ok(
+                "/local/pod/commission/start",
+                json!({"candidateId":"lan:pod-a"}),
+            )
+            .await;
+        secure(&h, &session_id(&s)).await;
+        valid(&h.wait_state(POD, "failed").await);
+        assert!(h.cloud.calls.lock().unwrap().is_empty());
+    }
 }

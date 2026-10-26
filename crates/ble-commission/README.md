@@ -102,7 +102,10 @@ There is no cloud revocation call; unused pending credentials expire. Select the
 network. The secure channel verifies the full device ID, environment and (after
 BLE handoff) identity key. A fresh handshake uses new cipher state, while the
 entered code is held temporarily to avoid prompting twice. Completed or in-flight
-activation is read before any new credential issuance.
+activation is read before any new credential issuance. Completed enrollment
+snapshots contain `podId` and `clientMode` (`user` or `space`), including after
+reconnecting to a completed attempt. Reconnection checks both against the
+credential being confirmed; a missing or changed mode fails rather than guessing.
 
 
 A pod whose `pod-info` reports `"mode":"reprovision"` is in a Wi-Fi change

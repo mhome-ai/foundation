@@ -37,6 +37,7 @@ const REPROVISION_POLLS: u32 = 30;
 
 struct Credential {
     pod_id: String,
+    client_mode: ClientMode,
     confirm_before: i64,
 }
 
@@ -440,8 +441,12 @@ impl Actor {
                     let Some(pod_id) = pod_info.pod_id.clone().filter(|id| !id.is_empty()) else {
                         return self.fail(incomplete());
                     };
+                    let Some(client_mode) = pod_info.client_mode else {
+                        return self.fail(incomplete());
+                    };
                     self.credential = Some(Credential {
                         pod_id,
+                        client_mode,
                         confirm_before: self.engine.now_ms() + 120_000,
                     });
                 }
@@ -1043,6 +1048,7 @@ impl Actor {
                 (
                     Credential {
                         pod_id: issued.pod_id,
+                        client_mode,
                         confirm_before: issued.activate_before + ACTIVATION_GRACE_MS,
                     },
                     deliver,
@@ -1080,6 +1086,7 @@ impl Actor {
                 (
                     Credential {
                         pod_id: issued.credential_id,
+                        client_mode,
                         confirm_before: self.engine.now_ms() + 120_000,
                     },
                     deliver,
@@ -1137,6 +1144,7 @@ impl Actor {
         let expected = self.pod_info.clone()?;
         let code = self.pairing_code.clone()?;
         let pod_id = self.credential.as_ref()?.pod_id.clone();
+        let client_mode = self.credential.as_ref()?.client_mode;
         while self.confirmation_retries < 3 && !self.over() {
             self.confirmation_retries += 1;
             if let Some(device) = self.device.take() {
@@ -1163,6 +1171,7 @@ impl Actor {
                 || info.identity != expected.identity
                 || info.env != core_api::RuntimeEnv::current().as_str()
                 || info.pod_id.as_deref() != Some(&pod_id)
+                || info.client_mode != Some(client_mode)
             {
                 self.fail(error(
                     CommissionErrorCode::DeviceMismatch,
@@ -1244,13 +1253,15 @@ impl Actor {
     }
 
     async fn complete_pod(&mut self) {
-        let pod_id = self
-            .credential
-            .as_ref()
-            .map(|credential| credential.pod_id.clone());
+        let Some(credential) = self.credential.as_ref() else {
+            return self.fail_disconnected("missing credential receipt");
+        };
+        let pod_id = credential.pod_id.clone();
+        let client_mode = credential.client_mode;
         let completed = self.update(|live| {
             live.set(Phase::Completed, None);
-            live.pod_id = pod_id;
+            live.pod_id = Some(pod_id);
+            live.client_mode = Some(client_mode);
         });
         if !completed {
             return;

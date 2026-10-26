@@ -120,8 +120,13 @@ and responses are bounded to 64 KiB including encryption overhead.
 ```
 
 `env` must match the native Client runtime (`prod`, `dev`, `e2e`).
-`podId` is included when activation is in flight or durably completed, so a
-new session can observe completion without issuing another credential.
+`podId` and `clientMode` (`user` or `space`) are included together when activation
+is in flight or durably completed. A new session reads both from the secure
+device response before resuming; a missing or unknown mode fails the attempt.
+This observes completion without issuing another credential. Native completed
+enrollment sessions return both fields. HITL passes this receipt to its handler,
+which verifies exactly the corresponding personal or Space enrollment source;
+it never probes the other source or treats the mode itself as proof of success.
 `platform` is diagnostic only. `wifiConfigured` is true when the pod kept a
 working network across logout; the commissioner then skips the Wi-Fi steps after
 confirming connectivity with `prov-config` status. Inside a Wi-Fi change window

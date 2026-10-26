@@ -260,6 +260,7 @@ async fn start(
             device: None,
             authorization: None,
             pod_id: None,
+            client_mode: None,
             mode: None,
             host: None,
             addresses: Vec::new(),

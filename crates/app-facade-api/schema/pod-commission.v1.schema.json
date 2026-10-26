@@ -195,6 +195,12 @@
           "type": "string"
         }
       }
+    },
+    "clientMode": {
+      "enum": [
+        "user",
+        "space"
+      ]
     }
   },
   "allOf": [
@@ -334,7 +340,8 @@
           "podId": {}
         },
         "required": [
-          "podId"
+          "podId",
+          "clientMode"
         ]
       }
     },
@@ -364,6 +371,11 @@
               },
               "required": [
                 "authorization"
+              ]
+            },
+            {
+              "required": [
+                "clientMode"
               ]
             }
           ]

@@ -190,6 +190,27 @@ fn fixtures_match_types_and_schemas() {
         .unwrap()
         .validate()
         .is_err());
+    let mut completed = reprovisioned.clone();
+    completed.as_object_mut().unwrap().remove("mode");
+    completed["podId"] = Value::from("pod-1");
+    assert!(!commission.is_valid(&completed));
+    assert!(
+        serde_json::from_value::<CommissionSession>(completed.clone())
+            .unwrap()
+            .validate()
+            .is_err()
+    );
+    for mode in ["user", "space"] {
+        completed["clientMode"] = Value::from(mode);
+        assert!(commission.is_valid(&completed));
+        serde_json::from_value::<CommissionSession>(completed.clone())
+            .unwrap()
+            .validate()
+            .unwrap();
+    }
+    completed["clientMode"] = Value::from("invalid");
+    assert!(!commission.is_valid(&completed));
+    assert!(serde_json::from_value::<CommissionSession>(completed).is_err());
     let mut issued = reprovisioned;
     issued["podId"] = Value::from("pod-1");
     assert!(!commission.is_valid(&issued));
