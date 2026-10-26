@@ -101,13 +101,11 @@ mod tests {
         .unwrap();
         assert_eq!(call.control.mode, ActionMode::Direct);
         assert_eq!(call.input["value"], 1);
-        assert!(
-            serde_json::from_value::<FacadeCall>(serde_json::json!({
-                "mode": "direct",
-                "input": {}
-            }))
-            .is_err()
-        );
+        assert!(serde_json::from_value::<FacadeCall>(serde_json::json!({
+            "mode": "direct",
+            "input": {}
+        }))
+        .is_err());
     }
 
     #[test]

@@ -1,4 +1,4 @@
-use app_facade_api::{ResponseDetail, response};
+use app_facade_api::{response, ResponseDetail};
 use serde_json::Value;
 #[test]
 fn shared_projection_and_outcome_contract() {

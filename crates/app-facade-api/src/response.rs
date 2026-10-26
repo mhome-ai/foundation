@@ -1,6 +1,6 @@
 //! Public App result projection. Transport serialization is not a business input.
 use crate::{FacadeResponse, ResponseDetail};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
 pub fn outcome(target: &str, data: Value) -> FacadeResponse {
