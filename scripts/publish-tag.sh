@@ -131,6 +131,11 @@ if [[ "${publish}" == "--publish" && -n "${protocol}" && "${RUNNER_ENVIRONMENT:-
   exit 1
 fi
 
+readiness_script="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/wait-for-crates.mjs"
+# Check from this runner before registry-based packaging. Local path dependencies
+# can compile successfully while the registry index still lacks their versions.
+node "$readiness_script" --dependencies-of "$package"
+
 cargo fmt --all -- --check
 cargo clippy -p "${package}" --all-targets --locked -- -D warnings
 cargo test -p "${package}" --locked
@@ -197,6 +202,10 @@ else
     fi
   fi
 fi
+
+# Cargo may return success after uploading even when its index wait times out.
+# A green release job must also establish that consumers can resolve this version.
+node "$readiness_script" "$package" "$version"
 
 if [[ -n "${npm_package}" ]]; then
   if npm view "${npm_package}@${version}" version >/dev/null 2>&1; then

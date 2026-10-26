@@ -45,6 +45,14 @@ Crates are versioned independently. A tag named `<package>-v<version>` publishes
 for example `mhome-runtime-paths-v0.1.0`. The tag version must equal that package's manifest version.
 Publication is immutable and restricted to the allowlist in `scripts/publish-tag.sh`.
 
+Registry upload acceptance does not imply Cargo index availability. Tagged
+publication waits for exact internal dependency versions in the crates.io sparse
+index before packaging, and for the uploaded version before completing CI.
+`scripts/wait-for-crates.mjs` shares this check with the workspace coordinator:
+it waits up to ten minutes, bounds individual requests, rejects yanked or invalid
+entries, and never retries uploads. Run its offline regression tests with
+`node --test scripts/tests/crate-readiness.test.mjs`.
+
 The artifact, conversation, App Facade, and Core protocol crates also publish matching, data-only npm
 packages for JavaScript consumers' build-time conformance checks. Each npm package contains the
 crate's manifest, JSON Schemas, and fixtures without an executable or browser entry point. Its
