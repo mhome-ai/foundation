@@ -7,6 +7,9 @@
   optional `authorizations` map carries cloud-issued User Host tokens and pins
   for authenticated information. Public signed challenges expose only claim
   status. Other-Space Hosts are hidden.
+  Each observation includes its discovery `env`, even when signed status is
+  unavailable. Directory identity is `(hostId, env)`; discovery metadata never
+  grants management authority.
 - `/app/system/hosts/runtime` forwards one Host action with its required
   `authorization`. Core checks the original User, target Host and Space routing
   binding. Host validates the cloud signature and its current policy. Core does

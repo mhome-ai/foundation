@@ -147,6 +147,8 @@ pub struct Clients {
 #[serde(rename_all = "camelCase")]
 pub struct Host {
     pub host_id: String,
+    /// Discovery environment for directory identity; never proof of authorization.
+    pub env: core_api::RuntimeEnv,
     pub host_name: String,
     pub host_type: String,
     pub source: String,

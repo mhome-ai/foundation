@@ -82,6 +82,7 @@ fn typed_system_responses_match_the_public_schemas() {
             observed_at_ms: 10,
             hosts: vec![Host {
                 host_id: "h".into(),
+                env: core_api::RuntimeEnv::Prod,
                 host_name: "Home".into(),
                 host_type: "host".into(),
                 source: "local".into(),

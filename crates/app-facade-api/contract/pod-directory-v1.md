@@ -23,8 +23,10 @@ Space registration IDs are their authenticated appClientId and can be correlated
 When a local Hub cannot be queried, the cloud's persisted Space registrations
 remain visible with unknown connection state and `sourceErrors.space`. The cache
 may omit registrations not yet synchronized; it must not imply a complete live
-snapshot. Personal directory read failures fail the call instead of fabricating
-an empty user inventory.
+snapshot. Cloud presence lookup failures likewise retain saved Space records
+as unknown, with an explicit source error. A successful empty presence lookup
+can establish disconnection. Registration read failures fail the call instead
+of fabricating an empty inventory; authorization and request failures remain errors.
 
 `/app/pod/space/list` is an internal composition target, not a separate Agent,
 MCP or CLI operation. Scope-mode routing reads the Hub for a local Space or cloud

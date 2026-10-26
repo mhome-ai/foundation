@@ -25,6 +25,7 @@
         "additionalProperties": false,
         "required": [
           "hostId",
+          "env",
           "hostName",
           "hostType",
           "source",
@@ -361,6 +362,13 @@
             "type": [
               "string",
               "null"
+            ]
+          },
+          "env": {
+            "enum": [
+              "prod",
+              "dev",
+              "e2e"
             ]
           }
         }
