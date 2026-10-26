@@ -132,6 +132,7 @@ fn automation(target: &str, data: &Value) -> Value {
                 "memberIds",
                 "inputVars",
                 "scriptHash",
+                "descriptionTemplate",
             ],
         ),
         "/app/automation/activity/now/list" => (

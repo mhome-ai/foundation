@@ -246,7 +246,8 @@
               "function": "private"
             }
           },
-          "updatedAt": 2
+          "updatedAt": 2,
+          "descriptionTemplate": "Turn on {! $room !}"
         }
       ]
     },
@@ -271,7 +272,8 @@
               "description": "Room"
             }
           ],
-          "scriptHash": "source-hash"
+          "scriptHash": "source-hash",
+          "descriptionTemplate": "Turn on {! $room !}"
         }
       ]
     }
