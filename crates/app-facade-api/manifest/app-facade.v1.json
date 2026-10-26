@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.49.2",
+  "contractVersion": "1.50.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -94,7 +94,8 @@
         "/app/system/instances/get",
         "/app/system/clients/get",
         "/app/system/hosts/get",
-        "/app/system/hosts/runtime"
+        "/app/system/hosts/runtime",
+        "/app/system/hosts/permissions"
       ]
     },
     "integration": {
@@ -156,7 +157,22 @@
       "firstClaimTransport": "directLanOnly",
       "authorizationTarget": "/app/host/authorization",
       "authorizationSchema": "schema/host-authorization.v1.schema.json",
-      "listTarget": "/app/host/list"
+      "listTarget": "/app/host/list",
+      "requestTargets": [
+        "/app/host/list",
+        "/app/host/metrics",
+        "/app/host/administrators/list",
+        "/app/host/administrator/request",
+        "/app/host/administrator/status",
+        "/app/host/administrator/cancel",
+        "/app/host/administrator/approve",
+        "/app/host/administrator/reject",
+        "/app/host/permissions/get",
+        "/app/host/service/install",
+        "/app/host/service/restart"
+      ],
+      "requestSchema": "schema/host-management.v1.schema.json",
+      "directoryTarget": "/app/host/directory/list"
     },
     "clientAppearance": {
       "schema": "schema/client-appearance.v1.schema.json",

@@ -30,6 +30,17 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/messaging/unbind",
     "/app/host/list",
     "/app/pod/enrollment/get",
+    "/app/host/metrics",
+    "/app/host/administrators/list",
+    "/app/host/administrator/request",
+    "/app/host/administrator/status",
+    "/app/host/administrator/cancel",
+    "/app/host/administrator/approve",
+    "/app/host/administrator/reject",
+    "/app/host/permissions/get",
+    "/app/host/service/install",
+    "/app/host/service/restart",
+    "/app/host/directory/list",
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[

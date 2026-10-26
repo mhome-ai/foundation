@@ -1,6 +1,6 @@
 # Host registration directory
 
-`/app/host/list` takes empty input and reads the caller's Admin Host registrations
+`/app/host/directory/list` takes empty input and reads the caller's Admin Host registrations
 and the current Space's Host registrations (Space member required). The result is
 `{hosts, observedAtMs}`. Each row contains `hostId`, `hostName`, `env`, `mode`,
 `registered: true`, `reachability: "unknown"`, `authorizationState: "unknown"`.

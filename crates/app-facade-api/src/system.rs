@@ -10,6 +10,7 @@ pub const CLIENTS_TARGET: &str = "/app/system/clients/get";
 pub const HOST_AUTHORIZATION_TARGET: &str = "/app/host/authorization";
 pub const HOST_ACCESS_TARGET: &str = "/app/host/access/issue";
 pub const HOSTS_TARGET: &str = "/app/system/hosts/get";
+pub const HOSTS_PERMISSIONS_TARGET: &str = "/app/system/hosts/permissions";
 pub const HOSTS_RUNTIME_TARGET: &str = "/app/system/hosts/runtime";
 pub const INSTANCES_CONTRACT: &str = "mhome.system.instances.v1";
 pub const CLIENTS_CONTRACT: &str = "mhome.system.clients.v1";
@@ -184,4 +185,11 @@ pub struct HostAccessRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostAccessResponse {
     pub access_token: String,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HostsPermissionsRequest {
+    pub host_id: String,
+    pub authorization: HostAuthorization,
 }

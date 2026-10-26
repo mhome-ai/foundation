@@ -50,8 +50,9 @@ timings and request reasons are in `manifest/pod-targets.v1.json`; snapshots use
 User Pod enrollment uses a one-time login approval; activation is confirmed on the paired device.
 
 `/app/pod/list` reads registered Pod Clients in the active Space, including
-connections that are currently absent. `/app/host/list` reads historical Host
-registrations without granting management access; see the
+connections that are currently absent. `/app/host/list` combines Host registrations with current observations and details.
+`/app/host/directory/list` is the historical registration input used by native
+list composition; it does not grant management access. See the
 [Host directory contract](contract/host-directory-v1.md). Native commissioning
 uses the existing device protocols; the Agent resumes only after verifying the
 resulting registration. Host completion identifies both `hostId` and `env`.

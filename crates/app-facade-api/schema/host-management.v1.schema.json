@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.mhome.ai/app/host-management.v1.schema.json",
+  "$defs": {
+    "host_list": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "host_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "host_administrator_list": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "host_administrator_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "host_administrator_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "host_administrator_cancel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "host_administrator_approve": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "requestId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "host_administrator_reject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "requestId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "host_permissions_get": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "host_service_install": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "service"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "service": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,79}$",
+          "description": "core or a Plugin service ID without the node- package prefix",
+          "not": {
+            "anyOf": [
+              {
+                "enum": [
+                  "host",
+                  "client",
+                  "all",
+                  "node"
+                ]
+              },
+              {
+                "pattern": "^node-"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "host_service_restart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "service"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "service": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,79}$",
+          "description": "core or a Plugin service ID without the node- package prefix",
+          "not": {
+            "anyOf": [
+              {
+                "enum": [
+                  "host",
+                  "client",
+                  "all",
+                  "node"
+                ]
+              },
+              {
+                "pattern": "^node-"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
