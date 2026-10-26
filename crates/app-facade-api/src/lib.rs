@@ -14,11 +14,12 @@ pub mod interaction_flow;
 pub mod messaging;
 pub mod plugin;
 pub mod pod;
+pub mod pod_call;
 pub mod routing;
 pub mod runtime;
 pub mod topology;
 
-pub use call::{ActionMode, FacadeCall, FacadeControl, ResponseFormat};
+pub use call::{ActionMode, FacadeCall, FacadeControl, ResponseDetail};
 
 pub const PROTOCOL_VERSION: &str = "app-facade.v1";
 
@@ -31,3 +32,7 @@ pub mod user;
 pub mod authorization;
 pub mod delegation;
 pub mod forwarding;
+
+pub use conversation_api::execution::{FacadeProblem, FacadeResponse, FacadeStatus};
+
+pub mod response;

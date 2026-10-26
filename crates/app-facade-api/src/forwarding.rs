@@ -50,7 +50,6 @@ pub struct ForwardedCall {
 )]
 pub enum ForwardedResponse {
     Json(Value),
-    Text(String),
 }
 
 /// Trusted operation binding. MCP has no conversation thread or run.

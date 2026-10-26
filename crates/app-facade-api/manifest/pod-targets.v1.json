@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.pod.targets.v1",
-  "contractVersion": "1.51.0",
+  "contractVersion": "1.52.0",
   "contract": "contract/pod-commissioning-v1.md",
   "localTargets": [
     "/local/pod/discovery/start",

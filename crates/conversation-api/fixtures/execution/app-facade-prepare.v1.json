@@ -40,7 +40,8 @@
         "input": {
           "capability": "device.turn_on",
           "device_id": "device-1"
-        }
+        },
+        "response_detail": "full"
       }
     }
   }

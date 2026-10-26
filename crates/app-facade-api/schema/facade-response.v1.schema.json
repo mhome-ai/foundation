@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "App Facade final response",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "const": "success"
+        },
+        "data": true,
+        "text": {
+          "type": "string"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/problem"
+          }
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "data"
+          ],
+          "not": {
+            "required": [
+              "text"
+            ]
+          }
+        },
+        {
+          "required": [
+            "text"
+          ],
+          "not": {
+            "required": [
+              "data"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "const": "partial"
+        },
+        "data": true,
+        "text": {
+          "type": "string"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/problem"
+          }
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "data"
+          ],
+          "not": {
+            "required": [
+              "text"
+            ]
+          }
+        },
+        {
+          "required": [
+            "text"
+          ],
+          "not": {
+            "required": [
+              "data"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "error"
+      ],
+      "properties": {
+        "status": {
+          "const": "error"
+        },
+        "error": {
+          "$ref": "#/$defs/problem"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "const": "cancelled"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/problem"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "problem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": true
+      }
+    }
+  }
+}

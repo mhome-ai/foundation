@@ -8,6 +8,8 @@ pub mod context;
 pub mod error;
 pub mod event;
 pub mod facade;
+pub mod facade_response;
+pub use facade_response::{FacadeProblem, FacadeResponse, FacadeStatus, ResponseDetail};
 pub mod id;
 pub mod llm;
 pub mod operational_context;

@@ -1,0 +1,184 @@
+[
+  {
+    "name": "dashboard-detail",
+    "target": "/app/dashboard/card/detail/get",
+    "data": {
+      "scopeId": "space-1",
+      "items": [
+        {
+          "cardId": "card-1",
+          "status": "found",
+          "card": {
+            "cardId": "card-1",
+            "type": "widget",
+            "title": "Power",
+            "layouts": {
+              "sm": {
+                "x": 0,
+                "y": 0,
+                "width": 2,
+                "height": 2
+              }
+            },
+            "views": [
+              {
+                "id": "power",
+                "name": "Power",
+                "source": {
+                  "type": "widget",
+                  "baseId": "automation-1",
+                  "widgetId": "widget-1"
+                },
+                "pattern": "default"
+              }
+            ],
+            "primaryViewId": "power",
+            "widgets": [
+              {
+                "widgetId": "widget-1",
+                "name": "Power",
+                "widgetType": "DATA",
+                "dataType": "NUMBER"
+              }
+            ]
+          },
+          "canvasId": "canvas-1"
+        },
+        {
+          "cardId": "gone",
+          "status": "not_found"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "scopeId": "space-1",
+      "items": [
+        {
+          "cardId": "card-1",
+          "status": "found",
+          "card": {
+            "cardId": "card-1",
+            "type": "widget",
+            "title": "Power",
+            "layouts": {
+              "sm": {
+                "x": 0,
+                "y": 0,
+                "width": 2,
+                "height": 2
+              }
+            },
+            "primaryViewId": "power",
+            "views": [
+              {
+                "id": "power",
+                "name": "Power"
+              }
+            ],
+            "viewCount": 1
+          },
+          "canvasId": "canvas-1"
+        },
+        {
+          "cardId": "gone",
+          "status": "not_found"
+        }
+      ]
+    }
+  },
+  {
+    "name": "brief-does-not-invent-view-count",
+    "target": "/app/dashboard/card/list",
+    "data": {
+      "cards": [
+        {
+          "cardId": "card-1",
+          "type": "entity",
+          "title": "Lamp"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "cards": [
+        {
+          "cardId": "card-1",
+          "type": "entity",
+          "title": "Lamp"
+        }
+      ]
+    }
+  },
+  {
+    "name": "room-partial",
+    "target": "/app/room/devices/move",
+    "data": {
+      "moved": [
+        "a"
+      ],
+      "notMoved": [
+        {
+          "deviceId": "b",
+          "reason": "offline"
+        }
+      ]
+    },
+    "status": "partial",
+    "essential": {
+      "moved": [
+        "a"
+      ],
+      "notMoved": [
+        {
+          "deviceId": "b",
+          "reason": "offline"
+        }
+      ]
+    }
+  },
+  {
+    "name": "query-resource-failed",
+    "target": "/app/plugin/enable/status",
+    "data": {
+      "status": "failed",
+      "success": false,
+      "reason": "download failed"
+    },
+    "status": "success",
+    "essential": {
+      "status": "failed",
+      "success": false,
+      "reason": "download failed"
+    }
+  },
+  {
+    "name": "explicit-mutation-failed",
+    "target": "/app/room/delete",
+    "data": {
+      "success": false,
+      "message": "Room changed"
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "camera-plugin-failed",
+    "target": "/app/plugin/camera/connection/disconnect",
+    "data": {
+      "data": {
+        "ok": false,
+        "reason": "CONNECTION_CHANGED"
+      }
+    },
+    "status": "error",
+    "code": "PLUGIN_OPERATION_FAILED"
+  },
+  {
+    "name": "null-is-a-valid-full-value",
+    "target": "/app/test/read",
+    "data": null,
+    "status": "success",
+    "essential": null
+  }
+]

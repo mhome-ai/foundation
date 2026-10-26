@@ -17,6 +17,51 @@ owns public targets, request/response/event schemas, and stable operation
 identity. Core-to-Node routes and provider runtime models belong to
 `mhome-core-api` instead.
 
+## App result contract
+
+`control.responseDetail` selects information depth: `full` (default) returns
+`data`, while `essential` returns YAML in `text`. It is independent of action
+`mode` and is never copied into business input, prepared snapshots or execution
+fingerprints. `responseFormat` and business `outputFormat` are rejected.
+
+Final responses use exactly one of these shapes:
+
+```json
+{"status":"success","data":{"items":[]}}
+{"status":"success","text":"items: []\n"}
+{"status":"partial","data":{"moved":["a"],"notMoved":[{"deviceId":"b","reason":"offline"}]}}
+{"status":"error","error":{"code":"PRECONDITION_FAIL","message":"The object changed"}}
+{"status":"cancelled"}
+```
+
+Success and partial carry exactly one of `data` or `text`. Error carries a
+`code`, `message`, and optional `details`; success, partial and cancellation may
+carry structured `warnings`. Resource state belongs inside data: successfully
+reading a failed job is still a successful invocation. Partial is not complete
+success and must remain visible to the caller. Transport admission failures keep
+their transport status and retry metadata.
+
+Prepare returns its fixed structured control DTO (`preparedActionId`,
+`approvalToken`, `target`, `status`, `preview`, `expiresAt`). Commit executes the
+stored snapshot and caches the full business result; presentation happens after
+execution or replay. Reject returns cancellation. Response detail never changes
+approval meaning or permission checks. Operation and HITL continuation protocols
+are separate from this result envelope.
+
+App UI requests full and unwraps the envelope at its transport boundary. Agent
+and MCP public results use essential; internal workflow reads use full. The CLI
+uses `--response-detail full|essential`, and the bundled external Skill requests
+essential. Dashboard essential projection keeps card identity, title, type,
+layouts and view choices, excluding renderer configuration and resource payloads.
+Other targets currently retain their business fields in YAML; essential does not
+promise a smaller field set for every domain. Targets own that selection.
+
+The [response schema](schema/facade-response.v1.schema.json) and shared
+[presentation fixtures](fixtures/presentation/cases.json) define the wire
+invariants and cross-runtime projection checks. Domain schemas describe the
+inner `data` DTO. `/pod/deck/*`, `/pod/talk/*` and legacy Controllers retain their
+separate wire contracts.
+
 `interaction_flow` exposes only the materialized current-step view and session
 commands. Handler operations, the complete step graph, and Node routing
 identity remain internal to MeowCore.

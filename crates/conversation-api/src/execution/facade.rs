@@ -16,6 +16,8 @@ pub struct FacadeRequest {
     pub target: String,
     /// Structured input validated and normalized by Agent-owned tool code.
     pub input: Value,
+    /// Output projection, separate from the immutable business input.
+    pub response_detail: crate::execution::ResponseDetail,
 }
 
 pub use crate::{InteractionCard, InteractionKind, InteractionTone};
@@ -41,7 +43,8 @@ pub struct PreparedAction {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct FacadeResult {
-    /// App Facade result payload.
+    /// Canonical serialized `FacadeResponse`; never a bare business DTO.
+    #[serde(deserialize_with = "deserialize_response")]
     pub value: Value,
     /// New prompt-context generation when this operation changed Agent-visible facts.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -81,4 +84,12 @@ pub trait AppFacade: Send + Sync {
         context: &InvocationContext,
         action: PreparedAction,
     ) -> Result<(), ExternalError>;
+}
+
+fn deserialize_response<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Value, D::Error> {
+    use serde::de::Error;
+    let response = crate::execution::FacadeResponse::deserialize(deserializer)?;
+    serde_json::to_value(response).map_err(D::Error::custom)
 }
