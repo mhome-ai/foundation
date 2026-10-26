@@ -249,8 +249,8 @@ accepted.
 
 `podId` identifies a single approval attempt, not the durable device or authenticated
 User. The durable `registrationId` derives from the business User and the validated
-persistent device-key fingerprint. `POST /api/v1/pod/list` returns that ID;
-`/api/v1/pod/rename` accepts `{registrationId, name}` with ordinary User login.
+persistent device-key fingerprint. `/app/pod/list` returns that ID;
+`/app/pod/rename` accepts `{registrationId, name}` with authenticated User authority.
 Successful authentication atomically creates the registration if absent and records
 completion on the consumed approval. Retries preserve the initial registration and
 current display name. Unauthenticated attempts create no device-list entry.
@@ -472,19 +472,13 @@ independent and are never issued by this flow.
 
 ## Registered Pod list
 
-`/app/pod/list` takes empty input and lists persisted Pod Clients in the current
-Space, including disconnected registrations. A personal caller sees their own
-User Pods and Space-owned Pods. Rows contain `appClientId`, `clientMode`,
-`scopeId`, `registered`, `connected` and `observationSource` (`hub` or `cloud`);
-the envelope includes `observedAtMs`. Connection status is observed from that
-execution endpoint, not a statement about physical power or LAN reachability.
-Native clients combine this result with their own discovery observations.
-Never merge a Bluetooth short ID with a registered identity without proof.
-This read does not issue credentials or change Pod identity.
+The public `/app/pod/list` Facade combines all current-User personal registrations
+and current-Space Space-owned Pod registrations. UI and tools share this result.
+`registrationId` identifies the durable registration; it is not the enrollment
+`podId` used by native commissioning. Connection observations are separately
+scoped and may be unknown. See [Pod directory](pod-directory-v1.md) for fields,
+aggregation, failure handling and personal display-name updates.
 
-
-`appClientId` identifies a registered application client; it is not the enrollment
-`podId` used by native commissioning. The list does not invent that association.
 `/app/pod/enrollment/get` takes `{podId}` and returns `{podId, clientMode: "user",
 registered}` from the authenticated user's successful receipt for that exact attempt.
 An older registration for the same device cannot complete a different attempt.

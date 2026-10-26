@@ -32,7 +32,10 @@
       "enrollmentTargets": [
         "/app/pod/enrollment/get",
         "/app/pod/space/enrollment/get"
-      ]
+      ],
+      "renameTarget": "/app/pod/rename",
+      "spaceInventoryTarget": "/app/pod/space/list",
+      "directoryContract": "contract/pod-directory-v1.md"
     },
     "hostProvision": {
       "targets": "manifest/host-provision-targets.v1.json",

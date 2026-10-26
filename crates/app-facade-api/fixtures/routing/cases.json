@@ -446,5 +446,101 @@
     "hubReady": false,
     "cloudReady": false,
     "entry": "unavailable"
+  },
+  {
+    "target": "/app/pod/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/pod/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/pod/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/pod/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/pod/rename",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/pod/rename",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/pod/rename",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/pod/rename",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/pod/space/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/pod/space/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/pod/space/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/pod/space/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
   }
 ]

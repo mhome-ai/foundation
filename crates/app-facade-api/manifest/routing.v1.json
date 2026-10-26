@@ -44,7 +44,9 @@
       "/app/host/permissions/get",
       "/app/host/service/install",
       "/app/host/service/restart",
-      "/app/host/directory/list"
+      "/app/host/directory/list",
+      "/app/pod/list",
+      "/app/pod/rename"
     ],
     "scopeModeTargets": [
       "/app/artifact/resolve",
@@ -57,8 +59,8 @@
       "/app/artifact/upload/cancel",
       "/app/system/instances/get",
       "/app/system/clients/get",
-      "/app/pod/list",
-      "/app/pod/space/enrollment/get"
+      "/app/pod/space/enrollment/get",
+      "/app/pod/space/list"
     ],
     "hubPrefixes": [
       "/app/plugin/",

@@ -89,6 +89,14 @@ mod tests {
     use super::*;
 
     #[test]
+    fn pod_directory_is_cloud_composed_and_space_inventory_follows_the_space() {
+        assert_eq!(route_policy_for_target("/app/pod/list"), Some(CLOUD));
+        assert_eq!(route_policy_for_target("/app/pod/rename"), Some(CLOUD));
+        assert_eq!(route_policy_for_target("/app/pod/space/list"), Some(SCOPE));
+        assert_eq!(route_policy_for_target("/local/pod/commission/start"), None);
+    }
+
+    #[test]
     fn exact_exceptions_win_over_domain_defaults() {
         assert_eq!(
             route_policy_for_target("/app/scope/context/get"),
