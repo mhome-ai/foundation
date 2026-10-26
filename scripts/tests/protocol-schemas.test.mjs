@@ -179,3 +179,21 @@ test("facade approval fields follow the selected control mode", () => {
     false
   );
 });
+
+test("Pod completion retains its client mode rules under strict AJV", () => {
+  const config = PROTOCOL_PACKAGES.appFacade;
+  const crate = path.join(root, config.crateDir);
+  const ajv = compiler();
+  ajv.addSchema(readJson(path.join(crate, config.schemas.podDiscovery)));
+  const validate = ajv.compile(readJson(path.join(crate, config.schemas.podCommission)));
+  const reprovisioned = readJson(path.join(crate, "fixtures/pod-commission.reprovision-completed.json"));
+  assert.equal(validate(reprovisioned), true, JSON.stringify(validate.errors));
+  assert.equal(validate({ ...reprovisioned, clientMode: "user" }), false);
+  const completed = { ...reprovisioned, podId: "pod-1" };
+  delete completed.mode;
+  assert.equal(validate(completed), false, "enrollment needs a client mode");
+  for (const clientMode of ["user", "space"]) {
+    assert.equal(validate({ ...completed, clientMode }), true, JSON.stringify(validate.errors));
+  }
+  assert.equal(validate({ ...completed, clientMode: "invalid" }), false);
+});

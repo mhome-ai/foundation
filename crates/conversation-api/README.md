@@ -85,6 +85,13 @@ adopted by Lion and Cloud together before deployment.
 
 Execution commands, events, facade responses and their typed nested objects reject undeclared fields, including null-valued unknown fields. Opaque JSON inputs/results and model continuation payloads remain extensible; known optional null fields remain accepted. Enforcement lives on the typed DTOs as well as the wire entry point because Serde's internally tagged enum buffering bypasses an outer `serde_ignored` observer. Tagged unit variants explicitly require an empty remaining map. The enclosing wire envelope retains version 1; callers must adopt the current package contract together.
 
+`fixtures/response/conformance.json` defines valid and invalid final Facade
+responses for all four outcomes. Rust verifies the typed response and complete
+execution envelope; strict AJV verifies both the execution envelope and the
+standalone App Facade response schema against the same cases. The npm protocol
+descriptor exposes these cases as `fixtures.facadeResponse`. The embedded response
+definition must match the standalone schema after rebasing its local references.
+
 ## Disposable execution presentation
 
 `assistant.preview`, `run.progress`, and `run.system_failed` are best-effort live

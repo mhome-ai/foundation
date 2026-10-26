@@ -2,6 +2,9 @@ use app_facade_api::{response, ResponseDetail};
 use serde_json::Value;
 #[test]
 fn shared_projection_and_outcome_contract() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/facade-response.v1.schema.json")).unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
     let cases: Vec<Value> =
         serde_json::from_str(include_str!("../fixtures/presentation/cases.json")).unwrap();
     for case in cases {
@@ -14,6 +17,10 @@ fn shared_projection_and_outcome_contract() {
             response::present(target, case["data"].clone(), ResponseDetail::Essential).unwrap(),
         )
         .unwrap();
+        for response in [&full, &essential] {
+            validator.validate(response).unwrap();
+            serde_json::from_value::<app_facade_api::FacadeResponse>(response.clone()).unwrap();
+        }
         assert_eq!(full["status"], case["status"], "{}", case["name"]);
         assert_eq!(essential["status"], case["status"]);
         if case["status"] == "error" {

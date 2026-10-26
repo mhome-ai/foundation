@@ -62,6 +62,12 @@ invariants and cross-runtime projection checks. Domain schemas describe the
 inner `data` DTO. `/pod/deck/*`, `/pod/talk/*` and legacy Controllers retain their
 separate wire contracts.
 
+The npm protocol descriptor exports this response schema as `schemas.response`.
+Protocol verification compiles it and the Conversation execution envelope with
+strict AJV settings, checks their shared response definition, and validates the
+same positive/negative response fixtures used by Rust. Package staging tests
+verify that the schema is available through the published descriptor.
+
 `interaction_flow` exposes only the materialized current-step view and session
 commands. Handler operations, the complete step graph, and Node routing
 identity remain internal to MeowCore.

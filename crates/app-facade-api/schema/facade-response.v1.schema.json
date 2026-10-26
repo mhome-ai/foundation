@@ -28,20 +28,16 @@
           "required": [
             "data"
           ],
-          "not": {
-            "required": [
-              "text"
-            ]
+          "properties": {
+            "data": true
           }
         },
         {
           "required": [
             "text"
           ],
-          "not": {
-            "required": [
-              "data"
-            ]
+          "properties": {
+            "text": true
           }
         }
       ]
@@ -72,20 +68,16 @@
           "required": [
             "data"
           ],
-          "not": {
-            "required": [
-              "text"
-            ]
+          "properties": {
+            "data": true
           }
         },
         {
           "required": [
             "text"
           ],
-          "not": {
-            "required": [
-              "data"
-            ]
+          "properties": {
+            "text": true
           }
         }
       ]

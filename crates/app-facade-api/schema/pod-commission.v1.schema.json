@@ -337,7 +337,8 @@
       },
       "then": {
         "properties": {
-          "podId": {}
+          "podId": {},
+          "clientMode": {}
         },
         "required": [
           "podId",
@@ -374,6 +375,9 @@
               ]
             },
             {
+              "properties": {
+                "clientMode": {}
+              },
               "required": [
                 "clientMode"
               ]

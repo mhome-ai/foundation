@@ -1,0 +1,549 @@
+{
+  "valid": [
+    {
+      "name": "success data object",
+      "value": {
+        "status": "success",
+        "data": {
+          "ids": [
+            "a"
+          ]
+        }
+      }
+    },
+    {
+      "name": "success data null",
+      "value": {
+        "status": "success",
+        "data": null
+      }
+    },
+    {
+      "name": "success data boolean",
+      "value": {
+        "status": "success",
+        "data": false
+      }
+    },
+    {
+      "name": "success data number",
+      "value": {
+        "status": "success",
+        "data": 0
+      }
+    },
+    {
+      "name": "success data array",
+      "value": {
+        "status": "success",
+        "data": []
+      }
+    },
+    {
+      "name": "success data string",
+      "value": {
+        "status": "success",
+        "data": "value"
+      }
+    },
+    {
+      "name": "success empty text",
+      "value": {
+        "status": "success",
+        "text": "",
+        "warnings": [
+          {
+            "code": "STALE",
+            "message": "Cached state",
+            "details": {
+              "source": "cloud"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "success YAML text",
+      "value": {
+        "status": "success",
+        "text": "ids:\n- a\n",
+        "warnings": [
+          {
+            "code": "STALE",
+            "message": "Cached state",
+            "details": {
+              "source": "cloud"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "success opaque data",
+      "value": {
+        "status": "success",
+        "data": {
+          "status": "failed",
+          "success": false,
+          "text": null
+        },
+        "warnings": []
+      }
+    },
+    {
+      "name": "partial data object",
+      "value": {
+        "status": "partial",
+        "data": {
+          "ids": [
+            "a"
+          ]
+        }
+      }
+    },
+    {
+      "name": "partial data null",
+      "value": {
+        "status": "partial",
+        "data": null
+      }
+    },
+    {
+      "name": "partial data boolean",
+      "value": {
+        "status": "partial",
+        "data": false
+      }
+    },
+    {
+      "name": "partial data number",
+      "value": {
+        "status": "partial",
+        "data": 0
+      }
+    },
+    {
+      "name": "partial data array",
+      "value": {
+        "status": "partial",
+        "data": []
+      }
+    },
+    {
+      "name": "partial data string",
+      "value": {
+        "status": "partial",
+        "data": "value"
+      }
+    },
+    {
+      "name": "partial empty text",
+      "value": {
+        "status": "partial",
+        "text": "",
+        "warnings": [
+          {
+            "code": "STALE",
+            "message": "Cached state",
+            "details": {
+              "source": "cloud"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial YAML text",
+      "value": {
+        "status": "partial",
+        "text": "ids:\n- a\n",
+        "warnings": [
+          {
+            "code": "STALE",
+            "message": "Cached state",
+            "details": {
+              "source": "cloud"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial opaque data",
+      "value": {
+        "status": "partial",
+        "data": {
+          "status": "failed",
+          "success": false,
+          "text": null
+        },
+        "warnings": []
+      }
+    },
+    {
+      "name": "error",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "CONFLICT",
+          "message": "Changed"
+        }
+      }
+    },
+    {
+      "name": "error diagnostics",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "CONFLICT",
+          "message": "Changed",
+          "details": {
+            "cause": {
+              "revision": 3
+            },
+            "warnings": [
+              {
+                "code": "STALE",
+                "message": "Cached state",
+                "details": {
+                  "source": "cloud"
+                }
+              }
+            ],
+            "context": "Retry after reading state"
+          }
+        }
+      }
+    },
+    {
+      "name": "error null details",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "E",
+          "message": "failed",
+          "details": null
+        }
+      }
+    },
+    {
+      "name": "cancelled",
+      "value": {
+        "status": "cancelled"
+      }
+    },
+    {
+      "name": "cancelled cleanup warning",
+      "value": {
+        "status": "cancelled",
+        "warnings": [
+          {
+            "code": "STALE",
+            "message": "Cached state",
+            "details": {
+              "source": "cloud"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "cancelled empty warnings",
+      "value": {
+        "status": "cancelled",
+        "warnings": []
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "success no content",
+      "value": {
+        "status": "success"
+      }
+    },
+    {
+      "name": "success both contents",
+      "value": {
+        "status": "success",
+        "data": {},
+        "text": "text"
+      }
+    },
+    {
+      "name": "success null data and text",
+      "value": {
+        "status": "success",
+        "data": null,
+        "text": ""
+      }
+    },
+    {
+      "name": "success null text",
+      "value": {
+        "status": "success",
+        "text": null
+      }
+    },
+    {
+      "name": "success number text",
+      "value": {
+        "status": "success",
+        "text": 2
+      }
+    },
+    {
+      "name": "success unknown property",
+      "value": {
+        "status": "success",
+        "data": {},
+        "extra": null
+      }
+    },
+    {
+      "name": "success error field",
+      "value": {
+        "status": "success",
+        "data": {},
+        "error": {
+          "code": "E",
+          "message": "bad"
+        }
+      }
+    },
+    {
+      "name": "success null warnings",
+      "value": {
+        "status": "success",
+        "data": {},
+        "warnings": null
+      }
+    },
+    {
+      "name": "success invalid warning",
+      "value": {
+        "status": "success",
+        "data": {},
+        "warnings": [
+          {
+            "code": "W"
+          }
+        ]
+      }
+    },
+    {
+      "name": "success unknown warning property",
+      "value": {
+        "status": "success",
+        "data": {},
+        "warnings": [
+          {
+            "code": "W",
+            "message": "warning",
+            "extra": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial no content",
+      "value": {
+        "status": "partial"
+      }
+    },
+    {
+      "name": "partial both contents",
+      "value": {
+        "status": "partial",
+        "data": {},
+        "text": "text"
+      }
+    },
+    {
+      "name": "partial null data and text",
+      "value": {
+        "status": "partial",
+        "data": null,
+        "text": ""
+      }
+    },
+    {
+      "name": "partial null text",
+      "value": {
+        "status": "partial",
+        "text": null
+      }
+    },
+    {
+      "name": "partial number text",
+      "value": {
+        "status": "partial",
+        "text": 2
+      }
+    },
+    {
+      "name": "partial unknown property",
+      "value": {
+        "status": "partial",
+        "data": {},
+        "extra": null
+      }
+    },
+    {
+      "name": "partial error field",
+      "value": {
+        "status": "partial",
+        "data": {},
+        "error": {
+          "code": "E",
+          "message": "bad"
+        }
+      }
+    },
+    {
+      "name": "partial null warnings",
+      "value": {
+        "status": "partial",
+        "data": {},
+        "warnings": null
+      }
+    },
+    {
+      "name": "partial invalid warning",
+      "value": {
+        "status": "partial",
+        "data": {},
+        "warnings": [
+          {
+            "code": "W"
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial unknown warning property",
+      "value": {
+        "status": "partial",
+        "data": {},
+        "warnings": [
+          {
+            "code": "W",
+            "message": "warning",
+            "extra": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "error without problem",
+      "value": {
+        "status": "error"
+      }
+    },
+    {
+      "name": "error without code",
+      "value": {
+        "status": "error",
+        "error": {
+          "message": "bad"
+        }
+      }
+    },
+    {
+      "name": "error with unknown field",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "E",
+          "message": "bad",
+          "extra": null
+        }
+      }
+    },
+    {
+      "name": "error with data",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "E",
+          "message": "bad"
+        },
+        "data": null
+      }
+    },
+    {
+      "name": "error with text",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "E",
+          "message": "bad"
+        },
+        "text": ""
+      }
+    },
+    {
+      "name": "error with warnings",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "E",
+          "message": "bad"
+        },
+        "warnings": []
+      }
+    },
+    {
+      "name": "cancelled with data",
+      "value": {
+        "status": "cancelled",
+        "data": null
+      }
+    },
+    {
+      "name": "cancelled with text",
+      "value": {
+        "status": "cancelled",
+        "text": ""
+      }
+    },
+    {
+      "name": "cancelled with error",
+      "value": {
+        "status": "cancelled",
+        "error": {
+          "code": "E",
+          "message": "bad"
+        }
+      }
+    },
+    {
+      "name": "cancelled with null warnings",
+      "value": {
+        "status": "cancelled",
+        "warnings": null
+      }
+    },
+    {
+      "name": "missing status",
+      "value": {
+        "data": {}
+      }
+    },
+    {
+      "name": "unknown status",
+      "value": {
+        "status": "done",
+        "data": {}
+      }
+    },
+    {
+      "name": "non object",
+      "value": []
+    },
+    {
+      "name": "null response",
+      "value": null
+    }
+  ]
+}
