@@ -8,7 +8,8 @@ pub const DEVICE_SNAPSHOT: &str = "device/snapshot";
 pub const DEVICE_REFRESH: &str = "device/refresh";
 pub const DEVICE_PAIR: &str = "device/pair";
 pub const DEVICE_UNPAIR: &str = "device/unpair";
-pub const DEVICE_LISTEN_SET: &str = "device/listen";
+pub const DEVICE_SETTINGS_GET: &str = "device/settings/get";
+pub const DEVICE_SETTINGS_UPDATE: &str = "device/settings/update";
 pub const SMART_SPEAKER_SNAPSHOT: &str = "smart-speaker/snapshot";
 pub const SMART_SPEAKER_CREATE: &str = "smart-speaker/create";
 pub const SMART_SPEAKER_UPDATE: &str = "smart-speaker/update";
@@ -27,9 +28,30 @@ pub struct DeviceRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct DeviceListenSetRequest {
+pub struct DeviceSettings {
+    pub listen_enabled: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DeviceSettingsUpdateRequest {
     pub device_id: String,
-    pub enabled: bool,
+    pub settings: DeviceSettings,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DeviceSettingsResponse {
+    pub device_id: String,
+    pub settings: DeviceSettings,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DeviceSettingsUpdateResponse {
+    pub changed: bool,
+    pub device_id: String,
+    pub settings: DeviceSettings,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -57,7 +79,7 @@ pub struct AudioBridgeDevice {
     pub transport: String,
     pub features: Vec<AudioDeviceFeature>,
     pub online: bool,
-    pub listen_enabled: bool,
+    pub settings: DeviceSettings,
     pub listen_runtime: ListenRuntimeStatus,
 }
 
@@ -205,7 +227,11 @@ mod tests {
         assert_eq!(contract["routes"]["deviceRefresh"], DEVICE_REFRESH);
         assert_eq!(contract["routes"]["devicePair"], DEVICE_PAIR);
         assert_eq!(contract["routes"]["deviceUnpair"], DEVICE_UNPAIR);
-        assert_eq!(contract["routes"]["deviceListenSet"], DEVICE_LISTEN_SET);
+        assert_eq!(contract["routes"]["deviceSettingsGet"], DEVICE_SETTINGS_GET);
+        assert_eq!(
+            contract["routes"]["deviceSettingsUpdate"],
+            DEVICE_SETTINGS_UPDATE
+        );
         assert_eq!(
             contract["routes"]["smartSpeakerSnapshot"],
             SMART_SPEAKER_SNAPSHOT
@@ -230,6 +256,23 @@ mod tests {
     }
 
     #[test]
+    fn settings_accept_only_supported_explicit_values() {
+        let valid = serde_json::json!({"deviceId":"mic-1","settings":{"listenEnabled":false}});
+        assert!(serde_json::from_value::<DeviceSettingsUpdateRequest>(valid).is_ok());
+        for settings in [
+            serde_json::json!({}),
+            serde_json::json!({"listenEnabled":null}),
+            serde_json::json!({"listenEnabled":"false"}),
+            serde_json::json!({"listenEnabled":true,"volume":10}),
+        ] {
+            assert!(serde_json::from_value::<DeviceSettingsUpdateRequest>(
+                serde_json::json!({"deviceId":"mic-1","settings":settings})
+            )
+            .is_err());
+        }
+    }
+
+    #[test]
     fn public_contract_does_not_expose_platform_identity() {
         let value = serde_json::to_value(AudioBridgeDevice {
             device_id: "device-1".to_string(),
@@ -237,7 +280,9 @@ mod tests {
             transport: "bluetooth".to_string(),
             features: vec![AudioDeviceFeature::Speaker, AudioDeviceFeature::Microphone],
             online: true,
-            listen_enabled: false,
+            settings: DeviceSettings {
+                listen_enabled: false,
+            },
             listen_runtime: ListenRuntimeStatus {
                 state: ListenRuntimeState::Disabled,
                 reason: None,

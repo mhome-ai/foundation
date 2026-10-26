@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.50.0",
+  "contractVersion": "1.51.0",
   "protocols": {
     "agentGateway": {
       "submitTarget": "/agent/submit",
@@ -52,7 +52,8 @@
         "deviceRefresh": "device/refresh",
         "devicePair": "device/pair",
         "deviceUnpair": "device/unpair",
-        "deviceListenSet": "device/listen",
+        "deviceSettingsGet": "device/settings/get",
+        "deviceSettingsUpdate": "device/settings/update",
         "smartSpeakerSnapshot": "smart-speaker/snapshot",
         "smartSpeakerCreate": "smart-speaker/create",
         "smartSpeakerUpdate": "smart-speaker/update",

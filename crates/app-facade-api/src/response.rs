@@ -47,6 +47,19 @@ pub fn outcome(target: &str, data: Value) -> FacadeResponse {
         )
         .with_details(data);
     }
+    if target.starts_with("/app/plugin/audiobridge/")
+        && data.pointer("/data/ok").and_then(Value::as_bool) == Some(false)
+    {
+        return FacadeResponse::error(
+            data.pointer("/data/reason")
+                .and_then(Value::as_str)
+                .unwrap_or("PLUGIN_OPERATION_FAILED"),
+            data.pointer("/data/detail")
+                .and_then(Value::as_str)
+                .unwrap_or("AudioBridge operation did not succeed"),
+        )
+        .with_details(data);
+    }
     // LLM mutation outcomes live inside the PluginNodeResponse envelope.
     // Runtime readiness and installation-state reads remain resource data.
     if matches!(
@@ -245,6 +258,22 @@ pub fn render(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn audio_failures_preserve_the_reason_but_runtime_failure_is_state() {
+        let failure = outcome(
+            "/app/plugin/audiobridge/device/settings/get",
+            json!({"data":{"ok":false,"reason":"AUDIOBRIDGE_OPERATION_FAILED","detail":"Device is not paired"}}),
+        );
+        let value = serde_json::to_value(failure).unwrap();
+        assert_eq!(value["status"], "error");
+        assert_eq!(value["error"]["message"], "Device is not paired");
+        let state = outcome(
+            "/app/plugin/audiobridge/device/snapshot",
+            json!({"data":{"devices":[{"listenRuntime":{"state":"failed"}}]}}),
+        );
+        assert_eq!(serde_json::to_value(state).unwrap()["status"], "success");
+    }
+
     #[test]
     fn llm_mutation_failures_preserve_details_in_full_and_essential_results() {
         let data = json!({"nodeId":"llm-1","nodeType":"llm","version":"v1",
