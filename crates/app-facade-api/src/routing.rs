@@ -89,8 +89,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn pod_directory_is_cloud_composed_and_space_inventory_follows_the_space() {
-        assert_eq!(route_policy_for_target("/app/pod/list"), Some(CLOUD));
+    fn pod_directory_and_host_business_follow_the_space() {
+        assert_eq!(route_policy_for_target("/app/pod/list"), Some(SCOPE));
+        for target in [
+            "/app/host/list",
+            "/app/host/metrics",
+            "/app/host/administrator/request",
+            "/app/host/service/install",
+            "/app/host/service/restart",
+        ] {
+            assert_eq!(route_policy_for_target(target), Some(SCOPE));
+        }
+        assert_eq!(
+            route_policy_for_target("/app/host/directory/list"),
+            Some(CLOUD)
+        );
         assert_eq!(route_policy_for_target("/app/pod/rename"), Some(CLOUD));
         assert_eq!(route_policy_for_target("/app/pod/space/list"), Some(SCOPE));
         assert_eq!(route_policy_for_target("/local/pod/commission/start"), None);

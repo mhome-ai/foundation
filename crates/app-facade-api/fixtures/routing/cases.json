@@ -448,38 +448,6 @@
     "entry": "unavailable"
   },
   {
-    "target": "/app/pod/list",
-    "execution": "cloud",
-    "placement": null,
-    "hubReady": true,
-    "cloudReady": true,
-    "entry": "cloud"
-  },
-  {
-    "target": "/app/pod/list",
-    "execution": "cloud",
-    "placement": null,
-    "hubReady": true,
-    "cloudReady": false,
-    "entry": "unavailable"
-  },
-  {
-    "target": "/app/pod/list",
-    "execution": "cloud",
-    "placement": null,
-    "hubReady": false,
-    "cloudReady": true,
-    "entry": "cloud"
-  },
-  {
-    "target": "/app/pod/list",
-    "execution": "cloud",
-    "placement": null,
-    "hubReady": false,
-    "cloudReady": false,
-    "entry": "unavailable"
-  },
-  {
     "target": "/app/pod/rename",
     "execution": "cloud",
     "placement": null,
@@ -537,6 +505,134 @@
   },
   {
     "target": "/app/pod/space/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/pod/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/pod/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/pod/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/pod/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/host/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/host/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/host/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/host/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/host/metrics",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/host/metrics",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/host/metrics",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/host/metrics",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/host/service/restart",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/host/service/restart",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/host/service/restart",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/host/service/restart",
     "execution": "scopeMode",
     "placement": null,
     "hubReady": false,

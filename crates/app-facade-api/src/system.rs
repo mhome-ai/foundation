@@ -16,7 +16,7 @@ pub const INSTANCES_CONTRACT: &str = "mhome.system.instances.v1";
 pub const CLIENTS_CONTRACT: &str = "mhome.system.clients.v1";
 pub const HOSTS_CONTRACT: &str = "mhome.system.hosts.v1";
 pub const HOSTS_RUNTIME_CONTRACT: &str = "mhome.system.hosts.runtime.v1";
-/// Credentials are supplied by the authenticated User Client, never minted by Core.
+/// Cloud-issued credentials for the verified User; forwarded by Client/Core, never minted by Core.
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HostAuthorization {

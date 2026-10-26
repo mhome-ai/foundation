@@ -11,13 +11,31 @@ individual `detail` observation. Offline records remain. Each observation has
 management access. Native list implementations use `/app/host/directory/list` as
 the historical input, avoiding a request back into the public list composition.
 
-Metrics, administrator operations, permission reads, service installation and
-service restart use the initiating personal desktop Client when it has the route,
-or the current Space's Hub. No other online App is selected. MCP has no native
-Client route. Mobile/web clients use the Hub route. A missing route fails; a mutation is not replayed through another
-transport after dispatch. Host mode, ACL and Space ownership remain authoritative.
+Business execution follows Space mode, independently of LLM placement:
+
+- Local Space: Core composes the list and sends Host commands through its existing
+  authenticated LAN transport. Remote App/MCP requests reach that same Core via
+  cloud forwarding. Core obtains cloud-owned directory metadata and user grants
+  through the private `/bridge/management/control` endpoint; this endpoint neither
+  dispatches Host commands nor impersonates a Client.
+- Cloud Space: cloud executes business through the initiating personal desktop
+  Client. No other online App is selected. MCP, web and mobile have no such
+  transport and management calls fail if no suitable route exists. List still
+  returns registrations with unavailable observations.
+
+Host mode, ACL and Space ownership remain authoritative. The private bridge is
+bound to its authenticated tenant/Space and rechecks personal User read access;
+existing grant issuers check Host authorization. The fixed operations are Host
+and personal Pod directory reads, Host access issuance, administrator application
+preparation and signed receipt confirmation. It accepts no arbitrary target.
+Public signing endpoints remain Client-only and are not Agent/MCP tools.
+
 The private `/app/host/execute` Client request is a fixed management transport,
 not a capability or public Facade. It accepts no service switch or admin removal.
+A missing route fails; a mutation is never replayed through another transport.
+If a cloud entrypoint cannot reach a local Space's Core, list alone may return
+cloud registrations with unavailable observations and `sourceErrors.hub`.
+Authorization errors and registration read failures remain errors.
 
 Administrator request/approval credentials and signed receipts remain internal.
 A successful approval receipt must be confirmed before `complete: true`; pending

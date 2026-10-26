@@ -1,11 +1,17 @@
 # Pod directory
 
-`/app/pod/list` is a cloud-orchestrated, direct, read-only Facade call with empty
+`/app/pod/list` is a Space-mode-routed, direct, read-only Facade call with empty
 input. It requires a personal User and read access to the current Space. It combines
 all completed personal Pod registrations owned by that User with registered
 Space-owned Pods in that Space. Another User's personal Pods and other Spaces'
 Pods are excluded. Offline registrations remain; incomplete commissioning attempts
 and nearby discovery candidates are not registrations.
+
+A local Space composes this result in Core, reading its own Space inventory and
+obtaining personal registrations through the authenticated private cloud control
+bridge. A cloud Space composes it in cloud. LLM placement does not change this
+owner. Cloud entrypoints forward local-Space business to Core; only an unavailable
+Hub transport permits the explicit read-only registration fallback below.
 
 The result contains `pods`, `scopeId`, `observedAtMs`, and `sourceErrors`.
 Every row contains `registrationId`, `clientMode` (`user` or `space`), `registered`
