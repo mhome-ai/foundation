@@ -47,6 +47,28 @@ pub fn outcome(target: &str, data: Value) -> FacadeResponse {
         )
         .with_details(data);
     }
+    // LLM mutation outcomes live inside the PluginNodeResponse envelope.
+    // Runtime readiness and installation-state reads remain resource data.
+    if matches!(
+        target,
+        "/app/plugin/llm/model/install"
+            | "/app/plugin/llm/model/install/cancel"
+            | "/app/plugin/llm/model/delete"
+            | "/app/plugin/llm/model/import/start"
+            | "/app/plugin/llm/model/import/finalize"
+            | "/app/plugin/llm/model/import/cancel"
+    ) && data.pointer("/data/ok").and_then(Value::as_bool) == Some(false)
+    {
+        let code = data
+            .pointer("/data/reason")
+            .and_then(Value::as_str)
+            .unwrap_or("PLUGIN_OPERATION_FAILED");
+        let message = data
+            .pointer("/data/detail")
+            .and_then(Value::as_str)
+            .unwrap_or("Local AI operation did not succeed");
+        return FacadeResponse::error(code, message).with_details(data);
+    }
     let incomplete = match target {
         "/app/device/enable" | "/app/device/disable" => nonempty(&data, "pendingIds"),
         "/app/room/devices/move" => nonempty(&data, "notMoved"),
@@ -145,6 +167,52 @@ pub fn render(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn llm_mutation_failures_preserve_details_in_full_and_essential_results() {
+        let data = json!({"nodeId":"llm-1","nodeType":"llm","version":"v1",
+            "data":{"ok":false,"reason":"MODEL_BUSY","detail":"Model installation is busy"}});
+        for route in [
+            "install",
+            "install/cancel",
+            "delete",
+            "import/start",
+            "import/finalize",
+            "import/cancel",
+        ] {
+            for detail in [ResponseDetail::Full, ResponseDetail::Essential] {
+                let result = present(
+                    &format!("/app/plugin/llm/model/{route}"),
+                    data.clone(),
+                    detail,
+                )
+                .unwrap();
+                assert!(result.is_error());
+                let value = serde_json::to_value(result).unwrap();
+                assert_eq!(value["error"]["code"], "MODEL_BUSY");
+                assert_eq!(value["error"]["details"], data);
+            }
+        }
+    }
+
+    #[test]
+    fn llm_queries_do_not_treat_resource_failure_as_invocation_failure() {
+        let data = json!({"nodeId":"llm-1","data":{"ok":false,"ready":false,"operation":{"state":"error"}}});
+        for route in [
+            "status",
+            "model/list",
+            "model/install/status",
+            "model/import/status",
+            "engine/status",
+            "engine/operation",
+        ] {
+            assert!(!outcome(&format!("/app/plugin/llm/{route}"), data.clone()).is_error());
+        }
+        assert!(!outcome(
+            "/app/plugin/llm/model/delete",
+            json!({"data":{"ok":true,"deleted":true}})
+        )
+        .is_error());
+    }
     #[test]
     fn dashboard_essential_keeps_layout_and_views_without_rendering_state() {
         let full = json!({"items":[{"cardId":"c1","status":"found","card":{"cardId":"c1","type":"ENTITY","title":"Lights","layouts":{"desktop":{"x":0,"y":0}},"views":[{"id":"v1","name":"Switch","source":{"secret":"internal"},"pattern":{}}],"primaryViewId":"v1","widgets":[{"value":100}],"entity":{"capabilities":[]}}}]});

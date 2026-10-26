@@ -1,6 +1,6 @@
 [package]
 name = "mhome-ble-commission"
-version = "0.7.3"
+version = "0.7.4"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -15,7 +15,7 @@ name = "ble_commission"
 
 [dependencies]
 host-protocol = { package = "mhome-host-auth", version = "=1.8.1", path = "../host-auth" }
-app-facade-api = { package = "mhome-app-facade-api", version = "=1.53.0", path = "../app-facade-api" }
+app-facade-api = { package = "mhome-app-facade-api", version = "=1.53.1", path = "../app-facade-api" }
 async-trait = "0.1"
 core-api = { package = "mhome-core-api", version = "=1.50.0", path = "../core-api" }
 protocomm = { package = "mhome-protocomm", version = "=0.2.1", path = "../protocomm" }
