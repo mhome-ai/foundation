@@ -318,7 +318,6 @@
     "/integration/entity/batchGetName": "spaceRead",
     "/integration/entity/get": "spaceRead",
     "/integration/entity/getHistory": "spaceRead",
-    "/integration/fix": "spaceWrite",
     "/integration/group/get": "spaceRead",
     "/integration/install": "spaceWrite",
     "/integration/meta/get": "spaceRead",

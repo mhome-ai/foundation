@@ -75,6 +75,7 @@ fn current_conversation_and_talk_routes_are_all_declared() {
         "/app/system/hosts/claim",
         "/app/widget/state/get",
         "/app/device/list",
+        "/integration/fix",
     ] {
         assert!(
             authorization::required(target).is_none(),
