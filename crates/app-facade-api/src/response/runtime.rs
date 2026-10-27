@@ -4,8 +4,8 @@ use serde_json::Value;
 pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
     if !matches!(
         target,
-        "/app/scope/preference/update"
-            | "/app/scope/location/update"
+        "/app/space/preference/update"
+            | "/app/space/location/update"
             | "/app/host/list"
             | "/app/host/service/install"
             | "/app/host/service/restart"
@@ -17,7 +17,7 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
     }
     let mut result = data.clone();
     match target {
-        "/app/scope/preference/update" => {
+        "/app/space/preference/update" => {
             // These are submitted keys, not a comparison with the previous values.
             // Preserve the complete result if an older/malformed DTO lacks the key list.
             if let Some(keys) = data.get("updatedFields").and_then(Value::as_array) {
@@ -30,7 +30,7 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
                 }
             }
         }
-        "/app/scope/location/update" => remove(&mut result, &["previousName", "previousAddress"]),
+        "/app/space/location/update" => remove(&mut result, &["previousName", "previousAddress"]),
         "/app/host/list" => {
             if let Some(hosts) = result.get_mut("hosts").and_then(Value::as_array_mut) {
                 for host in hosts {

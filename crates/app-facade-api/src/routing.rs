@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn exact_exceptions_win_over_domain_defaults() {
         assert_eq!(
-            route_policy_for_target("/app/scope/context/get"),
+            route_policy_for_target("/app/space/context/get"),
             Some(SCOPE)
         );
         assert_eq!(
@@ -132,7 +132,7 @@ mod tests {
     #[test]
     fn domains_select_their_authoritative_executor() {
         assert_eq!(
-            route_policy_for_target("/app/scope/member/list"),
+            route_policy_for_target("/app/space/member/list"),
             Some(CLOUD)
         );
         assert_eq!(

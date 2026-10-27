@@ -1,6 +1,6 @@
 [
   {
-    "target": "/app/scope/create",
+    "target": "/app/space/create",
     "execution": "cloud",
     "placement": null,
     "hubReady": true,
@@ -8,7 +8,7 @@
     "entry": "cloud"
   },
   {
-    "target": "/app/scope/create",
+    "target": "/app/space/create",
     "execution": "cloud",
     "placement": null,
     "hubReady": true,
@@ -16,7 +16,7 @@
     "entry": "unavailable"
   },
   {
-    "target": "/app/scope/create",
+    "target": "/app/space/create",
     "execution": "cloud",
     "placement": null,
     "hubReady": false,
@@ -24,7 +24,7 @@
     "entry": "cloud"
   },
   {
-    "target": "/app/scope/create",
+    "target": "/app/space/create",
     "execution": "cloud",
     "placement": null,
     "hubReady": false,

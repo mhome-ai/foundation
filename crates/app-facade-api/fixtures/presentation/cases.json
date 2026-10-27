@@ -1008,10 +1008,10 @@
   },
   {
     "name": "space-preference-update",
-    "target": "/app/scope/preference/update",
+    "target": "/app/space/preference/update",
     "data": {
       "action": "Updated",
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "updatedFields": [
         "temperatureUnit"
       ],
@@ -1027,7 +1027,7 @@
     "status": "success",
     "essential": {
       "action": "Updated",
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "updatedFields": [
         "temperatureUnit"
       ],
@@ -1038,7 +1038,7 @@
   },
   {
     "name": "space-preference-empty-keys",
-    "target": "/app/scope/preference/update",
+    "target": "/app/space/preference/update",
     "data": {
       "updatedFields": [],
       "preferences": {
@@ -1058,7 +1058,7 @@
   },
   {
     "name": "space-preference-no-key-list",
-    "target": "/app/scope/preference/update",
+    "target": "/app/space/preference/update",
     "data": {
       "preferences": {
         "temperatureUnit": "F",
@@ -1083,7 +1083,7 @@
   },
   {
     "name": "space-preference-invalid-key-list",
-    "target": "/app/scope/preference/update",
+    "target": "/app/space/preference/update",
     "data": {
       "updatedFields": [
         null
@@ -1114,10 +1114,10 @@
   },
   {
     "name": "space-location-update",
-    "target": "/app/scope/location/update",
+    "target": "/app/space/location/update",
     "data": {
       "action": "Updated",
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "locationId": "l:office",
       "name": "Office",
       "address": "Example address",
@@ -1135,7 +1135,7 @@
     "status": "success",
     "essential": {
       "action": "Updated",
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "locationId": "l:office",
       "name": "Office",
       "address": "Example address",
@@ -1151,11 +1151,11 @@
   },
   {
     "name": "space-list",
-    "target": "/app/scope/list",
+    "target": "/app/space/list",
     "data": {
       "spaces": [
         {
-          "scopeId": "space-demo",
+          "spaceId": "space-demo",
           "name": "Home",
           "mode": "local",
           "agentMode": "cloud",
@@ -1167,7 +1167,7 @@
     "essential": {
       "spaces": [
         {
-          "scopeId": "space-demo",
+          "spaceId": "space-demo",
           "name": "Home",
           "mode": "local",
           "agentMode": "cloud",
@@ -1178,10 +1178,10 @@
   },
   {
     "name": "space-current",
-    "target": "/app/scope/detail/get",
+    "target": "/app/space/detail/get",
     "data": {
       "space": {
-        "scopeId": "space-demo",
+        "spaceId": "space-demo",
         "name": "Home",
         "mode": "local",
         "agentMode": "cloud",
@@ -1189,7 +1189,7 @@
       },
       "locations": [
         {
-          "scopeId": "space-demo",
+          "spaceId": "space-demo",
           "locationId": "l:office",
           "name": "Office",
           "address": "Example address",
@@ -1204,7 +1204,7 @@
     "status": "success",
     "essential": {
       "space": {
-        "scopeId": "space-demo",
+        "spaceId": "space-demo",
         "name": "Home",
         "mode": "local",
         "agentMode": "cloud",
@@ -1212,7 +1212,7 @@
       },
       "locations": [
         {
-          "scopeId": "space-demo",
+          "spaceId": "space-demo",
           "locationId": "l:office",
           "name": "Office",
           "address": "Example address",
@@ -1227,10 +1227,10 @@
   },
   {
     "name": "space-invite-outcomes",
-    "target": "/app/scope/member/invite",
+    "target": "/app/space/member/invite",
     "data": {
       "action": "Invited",
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "requested": [
         "new@example.com",
         "pending@example.com",
@@ -1253,7 +1253,7 @@
     "status": "success",
     "essential": {
       "action": "Invited",
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "requested": [
         "new@example.com",
         "pending@example.com",

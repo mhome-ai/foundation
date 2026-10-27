@@ -3,7 +3,7 @@
 const TARGET_PREFIX: &str = "/app/";
 
 const CLOUD_PREFIXES: &[&str] = &[
-    "/app/scope/",
+    "/app/space/",
     "/app/inspire/",
     "/app/user/",
     "/app/card-skins/catalog/",
@@ -35,7 +35,7 @@ pub const CLOUD_TARGETS: &[&str] = &[
 
 const SCOPE_MODE_TARGETS: &[&str] = &[
     "/app/artifact/resolve",
-    "/app/scope/context/get",
+    "/app/space/context/get",
     "/app/artifact/put",
     "/app/artifact/import",
     "/app/artifact/delete",
