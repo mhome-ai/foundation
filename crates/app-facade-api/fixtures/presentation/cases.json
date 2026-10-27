@@ -1458,7 +1458,8 @@
           "target": "macos-arm64",
           "catalogs": {
             "platform": {
-              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "version": "20261027-01"
             }
           },
           "warnings": [],
@@ -1479,7 +1480,9 @@
               "nodeMetadata": {
                 "artifact": {}
               },
-              "compatibility": {}
+              "compatibility": {
+                "coreProtocol": 1
+              }
             }
           ]
         }
@@ -1508,7 +1511,9 @@
               "action": "install",
               "fromVersion": null,
               "toVersion": "1.0.0",
-              "compatibility": {}
+              "compatibility": {
+                "coreProtocol": 1
+              }
             }
           ]
         }
@@ -1604,7 +1609,14 @@
                 "components": [
                   {
                     "id": "node-camera",
-                    "payloadFilesValid": false
+                    "payloadFilesValid": false,
+                    "installed": true,
+                    "version": "1.0.0",
+                    "versionDirectoryValid": true,
+                    "payloadMarkerValid": true,
+                    "currentLinkValid": true,
+                    "stableEntrypointValid": true,
+                    "structurallyValid": false
                   }
                 ],
                 "repairReasons": [
@@ -1633,7 +1645,8 @@
                       "target": "macos-arm64",
                       "catalogs": {
                         "platform": {
-                          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                          "version": "20261027-01"
                         }
                       },
                       "warnings": [],
@@ -1654,7 +1667,9 @@
                           "nodeMetadata": {
                             "artifact": {}
                           },
-                          "compatibility": {}
+                          "compatibility": {
+                            "coreProtocol": 1
+                          }
                         }
                       ]
                     }
@@ -1758,7 +1773,9 @@
                           "action": "install",
                           "fromVersion": null,
                           "toVersion": "1.0.0",
-                          "compatibility": {}
+                          "compatibility": {
+                            "coreProtocol": 1
+                          }
                         }
                       ]
                     }
@@ -1887,86 +1904,90 @@
   {
     "name": "card-skin-release-list",
     "target": "/app/card-skins/catalog/release/list",
-    "data": [
-      {
-        "id": "release-demo",
-        "baseUrl": "https://example.invalid/skin/",
-        "manifest": {
-          "schemaVersion": 1,
-          "packageId": "example.skin",
-          "version": "1.0.0",
-          "name": "Example Skin",
-          "description": "Demo",
-          "apiVersion": 1,
-          "entry": "main.mjs",
-          "files": [
-            {
-              "path": "main.mjs",
-              "mediaType": "text/javascript",
-              "sizeBytes": 1024,
-              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            }
-          ],
-          "renderers": [
-            {
-              "id": "switch",
-              "name": "Switch",
-              "description": "Demo switch",
-              "supportedPatterns": [
-                {
-                  "patternId": "switch",
-                  "contractId": "switch",
-                  "contractVersion": 1
-                }
-              ],
-              "detail": {
-                "mode": "builtin"
-              },
-              "configSchema": {
-                "type": "object",
-                "properties": {
-                  "color": {
-                    "type": "string",
-                    "default": "green"
+    "data": {
+      "releases": [
+        {
+          "id": "release-demo",
+          "baseUrl": "https://example.invalid/skin/",
+          "manifest": {
+            "schemaVersion": 1,
+            "packageId": "example.skin",
+            "version": "1.0.0",
+            "name": "Example Skin",
+            "description": "Demo",
+            "apiVersion": 1,
+            "entry": "main.mjs",
+            "files": [
+              {
+                "path": "main.mjs",
+                "mediaType": "text/javascript",
+                "sizeBytes": 1024,
+                "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            ],
+            "renderers": [
+              {
+                "id": "switch",
+                "name": "Switch",
+                "description": "Demo switch",
+                "supportedPatterns": [
+                  {
+                    "patternId": "switch",
+                    "contractId": "switch",
+                    "contractVersion": 1
+                  }
+                ],
+                "detail": {
+                  "mode": "builtin"
+                },
+                "configSchema": {
+                  "type": "object",
+                  "properties": {
+                    "color": {
+                      "type": "string",
+                      "default": "green"
+                    }
                   }
                 }
               }
-            }
-          ]
+            ]
+          }
         }
-      }
-    ],
+      ]
+    },
     "status": "success",
-    "essential": [
-      {
-        "id": "release-demo",
-        "manifest": {
-          "schemaVersion": 1,
-          "packageId": "example.skin",
-          "version": "1.0.0",
-          "name": "Example Skin",
-          "description": "Demo",
-          "apiVersion": 1,
-          "renderers": [
-            {
-              "id": "switch",
-              "name": "Switch",
-              "description": "Demo switch",
-              "supportedPatterns": [
-                {
-                  "patternId": "switch",
-                  "contractId": "switch",
-                  "contractVersion": 1
+    "essential": {
+      "releases": [
+        {
+          "id": "release-demo",
+          "manifest": {
+            "schemaVersion": 1,
+            "packageId": "example.skin",
+            "version": "1.0.0",
+            "name": "Example Skin",
+            "description": "Demo",
+            "apiVersion": 1,
+            "renderers": [
+              {
+                "id": "switch",
+                "name": "Switch",
+                "description": "Demo switch",
+                "supportedPatterns": [
+                  {
+                    "patternId": "switch",
+                    "contractId": "switch",
+                    "contractVersion": 1
+                  }
+                ],
+                "detail": {
+                  "mode": "builtin"
                 }
-              ],
-              "detail": {
-                "mode": "builtin"
               }
-            }
-          ]
+            ]
+          }
         }
-      }
-    ]
+      ]
+    }
   },
   {
     "name": "card-skin-selection",

@@ -62,7 +62,7 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
             }
         }
         "/app/card-skins/catalog/release/list" => {
-            if let Some(releases) = result.as_array_mut() {
+            if let Some(releases) = result.get_mut("releases").and_then(Value::as_array_mut) {
                 for release in releases {
                     project_release(release, false);
                 }

@@ -1,5 +1,38 @@
-use app_facade_api::{response, ResponseDetail};
+use app_facade_api::{ResponseDetail, response};
 use serde_json::Value;
+
+#[test]
+fn card_skin_projection_fixtures_match_the_business_wire_schema() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/card-skins.v1.schema.json")).unwrap();
+    let package: Value =
+        serde_json::from_str(include_str!("../schema/card-skin-package.v1.schema.json")).unwrap();
+    let cases: Vec<Value> =
+        serde_json::from_str(include_str!("../fixtures/presentation/cases.json")).unwrap();
+    for (name, definition) in [
+        ("card-skin-release-list", "releaseList"),
+        ("card-skin-release-detail", "release"),
+        ("card-skin-selection", "selectionView"),
+    ] {
+        let case = cases.iter().find(|case| case["name"] == name).unwrap();
+        let entry = serde_json::json!({"$ref": format!(
+            "https://schemas.meowlink.app/card-skins.v1.json#/definitions/{definition}"
+        )});
+        let validator = jsonschema::options()
+            .with_resource(
+                schema["$id"].as_str().unwrap(),
+                jsonschema::Resource::from_contents(schema.clone()).unwrap(),
+            )
+            .with_resource(
+                package["$id"].as_str().unwrap(),
+                jsonschema::Resource::from_contents(package.clone()).unwrap(),
+            )
+            .build(&entry)
+            .unwrap();
+        validator.validate(&case["data"]).unwrap();
+    }
+}
+
 #[test]
 fn shared_projection_and_outcome_contract() {
     let schema: Value =
