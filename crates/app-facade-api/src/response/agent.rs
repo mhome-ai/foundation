@@ -5,10 +5,7 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
     let mut result = data.clone();
     match target {
         "/app/agent/session/get" | "/app/agent/session/save" => {
-            retain(
-                &mut result,
-                &["scopeId", "spaceId", "idleTimeoutMinutes", "source"],
-            );
+            retain(&mut result, &["idleTimeoutMinutes", "source"]);
         }
         "/app/agent/llm/summary" | "/app/agent/llm/provider/list" => {
             // providerModels is the authoritative, executable model catalog, including
@@ -16,9 +13,6 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
             retain(
                 &mut result,
                 &[
-                    "scopeId",
-                    "spaceId",
-                    "agentRuntimeMode",
                     "llmMode",
                     "canUseLocalRuntime",
                     "providers",
@@ -80,8 +74,6 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
             retain(
                 &mut result,
                 &[
-                    "scopeId",
-                    "spaceId",
                     "effectiveMappings",
                     "selectedProviders",
                     "defaultProviders",
@@ -99,7 +91,7 @@ fn mappings(value: &mut Value) {
     // Keep configuredModel, effective model, source and every generation override.
     // They explain fallbacks and let callers avoid accidentally replacing settings.
     each(value, "defaultProviders", |provider| {
-        retain(provider, &["useCase", "agentRuntimeMode", "provider"])
+        retain(provider, &["useCase", "llmMode", "provider"])
     });
     each(value, "llmUseCases", |use_case| {
         retain(

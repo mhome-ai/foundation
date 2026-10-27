@@ -2147,7 +2147,7 @@
     "name": "agent-llm-summary",
     "target": "/app/agent/llm/summary",
     "data": {
-      "agentRuntimeMode": "local",
+      "llmMode": "local",
       "effectiveMappings": [
         {
           "temperature": null,
@@ -2168,7 +2168,7 @@
       "defaultProviders": [
         {
           "useCase": "chat",
-          "agentRuntimeMode": "local",
+          "llmMode": "local",
           "provider": "local_example",
           "updatedAtMs": 123
         }
@@ -2442,7 +2442,7 @@
     },
     "status": "success",
     "essential": {
-      "agentRuntimeMode": "local",
+      "llmMode": "local",
       "effectiveMappings": [
         {
           "temperature": null,
@@ -2463,7 +2463,7 @@
       "defaultProviders": [
         {
           "useCase": "chat",
-          "agentRuntimeMode": "local",
+          "llmMode": "local",
           "provider": "local_example"
         }
       ],
@@ -3130,22 +3130,22 @@
     "name": "agent-memory-text",
     "target": "/app/agent/memory/get",
     "data": {
-      "data": "客厅空调设定为 26°C 前先征求用户同意。"
+      "content": "客厅空调设定为 26°C 前先征求用户同意。"
     },
     "status": "success",
     "essential": {
-      "data": "客厅空调设定为 26°C 前先征求用户同意。"
+      "content": "客厅空调设定为 26°C 前先征求用户同意。"
     }
   },
   {
     "name": "agent-identity-text",
     "target": "/app/agent/identity/get",
     "data": {
-      "data": "使用中文，回答简洁。"
+      "content": "使用中文，回答简洁。"
     },
     "status": "success",
     "essential": {
-      "data": "使用中文，回答简洁。"
+      "content": "使用中文，回答简洁。"
     }
   },
   {
@@ -3250,6 +3250,39 @@
     "status": "success",
     "essential": {
       "success": true
+    }
+  },
+  {
+    "name": "agent-identity-multiline",
+    "target": "/app/agent/identity/get",
+    "data": {
+      "content": "# Preferences\n\n- Keep this complete.\n- Preserve indentation:\n    second line\n"
+    },
+    "status": "success",
+    "essential": {
+      "content": "# Preferences\n\n- Keep this complete.\n- Preserve indentation:\n    second line\n"
+    }
+  },
+  {
+    "name": "agent-memory-multiline",
+    "target": "/app/agent/memory/get",
+    "data": {
+      "content": "# Preferences\n\n- Keep this complete.\n- Preserve indentation:\n    second line\n"
+    },
+    "status": "success",
+    "essential": {
+      "content": "# Preferences\n\n- Keep this complete.\n- Preserve indentation:\n    second line\n"
+    }
+  },
+  {
+    "name": "agent-llm-mode",
+    "target": "/app/agent/mode/get",
+    "data": {
+      "llmMode": "local"
+    },
+    "status": "success",
+    "essential": {
+      "llmMode": "local"
     }
   }
 ]

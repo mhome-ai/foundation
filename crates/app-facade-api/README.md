@@ -17,6 +17,27 @@ owns public targets, request/response/event schemas, and stable operation
 identity. Core-to-Node routes and provider runtime models belong to
 `mhome-core-api` instead.
 
+## Business DTO ownership
+
+A Facade owns the public business DTO for an operation. Native Agent tools, MCP,
+CLI and UI SDK adapters forward that DTO; they do not rename its fields, regroup
+its rows or add a client-selected Space ID. Full/essential selection is a Facade
+presentation concern. The same operation and caller context have the same DTO
+across these surfaces. Internal bridge/storage DTOs may use different names;
+conversion belongs at the Facade implementation boundary.
+
+Agent Profile get/save use `content` for the complete document. LLM mode get/save
+use `llmMode`; summary and default-provider metadata use that same field.
+`control.mode` and `agentModelMode` are separate concepts. The existing
+`/app/agent/llm/summary` operation owns the combined LLM read used by UI and CLI.
+See the Agent cases in the shared [presentation fixtures](fixtures/presentation/cases.json).
+
+Client workflows may coordinate input, login, polling and local files. Native
+Profile updates may run model-based merging. These workflows own explicit final
+results and compose real Facade calls; they are not alternative DTOs for a single
+Facade operation. A UI view model may derive display state after the SDK boundary.
+Composition does not imply a distributed transaction or automatic rollback.
+
 ## App result contract
 
 `control.responseDetail` selects information depth: `full` (default) returns
