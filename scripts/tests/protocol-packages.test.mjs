@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -9,6 +10,19 @@ import addFormats from "ajv-formats";
 
 import { PROTOCOL_PACKAGES } from "../protocol-packages.mjs";
 import { stageProtocolPackage } from "../stage-protocol-package.mjs";
+
+function manifestFileReferences(value, references = new Set()) {
+  if (typeof value === "string") {
+    if (/^(manifest|schema|fixtures|contract)\//.test(value)) {
+      references.add(value.split("#")[0]);
+    }
+  } else if (Array.isArray(value)) {
+    value.forEach((item) => manifestFileReferences(item, references));
+  } else if (value && typeof value === "object") {
+    Object.values(value).forEach((item) => manifestFileReferences(item, references));
+  }
+  return references;
+}
 
 for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
   test(`stages the ${name} protocol without executable runtime code`, () => {
@@ -66,6 +80,40 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
         .readdirSync(staged.stagingRoot, { recursive: true })
         .filter((entry) => /\.(?:c?js|mjs|ts|tsx|jsx)$/.test(String(entry)));
       assert.deepEqual(executableFiles, []);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  test(`packs every file referenced by the ${name} protocol manifests`, () => {
+    const tempRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), `mhome-${name}-protocol-pack-`)
+    );
+    try {
+      const staged = stageProtocolPackage(name, path.join(tempRoot, "package"));
+      const [packed] = JSON.parse(execFileSync("npm", [
+        "pack", staged.stagingRoot, "--json", "--offline", "--ignore-scripts",
+        "--pack-destination", tempRoot,
+      ], {
+        cwd: tempRoot,
+        encoding: "utf8",
+        env: { ...process.env, npm_config_cache: path.join(tempRoot, "npm-cache") },
+      }));
+      assert.ok(fs.statSync(path.join(tempRoot, packed.filename)).isFile());
+      const packedFiles = new Set(packed.files.map((file) => file.path));
+      const manifests = fs.readdirSync(path.join(staged.stagingRoot, "manifest"), {
+        recursive: true,
+      }).filter((file) => file.endsWith(".json"));
+      for (const file of manifests) {
+        const relativePath = `manifest/${file}`;
+        assert.ok(packedFiles.has(relativePath), `${relativePath} missing from npm package`);
+        const manifest = JSON.parse(fs.readFileSync(
+          path.join(staged.stagingRoot, relativePath), "utf8"
+        ));
+        const missing = [...manifestFileReferences(manifest)]
+          .filter((reference) => !packedFiles.has(reference));
+        assert.deepEqual(missing, [], `${relativePath} references unpackaged files`);
+      }
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }

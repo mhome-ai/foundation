@@ -65,8 +65,9 @@ same release tag:
 - `@mhome/core-protocol`
 
 Run `npm ci` before protocol checks or tagged crate verification. Then run
-`npm run test:protocol-packages` to verify package staging, strict AJV schema compilation
-and Artifact conformance fixtures. Tagged protocol releases run these checks before
+`npm run test:protocol-packages` to verify package staging, manifest file references
+in actual npm tarballs, strict AJV schema compilation and Artifact conformance fixtures.
+Tagged protocol releases run these checks before
 uploading either package. To inspect a tarball locally:
 
 ```bash
