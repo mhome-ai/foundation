@@ -378,7 +378,7 @@ mod tests {
         assert!(result["items"][0]["card"].get("widgets").is_none());
         assert!(result["items"][0]["card"].get("layouts").is_none());
         let list = essential(
-            "/app/dashboard/card/brief/list",
+            "/app/dashboard/card/list",
             &json!({"cards": [full["items"][0]["card"].clone()]}),
         );
         assert_eq!(

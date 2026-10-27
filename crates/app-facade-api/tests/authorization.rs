@@ -133,3 +133,17 @@ fn quickword_has_one_read_and_one_direct_write() {
     );
     assert_eq!(authorization::required("/app/quickword/brief/list"), None);
 }
+
+#[test]
+fn dashboard_summary_lists_use_canonical_paths_without_aliases() {
+    for resource in ["canvas", "card"] {
+        assert_eq!(
+            authorization::required(&format!("/app/dashboard/{resource}/list")),
+            Some(authorization::OperationPolicy::SpaceRead)
+        );
+        assert_eq!(
+            authorization::required(&format!("/app/dashboard/{resource}/brief/list")),
+            None
+        );
+    }
+}

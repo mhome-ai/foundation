@@ -499,7 +499,7 @@
   },
   {
     "name": "dashboard card list retains canvas layout",
-    "target": "/app/dashboard/card/brief/list",
+    "target": "/app/dashboard/card/list",
     "status": "success",
     "data": {
       "canvasId": "canvas",
