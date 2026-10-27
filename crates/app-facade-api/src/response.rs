@@ -2,6 +2,8 @@
 use crate::{FacadeResponse, ResponseDetail};
 use serde_json::{json, Value};
 
+mod runtime;
+
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
 pub fn outcome(target: &str, data: Value) -> FacadeResponse {
     // These mutation contracts use `success` as the operation outcome. Queries
@@ -103,7 +105,9 @@ fn nonempty(data: &Value, key: &str) -> bool {
 
 /// Select public fields for each operation before rendering the model-facing result.
 pub fn essential(target: &str, data: &Value) -> Value {
-    if target == "/app/device/brief/list" {
+    if let Some(result) = runtime::project(target, data) {
+        result
+    } else if target == "/app/device/brief/list" {
         device_briefs(data)
     } else if target.starts_with("/app/dashboard/") {
         dashboard(data, target != "/app/dashboard/card/detail/get")

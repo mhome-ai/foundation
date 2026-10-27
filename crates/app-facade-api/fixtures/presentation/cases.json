@@ -1005,5 +1005,1121 @@
     "essential": {
       "status": "notApplicable"
     }
+  },
+  {
+    "name": "space-preference-update",
+    "target": "/app/scope/preference/update",
+    "data": {
+      "action": "Updated",
+      "scopeId": "space-demo",
+      "updatedFields": [
+        "temperatureUnit"
+      ],
+      "preferences": {
+        "temperatureUnit": "F",
+        "dateFormat": "yyyy-MM-dd",
+        "timeFormat": "HH:mm",
+        "lengthUnit": "metric",
+        "weightUnit": "metric",
+        "language": "en"
+      }
+    },
+    "status": "success",
+    "essential": {
+      "action": "Updated",
+      "scopeId": "space-demo",
+      "updatedFields": [
+        "temperatureUnit"
+      ],
+      "preferences": {
+        "temperatureUnit": "F"
+      }
+    }
+  },
+  {
+    "name": "space-preference-empty-keys",
+    "target": "/app/scope/preference/update",
+    "data": {
+      "updatedFields": [],
+      "preferences": {
+        "temperatureUnit": "F",
+        "dateFormat": "yyyy-MM-dd",
+        "timeFormat": "HH:mm",
+        "lengthUnit": "metric",
+        "weightUnit": "metric",
+        "language": "en"
+      }
+    },
+    "status": "success",
+    "essential": {
+      "updatedFields": [],
+      "preferences": {}
+    }
+  },
+  {
+    "name": "space-preference-no-key-list",
+    "target": "/app/scope/preference/update",
+    "data": {
+      "preferences": {
+        "temperatureUnit": "F",
+        "dateFormat": "yyyy-MM-dd",
+        "timeFormat": "HH:mm",
+        "lengthUnit": "metric",
+        "weightUnit": "metric",
+        "language": "en"
+      }
+    },
+    "status": "success",
+    "essential": {
+      "preferences": {
+        "temperatureUnit": "F",
+        "dateFormat": "yyyy-MM-dd",
+        "timeFormat": "HH:mm",
+        "lengthUnit": "metric",
+        "weightUnit": "metric",
+        "language": "en"
+      }
+    }
+  },
+  {
+    "name": "space-preference-invalid-key-list",
+    "target": "/app/scope/preference/update",
+    "data": {
+      "updatedFields": [
+        null
+      ],
+      "preferences": {
+        "temperatureUnit": "F",
+        "dateFormat": "yyyy-MM-dd",
+        "timeFormat": "HH:mm",
+        "lengthUnit": "metric",
+        "weightUnit": "metric",
+        "language": "en"
+      }
+    },
+    "status": "success",
+    "essential": {
+      "updatedFields": [
+        null
+      ],
+      "preferences": {
+        "temperatureUnit": "F",
+        "dateFormat": "yyyy-MM-dd",
+        "timeFormat": "HH:mm",
+        "lengthUnit": "metric",
+        "weightUnit": "metric",
+        "language": "en"
+      }
+    }
+  },
+  {
+    "name": "space-location-update",
+    "target": "/app/scope/location/update",
+    "data": {
+      "action": "Updated",
+      "scopeId": "space-demo",
+      "locationId": "l:office",
+      "name": "Office",
+      "address": "Example address",
+      "timezone": "Asia/Shanghai",
+      "countryCode": "CN",
+      "latitude": 31.2,
+      "longitude": 121.4,
+      "home": false,
+      "updatedFields": [
+        "name"
+      ],
+      "previousName": "Work",
+      "previousAddress": "Example address"
+    },
+    "status": "success",
+    "essential": {
+      "action": "Updated",
+      "scopeId": "space-demo",
+      "locationId": "l:office",
+      "name": "Office",
+      "address": "Example address",
+      "timezone": "Asia/Shanghai",
+      "countryCode": "CN",
+      "latitude": 31.2,
+      "longitude": 121.4,
+      "home": false,
+      "updatedFields": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "space-list",
+    "target": "/app/scope/list",
+    "data": {
+      "spaces": [
+        {
+          "scopeId": "space-demo",
+          "name": "Home",
+          "mode": "local",
+          "agentMode": "cloud",
+          "lifecycleState": "ACTIVE"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "spaces": [
+        {
+          "scopeId": "space-demo",
+          "name": "Home",
+          "mode": "local",
+          "agentMode": "cloud",
+          "lifecycleState": "ACTIVE"
+        }
+      ]
+    }
+  },
+  {
+    "name": "space-current",
+    "target": "/app/scope/detail/get",
+    "data": {
+      "space": {
+        "scopeId": "space-demo",
+        "name": "Home",
+        "mode": "local",
+        "agentMode": "cloud",
+        "lifecycleState": "ACTIVE"
+      },
+      "locations": [
+        {
+          "scopeId": "space-demo",
+          "locationId": "l:office",
+          "name": "Office",
+          "address": "Example address",
+          "timezone": "Asia/Shanghai",
+          "countryCode": "CN",
+          "latitude": 31.2,
+          "longitude": 121.4,
+          "altitude": 0.0
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "space": {
+        "scopeId": "space-demo",
+        "name": "Home",
+        "mode": "local",
+        "agentMode": "cloud",
+        "lifecycleState": "ACTIVE"
+      },
+      "locations": [
+        {
+          "scopeId": "space-demo",
+          "locationId": "l:office",
+          "name": "Office",
+          "address": "Example address",
+          "timezone": "Asia/Shanghai",
+          "countryCode": "CN",
+          "latitude": 31.2,
+          "longitude": 121.4,
+          "altitude": 0.0
+        }
+      ]
+    }
+  },
+  {
+    "name": "space-invite-outcomes",
+    "target": "/app/scope/member/invite",
+    "data": {
+      "action": "Invited",
+      "scopeId": "space-demo",
+      "requested": [
+        "new@example.com",
+        "pending@example.com",
+        "member@example.com",
+        "invalid@example.com"
+      ],
+      "invited": [
+        "new@example.com"
+      ],
+      "alreadyPending": [
+        "pending@example.com"
+      ],
+      "alreadyMembers": [
+        "member@example.com"
+      ],
+      "failed": [
+        "invalid@example.com"
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "action": "Invited",
+      "scopeId": "space-demo",
+      "requested": [
+        "new@example.com",
+        "pending@example.com",
+        "member@example.com",
+        "invalid@example.com"
+      ],
+      "invited": [
+        "new@example.com"
+      ],
+      "alreadyPending": [
+        "pending@example.com"
+      ],
+      "alreadyMembers": [
+        "member@example.com"
+      ],
+      "failed": [
+        "invalid@example.com"
+      ]
+    }
+  },
+  {
+    "name": "hub-unconfigured",
+    "target": "/app/hub/get",
+    "data": {
+      "scopeId": "space-demo",
+      "configured": false,
+      "hub": null,
+      "operation": null,
+      "revocation": null
+    },
+    "status": "success",
+    "essential": {
+      "scopeId": "space-demo",
+      "configured": false,
+      "hub": null,
+      "operation": null,
+      "revocation": null
+    }
+  },
+  {
+    "name": "hub-runtime",
+    "target": "/app/hub/status",
+    "data": {
+      "run": 7,
+      "phase": "running",
+      "betaMode": false
+    },
+    "status": "success",
+    "essential": {
+      "run": 7,
+      "phase": "running",
+      "betaMode": false
+    }
+  },
+  {
+    "name": "pod-directory-unknown",
+    "target": "/app/pod/list",
+    "data": {
+      "scopeId": "space-demo",
+      "observedAtMs": 1800000000000,
+      "pods": [
+        {
+          "registrationId": "pod-demo",
+          "clientMode": "user",
+          "registered": true,
+          "name": "Desk",
+          "deviceId": "device-demo",
+          "model": "Pod",
+          "platform": "esp32",
+          "firmwareVersion": "1.0.0",
+          "issuedAt": 1800000000000,
+          "activatedAt": 1800000001000,
+          "connection": {
+            "scopeId": null,
+            "state": "unknown",
+            "source": "unavailable"
+          }
+        }
+      ],
+      "sourceErrors": {
+        "space": "Hub unavailable"
+      }
+    },
+    "status": "success",
+    "essential": {
+      "scopeId": "space-demo",
+      "observedAtMs": 1800000000000,
+      "pods": [
+        {
+          "registrationId": "pod-demo",
+          "clientMode": "user",
+          "registered": true,
+          "name": "Desk",
+          "deviceId": "device-demo",
+          "model": "Pod",
+          "platform": "esp32",
+          "firmwareVersion": "1.0.0",
+          "issuedAt": 1800000000000,
+          "activatedAt": 1800000001000,
+          "connection": {
+            "scopeId": null,
+            "state": "unknown",
+            "source": "unavailable"
+          }
+        }
+      ],
+      "sourceErrors": {
+        "space": "Hub unavailable"
+      }
+    }
+  },
+  {
+    "name": "pod-rename",
+    "target": "/app/pod/rename",
+    "data": {
+      "registrationId": "pod-demo",
+      "name": "Desk"
+    },
+    "status": "success",
+    "essential": {
+      "registrationId": "pod-demo",
+      "name": "Desk"
+    }
+  },
+  {
+    "name": "messaging-link-code",
+    "target": "/app/messaging/link/code/create",
+    "data": {
+      "challenge": {
+        "code": "DEMO123",
+        "command": "/link DEMO123",
+        "expiresAtMs": 1800000300000,
+        "challengeId": "challenge-demo"
+      }
+    },
+    "status": "success",
+    "essential": {
+      "challenge": {
+        "code": "DEMO123",
+        "command": "/link DEMO123",
+        "expiresAtMs": 1800000300000,
+        "challengeId": "challenge-demo"
+      }
+    }
+  },
+  {
+    "name": "messaging-provider-account",
+    "target": "/app/messaging/provider-account/list",
+    "data": {
+      "accounts": [
+        {
+          "provider": "telegram",
+          "placement": "cloud",
+          "accountId": "bot-demo",
+          "ownership": "system",
+          "displayName": "Example bot",
+          "enabled": true,
+          "status": "active",
+          "statusMessage": null,
+          "providerData": {
+            "botUsername": "ExampleBot"
+          }
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "accounts": [
+        {
+          "provider": "telegram",
+          "placement": "cloud",
+          "accountId": "bot-demo",
+          "ownership": "system",
+          "displayName": "Example bot",
+          "enabled": true,
+          "status": "active",
+          "statusMessage": null,
+          "providerData": {
+            "botUsername": "ExampleBot"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "host-service-install",
+    "target": "/app/host/service/install",
+    "data": {
+      "operationId": "operation-demo",
+      "hostId": "host-demo",
+      "state": "succeeded",
+      "phase": "completed",
+      "updatedAtMs": 1800000000000,
+      "error": null,
+      "result": {
+        "changed": true,
+        "warnings": [
+          "Restart required"
+        ],
+        "backgroundServices": [],
+        "plan": {
+          "target": "macos-arm64",
+          "catalogs": {
+            "platform": {
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          },
+          "warnings": [],
+          "components": [
+            {
+              "component": "node-camera",
+              "action": "install",
+              "fromVersion": null,
+              "toVersion": "1.0.0",
+              "asset": {
+                "url": "https://example.invalid/camera.tar.gz",
+                "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "size": 1024
+              },
+              "releaseManifest": {
+                "files": []
+              },
+              "nodeMetadata": {
+                "artifact": {}
+              },
+              "compatibility": {}
+            }
+          ]
+        }
+      }
+    },
+    "status": "success",
+    "essential": {
+      "operationId": "operation-demo",
+      "hostId": "host-demo",
+      "state": "succeeded",
+      "phase": "completed",
+      "updatedAtMs": 1800000000000,
+      "error": null,
+      "result": {
+        "changed": true,
+        "warnings": [
+          "Restart required"
+        ],
+        "backgroundServices": [],
+        "plan": {
+          "target": "macos-arm64",
+          "warnings": [],
+          "components": [
+            {
+              "component": "node-camera",
+              "action": "install",
+              "fromVersion": null,
+              "toVersion": "1.0.0",
+              "compatibility": {}
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "host-service-queued",
+    "target": "/app/host/service/install",
+    "data": {
+      "operationId": "operation-demo",
+      "hostId": "host-demo",
+      "state": "queued",
+      "phase": "queued",
+      "updatedAtMs": 1800000000000,
+      "error": null,
+      "result": null
+    },
+    "status": "success",
+    "essential": {
+      "operationId": "operation-demo",
+      "hostId": "host-demo",
+      "state": "queued",
+      "phase": "queued",
+      "updatedAtMs": 1800000000000,
+      "error": null,
+      "result": null
+    }
+  },
+  {
+    "name": "host-service-failed-state",
+    "target": "/app/host/service/restart",
+    "data": {
+      "operationId": "operation-demo",
+      "hostId": "host-demo",
+      "state": "failed",
+      "phase": "interrupted",
+      "updatedAtMs": 1800000000000,
+      "error": "Host operation interrupted",
+      "result": null
+    },
+    "status": "success",
+    "essential": {
+      "operationId": "operation-demo",
+      "hostId": "host-demo",
+      "state": "failed",
+      "phase": "interrupted",
+      "updatedAtMs": 1800000000000,
+      "error": "Host operation interrupted",
+      "result": null
+    }
+  },
+  {
+    "name": "host-directory",
+    "target": "/app/host/list",
+    "data": {
+      "hosts": [
+        {
+          "hostId": "host-demo",
+          "env": "prod",
+          "registered": true,
+          "reachable": true,
+          "detail": {
+            "status": "ok",
+            "stale": false,
+            "data": {
+              "hostId": "host-demo",
+              "installationSupported": true,
+              "components": [
+                {
+                  "id": "node-camera",
+                  "serviceId": "camera",
+                  "installed": true,
+                  "installedVersion": "1.0.0",
+                  "enabled": null,
+                  "controlError": "Control unavailable",
+                  "toggleSupported": true,
+                  "catalogLoading": false,
+                  "catalogError": null,
+                  "availableVersion": "1.0.0",
+                  "downloadSizeBytes": 1024,
+                  "supported": true,
+                  "selectable": true,
+                  "structurallyValid": false,
+                  "reason": "Repair required"
+                }
+              ],
+              "runtime": {
+                "runtimeRoot": "/example/runtime",
+                "ready": false,
+                "setupRequired": false,
+                "repairRequired": true,
+                "components": [
+                  {
+                    "id": "node-camera",
+                    "payloadFilesValid": false
+                  }
+                ],
+                "repairReasons": [
+                  {
+                    "code": "payloadFilesMissing",
+                    "component": "node-camera"
+                  }
+                ],
+                "backgroundServices": []
+              },
+              "operations": [
+                {
+                  "operationId": "operation-demo",
+                  "hostId": "host-demo",
+                  "state": "succeeded",
+                  "phase": "completed",
+                  "updatedAtMs": 1800000000000,
+                  "error": null,
+                  "result": {
+                    "changed": true,
+                    "warnings": [
+                      "Restart required"
+                    ],
+                    "backgroundServices": [],
+                    "plan": {
+                      "target": "macos-arm64",
+                      "catalogs": {
+                        "platform": {
+                          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                        }
+                      },
+                      "warnings": [],
+                      "components": [
+                        {
+                          "component": "node-camera",
+                          "action": "install",
+                          "fromVersion": null,
+                          "toVersion": "1.0.0",
+                          "asset": {
+                            "url": "https://example.invalid/camera.tar.gz",
+                            "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                            "size": 1024
+                          },
+                          "releaseManifest": {
+                            "files": []
+                          },
+                          "nodeMetadata": {
+                            "artifact": {}
+                          },
+                          "compatibility": {}
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "protocolVersion": 1,
+              "platform": "macos-arm64",
+              "managementMode": "desktop",
+              "unsupportedReason": null,
+              "catalogError": null,
+              "catalogLoading": false,
+              "pluginCatalogError": null,
+              "pluginCatalogLoading": false,
+              "runtimeError": null
+            }
+          }
+        },
+        {
+          "hostId": "host-offline",
+          "env": "prod",
+          "registered": true,
+          "reachable": false,
+          "detail": {
+            "status": "unavailable",
+            "data": null,
+            "error": "notObserved",
+            "stale": false
+          }
+        }
+      ],
+      "sourceErrors": {
+        "discovery": "Unavailable"
+      }
+    },
+    "status": "success",
+    "essential": {
+      "hosts": [
+        {
+          "hostId": "host-demo",
+          "env": "prod",
+          "registered": true,
+          "reachable": true,
+          "detail": {
+            "status": "ok",
+            "stale": false,
+            "data": {
+              "hostId": "host-demo",
+              "installationSupported": true,
+              "components": [
+                {
+                  "id": "node-camera",
+                  "serviceId": "camera",
+                  "installed": true,
+                  "installedVersion": "1.0.0",
+                  "enabled": null,
+                  "controlError": "Control unavailable",
+                  "toggleSupported": true,
+                  "catalogLoading": false,
+                  "catalogError": null,
+                  "availableVersion": "1.0.0",
+                  "downloadSizeBytes": 1024,
+                  "supported": true,
+                  "selectable": true,
+                  "structurallyValid": false,
+                  "reason": "Repair required"
+                }
+              ],
+              "runtime": {
+                "ready": false,
+                "setupRequired": false,
+                "repairRequired": true,
+                "repairReasons": [
+                  {
+                    "code": "payloadFilesMissing",
+                    "component": "node-camera"
+                  }
+                ],
+                "backgroundServices": []
+              },
+              "operations": [
+                {
+                  "operationId": "operation-demo",
+                  "hostId": "host-demo",
+                  "state": "succeeded",
+                  "phase": "completed",
+                  "updatedAtMs": 1800000000000,
+                  "error": null,
+                  "result": {
+                    "changed": true,
+                    "warnings": [
+                      "Restart required"
+                    ],
+                    "backgroundServices": [],
+                    "plan": {
+                      "target": "macos-arm64",
+                      "warnings": [],
+                      "components": [
+                        {
+                          "component": "node-camera",
+                          "action": "install",
+                          "fromVersion": null,
+                          "toVersion": "1.0.0",
+                          "compatibility": {}
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "protocolVersion": 1,
+              "platform": "macos-arm64",
+              "managementMode": "desktop",
+              "unsupportedReason": null,
+              "catalogError": null,
+              "catalogLoading": false,
+              "pluginCatalogError": null,
+              "pluginCatalogLoading": false,
+              "runtimeError": null
+            }
+          }
+        },
+        {
+          "hostId": "host-offline",
+          "env": "prod",
+          "registered": true,
+          "reachable": false,
+          "detail": {
+            "status": "unavailable",
+            "data": null,
+            "error": "notObserved",
+            "stale": false
+          }
+        }
+      ],
+      "sourceErrors": {
+        "discovery": "Unavailable"
+      }
+    }
+  },
+  {
+    "name": "card-skin-release-detail",
+    "target": "/app/card-skins/catalog/release/get",
+    "data": {
+      "id": "release-demo",
+      "baseUrl": "https://example.invalid/skin/",
+      "manifest": {
+        "schemaVersion": 1,
+        "packageId": "example.skin",
+        "version": "1.0.0",
+        "name": "Example Skin",
+        "description": "Demo",
+        "apiVersion": 1,
+        "entry": "main.mjs",
+        "files": [
+          {
+            "path": "main.mjs",
+            "mediaType": "text/javascript",
+            "sizeBytes": 1024,
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "renderers": [
+          {
+            "id": "switch",
+            "name": "Switch",
+            "description": "Demo switch",
+            "supportedPatterns": [
+              {
+                "patternId": "switch",
+                "contractId": "switch",
+                "contractVersion": 1
+              }
+            ],
+            "detail": {
+              "mode": "builtin"
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "color": {
+                  "type": "string",
+                  "default": "green"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "status": "success",
+    "essential": {
+      "id": "release-demo",
+      "manifest": {
+        "schemaVersion": 1,
+        "packageId": "example.skin",
+        "version": "1.0.0",
+        "name": "Example Skin",
+        "description": "Demo",
+        "apiVersion": 1,
+        "renderers": [
+          {
+            "id": "switch",
+            "name": "Switch",
+            "description": "Demo switch",
+            "supportedPatterns": [
+              {
+                "patternId": "switch",
+                "contractId": "switch",
+                "contractVersion": 1
+              }
+            ],
+            "detail": {
+              "mode": "builtin"
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "color": {
+                  "type": "string",
+                  "default": "green"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "card-skin-release-list",
+    "target": "/app/card-skins/catalog/release/list",
+    "data": [
+      {
+        "id": "release-demo",
+        "baseUrl": "https://example.invalid/skin/",
+        "manifest": {
+          "schemaVersion": 1,
+          "packageId": "example.skin",
+          "version": "1.0.0",
+          "name": "Example Skin",
+          "description": "Demo",
+          "apiVersion": 1,
+          "entry": "main.mjs",
+          "files": [
+            {
+              "path": "main.mjs",
+              "mediaType": "text/javascript",
+              "sizeBytes": 1024,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          ],
+          "renderers": [
+            {
+              "id": "switch",
+              "name": "Switch",
+              "description": "Demo switch",
+              "supportedPatterns": [
+                {
+                  "patternId": "switch",
+                  "contractId": "switch",
+                  "contractVersion": 1
+                }
+              ],
+              "detail": {
+                "mode": "builtin"
+              },
+              "configSchema": {
+                "type": "object",
+                "properties": {
+                  "color": {
+                    "type": "string",
+                    "default": "green"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "status": "success",
+    "essential": [
+      {
+        "id": "release-demo",
+        "manifest": {
+          "schemaVersion": 1,
+          "packageId": "example.skin",
+          "version": "1.0.0",
+          "name": "Example Skin",
+          "description": "Demo",
+          "apiVersion": 1,
+          "renderers": [
+            {
+              "id": "switch",
+              "name": "Switch",
+              "description": "Demo switch",
+              "supportedPatterns": [
+                {
+                  "patternId": "switch",
+                  "contractId": "switch",
+                  "contractVersion": 1
+                }
+              ],
+              "detail": {
+                "mode": "builtin"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "card-skin-selection",
+    "target": "/app/card-skins/selection/get",
+    "data": {
+      "revision": "revision-demo",
+      "selection": {
+        "installations": [
+          {
+            "id": "installation-demo",
+            "spaceId": "space-demo",
+            "releaseId": "release-demo"
+          }
+        ],
+        "overrides": [
+          {
+            "spaceId": "space-demo",
+            "patternId": "switch",
+            "installationId": "installation-demo",
+            "rendererId": "switch",
+            "config": {
+              "color": "red"
+            }
+          }
+        ],
+        "releases": [
+          {
+            "id": "release-demo",
+            "baseUrl": "https://example.invalid/skin/",
+            "manifest": {
+              "schemaVersion": 1,
+              "packageId": "example.skin",
+              "version": "1.0.0",
+              "name": "Example Skin",
+              "description": "Demo",
+              "apiVersion": 1,
+              "entry": "main.mjs",
+              "files": [
+                {
+                  "path": "main.mjs",
+                  "mediaType": "text/javascript",
+                  "sizeBytes": 1024,
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                }
+              ],
+              "renderers": [
+                {
+                  "id": "switch",
+                  "name": "Switch",
+                  "description": "Demo switch",
+                  "supportedPatterns": [
+                    {
+                      "patternId": "switch",
+                      "contractId": "switch",
+                      "contractVersion": 1
+                    }
+                  ],
+                  "detail": {
+                    "mode": "builtin"
+                  },
+                  "configSchema": {
+                    "type": "object",
+                    "properties": {
+                      "color": {
+                        "type": "string",
+                        "default": "green"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "status": "success",
+    "essential": {
+      "revision": "revision-demo",
+      "selection": {
+        "installations": [
+          {
+            "id": "installation-demo",
+            "spaceId": "space-demo",
+            "releaseId": "release-demo"
+          }
+        ],
+        "overrides": [
+          {
+            "spaceId": "space-demo",
+            "patternId": "switch",
+            "installationId": "installation-demo",
+            "rendererId": "switch",
+            "config": {
+              "color": "red"
+            }
+          }
+        ],
+        "releases": [
+          {
+            "id": "release-demo",
+            "manifest": {
+              "schemaVersion": 1,
+              "packageId": "example.skin",
+              "version": "1.0.0",
+              "name": "Example Skin",
+              "description": "Demo",
+              "apiVersion": 1,
+              "renderers": [
+                {
+                  "id": "switch",
+                  "name": "Switch",
+                  "description": "Demo switch",
+                  "supportedPatterns": [
+                    {
+                      "patternId": "switch",
+                      "contractId": "switch",
+                      "contractVersion": 1
+                    }
+                  ],
+                  "detail": {
+                    "mode": "builtin"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "card-skin-empty-ack",
+    "target": "/app/card-skins/install",
+    "data": {},
+    "status": "success",
+    "essential": {}
+  },
+  {
+    "name": "internal-profile",
+    "target": "/app/user/profile/get",
+    "data": {
+      "name": "Example user",
+      "email": "user@example.com",
+      "avatarUrl": null,
+      "avatarExpiresAtMs": null
+    },
+    "status": "success",
+    "essential": {
+      "name": "Example user",
+      "email": "user@example.com",
+      "avatarUrl": null,
+      "avatarExpiresAtMs": null
+    }
   }
 ]

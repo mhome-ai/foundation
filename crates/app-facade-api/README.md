@@ -57,6 +57,24 @@ Device brief-list essential retains identity, room, capability IDs, Integration 
 availability, omitting `connectId`, `manufacturerId` and `manufacturerName`.
 Selected Device detail, history, recent activity and mutation outcomes keep their
 public business fields. Device bulk list remains a CLI-only surface.
+Space preference updates retain only the submitted preference keys in essential,
+with `updatedFields` unchanged. Location updates omit the previous name/address;
+the current Location remains complete. Hub, Pod, Messaging identity/account reads
+and compact mutation DTOs retain their business fields, including unknown states,
+source errors, failed invitations, one-use commands and expiry.
+
+Host list essential retains every row, observation error, component state, permission
+and operation outcome. It omits the runtime root and duplicate per-file component
+checks. Completed service installation results omit Catalog receipts and downloadable
+assets/manifests from the plan, retaining selected components, versions, compatibility,
+actions and warnings. Queued/running/failed remain resource states, never inferred success.
+
+Card skin selection and release-list essential omit delivery URLs, entry files,
+asset manifests and renderer configuration schemas. Selected release detail keeps
+`configSchema` (including defaults) so callers can construct valid overrides.
+Revisions, installation IDs, existing override config and supported patterns remain.
+Empty mutation acknowledgements remain empty; they do not invent a new revision.
+
 Targets without a dedicated projection retain their business fields in YAML;
 essential does not promise a smaller field set for every domain. Targets own that selection.
 
