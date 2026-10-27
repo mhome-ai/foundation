@@ -22,9 +22,9 @@ fn detail_requires_bounded_unique_identifiers() {
 }
 #[test]
 fn partial_inventory_and_per_item_failure_have_explicit_contracts() {
-    assert!(validator("inventoryResponse").is_valid(&json!({"scopeId":"s","fabric":null,"membershipComplete":false,"inventoryComplete":false,"nodes":[{"matterNodeId":"1","summary":null,"inventoryComplete":null,"devices":[]}],"errors":[{"source":"fabric","message":"offline"}]})));
+    assert!(validator("inventoryResponse").is_valid(&json!({"spaceId":"s","fabric":null,"membershipComplete":false,"inventoryComplete":false,"nodes":[{"matterNodeId":"1","summary":null,"inventoryComplete":null,"devices":[]}],"errors":[{"source":"fabric","message":"offline"}]})));
     assert!(!validator("inventoryResponse").is_valid(&json!({"ok":true,"data":[]})));
-    assert!(validator("nodeDetailResponse").is_valid(&json!({"scopeId":"s","items":[{"matterNodeId":"1","node":null,"error":{"message":"offline"}}]})));
+    assert!(validator("nodeDetailResponse").is_valid(&json!({"spaceId":"s","items":[{"matterNodeId":"1","node":null,"error":{"message":"offline"}}]})));
 }
 #[test]
 fn matter_reads_are_hub_owned_and_old_detail_is_not_a_target() {

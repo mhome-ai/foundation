@@ -3,7 +3,7 @@
     "name": "dashboard-detail",
     "target": "/app/dashboard/card/detail/get",
     "data": {
-      "scopeId": "space-1",
+      "spaceId": "space-1",
       "items": [
         {
           "cardId": "card-1",
@@ -52,7 +52,7 @@
     },
     "status": "success",
     "essential": {
-      "scopeId": "space-1",
+      "spaceId": "space-1",
       "items": [
         {
           "cardId": "card-1",

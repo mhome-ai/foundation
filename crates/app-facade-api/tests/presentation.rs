@@ -74,14 +74,14 @@ fn quickword_full_and_essential_preserve_parameter_contract_and_dispatch_result(
     for (target, data) in [
         (
             "/app/quickword/list",
-            json!({"scopeId":"space","quickWords":[
+            json!({"spaceId":"space","quickWords":[
                 {"quickWord":"Movie time","parameters":[]},
                 {"quickWord":"Set ${mode}","parameters":[{"name":"mode","type":"String","allowedValues":["eco","comfort"]}]}
             ]}),
         ),
         (
             "/app/quickword/run",
-            json!({"scopeId":"space","quickWord":"Set ${mode}","dispatched":true}),
+            json!({"spaceId":"space","quickWord":"Set ${mode}","dispatched":true}),
         ),
     ] {
         let full = serde_json::to_value(
