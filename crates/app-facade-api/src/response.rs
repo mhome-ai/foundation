@@ -2,6 +2,7 @@
 use crate::{FacadeResponse, ResponseDetail};
 use serde_json::{json, Value};
 
+mod agent;
 mod runtime;
 
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
@@ -105,7 +106,9 @@ fn nonempty(data: &Value, key: &str) -> bool {
 
 /// Select public fields for each operation before rendering the model-facing result.
 pub fn essential(target: &str, data: &Value) -> Value {
-    if let Some(result) = runtime::project(target, data) {
+    if let Some(result) = agent::project(target, data) {
+        result
+    } else if let Some(result) = runtime::project(target, data) {
         result
     } else if target == "/app/device/brief/list" {
         device_briefs(data)

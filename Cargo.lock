@@ -1678,7 +1678,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.60.2"
+version = "1.61.0"
 dependencies = [
  "jsonschema",
  "mhome-artifact-api",

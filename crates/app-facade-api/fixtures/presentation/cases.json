@@ -2142,5 +2142,1114 @@
       "avatarUrl": null,
       "avatarExpiresAtMs": null
     }
+  },
+  {
+    "name": "agent-llm-summary",
+    "target": "/app/agent/llm/summary",
+    "data": {
+      "agentRuntimeMode": "local",
+      "effectiveMappings": [
+        {
+          "temperature": null,
+          "reasoningEffort": null,
+          "thinking": null,
+          "fastMode": null,
+          "useCase": "chat",
+          "agentModelMode": "auto",
+          "provider": "local_example",
+          "model": "demo-chat",
+          "source": "override",
+          "configuredModel": "demo-chat"
+        }
+      ],
+      "selectedProviders": {
+        "chat": "local_example"
+      },
+      "defaultProviders": [
+        {
+          "useCase": "chat",
+          "agentRuntimeMode": "local",
+          "provider": "local_example",
+          "updatedAtMs": 123
+        }
+      ],
+      "llmUseCases": [
+        {
+          "useCase": "chat",
+          "displayName": "对话",
+          "description": null,
+          "ownerType": "system",
+          "ownerId": "agent",
+          "executionUseCase": "chat",
+          "configurable": true,
+          "active": true,
+          "modes": [
+            {
+              "mode": "auto",
+              "displayName": "自动",
+              "description": null,
+              "requirements": {
+                "modelType": "chat",
+                "requiredInputModalities": [
+                  "text"
+                ],
+                "optionalInputModalities": [],
+                "requiredOutputModalities": [
+                  "text"
+                ],
+                "preferredFeatures": []
+              }
+            }
+          ],
+          "updatedAtMs": 1793059200000,
+          "lastSeenAtMs": 1793059200000
+        }
+      ],
+      "providerModels": [
+        {
+          "provider": "local_example",
+          "models": [
+            {
+              "id": "demo-chat",
+              "displayName": "示例对话模型",
+              "modelType": "chat",
+              "available": true,
+              "deprecated": false,
+              "successor": null,
+              "supportsTools": true,
+              "supportsVision": false,
+              "contextWindowTokens": 32768,
+              "inputModalities": [
+                "text"
+              ],
+              "outputModalities": [
+                "text"
+              ],
+              "chatConfig": null,
+              "metadata": {
+                "internalProviderModelId": "do-not-copy"
+              },
+              "generationControls": {
+                "temperature": true,
+                "temperatureMax": 1.0,
+                "thinking": false,
+                "reasoningEfforts": [
+                  "low",
+                  "high"
+                ],
+                "reasoningEffortDefault": "high",
+                "fastMode": true
+              }
+            }
+          ]
+        }
+      ],
+      "canUseLocalRuntime": true,
+      "localProviderSetup": {
+        "canUseLocalRuntime": true,
+        "providers": [
+          {
+            "provider": "local_example",
+            "displayName": "示例 Provider",
+            "runtime": "local",
+            "modelSource": "catalog",
+            "catalogProvider": "example",
+            "executionProvider": "example",
+            "useCases": [
+              "chat"
+            ],
+            "allowedAgentModes": {
+              "chat": [
+                "auto"
+              ]
+            },
+            "authKind": "api_key",
+            "requiresCredential": true,
+            "hasCredential": true,
+            "authenticated": true,
+            "ready": true,
+            "status": "ready",
+            "statusLabel": "Ready",
+            "apiKey": null,
+            "token": null,
+            "accountId": null,
+            "expiresAtMs": null,
+            "metadata": null,
+            "providerMetadata": null,
+            "reason": null,
+            "supportedUseCases": [
+              "chat"
+            ],
+            "readinessByUseCase": {
+              "chat": {
+                "ready": true,
+                "modelCount": 1,
+                "reason": null
+              }
+            },
+            "modelsByUseCase": {
+              "chat": [
+                {
+                  "id": "demo-chat",
+                  "displayName": "示例对话模型",
+                  "modelType": "chat",
+                  "provider": "local_example",
+                  "available": true,
+                  "deprecated": false,
+                  "successor": null,
+                  "supportsTools": true,
+                  "supportsVision": false,
+                  "contextWindowTokens": 32768,
+                  "inputModalities": [
+                    "text"
+                  ],
+                  "outputModalities": [
+                    "text"
+                  ],
+                  "chatConfig": null,
+                  "metadata": null
+                }
+              ]
+            },
+            "defaultMappingsByUseCase": {},
+            "models": [
+              {
+                "id": "demo-chat",
+                "displayName": "示例对话模型",
+                "modelType": "chat",
+                "provider": "local_example",
+                "available": true,
+                "deprecated": false,
+                "successor": null,
+                "supportsTools": true,
+                "supportsVision": false,
+                "contextWindowTokens": 32768,
+                "inputModalities": [
+                  "text"
+                ],
+                "outputModalities": [
+                  "text"
+                ],
+                "chatConfig": null,
+                "metadata": null
+              }
+            ],
+            "defaultChatMappings": [],
+            "defaultImagenMapping": null,
+            "defaultTtsMapping": null,
+            "defaultAsrMapping": null,
+            "defaultDecisionMapping": null
+          }
+        ],
+        "selectedProviders": {
+          "chat": "local_example"
+        }
+      },
+      "providers": [
+        {
+          "provider": "local_example",
+          "displayName": "示例 Provider",
+          "runtime": "local",
+          "modelSource": "catalog",
+          "catalogProvider": "example",
+          "executionProvider": "example",
+          "useCases": [
+            "chat"
+          ],
+          "allowedAgentModes": {
+            "chat": [
+              "auto"
+            ]
+          },
+          "authKind": "api_key",
+          "requiresCredential": true,
+          "hasCredential": true,
+          "authenticated": true,
+          "ready": true,
+          "status": "ready",
+          "statusLabel": "Ready",
+          "apiKey": null,
+          "token": null,
+          "accountId": null,
+          "expiresAtMs": null,
+          "metadata": null,
+          "providerMetadata": null,
+          "reason": null,
+          "supportedUseCases": [
+            "chat"
+          ],
+          "readinessByUseCase": {
+            "chat": {
+              "ready": true,
+              "modelCount": 1,
+              "reason": null
+            }
+          },
+          "modelsByUseCase": {
+            "chat": [
+              {
+                "id": "demo-chat",
+                "displayName": "示例对话模型",
+                "modelType": "chat",
+                "provider": "local_example",
+                "available": true,
+                "deprecated": false,
+                "successor": null,
+                "supportsTools": true,
+                "supportsVision": false,
+                "contextWindowTokens": 32768,
+                "inputModalities": [
+                  "text"
+                ],
+                "outputModalities": [
+                  "text"
+                ],
+                "chatConfig": null,
+                "metadata": null
+              }
+            ]
+          },
+          "defaultMappingsByUseCase": {},
+          "models": [
+            {
+              "id": "demo-chat",
+              "displayName": "示例对话模型",
+              "modelType": "chat",
+              "provider": "local_example",
+              "available": true,
+              "deprecated": false,
+              "successor": null,
+              "supportsTools": true,
+              "supportsVision": false,
+              "contextWindowTokens": 32768,
+              "inputModalities": [
+                "text"
+              ],
+              "outputModalities": [
+                "text"
+              ],
+              "chatConfig": null,
+              "metadata": null
+            }
+          ],
+          "defaultChatMappings": [],
+          "defaultImagenMapping": null,
+          "defaultTtsMapping": null,
+          "defaultAsrMapping": null,
+          "defaultDecisionMapping": null
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "agentRuntimeMode": "local",
+      "effectiveMappings": [
+        {
+          "temperature": null,
+          "reasoningEffort": null,
+          "thinking": null,
+          "fastMode": null,
+          "useCase": "chat",
+          "agentModelMode": "auto",
+          "provider": "local_example",
+          "model": "demo-chat",
+          "source": "override",
+          "configuredModel": "demo-chat"
+        }
+      ],
+      "selectedProviders": {
+        "chat": "local_example"
+      },
+      "defaultProviders": [
+        {
+          "useCase": "chat",
+          "agentRuntimeMode": "local",
+          "provider": "local_example"
+        }
+      ],
+      "llmUseCases": [
+        {
+          "useCase": "chat",
+          "displayName": "对话",
+          "description": null,
+          "configurable": true,
+          "active": true,
+          "modes": [
+            {
+              "mode": "auto",
+              "displayName": "自动",
+              "description": null,
+              "requirements": {
+                "modelType": "chat",
+                "requiredInputModalities": [
+                  "text"
+                ],
+                "optionalInputModalities": [],
+                "requiredOutputModalities": [
+                  "text"
+                ],
+                "preferredFeatures": []
+              }
+            }
+          ]
+        }
+      ],
+      "providerModels": [
+        {
+          "provider": "local_example",
+          "models": [
+            {
+              "id": "demo-chat",
+              "displayName": "示例对话模型",
+              "modelType": "chat",
+              "available": true,
+              "deprecated": false,
+              "successor": null,
+              "supportsTools": true,
+              "supportsVision": false,
+              "contextWindowTokens": 32768,
+              "inputModalities": [
+                "text"
+              ],
+              "outputModalities": [
+                "text"
+              ],
+              "generationControls": {
+                "temperature": true,
+                "temperatureMax": 1.0,
+                "thinking": false,
+                "reasoningEfforts": [
+                  "low",
+                  "high"
+                ],
+                "reasoningEffortDefault": "high",
+                "fastMode": true
+              }
+            }
+          ]
+        }
+      ],
+      "canUseLocalRuntime": true,
+      "providers": [
+        {
+          "provider": "local_example",
+          "displayName": "示例 Provider",
+          "runtime": "local",
+          "useCases": [
+            "chat"
+          ],
+          "allowedAgentModes": {
+            "chat": [
+              "auto"
+            ]
+          },
+          "authKind": "api_key",
+          "requiresCredential": true,
+          "hasCredential": true,
+          "authenticated": true,
+          "ready": true,
+          "status": "ready",
+          "reason": null,
+          "supportedUseCases": [
+            "chat"
+          ],
+          "readinessByUseCase": {
+            "chat": {
+              "ready": true,
+              "modelCount": 1,
+              "reason": null
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "agent-provider-unavailable",
+    "target": "/app/agent/llm/provider/list",
+    "data": {
+      "providerModels": [
+        {
+          "provider": "local_example",
+          "models": [
+            {
+              "id": "demo-chat",
+              "displayName": "示例对话模型",
+              "modelType": "chat",
+              "available": true,
+              "deprecated": false,
+              "successor": null,
+              "supportsTools": true,
+              "supportsVision": false,
+              "contextWindowTokens": 32768,
+              "inputModalities": [
+                "text"
+              ],
+              "outputModalities": [
+                "text"
+              ],
+              "chatConfig": null,
+              "metadata": null,
+              "generationControls": {
+                "temperature": false,
+                "thinking": false,
+                "fastMode": false
+              }
+            }
+          ]
+        }
+      ],
+      "canUseLocalRuntime": true,
+      "localProviderSetup": {
+        "canUseLocalRuntime": true,
+        "providers": [
+          {
+            "provider": "local_example",
+            "displayName": "示例 Provider",
+            "runtime": "local",
+            "modelSource": "catalog",
+            "catalogProvider": "example",
+            "executionProvider": "example",
+            "useCases": [
+              "chat"
+            ],
+            "allowedAgentModes": {
+              "chat": [
+                "auto"
+              ]
+            },
+            "authKind": "api_key",
+            "requiresCredential": true,
+            "hasCredential": true,
+            "authenticated": true,
+            "ready": true,
+            "status": "ready",
+            "statusLabel": "Ready",
+            "apiKey": null,
+            "token": null,
+            "accountId": null,
+            "expiresAtMs": null,
+            "metadata": null,
+            "providerMetadata": null,
+            "reason": null,
+            "supportedUseCases": [
+              "chat"
+            ],
+            "readinessByUseCase": {
+              "chat": {
+                "ready": true,
+                "modelCount": 1,
+                "reason": null
+              }
+            },
+            "modelsByUseCase": {
+              "chat": [
+                {
+                  "id": "demo-chat",
+                  "displayName": "示例对话模型",
+                  "modelType": "chat",
+                  "provider": "local_example",
+                  "available": true,
+                  "deprecated": false,
+                  "successor": null,
+                  "supportsTools": true,
+                  "supportsVision": false,
+                  "contextWindowTokens": 32768,
+                  "inputModalities": [
+                    "text"
+                  ],
+                  "outputModalities": [
+                    "text"
+                  ],
+                  "chatConfig": null,
+                  "metadata": null
+                }
+              ]
+            },
+            "defaultMappingsByUseCase": {},
+            "models": [
+              {
+                "id": "demo-chat",
+                "displayName": "示例对话模型",
+                "modelType": "chat",
+                "provider": "local_example",
+                "available": true,
+                "deprecated": false,
+                "successor": null,
+                "supportsTools": true,
+                "supportsVision": false,
+                "contextWindowTokens": 32768,
+                "inputModalities": [
+                  "text"
+                ],
+                "outputModalities": [
+                  "text"
+                ],
+                "chatConfig": null,
+                "metadata": null
+              }
+            ],
+            "defaultChatMappings": [],
+            "defaultImagenMapping": null,
+            "defaultTtsMapping": null,
+            "defaultAsrMapping": null,
+            "defaultDecisionMapping": null
+          }
+        ]
+      },
+      "providers": [
+        {
+          "provider": "local_example",
+          "displayName": "示例 Provider",
+          "runtime": "local",
+          "modelSource": "catalog",
+          "catalogProvider": "example",
+          "executionProvider": "example",
+          "useCases": [
+            "chat"
+          ],
+          "allowedAgentModes": {
+            "chat": [
+              "auto"
+            ]
+          },
+          "authKind": "api_key",
+          "requiresCredential": true,
+          "hasCredential": false,
+          "authenticated": true,
+          "ready": false,
+          "status": "login_required",
+          "statusLabel": "Ready",
+          "apiKey": null,
+          "token": null,
+          "accountId": null,
+          "expiresAtMs": null,
+          "metadata": null,
+          "providerMetadata": null,
+          "reason": "Login expired",
+          "supportedUseCases": [
+            "chat"
+          ],
+          "readinessByUseCase": {
+            "chat": {
+              "ready": true,
+              "modelCount": 1,
+              "reason": null
+            }
+          },
+          "modelsByUseCase": {
+            "chat": [
+              {
+                "id": "demo-chat",
+                "displayName": "示例对话模型",
+                "modelType": "chat",
+                "provider": "local_example",
+                "available": true,
+                "deprecated": false,
+                "successor": null,
+                "supportsTools": true,
+                "supportsVision": false,
+                "contextWindowTokens": 32768,
+                "inputModalities": [
+                  "text"
+                ],
+                "outputModalities": [
+                  "text"
+                ],
+                "chatConfig": null,
+                "metadata": null
+              }
+            ]
+          },
+          "defaultMappingsByUseCase": {},
+          "models": [
+            {
+              "id": "demo-chat",
+              "displayName": "示例对话模型",
+              "modelType": "chat",
+              "provider": "local_example",
+              "available": true,
+              "deprecated": false,
+              "successor": null,
+              "supportsTools": true,
+              "supportsVision": false,
+              "contextWindowTokens": 32768,
+              "inputModalities": [
+                "text"
+              ],
+              "outputModalities": [
+                "text"
+              ],
+              "chatConfig": null,
+              "metadata": null
+            }
+          ],
+          "defaultChatMappings": [],
+          "defaultImagenMapping": null,
+          "defaultTtsMapping": null,
+          "defaultAsrMapping": null,
+          "defaultDecisionMapping": null,
+          "nodeType": "llm",
+          "nodeBound": true,
+          "nodeOnline": false
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "providerModels": [
+        {
+          "provider": "local_example",
+          "models": [
+            {
+              "id": "demo-chat",
+              "displayName": "示例对话模型",
+              "modelType": "chat",
+              "available": true,
+              "deprecated": false,
+              "successor": null,
+              "supportsTools": true,
+              "supportsVision": false,
+              "contextWindowTokens": 32768,
+              "inputModalities": [
+                "text"
+              ],
+              "outputModalities": [
+                "text"
+              ],
+              "generationControls": {
+                "temperature": false,
+                "thinking": false,
+                "fastMode": false
+              }
+            }
+          ]
+        }
+      ],
+      "canUseLocalRuntime": true,
+      "providers": [
+        {
+          "provider": "local_example",
+          "displayName": "示例 Provider",
+          "runtime": "local",
+          "useCases": [
+            "chat"
+          ],
+          "allowedAgentModes": {
+            "chat": [
+              "auto"
+            ]
+          },
+          "authKind": "api_key",
+          "requiresCredential": true,
+          "hasCredential": false,
+          "authenticated": true,
+          "ready": false,
+          "status": "login_required",
+          "reason": "Login expired",
+          "supportedUseCases": [
+            "chat"
+          ],
+          "readinessByUseCase": {
+            "chat": {
+              "ready": true,
+              "modelCount": 1,
+              "reason": null
+            }
+          },
+          "nodeType": "llm",
+          "nodeBound": true,
+          "nodeOnline": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "agent-provider-cloud",
+    "target": "/app/agent/llm/provider/list",
+    "data": {
+      "canUseLocalRuntime": false,
+      "localProviderSetup": null,
+      "providers": [
+        {
+          "provider": "cloud-example",
+          "displayName": "Cloud Example",
+          "runtime": "cloud",
+          "modelSource": "cloud_bridge",
+          "authKind": "none",
+          "catalogProvider": "example",
+          "executionProvider": "example",
+          "useCases": [
+            "chat"
+          ],
+          "allowedAgentModes": {
+            "chat": [
+              "auto"
+            ]
+          },
+          "metadata": {
+            "internal": "x"
+          }
+        }
+      ],
+      "providerModels": [
+        {
+          "provider": "cloud-example",
+          "models": [
+            {
+              "id": "demo-chat",
+              "displayName": "示例对话模型",
+              "modelType": "chat",
+              "available": true,
+              "deprecated": false,
+              "successor": null,
+              "supportsTools": true,
+              "supportsVision": false,
+              "contextWindowTokens": 32768,
+              "inputModalities": [
+                "text"
+              ],
+              "outputModalities": [
+                "text"
+              ],
+              "chatConfig": null,
+              "metadata": {
+                "internalProviderModelId": "do-not-copy"
+              },
+              "generationControls": {
+                "temperature": true,
+                "temperatureMax": 1.0,
+                "thinking": false,
+                "reasoningEfforts": [
+                  "low",
+                  "high"
+                ],
+                "reasoningEffortDefault": "high",
+                "fastMode": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "canUseLocalRuntime": false,
+      "providers": [
+        {
+          "provider": "cloud-example",
+          "displayName": "Cloud Example",
+          "runtime": "cloud",
+          "authKind": "none",
+          "useCases": [
+            "chat"
+          ],
+          "allowedAgentModes": {
+            "chat": [
+              "auto"
+            ]
+          }
+        }
+      ],
+      "providerModels": [
+        {
+          "provider": "cloud-example",
+          "models": [
+            {
+              "id": "demo-chat",
+              "displayName": "示例对话模型",
+              "modelType": "chat",
+              "available": true,
+              "deprecated": false,
+              "successor": null,
+              "supportsTools": true,
+              "supportsVision": false,
+              "contextWindowTokens": 32768,
+              "inputModalities": [
+                "text"
+              ],
+              "outputModalities": [
+                "text"
+              ],
+              "generationControls": {
+                "temperature": true,
+                "temperatureMax": 1.0,
+                "thinking": false,
+                "reasoningEfforts": [
+                  "low",
+                  "high"
+                ],
+                "reasoningEffortDefault": "high",
+                "fastMode": true
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "agent-mappings",
+    "target": "/app/agent/llm/mapping/list",
+    "data": {
+      "effectiveMappings": [
+        {
+          "temperature": null,
+          "reasoningEffort": null,
+          "thinking": null,
+          "fastMode": null,
+          "useCase": "chat",
+          "agentModelMode": "auto",
+          "provider": "local_example",
+          "model": "demo-chat",
+          "source": "override",
+          "configuredModel": "demo-chat"
+        }
+      ],
+      "selectedProviders": {
+        "chat": "local_example"
+      },
+      "defaultProviders": [],
+      "llmUseCases": [
+        {
+          "useCase": "chat",
+          "displayName": "对话",
+          "description": null,
+          "ownerType": "system",
+          "ownerId": "agent",
+          "executionUseCase": "chat",
+          "configurable": true,
+          "active": true,
+          "modes": [
+            {
+              "mode": "auto",
+              "displayName": "自动",
+              "description": null,
+              "requirements": {
+                "modelType": "chat",
+                "requiredInputModalities": [
+                  "text"
+                ],
+                "optionalInputModalities": [],
+                "requiredOutputModalities": [
+                  "text"
+                ],
+                "preferredFeatures": []
+              }
+            }
+          ],
+          "updatedAtMs": 1793059200000,
+          "lastSeenAtMs": 1793059200000
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "effectiveMappings": [
+        {
+          "temperature": null,
+          "reasoningEffort": null,
+          "thinking": null,
+          "fastMode": null,
+          "useCase": "chat",
+          "agentModelMode": "auto",
+          "provider": "local_example",
+          "model": "demo-chat",
+          "source": "override",
+          "configuredModel": "demo-chat"
+        }
+      ],
+      "selectedProviders": {
+        "chat": "local_example"
+      },
+      "defaultProviders": [],
+      "llmUseCases": [
+        {
+          "useCase": "chat",
+          "displayName": "对话",
+          "description": null,
+          "configurable": true,
+          "active": true,
+          "modes": [
+            {
+              "mode": "auto",
+              "displayName": "自动",
+              "description": null,
+              "requirements": {
+                "modelType": "chat",
+                "requiredInputModalities": [
+                  "text"
+                ],
+                "optionalInputModalities": [],
+                "requiredOutputModalities": [
+                  "text"
+                ],
+                "preferredFeatures": []
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "agent-session-default",
+    "target": "/app/agent/session/get",
+    "data": {
+      "surfaceId": "cs1:cp:dXNlci1kZW1v",
+      "idleTimeoutMinutes": 30,
+      "version": 0,
+      "source": "system",
+      "updatedAtMs": null,
+      "serverNowUnixMs": 1793059200000
+    },
+    "status": "success",
+    "essential": {
+      "idleTimeoutMinutes": 30,
+      "source": "system"
+    }
+  },
+  {
+    "name": "agent-session-saved",
+    "target": "/app/agent/session/save",
+    "data": {
+      "surfaceId": "cs1:cp:dXNlci1kZW1v",
+      "idleTimeoutMinutes": 60,
+      "version": 1,
+      "source": "user",
+      "updatedAtMs": 1793059260000,
+      "serverNowUnixMs": 1793059260000
+    },
+    "status": "success",
+    "essential": {
+      "idleTimeoutMinutes": 60,
+      "source": "user"
+    }
+  },
+  {
+    "name": "agent-memory-text",
+    "target": "/app/agent/memory/get",
+    "data": {
+      "data": "客厅空调设定为 26°C 前先征求用户同意。"
+    },
+    "status": "success",
+    "essential": {
+      "data": "客厅空调设定为 26°C 前先征求用户同意。"
+    }
+  },
+  {
+    "name": "agent-identity-text",
+    "target": "/app/agent/identity/get",
+    "data": {
+      "data": "使用中文，回答简洁。"
+    },
+    "status": "success",
+    "essential": {
+      "data": "使用中文，回答简洁。"
+    }
+  },
+  {
+    "name": "agent-llm-usage",
+    "target": "/app/agent/llm/usage",
+    "data": {
+      "audience": "space",
+      "timezone": "UTC",
+      "fromDate": "2026-10-01",
+      "toDate": "2026-10-27",
+      "rows": [
+        {
+          "date": "2026-10-27",
+          "provider": "local_example",
+          "model": "demo-chat",
+          "modelType": "chat",
+          "inputTokens": 1200,
+          "outputTokens": 300,
+          "costMicros": 2400
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "audience": "space",
+      "timezone": "UTC",
+      "fromDate": "2026-10-01",
+      "toDate": "2026-10-27",
+      "rows": [
+        {
+          "date": "2026-10-27",
+          "provider": "local_example",
+          "model": "demo-chat",
+          "modelType": "chat",
+          "inputTokens": 1200,
+          "outputTokens": 300,
+          "costMicros": 2400
+        }
+      ]
+    }
+  },
+  {
+    "name": "agent-llm-usage-unavailable",
+    "target": "/app/agent/llm/usage",
+    "data": {
+      "available": false
+    },
+    "status": "success",
+    "essential": {
+      "available": false
+    }
+  },
+  {
+    "name": "agent-credit-usage",
+    "target": "/app/agent/credit/usage",
+    "data": {
+      "audience": "space",
+      "timezone": "UTC",
+      "fromDate": "2026-10-01",
+      "toDate": "2026-10-27",
+      "trackedFrom": "2026-09-01T00:00:00Z",
+      "rows": [
+        {
+          "date": "2026-10-27",
+          "source": "agent",
+          "credits": 120
+        },
+        {
+          "date": "2026-10-27",
+          "source": "automation",
+          "credits": 30
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "audience": "space",
+      "timezone": "UTC",
+      "fromDate": "2026-10-01",
+      "toDate": "2026-10-27",
+      "trackedFrom": "2026-09-01T00:00:00Z",
+      "rows": [
+        {
+          "date": "2026-10-27",
+          "source": "agent",
+          "credits": 120
+        },
+        {
+          "date": "2026-10-27",
+          "source": "automation",
+          "credits": 30
+        }
+      ]
+    }
+  },
+  {
+    "name": "agent-mapping-save",
+    "target": "/app/agent/llm/mapping/save",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "essential": {
+      "success": true
+    }
   }
 ]
