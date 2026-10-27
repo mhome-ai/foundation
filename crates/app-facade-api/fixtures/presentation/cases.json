@@ -566,5 +566,513 @@
         }
       ]
     }
+  },
+  {
+    "name": "device-briefs-keep-discovery-and-unknown-state",
+    "target": "/app/device/brief/list",
+    "data": {
+      "devices": [
+        {
+          "entityId": "d1",
+          "name": "Lamp",
+          "active": false,
+          "roomId": "r1",
+          "roomName": "Living room",
+          "capabilities": [
+            "state.onOff",
+            "command.onOff"
+          ],
+          "group": false,
+          "integration": "demo.device",
+          "connectId": "connection-1",
+          "manufacturerId": "demo",
+          "manufacturerName": "Example maker",
+          "online": false,
+          "availabilityStatus": "unavailable",
+          "twinTags": [
+            "light"
+          ]
+        },
+        {
+          "entityId": "g:1",
+          "name": "Lights",
+          "active": true,
+          "roomId": "",
+          "roomName": "",
+          "capabilities": [
+            "command.onOff"
+          ],
+          "group": true,
+          "integration": "demo.device"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "devices": [
+        {
+          "entityId": "d1",
+          "name": "Lamp",
+          "active": false,
+          "roomId": "r1",
+          "roomName": "Living room",
+          "capabilities": [
+            "state.onOff",
+            "command.onOff"
+          ],
+          "group": false,
+          "integration": "demo.device",
+          "online": false,
+          "availabilityStatus": "unavailable",
+          "twinTags": [
+            "light"
+          ]
+        },
+        {
+          "entityId": "g:1",
+          "name": "Lights",
+          "active": true,
+          "roomId": "",
+          "roomName": "",
+          "capabilities": [
+            "command.onOff"
+          ],
+          "group": true,
+          "integration": "demo.device"
+        }
+      ]
+    }
+  },
+  {
+    "name": "device-empty-briefs",
+    "target": "/app/device/brief/list",
+    "data": {
+      "devices": []
+    },
+    "status": "success",
+    "essential": {
+      "devices": []
+    }
+  },
+  {
+    "name": "device-detail-retains-identity-state-and-missing-items",
+    "target": "/app/device/detail/get",
+    "data": {
+      "items": [
+        {
+          "requestedId": "d1",
+          "found": true,
+          "device": {
+            "entityId": "d1",
+            "name": "Lamp",
+            "active": false,
+            "roomId": "r1",
+            "roomName": "Living room",
+            "capabilities": [
+              "state.onOff",
+              "command.onOff"
+            ],
+            "group": false,
+            "integration": "demo.device",
+            "connectId": "connection-1",
+            "manufacturerId": "demo",
+            "manufacturerName": "Example maker",
+            "online": false,
+            "availabilityStatus": "unavailable",
+            "twinTags": [
+              "light"
+            ],
+            "states": [
+              {
+                "capabilityId": "state.onOff",
+                "value": "off"
+              }
+            ],
+            "memberIds": []
+          }
+        },
+        {
+          "requestedId": "g:1",
+          "found": true,
+          "device": {
+            "entityId": "g:1",
+            "name": "Lights",
+            "active": true,
+            "roomId": "",
+            "roomName": "",
+            "capabilities": [
+              "command.onOff"
+            ],
+            "group": true,
+            "integration": "demo.device",
+            "states": [],
+            "memberIds": [
+              "d1"
+            ]
+          }
+        },
+        {
+          "requestedId": "gone",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "items": [
+        {
+          "requestedId": "d1",
+          "found": true,
+          "device": {
+            "entityId": "d1",
+            "name": "Lamp",
+            "active": false,
+            "roomId": "r1",
+            "roomName": "Living room",
+            "capabilities": [
+              "state.onOff",
+              "command.onOff"
+            ],
+            "group": false,
+            "integration": "demo.device",
+            "connectId": "connection-1",
+            "manufacturerId": "demo",
+            "manufacturerName": "Example maker",
+            "online": false,
+            "availabilityStatus": "unavailable",
+            "twinTags": [
+              "light"
+            ],
+            "states": [
+              {
+                "capabilityId": "state.onOff",
+                "value": "off"
+              }
+            ],
+            "memberIds": []
+          }
+        },
+        {
+          "requestedId": "g:1",
+          "found": true,
+          "device": {
+            "entityId": "g:1",
+            "name": "Lights",
+            "active": true,
+            "roomId": "",
+            "roomName": "",
+            "capabilities": [
+              "command.onOff"
+            ],
+            "group": true,
+            "integration": "demo.device",
+            "states": [],
+            "memberIds": [
+              "d1"
+            ]
+          }
+        },
+        {
+          "requestedId": "gone",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    }
+  },
+  {
+    "name": "device-cli-full-list-keeps-details",
+    "target": "/app/device/list",
+    "data": {
+      "devices": [
+        {
+          "entityId": "d1",
+          "name": "Lamp",
+          "active": false,
+          "roomId": "r1",
+          "roomName": "Living room",
+          "capabilities": [
+            "state.onOff",
+            "command.onOff"
+          ],
+          "group": false,
+          "integration": "demo.device",
+          "connectId": "connection-1",
+          "manufacturerId": "demo",
+          "manufacturerName": "Example maker",
+          "online": false,
+          "availabilityStatus": "unavailable",
+          "twinTags": [
+            "light"
+          ],
+          "states": [
+            {
+              "capabilityId": "state.onOff",
+              "value": "off"
+            }
+          ],
+          "memberIds": []
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "devices": [
+        {
+          "entityId": "d1",
+          "name": "Lamp",
+          "active": false,
+          "roomId": "r1",
+          "roomName": "Living room",
+          "capabilities": [
+            "state.onOff",
+            "command.onOff"
+          ],
+          "group": false,
+          "integration": "demo.device",
+          "connectId": "connection-1",
+          "manufacturerId": "demo",
+          "manufacturerName": "Example maker",
+          "online": false,
+          "availabilityStatus": "unavailable",
+          "twinTags": [
+            "light"
+          ],
+          "states": [
+            {
+              "capabilityId": "state.onOff",
+              "value": "off"
+            }
+          ],
+          "memberIds": []
+        }
+      ]
+    }
+  },
+  {
+    "name": "device-history-preserves-evidence",
+    "target": "/app/device/history/list",
+    "data": {
+      "deviceId": "d1",
+      "timeline": [
+        {
+          "time": "2026-10-27 10:00:00",
+          "type": "command",
+          "entityId": "d1",
+          "capabilityId": "command.onOff",
+          "data": {
+            "value": false,
+            "level": 0,
+            "optional": null
+          },
+          "traceSteps": [
+            {
+              "type": "Automation",
+              "value": "automation-1"
+            }
+          ]
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "deviceId": "d1",
+      "timeline": [
+        {
+          "time": "2026-10-27 10:00:00",
+          "type": "command",
+          "entityId": "d1",
+          "capabilityId": "command.onOff",
+          "data": {
+            "value": false,
+            "level": 0,
+            "optional": null
+          },
+          "traceSteps": [
+            {
+              "type": "Automation",
+              "value": "automation-1"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "device-recent-preserves-window-truncation-and-values",
+    "target": "/app/device/activity/recent/list",
+    "data": {
+      "since": "10min",
+      "from": 1793065800000,
+      "until": 1793066400000,
+      "truncated": true,
+      "updates": [
+        {
+          "deviceId": "d1",
+          "deviceName": "Lamp",
+          "capabilityId": "state.onOff",
+          "changedAt": 1793066400000,
+          "state": false
+        },
+        {
+          "deviceId": "d2",
+          "deviceName": "Dimmer",
+          "capabilityId": "state.level",
+          "changedAt": 1793066399000,
+          "state": 0
+        },
+        {
+          "deviceId": "d3",
+          "deviceName": "Button",
+          "capabilityId": "event.click",
+          "changedAt": 1793066398000,
+          "event": {
+            "value": null
+          }
+        },
+        {
+          "deviceId": "d4",
+          "deviceName": "Lamp",
+          "capabilityId": "command.onOff",
+          "changedAt": 1793066397000,
+          "log": {
+            "source": "Automation",
+            "data": {
+              "onOff": false
+            }
+          }
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "since": "10min",
+      "from": 1793065800000,
+      "until": 1793066400000,
+      "truncated": true,
+      "updates": [
+        {
+          "deviceId": "d1",
+          "deviceName": "Lamp",
+          "capabilityId": "state.onOff",
+          "changedAt": 1793066400000,
+          "state": false
+        },
+        {
+          "deviceId": "d2",
+          "deviceName": "Dimmer",
+          "capabilityId": "state.level",
+          "changedAt": 1793066399000,
+          "state": 0
+        },
+        {
+          "deviceId": "d3",
+          "deviceName": "Button",
+          "capabilityId": "event.click",
+          "changedAt": 1793066398000,
+          "event": {
+            "value": null
+          }
+        },
+        {
+          "deviceId": "d4",
+          "deviceName": "Lamp",
+          "capabilityId": "command.onOff",
+          "changedAt": 1793066397000,
+          "log": {
+            "source": "Automation",
+            "data": {
+              "onOff": false
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "device-enable-retains-pending",
+    "target": "/app/device/enable",
+    "data": {
+      "requestedIds": [
+        "d1",
+        "d2",
+        "d3"
+      ],
+      "enabledIds": [
+        "d1"
+      ],
+      "alreadyEnabledIds": [
+        "d2"
+      ],
+      "pendingIds": [
+        "d3"
+      ]
+    },
+    "status": "partial",
+    "essential": {
+      "requestedIds": [
+        "d1",
+        "d2",
+        "d3"
+      ],
+      "enabledIds": [
+        "d1"
+      ],
+      "alreadyEnabledIds": [
+        "d2"
+      ],
+      "pendingIds": [
+        "d3"
+      ]
+    }
+  },
+  {
+    "name": "device-disable-retains-pending",
+    "target": "/app/device/disable",
+    "data": {
+      "requestedIds": [
+        "d1",
+        "d2",
+        "d3"
+      ],
+      "disabledIds": [
+        "d1"
+      ],
+      "alreadyDisabledIds": [
+        "d2"
+      ],
+      "pendingIds": [
+        "d3"
+      ]
+    },
+    "status": "partial",
+    "essential": {
+      "requestedIds": [
+        "d1",
+        "d2",
+        "d3"
+      ],
+      "disabledIds": [
+        "d1"
+      ],
+      "alreadyDisabledIds": [
+        "d2"
+      ],
+      "pendingIds": [
+        "d3"
+      ]
+    }
+  },
+  {
+    "name": "device-refresh-not-applicable-is-resource-status",
+    "target": "/app/device/refresh",
+    "data": {
+      "status": "notApplicable"
+    },
+    "status": "success",
+    "essential": {
+      "status": "notApplicable"
+    }
   }
 ]

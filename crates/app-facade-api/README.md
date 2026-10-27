@@ -53,8 +53,12 @@ and MCP public results use essential; internal workflow reads use full. The CLI
 uses `--response-detail full|essential`, and the bundled external Skill requests
 essential. Dashboard essential projection keeps card identity, title, type,
 layouts and view choices, excluding renderer configuration and resource payloads.
-Other targets currently retain their business fields in YAML; essential does not
-promise a smaller field set for every domain. Targets own that selection.
+Device brief-list essential retains identity, room, capability IDs, Integration and
+availability, omitting `connectId`, `manufacturerId` and `manufacturerName`.
+Selected Device detail, history, recent activity and mutation outcomes keep their
+public business fields. Device bulk list remains a CLI-only surface.
+Targets without a dedicated projection retain their business fields in YAML;
+essential does not promise a smaller field set for every domain. Targets own that selection.
 
 The [response schema](schema/facade-response.v1.schema.json) and shared
 [presentation fixtures](fixtures/presentation/cases.json) define the wire

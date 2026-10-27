@@ -101,14 +101,44 @@ fn nonempty(data: &Value, key: &str) -> bool {
         .is_some_and(|v| !v.is_empty())
 }
 
-/// Dashboard rendering state has no role in layout/view selection. Keep the
-/// layout and view identity but omit renderer definitions, widget values and scripts.
+/// Select public fields for each operation before rendering the model-facing result.
 pub fn essential(target: &str, data: &Value) -> Value {
-    if target.starts_with("/app/dashboard/") {
+    if target == "/app/device/brief/list" {
+        device_briefs(data)
+    } else if target.starts_with("/app/dashboard/") {
         dashboard(data, target != "/app/dashboard/card/detail/get")
     } else {
         automation(target, data)
     }
+}
+
+// Discovery keeps functional and availability metadata. Connection and manufacturer
+// identity belongs to selected detail reads; never filter state/history payloads.
+fn device_briefs(data: &Value) -> Value {
+    let mut result = data.clone();
+    if let Some(devices) = result.get_mut("devices").and_then(Value::as_array_mut) {
+        for device in devices {
+            if let Some(fields) = device.as_object_mut() {
+                fields.retain(|key, _| {
+                    matches!(
+                        key.as_str(),
+                        "entityId"
+                            | "name"
+                            | "active"
+                            | "roomId"
+                            | "roomName"
+                            | "capabilities"
+                            | "group"
+                            | "integration"
+                            | "online"
+                            | "availabilityStatus"
+                            | "twinTags"
+                    )
+                });
+            }
+        }
+    }
+    result
 }
 
 // Project only read DTO rows. Diagnostic detail retains its bounded evidence and logs.
