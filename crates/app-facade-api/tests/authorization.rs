@@ -46,10 +46,12 @@ fn manifest_and_delegation_are_strict() {
     assert!(!authorization::allows_service("/app/hub/restart"));
     assert!(authorization::allows_service("/app/artifact/internal/read"));
     assert!(authorization::required("/app/plugin/unknown").is_none());
-    assert!(serde_json::from_value::<DelegatedCall>(
-        serde_json::json!({"control":{"mode":"direct"},"input":{}})
-    )
-    .is_err());
+    assert!(
+        serde_json::from_value::<DelegatedCall>(
+            serde_json::json!({"control":{"mode":"direct"},"input":{}})
+        )
+        .is_err()
+    );
     assert!(serde_json::from_value::<DelegatedCall>(serde_json::json!({"authority":{"kind":"caller"},"call":{"control":{"mode":"direct"},"input":{}}})).is_err());
 }
 
@@ -71,7 +73,11 @@ fn current_conversation_and_talk_routes_are_all_declared() {
             Some(authorization::OperationPolicy::SpaceWrite)
         );
     }
-    for target in ["/app/system/hosts/claim", "/app/widget/state/get"] {
+    for target in [
+        "/app/system/hosts/claim",
+        "/app/widget/state/get",
+        "/app/device/list",
+    ] {
         assert!(
             authorization::required(target).is_none(),
             "Retired policy: {target}"
@@ -81,7 +87,7 @@ fn current_conversation_and_talk_routes_are_all_declared() {
 
 #[test]
 fn delegated_wire_schema_and_rust_agree_on_authority() {
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
     let schema: Value =
         serde_json::from_str(include_str!("../schema/delegated-call.v1.schema.json")).unwrap();
     let call_schema: Value =

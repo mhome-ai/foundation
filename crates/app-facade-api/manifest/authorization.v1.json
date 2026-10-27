@@ -85,7 +85,6 @@
     "/app/device/disable": "spaceWrite",
     "/app/device/enable": "spaceWrite",
     "/app/device/history/list": "spaceRead",
-    "/app/device/list": "spaceRead",
     "/app/device/online/list": "spaceRead",
     "/app/device/refresh": "spaceWrite",
     "/app/dialog/get": "spaceRead",

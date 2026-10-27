@@ -163,7 +163,10 @@ mod tests {
             route_policy_for_target("/app/host/access/issue"),
             Some(CLOUD)
         );
-        assert_eq!(route_policy_for_target("/app/device/list"), Some(SCOPE));
+        assert_eq!(
+            route_policy_for_target("/app/device/brief/list"),
+            Some(SCOPE)
+        );
     }
 
     #[test]
