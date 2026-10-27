@@ -2,6 +2,7 @@
   "manifest": "mhome.operation-timeouts.v1",
   "operations": {
     "coreRequest": { "totalMs": 60000, "description": "Default Core request execution." },
+    "eventProcessing": { "totalMs": 60000, "description": "One Automation event delivery and its execution slice, including admission and preparation; durable waits are separate." },
     "entityRefresh": { "totalMs": 85000, "description": "Integration entity refresh including source loading and response preparation." },
     "harnessSessionOpen": { "totalMs": 150000, "description": "Harness session initialization." },
     "scriptValidation": { "totalMs": 205000, "description": "Companion Rust build and validation." },

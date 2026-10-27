@@ -3,6 +3,7 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Operation {
     CoreRequest,
+    EventProcessing,
     EntityRefresh,
     HarnessSessionOpen,
     ScriptValidation,
@@ -18,6 +19,7 @@ impl Operation {
     pub const fn id(self) -> &'static str {
         match self {
             Self::CoreRequest => "coreRequest",
+            Self::EventProcessing => "eventProcessing",
             Self::EntityRefresh => "entityRefresh",
             Self::HarnessSessionOpen => "harnessSessionOpen",
             Self::ScriptValidation => "scriptValidation",
@@ -33,6 +35,7 @@ impl Operation {
     pub const fn timeout(self) -> Duration {
         Duration::from_millis(match self {
             Self::CoreRequest => 60000,
+            Self::EventProcessing => 60000,
             Self::EntityRefresh => 85000,
             Self::HarnessSessionOpen => 150000,
             Self::ScriptValidation => 205000,

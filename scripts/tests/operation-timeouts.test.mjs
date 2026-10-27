@@ -13,6 +13,9 @@ test("Automation save and rollback share one minute of execution, excluding repl
   assert.ok(manifest.selectors.storedScriptSave.includes("/app/automation/snapshot/rollback"));
   assert.equal(manifest.waitProfiles.lionForward.overrides.scriptSave, 30000);
 });
+test("Automation event processing has an explicit one-minute execution budget", () => {
+  assert.equal(manifest.operations.eventProcessing.totalMs, 60000);
+});
 test("reject ambiguous, unbounded and overflowing policies", () => {
   for (const mutate of [
     x => x.operations.coreRequest.totalMs = 0,

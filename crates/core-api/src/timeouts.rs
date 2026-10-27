@@ -56,6 +56,15 @@ mod tests {
     use super::*;
 
     #[test]
+    fn event_processing_is_one_bounded_execution_slice() {
+        assert_eq!(Operation::EventProcessing.id(), "eventProcessing");
+        assert_eq!(
+            Operation::EventProcessing.timeout(),
+            Duration::from_secs(60)
+        );
+    }
+
+    #[test]
     fn shared_selection_and_wait_fixtures() {
         let cases: serde_json::Value = serde_json::from_str(include_str!(
             "../fixtures/operation-timeouts.conformance.json"
