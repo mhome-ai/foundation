@@ -211,7 +211,6 @@
     "/app/pod/rename": "userWrite",
     "/app/pod/space/enrollment/get": "spaceManage",
     "/app/pod/space/list": "spaceRead",
-    "/app/quickword/brief/list": "spaceRead",
     "/app/quickword/list": "spaceRead",
     "/app/quickword/run": "spaceWrite",
     "/app/room/brief/list": "spaceRead",

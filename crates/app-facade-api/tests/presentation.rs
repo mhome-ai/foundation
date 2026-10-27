@@ -34,3 +34,34 @@ fn shared_projection_and_outcome_contract() {
         }
     }
 }
+
+#[test]
+fn quickword_full_and_essential_preserve_parameter_contract_and_dispatch_result() {
+    use serde_json::json;
+    for (target, data) in [
+        (
+            "/app/quickword/list",
+            json!({"scopeId":"space","quickWords":[
+                {"quickWord":"Movie time","parameters":[]},
+                {"quickWord":"Set ${mode}","parameters":[{"name":"mode","type":"String","allowedValues":["eco","comfort"]}]}
+            ]}),
+        ),
+        (
+            "/app/quickword/run",
+            json!({"scopeId":"space","quickWord":"Set ${mode}","dispatched":true}),
+        ),
+    ] {
+        let full = serde_json::to_value(
+            response::present(target, data.clone(), ResponseDetail::Full).unwrap(),
+        )
+        .unwrap();
+        let essential = serde_json::to_value(
+            response::present(target, data.clone(), ResponseDetail::Essential).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(full["data"], data);
+        assert!(essential.get("data").is_none());
+        let parsed: Value = serde_yaml::from_str(essential["text"].as_str().unwrap()).unwrap();
+        assert_eq!(parsed, data);
+    }
+}

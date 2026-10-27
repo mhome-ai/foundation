@@ -114,3 +114,17 @@ fn delegated_wire_schema_and_rust_agree_on_authority() {
         assert!(serde_json::from_value::<DelegatedCall>(wire).is_err());
     }
 }
+
+#[test]
+fn quickword_has_one_read_and_one_direct_write() {
+    use authorization::OperationPolicy;
+    assert_eq!(
+        authorization::required("/app/quickword/list"),
+        Some(OperationPolicy::SpaceRead)
+    );
+    assert_eq!(
+        authorization::required("/app/quickword/run"),
+        Some(OperationPolicy::SpaceWrite)
+    );
+    assert_eq!(authorization::required("/app/quickword/brief/list"), None);
+}
