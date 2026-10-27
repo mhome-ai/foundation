@@ -380,7 +380,7 @@
         "placement",
         "accountId",
         "tenantId",
-        "scopeId",
+        "spaceId",
         "grantedByUserId",
         "createdAtMs",
         "updatedAtMs"
@@ -398,7 +398,7 @@
         "tenantId": {
           "$ref": "#/$defs/id"
         },
-        "scopeId": {
+        "spaceId": {
           "$ref": "#/$defs/id"
         },
         "grantedByUserId": {
@@ -427,7 +427,7 @@
             "externalActorId",
             "tenantId",
             "userId",
-            "scopeId",
+            "spaceId",
             "projections",
             "providerData"
           ],
@@ -453,7 +453,7 @@
             "tenantId": {
               "$ref": "#/$defs/id"
             },
-            "scopeId": {
+            "spaceId": {
               "$ref": "#/$defs/id"
             },
             "displayName": {
@@ -484,7 +484,7 @@
             "accountId",
             "conversationId",
             "tenantId",
-            "scopeId",
+            "spaceId",
             "boundByUserId",
             "projections",
             "providerData"
@@ -511,7 +511,7 @@
             "tenantId": {
               "$ref": "#/$defs/id"
             },
-            "scopeId": {
+            "spaceId": {
               "$ref": "#/$defs/id"
             },
             "displayName": {
@@ -863,7 +863,7 @@
             "routeId": {
               "$ref": "#/$defs/id"
             },
-            "scopeId": {
+            "spaceId": {
               "$ref": "#/$defs/id"
             },
             "projections": {
@@ -2516,7 +2516,7 @@
         "conversationId": {
           "$ref": "#/$defs/id"
         },
-        "scopeId": {
+        "spaceId": {
           "$ref": "#/$defs/id"
         },
         "createdAtMs": {
@@ -2533,7 +2533,7 @@
         "placement",
         "accountId",
         "conversationId",
-        "scopeId",
+        "spaceId",
         "createdAtMs"
       ]
     },

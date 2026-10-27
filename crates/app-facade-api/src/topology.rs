@@ -10,6 +10,7 @@ pub struct TopologyGetRequest {}
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TopologySnapshot {
     pub contract: String,
+    #[serde(rename = "spaceId")]
     pub scope_id: String,
     pub generation: String,
     pub revision: u64,
@@ -148,6 +149,7 @@ pub enum TopologyObservationState {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TopologyChanged {
+    #[serde(rename = "spaceId")]
     pub scope_id: String,
     pub generation: String,
     pub revision: u64,
@@ -198,7 +200,7 @@ mod tests {
     fn topology_contract_rejects_unknown_fields_at_every_object_boundary() {
         assert!(serde_json::from_value::<TopologySnapshot>(json!({
             "contract": CONTRACT,
-            "scopeId": "space-1",
+            "spaceId": "space-1",
             "generation": "generation-1",
             "revision": 1,
             "observedAtMs": 1,
@@ -243,7 +245,7 @@ mod tests {
         .is_err());
 
         assert!(serde_json::from_value::<TopologyChanged>(json!({
-            "scopeId": "space-1",
+            "spaceId": "space-1",
             "generation": "generation-1",
             "revision": 1,
             "unexpected": true

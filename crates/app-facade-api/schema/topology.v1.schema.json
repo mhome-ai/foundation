@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": [
     "contract",
-    "scopeId",
+    "spaceId",
     "generation",
     "revision",
     "observedAtMs",
@@ -15,7 +15,7 @@
   ],
   "properties": {
     "contract": { "const": "mhome.space.topology.v1" },
-    "scopeId": { "type": "string", "minLength": 1 },
+    "spaceId": { "type": "string", "minLength": 1 },
     "generation": { "type": "string", "minLength": 1 },
     "revision": { "type": "integer", "minimum": 0 },
     "observedAtMs": { "type": "integer", "minimum": 0 },

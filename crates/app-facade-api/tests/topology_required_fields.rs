@@ -24,7 +24,7 @@ fn system_snapshot_requires_every_schema_required_field() {
     assert_required_fields::<TopologySnapshot>(
         include_str!("../schema/topology.v1.schema.json"),
         json!({
-            "contract": "mhome.space.topology.v1", "scopeId": "space-1",
+            "contract": "mhome.space.topology.v1", "spaceId": "space-1",
             "generation": "generation-1", "revision": 1, "observedAtMs": 1,
             "entities": [], "edges": []
         }),

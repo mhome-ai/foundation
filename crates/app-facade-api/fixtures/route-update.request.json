@@ -6,7 +6,7 @@
     "provider": "telegram",
     "placement": "cloud",
     "routeId": "route-1",
-    "scopeId": "scope-1",
+    "spaceId": "scope-1",
     "projections": {
       "notification": {
         "enabled": true,

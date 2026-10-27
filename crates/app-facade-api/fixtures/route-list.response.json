@@ -13,7 +13,7 @@
         "externalActorId": "user-1",
         "tenantId": "tenant-1",
         "userId": "mhome-user-1",
-        "scopeId": "scope-1",
+        "spaceId": "scope-1",
         "displayName": "Telegram",
         "projections": {
           "notification": {
@@ -37,7 +37,7 @@
         "conversationId": "chat-2",
         "audience": "shared",
         "tenantId": "tenant-1",
-        "scopeId": "scope-2",
+        "spaceId": "scope-2",
         "boundByUserId": "mhome-user-1",
         "displayName": "Project room",
         "projections": {

@@ -9,7 +9,7 @@
         "placement": "local",
         "accountId": "bot",
         "conversationId": "group",
-        "scopeId": "home",
+        "spaceId": "home",
         "displayName": "Family",
         "createdAtMs": 1
       }

@@ -312,6 +312,7 @@ pub struct SharedAccountGrant {
     pub placement: Placement,
     pub account_id: String,
     pub tenant_id: String,
+    #[serde(rename = "spaceId")]
     pub scope_id: String,
     pub granted_by_user_id: String,
     pub created_at_ms: i64,
@@ -357,6 +358,7 @@ pub enum RouteUpdateRequest {
         placement: Placement,
         route_id: String,
         #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[serde(rename = "spaceId")]
         scope_id: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         projections: Option<RouteProjectionSettingsUpdate>,
@@ -387,6 +389,7 @@ pub enum MessagingRoute {
         external_actor_id: String,
         tenant_id: String,
         user_id: String,
+        #[serde(rename = "spaceId")]
         scope_id: String,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         display_name: Option<String>,
@@ -400,6 +403,7 @@ pub enum MessagingRoute {
         account_id: String,
         conversation_id: String,
         tenant_id: String,
+        #[serde(rename = "spaceId")]
         scope_id: String,
         bound_by_user_id: String,
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -507,6 +511,7 @@ pub struct MessagingBinding {
     pub placement: Placement,
     pub account_id: String,
     pub conversation_id: String,
+    #[serde(rename = "spaceId")]
     pub scope_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub display_name: Option<String>,

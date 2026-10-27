@@ -12,7 +12,7 @@
       "externalActorId": "user-1",
       "tenantId": "tenant-1",
       "userId": "mhome-user-1",
-      "scopeId": "scope-1",
+      "spaceId": "scope-1",
       "projections": {
         "notification": {
           "enabled": true,
