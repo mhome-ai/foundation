@@ -5,7 +5,7 @@
     "entityRefresh": { "totalMs": 85000, "description": "Integration entity refresh including source loading and response preparation." },
     "harnessSessionOpen": { "totalMs": 150000, "description": "Harness session initialization." },
     "scriptValidation": { "totalMs": 205000, "description": "Companion Rust build and validation." },
-    "scriptSave": { "totalMs": 420000, "description": "Companion Rust build, installation and save." },
+    "scriptSave": { "totalMs": 60000, "description": "Automation save or rollback, including companion Rust build and installation." },
     "coreBridgeRequest": { "totalMs": 35000, "description": "Core outgoing cloud request, including sending." },
     "coreBridgeInbound": { "totalMs": 55000, "description": "Ordinary incoming Core Bridge request, including queueing." },
     "nodeRequest": { "totalMs": 60000, "description": "Core outgoing Node request, including sending." },

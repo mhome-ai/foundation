@@ -7,6 +7,12 @@ const manifest = JSON.parse(fs.readFileSync(new URL("../../crates/core-api/manif
 test("checked-in Rust bindings match the authoritative catalog", () => {
   assert.equal(renderTimeouts(manifest), fs.readFileSync(new URL("../../crates/core-api/src/timeouts.generated.rs", import.meta.url), "utf8"));
 });
+test("Automation save and rollback share one minute of execution, excluding reply grace", () => {
+  assert.equal(manifest.operations.scriptSave.totalMs, 60000);
+  assert.ok(manifest.selectors.storedScriptSave.includes("/automation/snapshot/rollback"));
+  assert.ok(manifest.selectors.storedScriptSave.includes("/app/automation/snapshot/rollback"));
+  assert.equal(manifest.waitProfiles.lionForward.overrides.scriptSave, 30000);
+});
 test("reject ambiguous, unbounded and overflowing policies", () => {
   for (const mutate of [
     x => x.operations.coreRequest.totalMs = 0,
