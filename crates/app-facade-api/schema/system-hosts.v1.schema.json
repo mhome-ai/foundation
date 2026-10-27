@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "required": [
     "contract",
-    "scopeId",
+    "spaceId",
     "observedAtMs",
     "hosts"
   ],
@@ -11,7 +11,7 @@
     "contract": {
       "const": "mhome.system.hosts.v1"
     },
-    "scopeId": {
+    "spaceId": {
       "type": "string"
     },
     "observedAtMs": {

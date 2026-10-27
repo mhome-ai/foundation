@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "required": [
     "contract",
-    "scopeId",
+    "spaceId",
     "observedAtMs",
     "instances"
   ],
@@ -11,7 +11,7 @@
     "contract": {
       "const": "mhome.system.instances.v1"
     },
-    "scopeId": {
+    "spaceId": {
       "type": "string"
     },
     "observedAtMs": {

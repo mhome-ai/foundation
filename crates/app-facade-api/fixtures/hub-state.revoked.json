@@ -1,5 +1,5 @@
 {
-  "scopeId": "scope-1",
+  "spaceId": "scope-1",
   "configured": false,
   "operation": {
     "kind": "REMOVE",

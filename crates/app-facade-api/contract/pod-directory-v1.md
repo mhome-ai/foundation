@@ -13,11 +13,11 @@ bridge. A cloud Space composes it in cloud. LLM placement does not change this
 owner. Cloud entrypoints forward local-Space business to Core; only an unavailable
 Hub transport permits the explicit read-only registration fallback below.
 
-The result contains `pods`, `scopeId`, `observedAtMs`, and `sourceErrors`.
+The result contains `pods`, `spaceId`, `observedAtMs`, and `sourceErrors`.
 Every row contains `registrationId`, `clientMode` (`user` or `space`), `registered`
-(true), and `connection` with `scopeId`, `state` (`connected`, `disconnected`, or
+(true), and `connection` with `spaceId`, `state` (`connected`, `disconnected`, or
 `unknown`), and `source` (`hub`, `cloud`, or `unavailable`). Space rows also contain
-`scopeId` and `appClientId`. Personal rows contain the saved `name`, `deviceId`,
+`spaceId` and `appClientId`. Personal rows contain the saved `name`, `deviceId`,
 `model`, `platform`, `firmwareVersion`, `issuedAt`, and `activatedAt`.
 No tokens, enrollment grants, credential IDs or private keys are returned.
 

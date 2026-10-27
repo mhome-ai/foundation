@@ -31,6 +31,7 @@ pub struct HubGetRequest {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HubState {
+    #[serde(rename = "spaceId")]
     pub scope_id: String,
     pub configured: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]

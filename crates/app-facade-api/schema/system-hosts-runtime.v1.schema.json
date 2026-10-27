@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "required": [
     "contract",
-    "scopeId",
+    "spaceId",
     "hostId",
     "result"
   ],
@@ -11,7 +11,7 @@
     "contract": {
       "const": "mhome.system.hosts.runtime.v1"
     },
-    "scopeId": {
+    "spaceId": {
       "type": "string"
     },
     "hostId": {

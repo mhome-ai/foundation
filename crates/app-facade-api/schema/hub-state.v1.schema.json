@@ -4,9 +4,9 @@
   "title": "Authoritative cloud Hub lifecycle state",
   "type": "object",
   "additionalProperties": false,
-  "required": ["scopeId", "configured"],
+  "required": ["spaceId", "configured"],
   "properties": {
-    "scopeId": { "type": "string", "minLength": 1 },
+    "spaceId": { "type": "string", "minLength": 1 },
     "configured": { "type": "boolean" },
     "hub": { "$ref": "#/$defs/hub" },
     "operation": { "$ref": "#/$defs/operation" },

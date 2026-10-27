@@ -1278,7 +1278,7 @@
     "name": "hub-unconfigured",
     "target": "/app/hub/get",
     "data": {
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "configured": false,
       "hub": null,
       "operation": null,
@@ -1286,7 +1286,7 @@
     },
     "status": "success",
     "essential": {
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "configured": false,
       "hub": null,
       "operation": null,
@@ -1312,7 +1312,7 @@
     "name": "pod-directory-unknown",
     "target": "/app/pod/list",
     "data": {
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "observedAtMs": 1800000000000,
       "pods": [
         {
@@ -1327,7 +1327,7 @@
           "issuedAt": 1800000000000,
           "activatedAt": 1800000001000,
           "connection": {
-            "scopeId": null,
+            "spaceId": null,
             "state": "unknown",
             "source": "unavailable"
           }
@@ -1339,7 +1339,7 @@
     },
     "status": "success",
     "essential": {
-      "scopeId": "space-demo",
+      "spaceId": "space-demo",
       "observedAtMs": 1800000000000,
       "pods": [
         {
@@ -1354,7 +1354,7 @@
           "issuedAt": 1800000000000,
           "activatedAt": 1800000001000,
           "connection": {
-            "scopeId": null,
+            "spaceId": null,
             "state": "unknown",
             "source": "unavailable"
           }
