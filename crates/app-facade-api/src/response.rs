@@ -105,7 +105,7 @@ fn nonempty(data: &Value, key: &str) -> bool {
 /// layout and view identity but omit renderer definitions, widget values and scripts.
 pub fn essential(target: &str, data: &Value) -> Value {
     if target.starts_with("/app/dashboard/") {
-        dashboard(data)
+        dashboard(data, target != "/app/dashboard/card/detail/get")
     } else {
         automation(target, data)
     }
@@ -189,12 +189,20 @@ fn automation(target: &str, data: &Value) -> Value {
     result
 }
 
-fn dashboard(value: &Value) -> Value {
+fn dashboard(value: &Value, include_layout: bool) -> Value {
     match value {
-        Value::Array(items) => Value::Array(items.iter().map(dashboard).collect()),
+        Value::Array(items) => Value::Array(
+            items
+                .iter()
+                .map(|value| dashboard(value, include_layout))
+                .collect(),
+        ),
         Value::Object(fields) if fields.contains_key("cardId") && fields.contains_key("type") => {
             let mut result = serde_json::Map::new();
             for key in ["cardId", "type", "title", "layouts", "primaryViewId"] {
+                if key == "layouts" && !include_layout {
+                    continue;
+                }
                 if let Some(v) = fields.get(key) {
                     result.insert(key.into(), v.clone());
                 }
@@ -226,7 +234,7 @@ fn dashboard(value: &Value) -> Value {
         Value::Object(fields) => Value::Object(
             fields
                 .iter()
-                .map(|(k, v)| (k.clone(), dashboard(v)))
+                .map(|(k, v)| (k.clone(), dashboard(v, include_layout)))
                 .collect(),
         ),
         value => value.clone(),
@@ -322,7 +330,7 @@ mod tests {
         .is_error());
     }
     #[test]
-    fn dashboard_essential_keeps_layout_and_views_without_rendering_state() {
+    fn dashboard_detail_omits_layout_but_list_keeps_it() {
         let full = json!({"items":[{"cardId":"c1","status":"found","card":{"cardId":"c1","type":"ENTITY","title":"Lights","layouts":{"desktop":{"x":0,"y":0}},"views":[{"id":"v1","name":"Switch","source":{"secret":"internal"},"pattern":{}}],"primaryViewId":"v1","widgets":[{"value":100}],"entity":{"capabilities":[]}}}]});
         let result = essential("/app/dashboard/card/detail/get", &full);
         assert_eq!(result["items"][0]["card"]["viewCount"], 1);
@@ -331,6 +339,15 @@ mod tests {
             json!([{"id":"v1","name":"Switch"}])
         );
         assert!(result["items"][0]["card"].get("widgets").is_none());
+        assert!(result["items"][0]["card"].get("layouts").is_none());
+        let list = essential(
+            "/app/dashboard/card/brief/list",
+            &json!({"cards": [full["items"][0]["card"].clone()]}),
+        );
+        assert_eq!(
+            list["cards"][0]["layouts"],
+            full["items"][0]["card"]["layouts"]
+        );
         assert_eq!(full["items"][0]["card"]["widgets"][0]["value"], 100);
     }
     #[test]

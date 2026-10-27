@@ -61,14 +61,6 @@
             "cardId": "card-1",
             "type": "widget",
             "title": "Power",
-            "layouts": {
-              "sm": {
-                "x": 0,
-                "y": 0,
-                "width": 2,
-                "height": 2
-              }
-            },
             "primaryViewId": "power",
             "views": [
               {
@@ -501,6 +493,76 @@
           "createdAt": 90,
           "description": "Prior behavior",
           "type": "TASK_FLOW"
+        }
+      ]
+    }
+  },
+  {
+    "name": "dashboard card list retains canvas layout",
+    "target": "/app/dashboard/card/brief/list",
+    "status": "success",
+    "data": {
+      "canvasId": "canvas",
+      "cards": [
+        {
+          "cardId": "card-1",
+          "type": "widget",
+          "title": "Power",
+          "layouts": {
+            "sm": {
+              "x": 0,
+              "y": 0,
+              "width": 2,
+              "height": 2
+            }
+          },
+          "views": [
+            {
+              "id": "power",
+              "name": "Power",
+              "source": {
+                "type": "widget",
+                "baseId": "automation-1",
+                "widgetId": "widget-1"
+              },
+              "pattern": "default"
+            }
+          ],
+          "primaryViewId": "power",
+          "widgets": [
+            {
+              "widgetId": "widget-1",
+              "name": "Power",
+              "widgetType": "DATA",
+              "dataType": "NUMBER"
+            }
+          ]
+        }
+      ]
+    },
+    "essential": {
+      "canvasId": "canvas",
+      "cards": [
+        {
+          "cardId": "card-1",
+          "type": "widget",
+          "title": "Power",
+          "primaryViewId": "power",
+          "views": [
+            {
+              "id": "power",
+              "name": "Power"
+            }
+          ],
+          "viewCount": 1,
+          "layouts": {
+            "sm": {
+              "x": 0,
+              "y": 0,
+              "width": 2,
+              "height": 2
+            }
+          }
         }
       ]
     }
