@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.63.0",
+  "contractVersion": "1.64.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -68,6 +68,7 @@
     "/app/dashboard/canvas/content/get": "spaceRead",
     "/app/dashboard/canvas/create": "spaceWrite",
     "/app/dashboard/canvas/delete": "spaceWrite",
+    "/app/dashboard/canvas/layout/get": "spaceRead",
     "/app/dashboard/canvas/layout/update": "spaceWrite",
     "/app/dashboard/canvas/rename": "spaceWrite",
     "/app/dashboard/canvas/reorder": "spaceWrite",

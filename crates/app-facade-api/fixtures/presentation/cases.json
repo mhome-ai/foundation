@@ -80,24 +80,28 @@
     }
   },
   {
-    "name": "brief-does-not-invent-view-count",
+    "name": "dashboard card list is a compact summary",
     "target": "/app/dashboard/card/list",
     "data": {
+      "spaceId": "space-1",
+      "canvasId": "canvas-1",
       "cards": [
         {
           "cardId": "card-1",
-          "type": "entity",
-          "title": "Lamp"
+          "type": "WIDGET",
+          "title": "Power"
         }
       ]
     },
     "status": "success",
     "essential": {
+      "spaceId": "space-1",
+      "canvasId": "canvas-1",
       "cards": [
         {
           "cardId": "card-1",
-          "type": "entity",
-          "title": "Lamp"
+          "type": "WIDGET",
+          "title": "Power"
         }
       ]
     }
@@ -493,76 +497,6 @@
           "createdAt": 90,
           "description": "Prior behavior",
           "type": "TASK_FLOW"
-        }
-      ]
-    }
-  },
-  {
-    "name": "dashboard card list retains canvas layout",
-    "target": "/app/dashboard/card/list",
-    "status": "success",
-    "data": {
-      "canvasId": "canvas",
-      "cards": [
-        {
-          "cardId": "card-1",
-          "type": "widget",
-          "title": "Power",
-          "layouts": {
-            "sm": {
-              "x": 0,
-              "y": 0,
-              "width": 2,
-              "height": 2
-            }
-          },
-          "views": [
-            {
-              "id": "power",
-              "name": "Power",
-              "source": {
-                "type": "widget",
-                "baseId": "automation-1",
-                "widgetId": "widget-1"
-              },
-              "pattern": "default"
-            }
-          ],
-          "primaryViewId": "power",
-          "widgets": [
-            {
-              "widgetId": "widget-1",
-              "name": "Power",
-              "widgetType": "DATA",
-              "dataType": "NUMBER"
-            }
-          ]
-        }
-      ]
-    },
-    "essential": {
-      "canvasId": "canvas",
-      "cards": [
-        {
-          "cardId": "card-1",
-          "type": "widget",
-          "title": "Power",
-          "primaryViewId": "power",
-          "views": [
-            {
-              "id": "power",
-              "name": "Power"
-            }
-          ],
-          "viewCount": 1,
-          "layouts": {
-            "sm": {
-              "x": 0,
-              "y": 0,
-              "width": 2,
-              "height": 2
-            }
-          }
         }
       ]
     }
@@ -3341,6 +3275,72 @@
     "status": "success",
     "essential": {
       "rooms": []
+    }
+  },
+  {
+    "name": "dashboard layout get stored and missing layouts",
+    "target": "/app/dashboard/canvas/layout/get",
+    "status": "success",
+    "data": {
+      "spaceId": "space-1",
+      "canvasId": "canvas-1",
+      "layoutSize": "md",
+      "cards": [
+        {
+          "cardId": "card-1",
+          "title": "Power",
+          "layout": {
+            "x": 0,
+            "y": 1,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "cardId": "card-2",
+          "title": "Unpositioned",
+          "layout": null
+        }
+      ]
+    },
+    "essential": {
+      "spaceId": "space-1",
+      "canvasId": "canvas-1",
+      "layoutSize": "md",
+      "cards": [
+        {
+          "cardId": "card-1",
+          "title": "Power",
+          "layout": {
+            "x": 0,
+            "y": 1,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "cardId": "card-2",
+          "title": "Unpositioned",
+          "layout": null
+        }
+      ]
+    }
+  },
+  {
+    "name": "dashboard layout get empty canvas",
+    "target": "/app/dashboard/canvas/layout/get",
+    "status": "success",
+    "data": {
+      "spaceId": "space-1",
+      "canvasId": "canvas-1",
+      "layoutSize": "md",
+      "cards": []
+    },
+    "essential": {
+      "spaceId": "space-1",
+      "canvasId": "canvas-1",
+      "layoutSize": "md",
+      "cards": []
     }
   }
 ]

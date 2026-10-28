@@ -73,7 +73,10 @@ App UI requests full and unwraps the envelope at its transport boundary. Agent
 and MCP public results use essential; internal workflow reads use full. The CLI
 uses `--response-detail full|essential`, and the bundled external Skill requests
 essential. Dashboard essential projection keeps card identity, title, type,
-layouts and view choices, excluding renderer configuration and resource payloads.
+view choices, excluding renderer configuration and resource payloads. Card list
+returns only ID/type/title; card detail essential omits layouts. Canvas layout get
+requires one sm/md/lg size and retains every card ID/title/layout in full and essential;
+uninitialized layouts or coordinates are null.
 Device brief-list essential retains identity, room, capability IDs, Integration and
 availability, omitting `connectId`, `manufacturerId` and `manufacturerName`.
 Selected Device detail, history, recent activity and mutation outcomes keep their

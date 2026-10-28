@@ -148,3 +148,12 @@ fn dashboard_summary_lists_use_canonical_paths_without_aliases() {
         );
     }
 }
+
+#[test]
+fn dashboard_layout_read_is_space_read() {
+    assert_eq!(
+        authorization::required("/app/dashboard/canvas/layout/get"),
+        authorization::required("/app/dashboard/card/list")
+    );
+    assert!(authorization::required("/app/dashboard/canvas/layout/get").is_some());
+}

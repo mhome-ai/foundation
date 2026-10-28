@@ -113,7 +113,13 @@ pub fn essential(target: &str, data: &Value) -> Value {
     } else if target == "/app/device/brief/list" {
         device_briefs(data)
     } else if target.starts_with("/app/dashboard/") {
-        dashboard(data, target != "/app/dashboard/card/detail/get")
+        dashboard(
+            data,
+            !matches!(
+                target,
+                "/app/dashboard/card/detail/get" | "/app/dashboard/card/list"
+            ),
+        )
     } else {
         automation(target, data)
     }
@@ -367,7 +373,7 @@ mod tests {
         .is_error());
     }
     #[test]
-    fn dashboard_detail_omits_layout_but_list_keeps_it() {
+    fn dashboard_card_reads_omit_layout_but_full_is_unchanged() {
         let full = json!({"items":[{"cardId":"c1","status":"found","card":{"cardId":"c1","type":"ENTITY","title":"Lights","layouts":{"desktop":{"x":0,"y":0}},"views":[{"id":"v1","name":"Switch","source":{"secret":"internal"},"pattern":{}}],"primaryViewId":"v1","widgets":[{"value":100}],"entity":{"capabilities":[]}}}]});
         let result = essential("/app/dashboard/card/detail/get", &full);
         assert_eq!(result["items"][0]["card"]["viewCount"], 1);
@@ -381,10 +387,7 @@ mod tests {
             "/app/dashboard/card/list",
             &json!({"cards": [full["items"][0]["card"].clone()]}),
         );
-        assert_eq!(
-            list["cards"][0]["layouts"],
-            full["items"][0]["card"]["layouts"]
-        );
+        assert!(list["cards"][0].get("layouts").is_none());
         assert_eq!(full["items"][0]["card"]["widgets"][0]["value"], 100);
     }
     #[test]
