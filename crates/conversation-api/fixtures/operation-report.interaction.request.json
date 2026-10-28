@@ -1,0 +1,27 @@
+{
+  "target": "/chat/interaction/submit",
+  "direction": "request",
+  "body": {
+    "threadId": "thread-2",
+    "batchId": "batch-1",
+    "responses": [
+      {
+        "actionId": "action-1",
+        "response": {
+          "action": "continue",
+          "data": {
+            "spaceId": "space-demo"
+          }
+        },
+        "clientReport": {
+          "warnings": [
+            {
+              "code": "SYNC_PENDING",
+              "message": "Saved; synchronization is pending"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

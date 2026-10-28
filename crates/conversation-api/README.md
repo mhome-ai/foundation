@@ -55,11 +55,25 @@ data. The UI operates on that exact session. A status check returns its actual r
 only a new tool call can request further human interaction. Prepared approvals retain their
 business prepare/commit contract. Card state and responses are separate from model history.
 
+A UserAction response may carry optional `clientReport` beside `actionId` and
+`response`: `{ "warnings": [{ "code": "SYNC_PENDING", "message": "Sync pending" }] }`.
+It is allowed with continue or cancel, never approve/reject. Warning code/message
+must be nonblank, the list nonempty, and unknown report fields are rejected. No
+report is required when the Operation observed no warning. This contains only
+public client observations during the Operation; it is not proof of completion.
+Business handlers still validate the input or read authoritative state. Runtime
+adds the report to the final result only after execution: a framework-owned
+`CLIENT_OPERATION_REPORT` warning on success/partial/cancelled, or
+`error.details.clientReport` on error. The source is `frontend_operation` with
+`verified: false`; neither status nor business data is overwritten. Reports are
+private answer data until included, explicitly attributed, in the tool result.
+
 The Conversation backend accepts a nonempty subset of distinct known item answers, persists
 partial responses privately with their responder identities, and resumes Runtime only after
 all items are answered. Public `PendingInteraction.answeredActionIds` is required and carries
 only progress. Clients show the first unanswered item and advance after canonical acknowledgement.
-Identical retries by the same responder are idempotent; accepted answers cannot be edited.
+Identical retries by the same responder are idempotent; accepted answers, including
+their client reports, cannot be edited.
 Runtime's execution command still carries the complete batch. User actions may open a shared
 frontend Operation that performs its business writes before returning a safe result. The
 saved handler validates or reads that result rather than repeating the write.

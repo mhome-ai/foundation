@@ -77,6 +77,10 @@ impl PendingInteractionItem {
     #[must_use]
     pub fn accepts(&self, response: &InteractionResponse) -> bool {
         self.action_id == response.action_id
+            && response
+                .client_report
+                .as_ref()
+                .is_none_or(|report| self.kind == InteractionKind::UserAction && report.is_valid())
             && matches!(
                 (self.kind, &response.response),
                 (
@@ -118,9 +122,35 @@ pub enum InteractionAnswer {
     Cancel,
 }
 
+/// Client observations from one Operation, never evidence that its business work succeeded.
+/// Only safe public warning text is accepted; raw Facade details and credentials are excluded.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct ClientOperationWarning {
+    pub code: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct ClientOperationReport {
+    pub warnings: Vec<ClientOperationWarning>,
+}
+
+impl ClientOperationReport {
+    pub fn is_valid(&self) -> bool {
+        !self.warnings.is_empty()
+            && self.warnings.iter().all(|warning| {
+                !warning.code.trim().is_empty() && !warning.message.trim().is_empty()
+            })
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct InteractionResponse {
     pub action_id: String,
     pub response: InteractionAnswer,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub client_report: Option<ClientOperationReport>,
 }

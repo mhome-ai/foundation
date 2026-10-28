@@ -1,0 +1,28 @@
+{
+  "target": "/chat/interaction/answer",
+  "direction": "request",
+  "body": {
+    "requestId": "request-1",
+    "batchId": "batch-1",
+    "occurredAtUnixMs": 1787587200000,
+    "responses": [
+      {
+        "actionId": "action-1",
+        "response": {
+          "action": "continue",
+          "data": {
+            "spaceId": "space-demo"
+          }
+        },
+        "clientReport": {
+          "warnings": [
+            {
+              "code": "SYNC_PENDING",
+              "message": "Saved; synchronization is pending"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
