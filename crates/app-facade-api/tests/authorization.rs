@@ -136,6 +136,7 @@ fn quickword_has_one_read_and_one_direct_write() {
 
 #[test]
 fn dashboard_summary_lists_use_canonical_paths_without_aliases() {
+    assert_eq!(authorization::required("/app/dashboard/list"), None);
     for resource in ["canvas", "card"] {
         assert_eq!(
             authorization::required(&format!("/app/dashboard/{resource}/list")),
