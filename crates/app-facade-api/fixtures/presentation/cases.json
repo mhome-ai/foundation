@@ -187,13 +187,13 @@
           "id": "a1",
           "name": "Morning",
           "description": "Turn on light",
-          "type": "TASK_FLOW",
           "enabled": true,
           "singleUse": false,
           "createdAt": 1,
           "tags": [
             "internal"
-          ]
+          ],
+          "automationType": "TASK_FLOW"
         }
       ]
     },
@@ -203,9 +203,9 @@
           "id": "a1",
           "name": "Morning",
           "description": "Turn on light",
-          "type": "TASK_FLOW",
           "enabled": true,
-          "singleUse": false
+          "singleUse": false,
+          "automationType": "TASK_FLOW"
         }
       ]
     }
@@ -220,14 +220,12 @@
           "id": "a1",
           "name": "Morning",
           "description": "Turn on light",
-          "type": "TASK_FLOW",
           "enabled": true,
           "singleUse": false,
           "hasExpire": false,
           "usedCapabilities": [
             "light.command.on"
           ],
-          "memberIds": [],
           "inputVars": [
             {
               "name": "$room",
@@ -243,7 +241,8 @@
             }
           },
           "updatedAt": 2,
-          "descriptionTemplate": "Turn on {! $room !}"
+          "descriptionTemplate": "Turn on {! $room !}",
+          "automationType": "TASK_FLOW"
         }
       ]
     },
@@ -253,14 +252,12 @@
           "id": "a1",
           "name": "Morning",
           "description": "Turn on light",
-          "type": "TASK_FLOW",
           "enabled": true,
           "singleUse": false,
           "hasExpire": false,
           "usedCapabilities": [
             "light.command.on"
           ],
-          "memberIds": [],
           "inputVars": [
             {
               "name": "$room",
@@ -269,7 +266,8 @@
             }
           ],
           "scriptHash": "source-hash",
-          "descriptionTemplate": "Turn on {! $room !}"
+          "descriptionTemplate": "Turn on {! $room !}",
+          "automationType": "TASK_FLOW"
         }
       ]
     }
@@ -284,8 +282,8 @@
           "automationId": "a1",
           "automationName": "Morning",
           "automationType": "TASK_FLOW",
-          "origin": "RECURRING",
-          "description": "duplicate"
+          "description": "duplicate",
+          "singleUse": false
         }
       ]
     },
@@ -295,7 +293,7 @@
           "automationId": "a1",
           "automationName": "Morning",
           "automationType": "TASK_FLOW",
-          "origin": "RECURRING"
+          "singleUse": false
         }
       ]
     }
@@ -313,35 +311,31 @@
           "automationId": "a1",
           "automationName": "Morning",
           "automationType": "TASK_FLOW",
-          "origin": "RECURRING",
           "activityType": "RUN_FAILED",
           "timestamp": 100,
           "instanceId": "run",
           "threadId": 0,
-          "error": true,
-          "panic": false,
           "actorUserId": "user",
           "clientId": "client",
-          "description": "duplicate"
+          "description": "duplicate",
+          "singleUse": false
         }
       ]
     },
     "essential": {
       "since": "10min",
       "from": 0,
-      "until": 100,
+      "until": "1970-01-01 00:00:00 +00:00 (UTC)",
       "activities": [
         {
           "automationId": "a1",
           "automationName": "Morning",
           "automationType": "TASK_FLOW",
-          "origin": "RECURRING",
           "activityType": "RUN_FAILED",
-          "timestamp": 100,
+          "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)",
           "instanceId": "run",
           "threadId": 0,
-          "error": true,
-          "panic": false
+          "singleUse": false
         }
       ]
     }
@@ -381,7 +375,7 @@
           "name": "Morning",
           "threadId": 0,
           "instanceId": "run",
-          "timestamp": 100,
+          "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)",
           "status": "failed",
           "reportMode": "STD",
           "logCount": 2,
@@ -441,7 +435,7 @@
         "name": "Morning",
         "threadId": 0,
         "instanceId": "run",
-        "timestamp": 100,
+        "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)",
         "status": "failed",
         "reportMode": "STD",
         "logCount": 2,
@@ -453,8 +447,8 @@
           "code": "TIMEOUT"
         },
         "revision": 3,
-        "startedAt": 90,
-        "finishedAt": 100
+        "startedAt": "1970-01-01 00:00:00 +00:00 (UTC)",
+        "finishedAt": "1970-01-01 00:00:00 +00:00 (UTC)"
       },
       "logs": [
         {
@@ -482,10 +476,10 @@
           "snapshotId": "v1",
           "createdAt": 90,
           "description": "Prior behavior",
-          "type": "TASK_FLOW",
           "script": {
             "script": "private"
-          }
+          },
+          "automationType": "TASK_FLOW"
         }
       ]
     },
@@ -494,9 +488,9 @@
       "snapshots": [
         {
           "snapshotId": "v1",
-          "createdAt": 90,
+          "createdAt": "1970-01-01 00:00:00 +00:00 (UTC)",
           "description": "Prior behavior",
-          "type": "TASK_FLOW"
+          "automationType": "TASK_FLOW"
         }
       ]
     }
@@ -813,29 +807,29 @@
     "status": "success",
     "essential": {
       "since": "10min",
-      "from": 1793065800000,
-      "until": 1793066400000,
+      "from": "2026-10-27 01:50:00 +00:00 (UTC)",
+      "until": "2026-10-27 02:00:00 +00:00 (UTC)",
       "truncated": true,
       "updates": [
         {
           "deviceId": "d1",
           "deviceName": "Lamp",
           "capabilityId": "state.onOff",
-          "changedAt": 1793066400000,
+          "changedAt": "2026-10-27 02:00:00 +00:00 (UTC)",
           "state": false
         },
         {
           "deviceId": "d2",
           "deviceName": "Dimmer",
           "capabilityId": "state.level",
-          "changedAt": 1793066399000,
+          "changedAt": "2026-10-27 01:59:59 +00:00 (UTC)",
           "state": 0
         },
         {
           "deviceId": "d3",
           "deviceName": "Button",
           "capabilityId": "event.click",
-          "changedAt": 1793066398000,
+          "changedAt": "2026-10-27 01:59:58 +00:00 (UTC)",
           "event": {
             "value": null
           }
@@ -844,7 +838,7 @@
           "deviceId": "d4",
           "deviceName": "Lamp",
           "capabilityId": "command.onOff",
-          "changedAt": 1793066397000,
+          "changedAt": "2026-10-27 01:59:57 +00:00 (UTC)",
           "log": {
             "source": "Automation",
             "data": {

@@ -1,0 +1,66 @@
+{
+  "/app/automation/status": {
+    "ms": [
+      "lastRunAt"
+    ]
+  },
+  "/app/automation/activity/recent/list": {
+    "ms": [
+      "from",
+      "until",
+      "activities.*.timestamp"
+    ]
+  },
+  "/app/automation/diagnostic/list": {
+    "ms": [
+      "diagnostics.*.timestamp"
+    ]
+  },
+  "/app/automation/diagnostic/detail": {
+    "ms": [
+      "diagnostic.timestamp",
+      "diagnostic.startedAt",
+      "diagnostic.finishedAt",
+      "logs.*.timestamp"
+    ]
+  },
+  "/app/automation/snapshot/list": {
+    "ms": [
+      "snapshots.*.createdAt"
+    ]
+  },
+  "/app/device/activity/recent/list": {
+    "ms": [
+      "from",
+      "until",
+      "updates.*.changedAt"
+    ]
+  },
+  "/app/widget/history/list": {
+    "sec": [
+      "history.*.timestamp"
+    ]
+  },
+  "/app/widget/detail/get": {
+    "ms": [
+      "items.*.widget.nextTimestamp"
+    ]
+  },
+  "/app/notification/list": {
+    "ms": [
+      "notifications.*.timestamp"
+    ]
+  },
+  "/app/dialog/list": {
+    "ms": [
+      "dialogs.*.createdAt",
+      "dialogs.*.expiresAt",
+      "dialogs.*.statusUpdatedAt"
+    ]
+  },
+  "/app/schedule/list": {
+    "ms": [
+      "schedules.*.timestamp"
+    ]
+  }
+}

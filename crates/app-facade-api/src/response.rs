@@ -1,9 +1,10 @@
 //! Public App result projection. Transport serialization is not a business input.
 use crate::{FacadeResponse, ResponseDetail};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 mod agent;
 mod runtime;
+pub mod time;
 
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
 pub fn outcome(target: &str, data: Value) -> FacadeResponse {
@@ -159,7 +160,16 @@ fn automation(target: &str, data: &Value) -> Value {
     let (collection, fields): (&str, &[&str]) = match target {
         "/app/automation/list" => (
             "automations",
-            &["id", "name", "description", "type", "enabled", "singleUse"],
+            &[
+                "id",
+                "name",
+                "description",
+                "automationType",
+                "enabled",
+                "singleUse",
+                "group",
+                "memberIds",
+            ],
         ),
         "/app/automation/detail/get" => (
             "automations",
@@ -167,11 +177,12 @@ fn automation(target: &str, data: &Value) -> Value {
                 "id",
                 "name",
                 "description",
-                "type",
+                "automationType",
                 "enabled",
                 "singleUse",
                 "hasExpire",
                 "usedCapabilities",
+                "group",
                 "memberIds",
                 "inputVars",
                 "scriptHash",
@@ -180,7 +191,12 @@ fn automation(target: &str, data: &Value) -> Value {
         ),
         "/app/automation/activity/now/list" => (
             "automations",
-            &["automationId", "automationName", "automationType", "origin"],
+            &[
+                "automationId",
+                "automationName",
+                "automationType",
+                "singleUse",
+            ],
         ),
         "/app/automation/activity/recent/list" => (
             "activities",
@@ -189,13 +205,11 @@ fn automation(target: &str, data: &Value) -> Value {
                 "automationId",
                 "automationName",
                 "automationType",
-                "origin",
+                "singleUse",
                 "activityType",
                 "timestamp",
                 "instanceId",
                 "threadId",
-                "error",
-                "panic",
             ],
         ),
         "/app/automation/diagnostic/list" => (
@@ -217,7 +231,7 @@ fn automation(target: &str, data: &Value) -> Value {
         ),
         "/app/automation/snapshot/list" => (
             "snapshots",
-            &["snapshotId", "createdAt", "description", "type"],
+            &["snapshotId", "createdAt", "description", "automationType"],
         ),
         _ => return data.clone(),
     };
@@ -298,8 +312,27 @@ pub fn render(
     response: FacadeResponse,
     detail: ResponseDetail,
 ) -> Result<FacadeResponse, serde_yaml::Error> {
+    render_in_timezone(target, response, detail, "UTC")
+}
+
+pub fn present_in_timezone(
+    target: &str,
+    data: Value,
+    detail: ResponseDetail,
+    timezone: &str,
+) -> Result<FacadeResponse, serde_yaml::Error> {
+    render_in_timezone(target, outcome(target, data), detail, timezone)
+}
+
+pub fn render_in_timezone(
+    target: &str,
+    response: FacadeResponse,
+    detail: ResponseDetail,
+    timezone: &str,
+) -> Result<FacadeResponse, serde_yaml::Error> {
     if detail == ResponseDetail::Essential && response.data().is_some() {
-        let projected = essential(target, response.data().expect("outcome has data"));
+        let mut projected = essential(target, response.data().expect("outcome has data"));
+        time::localize(target, &mut projected, timezone);
         let text = serde_yaml::to_string(&projected)?;
         Ok(response.with_text(text))
     } else {
@@ -366,11 +399,13 @@ mod tests {
         ] {
             assert!(!outcome(&format!("/app/plugin/llm/{route}"), data.clone()).is_error());
         }
-        assert!(!outcome(
-            "/app/plugin/llm/model/delete",
-            json!({"data":{"ok":true,"deleted":true}})
-        )
-        .is_error());
+        assert!(
+            !outcome(
+                "/app/plugin/llm/model/delete",
+                json!({"data":{"ok":true,"deleted":true}})
+            )
+            .is_error()
+        );
     }
     #[test]
     fn dashboard_card_reads_omit_layout_but_full_is_unchanged() {
