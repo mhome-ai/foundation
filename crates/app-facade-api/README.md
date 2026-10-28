@@ -96,6 +96,10 @@ asset manifests and renderer configuration schemas. Selected release detail keep
 Revisions, installation IDs, existing override config and supported patterns remain.
 Empty mutation acknowledgements remain empty; they do not invent a new revision.
 
+Room uses one `/app/room/list` read. Every Room has `roomId`, `roomName`,
+`index`, `deviceCount`, and `deviceIds`; full and essential keep all five fields.
+Membership IDs include Device groups without expanding their members or state.
+
 Targets without a dedicated projection retain their business fields in YAML;
 essential does not promise a smaller field set for every domain. Targets own that selection.
 

@@ -391,7 +391,7 @@ mod tests {
     fn partial_preserves_failed_ids_and_query_state_does_not_change_outcome() {
         let data = json!({"moved":["a"],"notMoved":[{"deviceId":"b","reason":"offline"}]});
         assert!(outcome("/app/room/devices/move", data.clone()).is_error());
-        assert!(!outcome("/app/room/detail/get", data).is_error());
+        assert!(!outcome("/app/room/list", data).is_error());
     }
     #[test]
     fn replay_presentation_preserves_canonical_result_and_warnings() {

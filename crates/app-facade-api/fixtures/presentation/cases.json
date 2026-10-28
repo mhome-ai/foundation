@@ -3284,5 +3284,63 @@
     "essential": {
       "llmMode": "local"
     }
+  },
+  {
+    "name": "room-list-complete-membership",
+    "target": "/app/room/list",
+    "data": {
+      "rooms": [
+        {
+          "roomId": "r1",
+          "roomName": "Living",
+          "index": 0,
+          "deviceCount": 2,
+          "deviceIds": [
+            "d1",
+            "g:1"
+          ]
+        },
+        {
+          "roomId": "r2",
+          "roomName": "Empty",
+          "index": 1,
+          "deviceCount": 0,
+          "deviceIds": []
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "rooms": [
+        {
+          "roomId": "r1",
+          "roomName": "Living",
+          "index": 0,
+          "deviceCount": 2,
+          "deviceIds": [
+            "d1",
+            "g:1"
+          ]
+        },
+        {
+          "roomId": "r2",
+          "roomName": "Empty",
+          "index": 1,
+          "deviceCount": 0,
+          "deviceIds": []
+        }
+      ]
+    }
+  },
+  {
+    "name": "room-list-empty",
+    "target": "/app/room/list",
+    "data": {
+      "rooms": []
+    },
+    "status": "success",
+    "essential": {
+      "rooms": []
+    }
   }
 ]
