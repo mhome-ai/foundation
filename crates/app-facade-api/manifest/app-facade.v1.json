@@ -230,6 +230,13 @@
         "/app/card-skins/override/set": "#/definitions/empty",
         "/app/card-skins/override/reset": "#/definitions/empty"
       }
+    },
+    "entityPresentation": {
+      "schema": "schema/entity-presentation.v1.schema.json",
+      "contract": "contract/entity-presentation-v1.md",
+      "requestTargets": [
+        "/app/entity/presentation/get"
+      ]
     }
   },
   "authorization": "manifest/authorization.v1.json",

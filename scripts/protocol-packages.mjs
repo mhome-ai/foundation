@@ -61,6 +61,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "manifest/host-provision-targets.v1.json",
       "contract/host-provisioning-v1.md",
       "contract/card-skins-v1.md",
+      "contract/entity-presentation-v1.md",
       "schema/plugin-catalog.v1.schema.json",
       "schema/user-profile.v1.schema.json",
       "schema/host-management.v1.schema.json",
@@ -71,6 +72,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     schemas: Object.freeze({
       hostAuthorization: "schema/host-authorization.v1.schema.json",
       hostAccess: "schema/host-access.v1.schema.json",
+      entityPresentation: "schema/entity-presentation.v1.schema.json",
       capabilityDescriptor: "schema/capability-descriptor.v1.schema.json",
       cardSkinPackage: "schema/card-skin-package.v1.schema.json",
       cardSkins: "schema/card-skins.v1.schema.json",
@@ -92,6 +94,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       person: "schema/person.v1.schema.json",
     }),
     fixtures: Object.freeze({
+      entityPresentation: "fixtures/entity-presentation.conformance.json",
       valid: "fixtures",
       invalid: "fixtures/invalid",
       hostAccess: "schema/host-access.v1.schema.json",

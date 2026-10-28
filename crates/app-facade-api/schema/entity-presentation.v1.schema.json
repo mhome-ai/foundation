@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/entity-presentation.v1.schema.json",
+  "$defs": {
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityType",
+        "entityId"
+      ],
+      "properties": {
+        "entityType": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "entityId": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEntry",
+        "entityCard",
+        "twinAutomations"
+      ],
+      "properties": {
+        "entityEntry": {
+          "type": "object",
+          "required": [
+            "uid",
+            "type"
+          ],
+          "properties": {
+            "uid": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "integration": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": true
+        },
+        "entityCard": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "twinAutomations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  }
+}

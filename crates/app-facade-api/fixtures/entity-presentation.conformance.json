@@ -1,0 +1,54 @@
+{
+  "input": {
+    "valid": [
+      {
+        "entityType": "basic.device.Device",
+        "entityId": "device-1"
+      }
+    ],
+    "invalid": [
+      {},
+      {
+        "entityType": " ",
+        "entityId": "device-1"
+      },
+      {
+        "entityType": "basic.device.Device",
+        "entityId": ""
+      },
+      {
+        "entityType": "basic.device.Device",
+        "entityId": "device-1",
+        "scopeId": "other"
+      }
+    ]
+  },
+  "output": {
+    "valid": [
+      {
+        "entityEntry": {
+          "uid": "device-1",
+          "type": "basic.device.Device",
+          "integration": "example.device",
+          "name": "Desk lamp",
+          "active": false,
+          "data": {},
+          "capabilities": [],
+          "twinTags": [],
+          "cardCount": 0,
+          "issue": false
+        },
+        "entityCard": null,
+        "twinAutomations": []
+      }
+    ],
+    "invalid": [
+      {},
+      {
+        "entityEntry": null,
+        "entityCard": null,
+        "twinAutomations": []
+      }
+    ]
+  }
+}
