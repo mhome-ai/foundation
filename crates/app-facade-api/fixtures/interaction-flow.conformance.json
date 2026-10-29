@@ -70,9 +70,28 @@
     "completed": true,
     "result": {
       "providerConnectionId": "provider-1"
+    },
+    "submission": {
+      "status": "completed",
+      "result": {
+        "providerConnectionId": "provider-1"
+      }
     }
   },
   "cancelResponse": {
     "cancelled": true
+  },
+  "submissionRequest": {
+    "source": {
+      "kind": "plugin",
+      "nodeType": "camera",
+      "nodeId": "camera-1",
+      "flowId": "provider.connect",
+      "subjectId": "onvif"
+    },
+    "submissionId": "command-3"
+  },
+  "submissionResponse": {
+    "status": "accepted"
   }
 }

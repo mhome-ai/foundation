@@ -144,6 +144,15 @@ its complete referenced value is available and which visible inputs can make
 it stale, so clients can resolve it reactively without learning handlers or
 the hidden graph.
 
+Final completion can return `completed: false` with `submission.status: accepted`:
+the business owner has saved the input but installation has not finished. Clients
+retain the completion command ID and may query `/app/interaction-flow/submission/status`
+or explicitly call `/app/interaction-flow/submission/retry` with the original source
+and that ID. Neither call requires a live interactive session. Responses distinguish
+`notFound`, `accepted`, and `completed` with the original result. Clients cannot
+supply an owner or handler; current Node binding and Space access are checked again.
+Retry is explicit, and closing the interaction does not cancel accepted business data.
+
 `topology` exposes the Hub-owned Space network projection. Stable Host, Hub,
 Node, AppClient, and Cloud identities are separate from current transport
 sessions. Durable relations remain present while disconnected and carry an

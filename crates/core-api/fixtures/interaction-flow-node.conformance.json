@@ -43,7 +43,9 @@
             },
             "renderRefs": []
           },
-          "transition": { "type": "finish" }
+          "transition": {
+            "type": "finish"
+          }
         }
       },
       "resolvers": {},
@@ -51,8 +53,18 @@
         "complete": {
           "operation": "provider.save",
           "args": [
-            { "type": "ref", "valueRef": { "root": "$host" } },
-            { "type": "ref", "valueRef": { "root": "$password" } }
+            {
+              "type": "ref",
+              "valueRef": {
+                "root": "$host"
+              }
+            },
+            {
+              "type": "ref",
+              "valueRef": {
+                "root": "$password"
+              }
+            }
           ]
         }
       }
@@ -62,12 +74,16 @@
     "flowId": "provider.connect",
     "sourceSessionId": "source-session-1",
     "definitionRevision": "sha256:demo",
-    "operation": "provider.save",
+    "operation": "provider.discover",
     "operationId": "operation-1",
-    "args": ["192.0.2.1", "secret"]
+    "args": [
+      "192.0.2.1"
+    ]
   },
   "executeResponse": {
-    "data": { "providerConnectionId": "provider-1" }
+    "data": {
+      "cameras": []
+    }
   },
   "closeRequest": {
     "flowId": "provider.connect",
@@ -77,5 +93,30 @@
   },
   "closeResponse": {
     "closed": true
+  },
+  "completeRequest": {
+    "submission": {
+      "flowId": "provider.connect",
+      "submissionId": "command-3",
+      "owner": "server-derived-owner"
+    },
+    "sourceSessionId": "source-session-1",
+    "definitionRevision": "sha256:demo",
+    "operation": "provider.save",
+    "args": [
+      "192.0.2.1",
+      "fictional-secret"
+    ]
+  },
+  "submissionRequest": {
+    "flowId": "provider.connect",
+    "submissionId": "command-3",
+    "owner": "server-derived-owner"
+  },
+  "submissionResponse": {
+    "status": "completed",
+    "result": {
+      "providerConnectionId": "provider-1"
+    }
   }
 }

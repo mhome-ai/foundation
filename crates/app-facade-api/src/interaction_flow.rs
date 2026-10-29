@@ -13,6 +13,8 @@ pub const RESOLVE_TARGET: &str = "/app/interaction-flow/resolve";
 pub const NEXT_TARGET: &str = "/app/interaction-flow/next";
 pub const BACK_TARGET: &str = "/app/interaction-flow/back";
 pub const COMPLETE_TARGET: &str = "/app/interaction-flow/complete";
+pub const SUBMISSION_STATUS_TARGET: &str = "/app/interaction-flow/submission/status";
+pub const SUBMISSION_RETRY_TARGET: &str = "/app/interaction-flow/submission/retry";
 pub const CANCEL_TARGET: &str = "/app/interaction-flow/cancel";
 
 pub const REQUEST_TARGETS: &[&str] = &[
@@ -22,6 +24,8 @@ pub const REQUEST_TARGETS: &[&str] = &[
     BACK_TARGET,
     COMPLETE_TARGET,
     CANCEL_TARGET,
+    SUBMISSION_STATUS_TARGET,
+    SUBMISSION_RETRY_TARGET,
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -77,6 +81,16 @@ pub struct InteractionFlowCompleteRequest {
     pub command_id: String,
     pub expected_revision: u64,
 }
+
+/// Uses the caller-known source and completion command ID; no live Flow is required.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct InteractionFlowSubmissionRequest {
+    pub source: InteractionFlowSource,
+    pub submission_id: String,
+}
+
+pub use core_api::interaction_flow::FlowSubmissionResponse as InteractionFlowSubmissionResponse;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -203,6 +217,9 @@ pub struct InteractionFlowView {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct InteractionFlowCompleteResponse {
     pub completed: bool,
+    /// Present when final material was accepted by the business owner.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub submission: Option<InteractionFlowSubmissionResponse>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub result: Option<Value>,
 }
@@ -258,6 +275,35 @@ mod tests {
         assert!(value.get("steps").is_none());
         assert!(value.get("resolvers").is_none());
         assert!(value.to_string().find("handler").is_none());
+    }
+
+    #[test]
+    fn submission_identity_is_independent_of_a_live_session_and_owner_is_not_public() {
+        let mut fixture: Value = serde_json::from_str(include_str!(
+            "../fixtures/interaction-flow.conformance.json"
+        ))
+        .unwrap();
+        let request: InteractionFlowSubmissionRequest =
+            serde_json::from_value(fixture["submissionRequest"].clone()).unwrap();
+        assert_eq!(request.submission_id, "command-3");
+        assert!(REQUEST_TARGETS.contains(&SUBMISSION_STATUS_TARGET));
+        assert!(REQUEST_TARGETS.contains(&SUBMISSION_RETRY_TARGET));
+        let accepted = json!({"completed":false,"submission":{"status":"accepted"}});
+        let response: InteractionFlowCompleteResponse =
+            serde_json::from_value(accepted.clone()).unwrap();
+        assert!(!response.completed);
+        assert!(response.result.is_none());
+        assert_eq!(serde_json::to_value(response).unwrap(), accepted);
+        let schema: Value = serde_json::from_str(PROTOCOL_SCHEMA).unwrap();
+        let validator = jsonschema::validator_for(&schema).unwrap();
+        fixture["completeResponse"] = accepted;
+        assert!(validator.is_valid(&fixture));
+        fixture["submissionRequest"]["owner"] = json!("forged-owner");
+        assert!(serde_json::from_value::<InteractionFlowSubmissionRequest>(
+            fixture["submissionRequest"].clone()
+        )
+        .is_err());
+        assert!(!validator.is_valid(&fixture));
     }
 
     #[test]

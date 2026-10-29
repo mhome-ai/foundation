@@ -11,7 +11,10 @@
     "executeRequest": { "$ref": "#/$defs/executeRequest" },
     "executeResponse": { "$ref": "#/$defs/executeResponse" },
     "closeRequest": { "$ref": "#/$defs/closeRequest" },
-    "closeResponse": { "$ref": "#/$defs/closeResponse" }
+    "closeResponse": { "$ref": "#/$defs/closeResponse" },
+    "completeRequest": { "$ref": "#/$defs/completeRequest" },
+    "submissionRequest": { "$ref": "#/$defs/submissionRequest" },
+    "submissionResponse": { "$ref": "#/$defs/submissionResponse" }
   },
   "$defs": {
     "nonEmpty": { "type": "string", "minLength": 1, "maxLength": 128 },
@@ -273,6 +276,9 @@
       "additionalProperties": true,
       "required": ["closed"],
       "properties": { "closed": { "type": "boolean" } }
-    }
+    },
+    "submissionRequest": {"type": "object", "additionalProperties": false, "required": ["flowId", "submissionId", "owner"], "properties": {"flowId": {"type": "string", "minLength": 1, "maxLength": 256}, "submissionId": {"type": "string", "minLength": 1, "maxLength": 256}, "owner": {"type": "string", "minLength": 1, "maxLength": 256}}},
+    "submissionResponse": {"oneOf": [{"type": "object", "additionalProperties": false, "required": ["status"], "properties": {"status": {"const": "notFound"}}}, {"type": "object", "additionalProperties": false, "required": ["status"], "properties": {"status": {"const": "accepted"}}}, {"type": "object", "additionalProperties": false, "required": ["status", "result"], "properties": {"status": {"const": "completed"}, "result": true}}]},
+    "completeRequest": {"type": "object", "additionalProperties": false, "required": ["submission", "sourceSessionId", "definitionRevision", "operation"], "properties": {"submission": {"$ref": "#/$defs/submissionRequest"}, "sourceSessionId": {"type": "string", "minLength": 1, "maxLength": 256}, "definitionRevision": {"type": "string", "minLength": 1, "maxLength": 256}, "operation": {"type": "string", "minLength": 1, "maxLength": 256}, "args": {"type": "array", "maxItems": 128}}}
   }
 }

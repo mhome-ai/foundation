@@ -46,6 +46,16 @@ idempotent within a source session: replaying the same `operationId` and
 request returns the original result, while reusing the ID for a different
 request is rejected.
 
+Final business input uses the fixed `complete` route. Its submission identity
+contains the Flow ID, completion command ID, and an owner derived by Core from
+the authenticated Space and principal. The Node persists this input before
+installation in its own business store. Independent `submission/status` and
+`submission/retry` routes work after source-session or Core restart; they still
+require the exact bound Node and current access checks. Status never installs.
+Closing the source session does not undo accepted data. Business mutations and
+applied receipts must commit atomically; a later retry uses current business
+credentials rather than replaying the old final input.
+
 Storage separates backing-filesystem capacity from Storage-owned logical
 usage. Namespace is an internal protocol term; user-facing clients present it
 as a Folder.

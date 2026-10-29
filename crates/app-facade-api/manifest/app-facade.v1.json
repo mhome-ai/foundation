@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.69.0",
+  "contractVersion": "1.70.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -83,7 +83,9 @@
         "/app/interaction-flow/next",
         "/app/interaction-flow/back",
         "/app/interaction-flow/complete",
-        "/app/interaction-flow/cancel"
+        "/app/interaction-flow/cancel",
+        "/app/interaction-flow/submission/status",
+        "/app/interaction-flow/submission/retry"
       ],
       "sessionPersistence": "memory"
     },

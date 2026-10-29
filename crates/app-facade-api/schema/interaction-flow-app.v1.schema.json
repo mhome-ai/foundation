@@ -13,7 +13,9 @@
     "cancelRequest": { "$ref": "#/$defs/cancelRequest" },
     "view": { "$ref": "#/$defs/view" },
     "completeResponse": { "$ref": "#/$defs/completeResponse" },
-    "cancelResponse": { "$ref": "#/$defs/cancelResponse" }
+    "cancelResponse": { "$ref": "#/$defs/cancelResponse" },
+    "submissionRequest": { "$ref": "#/$defs/submissionRequest" },
+    "submissionResponse": { "$ref": "#/$defs/submissionResponse" }
   },
   "$defs": {
     "nonEmpty": { "type": "string", "minLength": 1, "maxLength": 256 },
@@ -171,13 +173,15 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["completed"],
-      "properties": { "completed": { "type": "boolean" }, "result": true }
+      "properties": { "completed": { "type": "boolean" }, "result": true, "submission": { "$ref": "#/$defs/submissionResponse" } }
     },
     "cancelResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": ["cancelled"],
       "properties": { "cancelled": { "type": "boolean" } }
-    }
+    },
+    "submissionRequest": {"type": "object", "additionalProperties": false, "required": ["source", "submissionId"], "properties": {"source": {"$ref": "#/$defs/source"}, "submissionId": {"type": "string", "minLength": 1, "maxLength": 256}}},
+    "submissionResponse": {"oneOf": [{"type": "object", "additionalProperties": false, "required": ["status"], "properties": {"status": {"const": "notFound"}}}, {"type": "object", "additionalProperties": false, "required": ["status"], "properties": {"status": {"const": "accepted"}}}, {"type": "object", "additionalProperties": false, "required": ["status", "result"], "properties": {"status": {"const": "completed"}, "result": true}}]}
   }
 }

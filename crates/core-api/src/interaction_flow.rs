@@ -33,6 +33,15 @@ pub fn execute_target(node_type: &str) -> String {
     format!("/{node_type}/interaction-flow/execute")
 }
 
+pub fn complete_target(node_type: &str) -> String {
+    format!("/{node_type}/interaction-flow/complete")
+}
+
+pub fn submission_target(node_type: &str, retry: bool) -> String {
+    let action = if retry { "retry" } else { "status" };
+    format!("/{node_type}/interaction-flow/submission/{action}")
+}
+
 pub fn close_target(node_type: &str) -> String {
     format!("/{node_type}/interaction-flow/close")
 }
@@ -786,6 +795,37 @@ pub struct FlowExecuteResponse {
     pub data: Value,
 }
 
+/// Core supplies the owner from the authenticated request, never from App input.
+/// The owner and Node scope fence both the final material and its receipt.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FlowSubmissionRequest {
+    pub flow_id: String,
+    pub submission_id: String,
+    pub owner: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FlowCompleteRequest {
+    pub submission: FlowSubmissionRequest,
+    pub source_session_id: String,
+    pub definition_revision: String,
+    pub operation: String,
+    #[serde(default)]
+    pub args: Vec<Value>,
+}
+
+/// Accepted means final material is durable and explicit retry is possible.
+/// It does not claim the business installation completed or that no attempt is running.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "status", rename_all = "camelCase", deny_unknown_fields)]
+pub enum FlowSubmissionResponse {
+    NotFound {},
+    Accepted {},
+    Completed { result: Value },
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum FlowCloseReason {
@@ -1000,6 +1040,59 @@ mod tests {
         field.control = FlowFieldControl::Password;
         field.default_value = Some(json!("not-allowed"));
         assert!(definition.validate().is_err());
+    }
+
+    #[test]
+    fn durable_submission_contract_is_typed_and_closed() {
+        assert_eq!(
+            complete_target("camera"),
+            "/camera/interaction-flow/complete"
+        );
+        assert_eq!(
+            submission_target("camera", false),
+            "/camera/interaction-flow/submission/status"
+        );
+        assert_eq!(
+            submission_target("camera", true),
+            "/camera/interaction-flow/submission/retry"
+        );
+        let mut fixture: Value = serde_json::from_str(include_str!(
+            "../fixtures/interaction-flow-node.conformance.json"
+        ))
+        .unwrap();
+        let complete: FlowCompleteRequest =
+            serde_json::from_value(fixture["completeRequest"].clone()).unwrap();
+        assert_eq!(
+            serde_json::to_value(&complete.submission).unwrap(),
+            fixture["submissionRequest"]
+        );
+        let schema: Value = serde_json::from_str(NODE_PROTOCOL_SCHEMA).unwrap();
+        let validator = jsonschema::validator_for(&schema).unwrap();
+        for response in [
+            json!({"status":"notFound"}),
+            json!({"status":"accepted"}),
+            json!({"status":"completed","result":{"id":"saved"}}),
+        ] {
+            let typed: FlowSubmissionResponse = serde_json::from_value(response.clone()).unwrap();
+            assert_eq!(serde_json::to_value(typed).unwrap(), response);
+            fixture["submissionResponse"] = response;
+            assert!(validator.is_valid(&fixture));
+        }
+        for response in [
+            json!({"status":"accepted","material":{"password":"secret"}}),
+            json!({"status":"running"}),
+        ] {
+            assert!(serde_json::from_value::<FlowSubmissionResponse>(response.clone()).is_err());
+            fixture["submissionResponse"] = response;
+            assert!(!validator.is_valid(&fixture));
+        }
+        fixture["submissionResponse"] = json!({"status":"accepted"});
+        fixture["completeRequest"]["target"] = json!("/arbitrary");
+        assert!(
+            serde_json::from_value::<FlowCompleteRequest>(fixture["completeRequest"].clone())
+                .is_err()
+        );
+        assert!(!validator.is_valid(&fixture));
     }
 
     #[test]
