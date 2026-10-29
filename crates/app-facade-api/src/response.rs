@@ -1,6 +1,6 @@
 //! Public App result projection. Transport serialization is not a business input.
 use crate::{FacadeResponse, ResponseDetail};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 mod agent;
 mod runtime;
@@ -427,12 +427,17 @@ pub fn tool_text(value: &Value, detail: ResponseDetail) -> String {
             let warnings = value
                 .get("warnings")
                 .filter(|v| v.as_array().is_some_and(|v| !v.is_empty()));
-            if value["status"] != "partial" && warnings.is_none() {
+            let extra_error_details =
+                value["status"] == "error" && value["error"].get("details").is_some();
+            if value["status"] != "partial" && warnings.is_none() && !extra_error_details {
                 return text.to_owned();
             }
             let result =
                 serde_yaml::from_str::<Value>(text).unwrap_or_else(|_| Value::String(text.into()));
             let mut visible = json!({"status":value["status"],"result":result});
+            if extra_error_details {
+                visible["error"] = value["error"].clone();
+            }
             if let Some(warnings) = warnings {
                 visible["warnings"] = warnings.clone();
             }
@@ -510,11 +515,13 @@ mod tests {
         ] {
             assert!(!outcome(&format!("/app/plugin/llm/{route}"), data.clone()).is_error());
         }
-        assert!(!outcome(
-            "/app/plugin/llm/model/delete",
-            json!({"data":{"ok":true,"deleted":true}})
-        )
-        .is_error());
+        assert!(
+            !outcome(
+                "/app/plugin/llm/model/delete",
+                json!({"data":{"ok":true,"deleted":true}})
+            )
+            .is_error()
+        );
     }
     #[test]
     fn dashboard_card_reads_omit_layout_but_full_is_unchanged() {
@@ -646,5 +653,13 @@ mod tests {
             ),
             r#"{"data":{"status":"error"}}"#
         );
+    }
+    #[test]
+    fn late_error_observations_survive_visible_output() {
+        let value = json!({"status":"error", "error":{"code":"FAILED","message":"Failed", "details":{"clientReport":{"verified":false}}}, "data":"status: error\nerror:\n  code: FAILED\n  message: Failed\n"});
+        let visible: Value =
+            serde_yaml::from_str(&tool_text(&value, ResponseDetail::Essential)).unwrap();
+        assert_eq!(visible["error"]["details"], value["error"]["details"]);
+        assert_eq!(visible["result"]["status"], "error");
     }
 }
