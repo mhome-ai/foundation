@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.68.0",
+  "contractVersion": "1.69.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -400,7 +400,12 @@
     "/app/group/create": "spaceWrite",
     "/app/group/rename": "spaceWrite",
     "/app/group/members/update": "spaceWrite",
-    "/app/group/presentation/get": "spaceRead"
+    "/app/group/presentation/get": "spaceRead",
+    "/app/device/state/get": "spaceRead",
+    "/app/device/history/series/get": "spaceRead",
+    "/app/widget/value/get": "spaceRead",
+    "/app/graph/relations/get": "spaceRead",
+    "/app/device/view/get": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

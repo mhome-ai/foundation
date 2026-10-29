@@ -450,7 +450,7 @@
     }
   },
   {
-    "name": "device-briefs-keep-discovery-and-unknown-state",
+    "name": "device-briefs-keep-discovery-definitions",
     "target": "/app/device/brief/list",
     "data": {
       "devices": [
@@ -469,7 +469,6 @@
           "connectId": "connection-1",
           "manufacturerId": "demo",
           "manufacturerName": "Example maker",
-          "online": false,
           "availabilityStatus": "unavailable",
           "twinTags": [
             "light"
@@ -504,7 +503,6 @@
           ],
           "group": false,
           "integration": "demo.device",
-          "online": false,
           "availabilityStatus": "unavailable",
           "twinTags": [
             "light"
@@ -537,7 +535,7 @@
     }
   },
   {
-    "name": "device-detail-retains-identity-state-and-missing-items",
+    "name": "device-detail-retains-identity-and-missing-items",
     "target": "/app/device/detail/get",
     "data": {
       "items": [
@@ -559,16 +557,9 @@
             "connectId": "connection-1",
             "manufacturerId": "demo",
             "manufacturerName": "Example maker",
-            "online": false,
             "availabilityStatus": "unavailable",
             "twinTags": [
               "light"
-            ],
-            "states": [
-              {
-                "capabilityId": "state.onOff",
-                "value": "off"
-              }
             ],
             "memberIds": []
           }
@@ -587,7 +578,6 @@
             ],
             "group": true,
             "integration": "demo.device",
-            "states": [],
             "memberIds": [
               "d1"
             ]
@@ -621,16 +611,9 @@
             "connectId": "connection-1",
             "manufacturerId": "demo",
             "manufacturerName": "Example maker",
-            "online": false,
             "availabilityStatus": "unavailable",
             "twinTags": [
               "light"
-            ],
-            "states": [
-              {
-                "capabilityId": "state.onOff",
-                "value": "off"
-              }
             ],
             "memberIds": []
           }
@@ -649,7 +632,6 @@
             ],
             "group": true,
             "integration": "demo.device",
-            "states": [],
             "memberIds": [
               "d1"
             ]
@@ -3858,6 +3840,127 @@
     "essential": {
       "groupId": "g:1",
       "deleted": true
+    }
+  },
+  {
+    "name": "device-observation-empty-missing-and-false",
+    "target": "/app/device/state/get",
+    "data": {
+      "items": [
+        {
+          "requestedId": "d",
+          "found": true,
+          "resource": {
+            "entityId": "d",
+            "online": false,
+            "latest": []
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "items": [
+        {
+          "requestedId": "d",
+          "found": true,
+          "resource": {
+            "entityId": "d",
+            "online": false,
+            "latest": []
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    }
+  },
+  {
+    "name": "widget-value-is-independent",
+    "target": "/app/widget/value/get",
+    "data": {
+      "items": [
+        {
+          "requestedId": "w",
+          "found": true,
+          "resource": {
+            "widgetId": "w",
+            "revision": 3,
+            "value": false
+          }
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "items": [
+        {
+          "requestedId": "w",
+          "found": true,
+          "resource": {
+            "widgetId": "w",
+            "revision": 3,
+            "value": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "graph-keeps-direction-and-references",
+    "target": "/app/graph/relations/get",
+    "data": {
+      "resource": {
+        "kind": "device",
+        "id": "d"
+      },
+      "relations": [
+        {
+          "from": {
+            "kind": "automation",
+            "id": "a"
+          },
+          "relation": "uses",
+          "to": {
+            "kind": "device",
+            "id": "d"
+          },
+          "capabilityIds": [
+            "state.onOff"
+          ]
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "resource": {
+        "kind": "device",
+        "id": "d"
+      },
+      "relations": [
+        {
+          "from": {
+            "kind": "automation",
+            "id": "a"
+          },
+          "relation": "uses",
+          "to": {
+            "kind": "device",
+            "id": "d"
+          },
+          "capabilityIds": [
+            "state.onOff"
+          ]
+        }
+      ]
     }
   }
 ]

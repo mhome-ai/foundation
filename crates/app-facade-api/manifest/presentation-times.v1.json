@@ -1,7 +1,7 @@
 {
   "/app/automation/status": {
     "ms": [
-      "lastRunAt"
+      "items.*.resource.lastRunAt"
     ]
   },
   "/app/automation/activity/recent/list": {
@@ -26,11 +26,6 @@
   "/app/widget/history/list": {
     "sec": [
       "history.*.timestamp"
-    ]
-  },
-  "/app/widget/detail/get": {
-    "ms": [
-      "items.*.widget.nextTimestamp"
     ]
   },
   "/app/notification/list": {
@@ -68,6 +63,19 @@
     "ms": [
       "items.*.group.createdAt",
       "items.*.group.updatedAt"
+    ]
+  },
+  "/app/widget/value/get": {
+    "ms": [
+      "items.*.resource.nextTimestamp"
+    ]
+  },
+  "/app/device/state/get": {
+    "sec": [
+      "items.*.resource.onlineUpdatedAtSec",
+      "items.*.resource.latest.*.state.timestamp",
+      "items.*.resource.latest.*.event.timestamp",
+      "items.*.resource.latest.*.log.timestamp"
     ]
   }
 }

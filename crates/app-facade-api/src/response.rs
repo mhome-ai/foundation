@@ -193,7 +193,6 @@ fn device_briefs(data: &Value) -> Value {
                             | "capabilities"
                             | "group"
                             | "integration"
-                            | "online"
                             | "availabilityStatus"
                             | "twinTags"
                     )
@@ -480,13 +479,11 @@ mod tests {
         ] {
             assert!(!outcome(&format!("/app/plugin/llm/{route}"), data.clone()).is_error());
         }
-        assert!(
-            !outcome(
-                "/app/plugin/llm/model/delete",
-                json!({"data":{"ok":true,"deleted":true}})
-            )
-            .is_error()
-        );
+        assert!(!outcome(
+            "/app/plugin/llm/model/delete",
+            json!({"data":{"ok":true,"deleted":true}})
+        )
+        .is_error());
     }
     #[test]
     fn dashboard_card_reads_omit_layout_but_full_is_unchanged() {

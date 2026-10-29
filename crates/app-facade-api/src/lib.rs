@@ -38,4 +38,5 @@ pub mod forwarding;
 
 pub use conversation_api::execution::{FacadeProblem, FacadeResponse, FacadeStatus};
 
+pub mod resource_read;
 pub mod response;
