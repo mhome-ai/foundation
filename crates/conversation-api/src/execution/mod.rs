@@ -15,7 +15,7 @@ pub mod llm;
 pub mod operational_context;
 pub mod storage;
 mod tool_result;
-pub use tool_result::tool_result_text;
+pub use tool_result::{essential_yaml, tool_result_text};
 
 pub use crate::{
     ConversationSurface, InteractionAnswer, InteractionCard, InteractionKind, InteractionResponse,

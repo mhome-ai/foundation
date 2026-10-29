@@ -745,8 +745,7 @@
           "capabilityId": "command.onOff",
           "data": {
             "value": false,
-            "level": 0,
-            "optional": null
+            "level": 0
           },
           "traceSteps": [
             {
@@ -830,9 +829,7 @@
           "deviceName": "Button",
           "capabilityId": "event.click",
           "changedAt": "2026-10-27 01:59:58 +00:00 (UTC)",
-          "event": {
-            "value": null
-          }
+          "event": {}
         },
         {
           "deviceId": "d4",
@@ -1215,10 +1212,7 @@
     "status": "success",
     "essential": {
       "spaceId": "space-demo",
-      "configured": false,
-      "hub": null,
-      "operation": null,
-      "revocation": null
+      "configured": false
     }
   },
   {
@@ -1282,7 +1276,6 @@
           "issuedAt": 1800000000000,
           "activatedAt": 1800000001000,
           "connection": {
-            "spaceId": null,
             "state": "unknown",
             "source": "unavailable"
           }
@@ -1358,7 +1351,6 @@
           "displayName": "Example bot",
           "enabled": true,
           "status": "active",
-          "statusMessage": null,
           "providerData": {
             "botUsername": "ExampleBot"
           }
@@ -1423,7 +1415,6 @@
       "state": "succeeded",
       "phase": "completed",
       "updatedAtMs": 1800000000000,
-      "error": null,
       "result": {
         "changed": true,
         "warnings": [
@@ -1437,7 +1428,6 @@
             {
               "component": "node-camera",
               "action": "install",
-              "fromVersion": null,
               "toVersion": "1.0.0",
               "compatibility": {
                 "coreProtocol": 1
@@ -1466,9 +1456,7 @@
       "hostId": "host-demo",
       "state": "queued",
       "phase": "queued",
-      "updatedAtMs": 1800000000000,
-      "error": null,
-      "result": null
+      "updatedAtMs": 1800000000000
     }
   },
   {
@@ -1490,8 +1478,7 @@
       "state": "failed",
       "phase": "interrupted",
       "updatedAtMs": 1800000000000,
-      "error": "Host operation interrupted",
-      "result": null
+      "error": "Host operation interrupted"
     }
   },
   {
@@ -1653,11 +1640,9 @@
                   "serviceId": "camera",
                   "installed": true,
                   "installedVersion": "1.0.0",
-                  "enabled": null,
                   "controlError": "Control unavailable",
                   "toggleSupported": true,
                   "catalogLoading": false,
-                  "catalogError": null,
                   "availableVersion": "1.0.0",
                   "downloadSizeBytes": 1024,
                   "supported": true,
@@ -1685,7 +1670,6 @@
                   "state": "succeeded",
                   "phase": "completed",
                   "updatedAtMs": 1800000000000,
-                  "error": null,
                   "result": {
                     "changed": true,
                     "warnings": [
@@ -1699,7 +1683,6 @@
                         {
                           "component": "node-camera",
                           "action": "install",
-                          "fromVersion": null,
                           "toVersion": "1.0.0",
                           "compatibility": {
                             "coreProtocol": 1
@@ -1713,12 +1696,8 @@
               "protocolVersion": 1,
               "platform": "macos-arm64",
               "managementMode": "desktop",
-              "unsupportedReason": null,
-              "catalogError": null,
               "catalogLoading": false,
-              "pluginCatalogError": null,
-              "pluginCatalogLoading": false,
-              "runtimeError": null
+              "pluginCatalogLoading": false
             }
           }
         },
@@ -1729,7 +1708,6 @@
           "reachable": false,
           "detail": {
             "status": "unavailable",
-            "data": null,
             "error": "notObserved",
             "stale": false
           }
@@ -2066,9 +2044,7 @@
     "status": "success",
     "essential": {
       "name": "Example user",
-      "email": "user@example.com",
-      "avatarUrl": null,
-      "avatarExpiresAtMs": null
+      "email": "user@example.com"
     }
   },
   {
@@ -2104,7 +2080,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2114,7 +2090,7 @@
           "modes": [
             {
               "mode": "auto",
-              "displayName": "\u81ea\u52a8",
+              "displayName": "自动",
               "description": null,
               "requirements": {
                 "modelType": "chat",
@@ -2139,7 +2115,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2178,7 +2154,7 @@
         "providers": [
           {
             "provider": "local_example",
-            "displayName": "\u793a\u4f8b Provider",
+            "displayName": "示例 Provider",
             "runtime": "local",
             "modelSource": "catalog",
             "catalogProvider": "example",
@@ -2219,7 +2195,7 @@
               "chat": [
                 {
                   "id": "demo-chat",
-                  "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+                  "displayName": "示例对话模型",
                   "modelType": "chat",
                   "provider": "local_example",
                   "available": true,
@@ -2243,7 +2219,7 @@
             "models": [
               {
                 "id": "demo-chat",
-                "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+                "displayName": "示例对话模型",
                 "modelType": "chat",
                 "provider": "local_example",
                 "available": true,
@@ -2276,7 +2252,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2317,7 +2293,7 @@
             "chat": [
               {
                 "id": "demo-chat",
-                "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+                "displayName": "示例对话模型",
                 "modelType": "chat",
                 "provider": "local_example",
                 "available": true,
@@ -2341,7 +2317,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "provider": "local_example",
               "available": true,
@@ -2373,10 +2349,6 @@
       "llmMode": "local",
       "effectiveMappings": [
         {
-          "temperature": null,
-          "reasoningEffort": null,
-          "thinking": null,
-          "fastMode": null,
           "useCase": "chat",
           "agentModelMode": "auto",
           "provider": "local_example",
@@ -2398,15 +2370,13 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
-          "description": null,
+          "displayName": "对话",
           "configurable": true,
           "active": true,
           "modes": [
             {
               "mode": "auto",
-              "displayName": "\u81ea\u52a8",
-              "description": null,
+              "displayName": "自动",
               "requirements": {
                 "modelType": "chat",
                 "requiredInputModalities": [
@@ -2428,11 +2398,10 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
-              "successor": null,
               "supportsTools": true,
               "supportsVision": false,
               "contextWindowTokens": 32768,
@@ -2461,7 +2430,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2477,15 +2446,13 @@
           "authenticated": true,
           "ready": true,
           "status": "ready",
-          "reason": null,
           "supportedUseCases": [
             "chat"
           ],
           "readinessByUseCase": {
             "chat": {
               "ready": true,
-              "modelCount": 1,
-              "reason": null
+              "modelCount": 1
             }
           }
         }
@@ -2502,7 +2469,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2533,7 +2500,7 @@
         "providers": [
           {
             "provider": "local_example",
-            "displayName": "\u793a\u4f8b Provider",
+            "displayName": "示例 Provider",
             "runtime": "local",
             "modelSource": "catalog",
             "catalogProvider": "example",
@@ -2574,7 +2541,7 @@
               "chat": [
                 {
                   "id": "demo-chat",
-                  "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+                  "displayName": "示例对话模型",
                   "modelType": "chat",
                   "provider": "local_example",
                   "available": true,
@@ -2598,7 +2565,7 @@
             "models": [
               {
                 "id": "demo-chat",
-                "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+                "displayName": "示例对话模型",
                 "modelType": "chat",
                 "provider": "local_example",
                 "available": true,
@@ -2628,7 +2595,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2669,7 +2636,7 @@
             "chat": [
               {
                 "id": "demo-chat",
-                "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+                "displayName": "示例对话模型",
                 "modelType": "chat",
                 "provider": "local_example",
                 "available": true,
@@ -2693,7 +2660,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "provider": "local_example",
               "available": true,
@@ -2731,11 +2698,10 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
-              "successor": null,
               "supportsTools": true,
               "supportsVision": false,
               "contextWindowTokens": 32768,
@@ -2758,7 +2724,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2781,8 +2747,7 @@
           "readinessByUseCase": {
             "chat": {
               "ready": true,
-              "modelCount": 1,
-              "reason": null
+              "modelCount": 1
             }
           },
           "nodeType": "llm",
@@ -2826,7 +2791,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2885,11 +2850,10 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
-              "successor": null,
               "supportsTools": true,
               "supportsVision": false,
               "contextWindowTokens": 32768,
@@ -2941,7 +2905,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2951,7 +2915,7 @@
           "modes": [
             {
               "mode": "auto",
-              "displayName": "\u81ea\u52a8",
+              "displayName": "自动",
               "description": null,
               "requirements": {
                 "modelType": "chat",
@@ -2975,10 +2939,6 @@
     "essential": {
       "effectiveMappings": [
         {
-          "temperature": null,
-          "reasoningEffort": null,
-          "thinking": null,
-          "fastMode": null,
           "useCase": "chat",
           "agentModelMode": "auto",
           "provider": "local_example",
@@ -2994,15 +2954,13 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
-          "description": null,
+          "displayName": "对话",
           "configurable": true,
           "active": true,
           "modes": [
             {
               "mode": "auto",
-              "displayName": "\u81ea\u52a8",
-              "description": null,
+              "displayName": "自动",
               "requirements": {
                 "modelType": "chat",
                 "requiredInputModalities": [
@@ -3058,22 +3016,22 @@
     "name": "agent-memory-text",
     "target": "/app/agent/memory/get",
     "data": {
-      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
+      "content": "客厅空调设定为 26°C 前先征求用户同意。"
     },
     "status": "success",
     "essential": {
-      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
+      "content": "客厅空调设定为 26°C 前先征求用户同意。"
     }
   },
   {
     "name": "agent-identity-text",
     "target": "/app/agent/identity/get",
     "data": {
-      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
+      "content": "使用中文，回答简洁。"
     },
     "status": "success",
     "essential": {
-      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
+      "content": "使用中文，回答简洁。"
     }
   },
   {
@@ -3312,8 +3270,7 @@
         },
         {
           "cardId": "card-2",
-          "title": "Unpositioned",
-          "layout": null
+          "title": "Unpositioned"
         }
       ]
     }
@@ -3710,5 +3667,109 @@
     "data": {},
     "status": "error",
     "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "essential omits null object fields recursively",
+    "target": "/app/test/read",
+    "status": "success",
+    "data": {
+      "missing": null,
+      "nested": {
+        "missing": null,
+        "active": false,
+        "count": 0,
+        "empty": "",
+        "list": [],
+        "object": {},
+        "text": "null",
+        "profile": "field: null\nKeep this line\n"
+      },
+      "rows": [
+        null,
+        {
+          "id": "row-1",
+          "missing": null
+        },
+        {}
+      ]
+    },
+    "essential": {
+      "nested": {
+        "active": false,
+        "count": 0,
+        "empty": "",
+        "list": [],
+        "object": {},
+        "text": "null",
+        "profile": "field: null\nKeep this line\n"
+      },
+      "rows": [
+        null,
+        {
+          "id": "row-1"
+        },
+        {}
+      ]
+    }
+  },
+  {
+    "name": "partial essential omits missing diagnostics",
+    "target": "/app/room/devices/move",
+    "status": "partial",
+    "data": {
+      "moved": [
+        "a"
+      ],
+      "notMoved": [
+        {
+          "deviceId": "b",
+          "reason": "offline",
+          "retryAfter": null
+        }
+      ],
+      "missing": null
+    },
+    "essential": {
+      "moved": [
+        "a"
+      ],
+      "notMoved": [
+        {
+          "deviceId": "b",
+          "reason": "offline"
+        }
+      ]
+    }
+  },
+  {
+    "name": "error essential omits missing diagnostics",
+    "target": "/app/automation/save",
+    "status": "error",
+    "code": "OPERATION_FAILED",
+    "data": {
+      "success": false,
+      "message": "Failed",
+      "retry": false,
+      "missing": null,
+      "details": {
+        "missing": null,
+        "remaining": []
+      }
+    },
+    "essential": {
+      "status": "error",
+      "error": {
+        "code": "OPERATION_FAILED",
+        "message": "Failed",
+        "details": {
+          "success": false,
+          "message": "Failed",
+          "retry": false,
+          "details": {
+            "remaining": []
+          }
+        }
+      }
+    }
   }
 ]

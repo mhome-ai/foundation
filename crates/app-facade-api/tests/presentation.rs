@@ -59,7 +59,7 @@ fn shared_projection_and_outcome_contract() {
         if case["status"] == "error" {
             assert_eq!(full["error"]["code"], case["code"]);
             let parsed: Value = serde_yaml::from_str(essential["data"].as_str().unwrap()).unwrap();
-            assert_eq!(parsed, full);
+            assert_eq!(parsed, *case.get("essential").unwrap_or(&full));
         } else if case["acknowledgement"] == true {
             assert_eq!(full, serde_json::json!({"status":"success"}));
             assert_eq!(essential, full);

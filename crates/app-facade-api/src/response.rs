@@ -1,5 +1,6 @@
 //! Public App result projection. Transport serialization is not a business input.
 use crate::{FacadeResponse, ResponseDetail};
+use conversation_api::execution::essential_yaml;
 use serde_json::{json, Value};
 
 mod agent;
@@ -369,14 +370,14 @@ pub fn render_in_timezone(
             if let Some(details) = problem.get_mut("details") {
                 project_error_details(target, details);
             }
-            let text = serde_yaml::to_string(&json!({"status":"error","error":problem}))?;
+            let text = essential_yaml(&json!({"status":"error","error":problem}))?;
             return Ok(response.with_essential_data(text));
         }
     }
     if detail == ResponseDetail::Essential && response.data().is_some() {
         let mut projected = essential(target, response.data().expect("outcome has data"));
         time::localize(target, &mut projected, timezone);
-        let text = serde_yaml::to_string(&projected)?;
+        let text = essential_yaml(&projected)?;
         Ok(response.with_essential_data(text))
     } else {
         Ok(response)

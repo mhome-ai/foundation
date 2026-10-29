@@ -35,8 +35,11 @@ fn requests_match_the_shared_corpus_and_response_projection_preserves_ui_fields(
     .unwrap();
     assert_eq!(full["data"], data);
     assert_eq!(essential["status"], "success");
+    let mut projected = data;
+    assert!(projected["entityCard"].is_null());
+    projected.as_object_mut().unwrap().remove("entityCard");
     assert_eq!(
         serde_yaml::from_str::<Value>(essential["data"].as_str().unwrap()).unwrap(),
-        data
+        projected
     );
 }

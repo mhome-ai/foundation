@@ -201,3 +201,9 @@ include the content digest and require signed URLs, never data URLs.
 Callers supply the known `ResponseDetail`; the renderer preserves Full JSON and exposes
 Essential YAML with partial outcomes, warnings and late error observations intact.
 It does not change the stored result or choose domain business fields.
+
+`execution::essential_yaml` is the common Essential serializer: it omits
+null-valued object fields recursively while preserving array positions, root null,
+empty collections, false, zero and all string content. App Facade projections,
+Agent workflow results and provider-visible diagnostics use the same rule; Full
+business values and persisted execution state are unchanged.

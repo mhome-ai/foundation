@@ -75,6 +75,12 @@ are separate from this result envelope.
 
 App UI requests full and preserves the complete envelope through transport and SDK
 parsing. UI consumers explicitly read data and handle warnings and non-success outcomes.
+Essential YAML omits null-valued object fields recursively after domain projection.
+This shared rule also applies to error diagnostics and visible warning details.
+Full values, false, zero, strings (including empty strings), empty collections,
+array positions and a root null value are preserved. This is output-only; it
+never changes request semantics, stored data or prepared actions.
+
 Agent and MCP public results use essential; internal workflow reads use full. The CLI
 uses `--response-detail full|essential`, and the bundled external Skill requests
 essential. Dashboard essential projection keeps card identity, title, type,

@@ -2,6 +2,25 @@
 use super::ResponseDetail;
 use serde_json::{Value, json};
 
+/// Serialize an Essential projection, omitting null-valued object fields recursively.
+/// Keep array positions, root null, empty collections, booleans, numbers and text intact.
+/// This presentation rule never mutates the full business value or parses string content.
+pub fn essential_yaml(value: &Value) -> Result<String, serde_yaml::Error> {
+    fn omit_null_fields(value: &mut Value) {
+        match value {
+            Value::Object(fields) => {
+                fields.retain(|_, value| !value.is_null());
+                fields.values_mut().for_each(omit_null_fields);
+            }
+            Value::Array(items) => items.iter_mut().for_each(omit_null_fields),
+            _ => {}
+        }
+    }
+    let mut projected = value.clone();
+    omit_null_fields(&mut projected);
+    serde_yaml::to_string(&projected)
+}
+
 /// Text at model/MCP/CLI boundaries. Canonical history keeps the original outcome.
 /// Full responses and non-Facade values retain JSON; Essential content is never JSON-escaped.
 pub fn tool_result_text(value: &Value, detail: ResponseDetail) -> String {
@@ -30,7 +49,7 @@ pub fn tool_result_text(value: &Value, detail: ResponseDetail) -> String {
             if let Some(warnings) = warnings {
                 visible["warnings"] = warnings.clone();
             }
-            return serde_yaml::to_string(&visible).expect("serializable result");
+            return essential_yaml(&visible).expect("serializable result");
         }
     }
     value
@@ -42,6 +61,38 @@ pub fn tool_result_text(value: &Value, detail: ResponseDetail) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn essential_omits_null_fields_without_losing_values_or_array_positions() {
+        let full = json!({"missing":null,"nested":{"missing":null,"enabled":false,
+            "zero":0,"empty":"","list":[],"object":{},"literal":"null",
+            "profile":"missing: null\nKeep this text\n"},"rows":[null,{"missing":null,"id":"a"},{}]});
+        let before = full.clone();
+        let parsed: Value = serde_yaml::from_str(&essential_yaml(&full).unwrap()).unwrap();
+        assert_eq!(
+            parsed,
+            json!({"nested":{"enabled":false,"zero":0,"empty":"",
+            "list":[],"object":{},"literal":"null","profile":"missing: null\nKeep this text\n"},
+            "rows":[null,{"id":"a"},{}]})
+        );
+        assert_eq!(full, before);
+        assert_eq!(essential_yaml(&Value::Null).unwrap(), "null\n");
+    }
+
+    #[test]
+    fn late_warning_and_error_details_follow_the_same_null_rule() {
+        let value = json!({"status":"error","error":{"code":"FAILED","message":"Failed",
+            "details":{"missing":null,"clientReport":{"verified":false,"missing":null}}},
+            "data":"status: error\n", "warnings":[{"code":"LATE","message":"Late warning",
+            "details":{"missing":null,"retry":false}}]});
+        let parsed: Value =
+            serde_yaml::from_str(&tool_result_text(&value, ResponseDetail::Essential)).unwrap();
+        assert_eq!(
+            parsed["error"]["details"],
+            json!({"clientReport":{"verified":false}})
+        );
+        assert_eq!(parsed["warnings"][0]["details"], json!({"retry":false}));
+        assert!(value["error"]["details"].get("missing").is_some());
+    }
     #[test]
     fn visible_text_preserves_partial_outcomes_and_warnings() {
         let full_string = json!({"status":"success","data":"items: []\n"});
