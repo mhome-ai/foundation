@@ -1,6 +1,6 @@
 //! Public App result projection. Transport serialization is not a business input.
 use crate::{FacadeResponse, ResponseDetail};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 mod agent;
 mod runtime;
@@ -399,13 +399,11 @@ mod tests {
         ] {
             assert!(!outcome(&format!("/app/plugin/llm/{route}"), data.clone()).is_error());
         }
-        assert!(
-            !outcome(
-                "/app/plugin/llm/model/delete",
-                json!({"data":{"ok":true,"deleted":true}})
-            )
-            .is_error()
-        );
+        assert!(!outcome(
+            "/app/plugin/llm/model/delete",
+            json!({"data":{"ok":true,"deleted":true}})
+        )
+        .is_error());
     }
     #[test]
     fn dashboard_card_reads_omit_layout_but_full_is_unchanged() {
