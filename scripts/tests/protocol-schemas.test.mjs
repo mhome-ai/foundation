@@ -211,3 +211,18 @@ for (const part of ["input", "output"]) {
     }
   });
 }
+
+for (const part of ["input", "output"]) {
+  test(`integration presentation ${part} contract`, () => {
+    const config = PROTOCOL_PACKAGES.appFacade;
+    const schema = readJson(path.join(root, config.crateDir, config.schemas.integrationPresentation));
+    const ajv = compiler();
+    ajv.addSchema(readJson(path.join(root, config.crateDir, config.schemas.capabilityDescriptor)));
+    ajv.addSchema(schema);
+    const validate = ajv.compile({ $ref: schema.$id + `#/$defs/${part}` });
+    const fixtures = readJson(path.join(root, config.crateDir, config.fixtures.integrationPresentation))[part];
+    for (const [kind, expected] of [["valid", true], ["invalid", false]]) {
+      for (const value of fixtures[kind]) assert.equal(validate(value), expected, JSON.stringify(validate.errors));
+    }
+  });
+}

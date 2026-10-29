@@ -1,0 +1,206 @@
+{
+  "input": {
+    "valid": [
+      {
+        "integrationId": "basic.device"
+      }
+    ],
+    "invalid": [
+      {},
+      {
+        "integration": "basic.device"
+      },
+      {
+        "integrationId": ""
+      },
+      {
+        "integrationId": "  "
+      },
+      {
+        "integrationId": "basic.device",
+        "scopeId": "other"
+      },
+      {
+        "integrationId": 7
+      }
+    ]
+  },
+  "model": {
+    "integrationId": "basic.device",
+    "displayName": "Devices",
+    "iconUrl": "https://example.invalid/device.png",
+    "entityNames": {
+      "basic.device.Device": "Device",
+      "basic.device.Component": "Component"
+    },
+    "standaloneEntityTypes": [
+      "basic.device.Device"
+    ],
+    "entityGroupEnabled": {
+      "basic.device.Device": true
+    },
+    "implIntegrations": [
+      {
+        "integration": "example.device",
+        "name": "Example Provider",
+        "iconUrl": "https://example.invalid/provider.png"
+      },
+      {
+        "integration": "other.device",
+        "name": "Other Provider",
+        "iconUrl": ""
+      }
+    ],
+    "capabilities": {
+      "command.onOff": {
+        "displayName": "Power",
+        "description": "Switch power.",
+        "visibility": "full",
+        "tag": "on/off"
+      }
+    }
+  },
+  "output": {
+    "valid": [
+      {
+        "integrationId": "basic.device",
+        "integrationNames": {
+          "basic.device": "Devices",
+          "example.device": "Example Provider",
+          "other.device": "Other Provider"
+        },
+        "integrationIconUrls": {
+          "basic.device": "https://example.invalid/device.png",
+          "example.device": "https://example.invalid/provider.png"
+        },
+        "typeNames": {
+          "basic.device.Device": "Device",
+          "basic.device.Component": "Component"
+        },
+        "twinNames": {
+          "basic.device.Light": "Light"
+        },
+        "entityStandalone": {
+          "basic.device.Device": true,
+          "basic.device.Component": false
+        },
+        "groupSupported": {
+          "basic.device.Device": true
+        },
+        "capabilities": [
+          {
+            "capabilityId": "basic.device.command.onOff",
+            "type": "COMMAND",
+            "displayName": "Power",
+            "description": "Switch power.",
+            "visibility": "full",
+            "tag": "on/off"
+          }
+        ]
+      }
+    ],
+    "invalid": [
+      {
+        "integrationId": "basic.device",
+        "integrationNames": {
+          "basic.device": "Devices",
+          "example.device": "Example Provider",
+          "other.device": "Other Provider"
+        },
+        "integrationIconUrls": {
+          "basic.device": "https://example.invalid/device.png",
+          "example.device": "https://example.invalid/provider.png"
+        },
+        "typeNames": {
+          "basic.device.Device": "Device",
+          "basic.device.Component": "Component"
+        },
+        "twinNames": {
+          "basic.device.Light": "Light"
+        },
+        "entityStandalone": {
+          "basic.device.Device": true,
+          "basic.device.Component": false
+        },
+        "groupSupported": {
+          "basic.device.Device": true
+        }
+      },
+      {
+        "integrationId": "basic.device",
+        "integrationNames": {
+          "basic.device": "Devices",
+          "example.device": "Example Provider",
+          "other.device": "Other Provider"
+        },
+        "integrationIconUrls": {
+          "basic.device": "https://example.invalid/device.png",
+          "example.device": "https://example.invalid/provider.png"
+        },
+        "typeNames": {
+          "basic.device.Device": "Device",
+          "basic.device.Component": "Component"
+        },
+        "twinNames": {
+          "basic.device.Light": "Light"
+        },
+        "entityStandalone": {
+          "basic.device.Device": true,
+          "basic.device.Component": false
+        },
+        "groupSupported": {
+          "basic.device.Device": true
+        },
+        "capabilities": [
+          {
+            "capabilityId": "basic.device.command.onOff",
+            "type": "COMMAND",
+            "displayName": "Power",
+            "description": "Switch power.",
+            "visibility": "full",
+            "tag": "on/off"
+          }
+        ],
+        "entityEnabled": {
+          "basic.device.Device": true
+        }
+      },
+      {
+        "integrationId": "basic.device",
+        "integrationNames": {
+          "basic.device": "Devices",
+          "example.device": "Example Provider",
+          "other.device": "Other Provider"
+        },
+        "integrationIconUrls": {
+          "basic.device": "https://example.invalid/device.png",
+          "example.device": "https://example.invalid/provider.png"
+        },
+        "typeNames": {
+          "basic.device.Device": "Device",
+          "basic.device.Component": "Component"
+        },
+        "twinNames": {
+          "basic.device.Light": "Light"
+        },
+        "entityStandalone": {
+          "basic.device.Device": true,
+          "basic.device.Component": false
+        },
+        "groupSupported": {
+          "basic.device.Device": "yes"
+        },
+        "capabilities": [
+          {
+            "capabilityId": "basic.device.command.onOff",
+            "type": "COMMAND",
+            "displayName": "Power",
+            "description": "Switch power.",
+            "visibility": "full",
+            "tag": "on/off"
+          }
+        ]
+      }
+    ]
+  }
+}

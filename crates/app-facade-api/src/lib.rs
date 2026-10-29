@@ -11,6 +11,7 @@ pub mod entity_presentation;
 pub mod host_provision;
 pub mod hub;
 pub mod integration;
+pub mod integration_presentation;
 pub mod interaction_flow;
 pub mod messaging;
 pub mod plugin;

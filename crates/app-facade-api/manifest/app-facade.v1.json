@@ -237,6 +237,13 @@
       "requestTargets": [
         "/app/entity/presentation/get"
       ]
+    },
+    "integrationPresentation": {
+      "schema": "schema/integration-presentation.v1.schema.json",
+      "contract": "contract/integration-presentation-v1.md",
+      "requestTargets": [
+        "/app/integration/presentation/get"
+      ]
     }
   },
   "authorization": "manifest/authorization.v1.json",

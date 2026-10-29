@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/integration-presentation.v1.schema.json",
+  "$defs": {
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "integrationId"
+      ],
+      "properties": {
+        "integrationId": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "integrationId",
+        "integrationNames",
+        "integrationIconUrls",
+        "typeNames",
+        "twinNames",
+        "entityStandalone",
+        "groupSupported",
+        "capabilities"
+      ],
+      "properties": {
+        "integrationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "integrationNames": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "integrationIconUrls": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "typeNames": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "twinNames": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "entityStandalone": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "groupSupported": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "https://mhome.ai/schema/capability-descriptor.v1.schema.json"
+          }
+        }
+      }
+    }
+  }
+}
