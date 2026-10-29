@@ -9,6 +9,23 @@ pub mod time;
 
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
 pub fn outcome(target: &str, data: Value) -> FacadeResponse {
+    if matches!(
+        target,
+        crate::group::CREATE
+            | crate::group::RENAME
+            | crate::group::MEMBERS_UPDATE
+            | crate::group::DELETE
+    ) {
+        if let Some(problem) = data.get("applicationProblem").filter(|p| !p.is_null()) {
+            return match serde_json::from_value::<crate::FacadeProblem>(problem.clone()) {
+                Ok(problem) => FacadeResponse::partial(data).with_warning(problem),
+                Err(_) => {
+                    FacadeResponse::error("INVALID_RESPONSE", "Invalid Group application outcome")
+                }
+            };
+        }
+        return FacadeResponse::success(data);
+    }
     if is_acknowledgement(target) {
         return match data.get("success").and_then(Value::as_bool) {
             Some(true) => FacadeResponse::acknowledged(),
@@ -35,7 +52,6 @@ pub fn outcome(target: &str, data: Value) -> FacadeResponse {
             | "/app/automation/stop"
             | "/app/automation/delete"
             | "/app/automation/snapshot/rollback"
-            | "/app/group/delete"
             | "/app/room/delete"
             | "/app/widget/delete"
             | "/app/widget/data/update"
@@ -127,7 +143,6 @@ pub fn is_acknowledgement(target: &str) -> bool {
             | "/app/agent/llm/provider/credential/delete"
             | "/app/automation/start"
             | "/app/automation/stop"
-            | "/app/group/delete"
             | "/app/widget/delete"
             | "/app/widget/data/update"
             | "/app/widget/button/trigger"

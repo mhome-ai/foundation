@@ -8,6 +8,7 @@
 pub mod artifact;
 pub mod call;
 pub mod entity_presentation;
+pub mod group;
 pub mod host_provision;
 pub mod hub;
 pub mod integration;

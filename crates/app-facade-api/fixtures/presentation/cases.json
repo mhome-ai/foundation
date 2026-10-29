@@ -2034,7 +2034,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2044,7 +2044,7 @@
           "modes": [
             {
               "mode": "auto",
-              "displayName": "自动",
+              "displayName": "\u81ea\u52a8",
               "description": null,
               "requirements": {
                 "modelType": "chat",
@@ -2069,7 +2069,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2108,7 +2108,7 @@
         "providers": [
           {
             "provider": "local_example",
-            "displayName": "示例 Provider",
+            "displayName": "\u793a\u4f8b Provider",
             "runtime": "local",
             "modelSource": "catalog",
             "catalogProvider": "example",
@@ -2149,7 +2149,7 @@
               "chat": [
                 {
                   "id": "demo-chat",
-                  "displayName": "示例对话模型",
+                  "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
                   "modelType": "chat",
                   "provider": "local_example",
                   "available": true,
@@ -2173,7 +2173,7 @@
             "models": [
               {
                 "id": "demo-chat",
-                "displayName": "示例对话模型",
+                "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
                 "modelType": "chat",
                 "provider": "local_example",
                 "available": true,
@@ -2206,7 +2206,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2247,7 +2247,7 @@
             "chat": [
               {
                 "id": "demo-chat",
-                "displayName": "示例对话模型",
+                "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
                 "modelType": "chat",
                 "provider": "local_example",
                 "available": true,
@@ -2271,7 +2271,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "provider": "local_example",
               "available": true,
@@ -2324,13 +2324,13 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "configurable": true,
           "active": true,
           "modes": [
             {
               "mode": "auto",
-              "displayName": "自动",
+              "displayName": "\u81ea\u52a8",
               "requirements": {
                 "modelType": "chat",
                 "requiredInputModalities": [
@@ -2352,7 +2352,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2384,7 +2384,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2423,7 +2423,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2454,7 +2454,7 @@
         "providers": [
           {
             "provider": "local_example",
-            "displayName": "示例 Provider",
+            "displayName": "\u793a\u4f8b Provider",
             "runtime": "local",
             "modelSource": "catalog",
             "catalogProvider": "example",
@@ -2495,7 +2495,7 @@
               "chat": [
                 {
                   "id": "demo-chat",
-                  "displayName": "示例对话模型",
+                  "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
                   "modelType": "chat",
                   "provider": "local_example",
                   "available": true,
@@ -2519,7 +2519,7 @@
             "models": [
               {
                 "id": "demo-chat",
-                "displayName": "示例对话模型",
+                "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
                 "modelType": "chat",
                 "provider": "local_example",
                 "available": true,
@@ -2549,7 +2549,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2590,7 +2590,7 @@
             "chat": [
               {
                 "id": "demo-chat",
-                "displayName": "示例对话模型",
+                "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
                 "modelType": "chat",
                 "provider": "local_example",
                 "available": true,
@@ -2614,7 +2614,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "provider": "local_example",
               "available": true,
@@ -2652,7 +2652,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2678,7 +2678,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2745,7 +2745,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2804,7 +2804,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2859,7 +2859,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2869,7 +2869,7 @@
           "modes": [
             {
               "mode": "auto",
-              "displayName": "自动",
+              "displayName": "\u81ea\u52a8",
               "description": null,
               "requirements": {
                 "modelType": "chat",
@@ -2908,13 +2908,13 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "configurable": true,
           "active": true,
           "modes": [
             {
               "mode": "auto",
-              "displayName": "自动",
+              "displayName": "\u81ea\u52a8",
               "requirements": {
                 "modelType": "chat",
                 "requiredInputModalities": [
@@ -2970,22 +2970,22 @@
     "name": "agent-memory-text",
     "target": "/app/agent/memory/get",
     "data": {
-      "content": "客厅空调设定为 26°C 前先征求用户同意。"
+      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
     },
     "status": "success",
     "essential": {
-      "content": "客厅空调设定为 26°C 前先征求用户同意。"
+      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
     }
   },
   {
     "name": "agent-identity-text",
     "target": "/app/agent/identity/get",
     "data": {
-      "content": "使用中文，回答简洁。"
+      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
     },
     "status": "success",
     "essential": {
-      "content": "使用中文，回答简洁。"
+      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
     }
   },
   {
@@ -3447,31 +3447,6 @@
     "code": "INVALID_RESPONSE"
   },
   {
-    "name": "/app/group/delete acknowledgement True",
-    "target": "/app/group/delete",
-    "data": {
-      "success": true
-    },
-    "status": "success",
-    "acknowledgement": true
-  },
-  {
-    "name": "/app/group/delete acknowledgement False",
-    "target": "/app/group/delete",
-    "data": {
-      "success": false
-    },
-    "status": "error",
-    "code": "OPERATION_FAILED"
-  },
-  {
-    "name": "/app/group/delete acknowledgement None",
-    "target": "/app/group/delete",
-    "data": {},
-    "status": "error",
-    "code": "INVALID_RESPONSE"
-  },
-  {
     "name": "/app/widget/delete acknowledgement True",
     "target": "/app/widget/delete",
     "data": {
@@ -3724,6 +3699,165 @@
           }
         }
       }
+    }
+  },
+  {
+    "name": "group-list",
+    "target": "/app/group/list",
+    "data": {
+      "spaceId": "space",
+      "groups": [
+        {
+          "groupId": "g:11111111-1111-4111-8111-111111111111",
+          "name": "Lights",
+          "memberType": "basic.device.Device",
+          "memberCount": 2,
+          "revision": 3,
+          "applyState": "ready",
+          "createdAt": 1900000000000,
+          "updatedAt": 1900000001000
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "spaceId": "space",
+      "groups": [
+        {
+          "groupId": "g:11111111-1111-4111-8111-111111111111",
+          "name": "Lights",
+          "memberType": "basic.device.Device",
+          "memberCount": 2,
+          "revision": 3,
+          "applyState": "ready",
+          "createdAt": "2030-03-17 17:46:40 +00:00 (UTC)",
+          "updatedAt": "2030-03-17 17:46:41 +00:00 (UTC)"
+        }
+      ]
+    }
+  },
+  {
+    "name": "group-detail",
+    "target": "/app/group/detail/get",
+    "data": {
+      "spaceId": "space",
+      "items": [
+        {
+          "requestedId": "g:11111111-1111-4111-8111-111111111111",
+          "found": true,
+          "group": {
+            "groupId": "g:11111111-1111-4111-8111-111111111111",
+            "name": "Lights",
+            "memberType": "basic.device.Device",
+            "memberCount": 2,
+            "revision": 3,
+            "applyState": "ready",
+            "createdAt": 1900000000000,
+            "updatedAt": 1900000001000,
+            "memberIds": [
+              "lamp-a",
+              "lamp-b"
+            ],
+            "capabilities": [
+              {
+                "id": "basic.device.command.onOff",
+                "memberCount": 1
+              }
+            ],
+            "memberProblems": [
+              {
+                "memberId": "lamp-b",
+                "code": "MEMBER_UNAVAILABLE",
+                "message": "Member is unavailable"
+              }
+            ]
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "spaceId": "space",
+      "items": [
+        {
+          "requestedId": "g:11111111-1111-4111-8111-111111111111",
+          "found": true,
+          "group": {
+            "groupId": "g:11111111-1111-4111-8111-111111111111",
+            "name": "Lights",
+            "memberType": "basic.device.Device",
+            "memberCount": 2,
+            "revision": 3,
+            "applyState": "ready",
+            "createdAt": "2030-03-17 17:46:40 +00:00 (UTC)",
+            "updatedAt": "2030-03-17 17:46:41 +00:00 (UTC)",
+            "memberIds": [
+              "lamp-a",
+              "lamp-b"
+            ],
+            "capabilities": [
+              {
+                "id": "basic.device.command.onOff",
+                "memberCount": 1
+              }
+            ],
+            "memberProblems": [
+              {
+                "memberId": "lamp-b",
+                "code": "MEMBER_UNAVAILABLE",
+                "message": "Member is unavailable"
+              }
+            ]
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    }
+  },
+  {
+    "name": "group-apply-partial",
+    "target": "/app/group/members/update",
+    "data": {
+      "groupId": "g:1",
+      "revision": 4,
+      "applyState": "failed",
+      "applicationProblem": {
+        "code": "GROUP_APPLY_FAILED",
+        "message": "Retry application"
+      }
+    },
+    "status": "partial",
+    "warningCode": "GROUP_APPLY_FAILED",
+    "essential": {
+      "groupId": "g:1",
+      "revision": 4,
+      "applyState": "failed",
+      "applicationProblem": {
+        "code": "GROUP_APPLY_FAILED",
+        "message": "Retry application"
+      }
+    }
+  },
+  {
+    "name": "group-delete",
+    "target": "/app/group/delete",
+    "data": {
+      "groupId": "g:1",
+      "deleted": true
+    },
+    "status": "success",
+    "essential": {
+      "groupId": "g:1",
+      "deleted": true
     }
   }
 ]

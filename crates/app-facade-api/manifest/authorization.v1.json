@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.67.0",
+  "contractVersion": "1.68.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -95,11 +95,9 @@
     "/app/entity/history/list": "spaceRead",
     "/app/entity/list": "spaceRead",
     "/app/entity/presentation/get": "spaceRead",
-    "/app/group/brief/list": "spaceRead",
     "/app/group/delete": "spaceWrite",
     "/app/group/detail/get": "spaceRead",
     "/app/group/list": "spaceRead",
-    "/app/group/upsert": "spaceWrite",
     "/app/host/access/issue": "userWrite",
     "/app/host/administrator/approve": "userWrite",
     "/app/host/administrator/cancel": "userWrite",
@@ -128,7 +126,6 @@
     "/app/integration/disconnect": "spaceWrite",
     "/app/integration/entity/list": "spaceRead",
     "/app/integration/entity/refresh": "spaceWrite",
-    "/app/integration/group/get": "spaceRead",
     "/app/integration/install": "spaceWrite",
     "/app/integration/installed/check": "spaceRead",
     "/app/integration/installed/list": "spaceRead",
@@ -399,7 +396,11 @@
     "/widget/history/list": "spaceRead",
     "/widget/list": "spaceRead",
     "/widget/names": "spaceRead",
-    "/widget/setting/update": "spaceWrite"
+    "/widget/setting/update": "spaceWrite",
+    "/app/group/create": "spaceWrite",
+    "/app/group/rename": "spaceWrite",
+    "/app/group/members/update": "spaceWrite",
+    "/app/group/presentation/get": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

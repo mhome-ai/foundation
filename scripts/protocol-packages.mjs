@@ -80,6 +80,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       cardSkins: "schema/card-skins.v1.schema.json",
       call: "schema/facade-call.v1.schema.json",
       response: "schema/facade-response.v1.schema.json",
+      group: "schema/group.v1.schema.json",
       frame: "schema/messaging-frame.v3.schema.json",
       interactionFlow: "schema/interaction-flow-app.v1.schema.json",
       routing: "schema/routing.v1.schema.json",
@@ -98,6 +99,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     fixtures: Object.freeze({
       entityPresentation: "fixtures/entity-presentation.conformance.json",
       integrationPresentation: "fixtures/integration-presentation.conformance.json",
+      group: "fixtures/group.conformance.json",
       valid: "fixtures",
       invalid: "fixtures/invalid",
       hostAccess: "schema/host-access.v1.schema.json",

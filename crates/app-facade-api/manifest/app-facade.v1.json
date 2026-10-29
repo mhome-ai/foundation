@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.67.0",
+  "contractVersion": "1.68.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -244,6 +244,18 @@
       "contract": "contract/integration-presentation-v1.md",
       "requestTargets": [
         "/app/integration/presentation/get"
+      ]
+    },
+    "group": {
+      "schema": "schema/group.v1.schema.json",
+      "requestTargets": [
+        "/app/group/list",
+        "/app/group/detail/get",
+        "/app/group/create",
+        "/app/group/rename",
+        "/app/group/members/update",
+        "/app/group/delete",
+        "/app/group/presentation/get"
       ]
     }
   },

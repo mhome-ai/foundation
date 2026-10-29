@@ -57,5 +57,17 @@
       "diagnostics.*.finishedAt",
       "diagnostics.*.logs.*.timestamp"
     ]
+  },
+  "/app/group/list": {
+    "ms": [
+      "groups.*.createdAt",
+      "groups.*.updatedAt"
+    ]
+  },
+  "/app/group/detail/get": {
+    "ms": [
+      "items.*.group.createdAt",
+      "items.*.group.updatedAt"
+    ]
   }
 }
