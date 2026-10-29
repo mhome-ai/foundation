@@ -259,8 +259,8 @@
       "value": {
         "status": "error",
         "error": {
-          "code": "E",
-          "message": "bad"
+          "code": "BAD_REQUEST",
+          "message": "Invalid description"
         },
         "text": "status: error\nerror:\n  code: BAD_REQUEST\n  message: Invalid description\n"
       }
