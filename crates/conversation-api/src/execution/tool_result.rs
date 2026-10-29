@@ -27,30 +27,29 @@ pub fn tool_result_text(value: &Value, detail: ResponseDetail) -> String {
     if let Some(text) = (detail == ResponseDetail::Essential)
         .then(|| value.get("data").and_then(Value::as_str))
         .flatten()
-    {
-        if matches!(
+        && matches!(
             value.get("status").and_then(Value::as_str),
             Some("success" | "partial" | "error")
-        ) {
-            let warnings = value
-                .get("warnings")
-                .filter(|v| v.as_array().is_some_and(|v| !v.is_empty()));
-            let extra_error_details =
-                value["status"] == "error" && value["error"].get("details").is_some();
-            if value["status"] != "partial" && warnings.is_none() && !extra_error_details {
-                return text.to_owned();
-            }
-            let result =
-                serde_yaml::from_str::<Value>(text).unwrap_or_else(|_| Value::String(text.into()));
-            let mut visible = json!({"status":value["status"],"result":result});
-            if extra_error_details {
-                visible["error"] = value["error"].clone();
-            }
-            if let Some(warnings) = warnings {
-                visible["warnings"] = warnings.clone();
-            }
-            return essential_yaml(&visible).expect("serializable result");
+        )
+    {
+        let warnings = value
+            .get("warnings")
+            .filter(|v| v.as_array().is_some_and(|v| !v.is_empty()));
+        let extra_error_details =
+            value["status"] == "error" && value["error"].get("details").is_some();
+        if value["status"] != "partial" && warnings.is_none() && !extra_error_details {
+            return text.to_owned();
         }
+        let result =
+            serde_yaml::from_str::<Value>(text).unwrap_or_else(|_| Value::String(text.into()));
+        let mut visible = json!({"status":value["status"],"result":result});
+        if extra_error_details {
+            visible["error"] = value["error"].clone();
+        }
+        if let Some(warnings) = warnings {
+            visible["warnings"] = warnings.clone();
+        }
+        return essential_yaml(&visible).expect("serializable result");
     }
     value
         .as_str()
