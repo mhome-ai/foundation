@@ -239,7 +239,9 @@ UI Integration metadata uses `/app/integration/presentation/get`; see
 URL with its TLS identity. `/app/artifact/external/resolve` is an explicit cloud-only
 read using the same `ResolveArtifactRequest` and `ResolveArtifactResponse` contract.
 It returns a short-lived signed HTTPS URL through an externally reachable cloud
-origin. The URL lifetime never extends the underlying artifact's retention.
+origin. Its deadline is capped by the artifact's expiry at issuance. Issuing a URL
+does not renew retention; reading local temporary content retains the owner's
+normal idle-renewal behavior without extending an already issued URL's deadline.
 Cloud-owned content uses an object-store signed URL; local content is read from its
 owning Hub on demand. External resolution creates no cloud replica and cannot
 make an offline local owner readable. The current inline Hub bridge size limit
