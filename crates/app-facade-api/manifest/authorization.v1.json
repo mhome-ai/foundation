@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.71.0",
+  "contractVersion": "1.72.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -402,7 +402,6 @@
     "/app/group/create": "spaceWrite",
     "/app/group/rename": "spaceWrite",
     "/app/group/members/update": "spaceWrite",
-    "/app/group/presentation/get": "spaceRead",
     "/app/device/state/get": "spaceRead",
     "/app/device/history/series/get": "spaceRead",
     "/app/widget/value/get": "spaceRead",

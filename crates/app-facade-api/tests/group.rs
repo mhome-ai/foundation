@@ -29,7 +29,6 @@ fn group_dtos_roundtrip_shared_contracts() {
             let actual = match name {
                 "ListGroupsInput" => roundtrip::<ListGroupsInput>(value),
                 "GetGroupsInput" => roundtrip::<GetGroupsInput>(value),
-                "GroupPresentationInput" => roundtrip::<GroupPresentationInput>(value),
                 "CreateGroupInput" => roundtrip::<CreateGroupInput>(value),
                 "RenameGroupInput" => roundtrip::<RenameGroupInput>(value),
                 "UpdateGroupMembersInput" => roundtrip::<UpdateGroupMembersInput>(value),
@@ -45,4 +44,24 @@ fn group_dtos_roundtrip_shared_contracts() {
             assert_eq!(actual, item["value"], "{name}");
         }
     }
+}
+
+#[test]
+fn partial_member_resolution_keeps_definition_and_standard_warning() {
+    let data = serde_json::json!({"spaceId":"s", "items":[{"requestedId":"g:1", "found":true,
+        "group":{"groupId":"g:1","entityType":"basic.device.Device","entityIds":["d1"],"revision":3}}]});
+    let response =
+        serde_json::to_value(app_facade_api::response::outcome(DETAIL, data.clone())).unwrap();
+    assert_eq!(response["status"], "partial");
+    assert_eq!(response["data"], data);
+    assert_eq!(response["warnings"][0]["details"]["groupId"], "g:1");
+    assert_eq!(response["warnings"][0]["code"], "GROUP_MEMBERS_UNAVAILABLE");
+    let mut complete = data;
+    complete["items"][0]["group"]["capabilities"] = serde_json::json!([]);
+    complete["items"][0]["group"]["memberProblems"] = serde_json::json!([]);
+    assert_eq!(
+        serde_json::to_value(app_facade_api::response::outcome(DETAIL, complete)).unwrap()
+            ["status"],
+        "success"
+    );
 }

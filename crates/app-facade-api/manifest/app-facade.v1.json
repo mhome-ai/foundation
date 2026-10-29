@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.71.0",
+  "contractVersion": "1.72.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -256,8 +256,7 @@
         "/app/group/create",
         "/app/group/rename",
         "/app/group/members/update",
-        "/app/group/delete",
-        "/app/group/presentation/get"
+        "/app/group/delete"
       ]
     },
     "resourceRead": {

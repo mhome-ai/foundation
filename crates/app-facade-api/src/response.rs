@@ -9,6 +9,31 @@ pub mod time;
 
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
 pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
+    if target == crate::group::DETAIL {
+        let warnings: Vec<_> = data
+            .get("items")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|item| item.get("group"))
+            .filter(|group| !group.get("capabilities").is_some_and(Value::is_array))
+            .map(|group| crate::FacadeProblem {
+                code: "GROUP_MEMBERS_UNAVAILABLE".into(),
+                message: "Group definition is available; member capabilities could not be read"
+                    .into(),
+                details: Some(json!({"groupId": group["groupId"]})),
+            })
+            .collect();
+        return if warnings.is_empty() {
+            FacadeResponse::success(data)
+        } else {
+            warnings
+                .into_iter()
+                .fold(FacadeResponse::partial(data), |response, warning| {
+                    response.with_warning(warning)
+                })
+        };
+    }
     if matches!(
         target,
         crate::group::CREATE
@@ -246,7 +271,7 @@ fn automation(target: &str, data: &Value) -> Value {
                 "enabled",
                 "singleUse",
                 "group",
-                "memberIds",
+                "entityIds",
             ],
         ),
         "/app/automation/detail/get" => (
@@ -261,7 +286,7 @@ fn automation(target: &str, data: &Value) -> Value {
                 "hasExpire",
                 "usedCapabilities",
                 "group",
-                "memberIds",
+                "entityIds",
                 "inputVars",
                 "scriptHash",
                 "descriptionTemplate",

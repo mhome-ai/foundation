@@ -15,18 +15,12 @@
       }
     },
     {
-      "definition": "GroupPresentationInput",
-      "value": {
-        "groupId": "g:1"
-      }
-    },
-    {
       "definition": "CreateGroupInput",
       "value": {
         "creationId": "11111111-1111-4111-8111-111111111111",
         "name": "Lights",
-        "memberType": "basic.device.Device",
-        "memberIds": [
+        "entityType": "basic.device.Device",
+        "entityIds": [
           "lamp-a",
           "lamp-b",
           "lamp-a"
@@ -45,7 +39,7 @@
       "definition": "UpdateGroupMembersInput",
       "value": {
         "groupId": "g:1",
-        "memberIds": [
+        "entityIds": [
           "lamp-b"
         ],
         "expectedRevision": 3
@@ -63,7 +57,7 @@
       "value": {
         "groupId": "g:11111111-1111-4111-8111-111111111111",
         "name": "Lights",
-        "memberType": "basic.device.Device",
+        "entityType": "basic.device.Device",
         "memberCount": 2,
         "revision": 3,
         "applyState": "ready",
@@ -76,13 +70,13 @@
       "value": {
         "groupId": "g:11111111-1111-4111-8111-111111111111",
         "name": "Lights",
-        "memberType": "basic.device.Device",
+        "entityType": "basic.device.Device",
         "memberCount": 2,
         "revision": 3,
         "applyState": "ready",
         "createdAt": 1900000000000,
         "updatedAt": 1900000001000,
-        "memberIds": [
+        "entityIds": [
           "lamp-a",
           "lamp-b"
         ],
@@ -94,7 +88,7 @@
         ],
         "memberProblems": [
           {
-            "memberId": "lamp-b",
+            "entityId": "lamp-b",
             "code": "MEMBER_UNAVAILABLE",
             "message": "Member is unavailable"
           }
@@ -128,7 +122,7 @@
           {
             "groupId": "g:11111111-1111-4111-8111-111111111111",
             "name": "Lights",
-            "memberType": "basic.device.Device",
+            "entityType": "basic.device.Device",
             "memberCount": 2,
             "revision": 3,
             "applyState": "ready",
@@ -149,13 +143,13 @@
             "group": {
               "groupId": "g:11111111-1111-4111-8111-111111111111",
               "name": "Lights",
-              "memberType": "basic.device.Device",
+              "entityType": "basic.device.Device",
               "memberCount": 2,
               "revision": 3,
               "applyState": "ready",
               "createdAt": 1900000000000,
               "updatedAt": 1900000001000,
-              "memberIds": [
+              "entityIds": [
                 "lamp-a",
                 "lamp-b"
               ],
@@ -167,7 +161,7 @@
               ],
               "memberProblems": [
                 {
-                  "memberId": "lamp-b",
+                  "entityId": "lamp-b",
                   "code": "MEMBER_UNAVAILABLE",
                   "message": "Member is unavailable"
                 }
@@ -179,6 +173,23 @@
             "found": false,
             "reason": "not_found"
           }
+        ]
+      }
+    },
+    {
+      "definition": "GroupDetail",
+      "value": {
+        "groupId": "g:11111111-1111-4111-8111-111111111111",
+        "name": "Lights",
+        "entityType": "basic.device.Device",
+        "memberCount": 2,
+        "revision": 3,
+        "applyState": "ready",
+        "createdAt": 1900000000000,
+        "updatedAt": 1900000001000,
+        "entityIds": [
+          "lamp-a",
+          "lamp-b"
         ]
       }
     }
@@ -195,7 +206,7 @@
       "definition": "UpdateGroupMembersInput",
       "value": {
         "groupId": "g:1",
-        "memberIds": [
+        "entityIds": [
           "lamp-b"
         ],
         "expectedRevision": 3,
@@ -214,8 +225,8 @@
       "value": {
         "creationId": "11111111-1111-4111-8111-111111111111",
         "name": "Lights",
-        "memberType": "basic.device.Device",
-        "memberIds": [
+        "entityType": "basic.device.Device",
+        "entityIds": [
           "lamp-a",
           "lamp-b",
           "lamp-a"
@@ -232,13 +243,13 @@
       "value": {
         "groupId": "g:11111111-1111-4111-8111-111111111111",
         "name": "Lights",
-        "memberType": "basic.device.Device",
+        "entityType": "basic.device.Device",
         "memberCount": 2,
         "revision": 3,
         "applyState": "ready",
         "createdAt": 1900000000000,
         "updatedAt": 1900000001000,
-        "memberIds": [
+        "entityIds": [
           "lamp-a",
           "lamp-b"
         ],
@@ -250,7 +261,7 @@
         ],
         "memberProblems": [
           {
-            "memberId": "lamp-b",
+            "entityId": "lamp-b",
             "code": "MEMBER_UNAVAILABLE",
             "message": "Member is unavailable"
           }
@@ -371,12 +382,28 @@
       "value": {
         "groupId": "g:11111111-1111-4111-8111-111111111111",
         "name": "Lights",
-        "memberType": "basic.device.Device",
+        "entityType": "basic.device.Device",
         "memberCount": 2,
         "revision": 3,
         "applyState": "unknown",
         "createdAt": 1900000000000,
         "updatedAt": 1900000001000
+      }
+    },
+    {
+      "definition": "ListGroupsInput",
+      "value": {
+        "memberType": "basic.device.Device"
+      }
+    },
+    {
+      "definition": "UpdateGroupMembersInput",
+      "value": {
+        "groupId": "g:1",
+        "memberIds": [
+          "one"
+        ],
+        "expectedRevision": 1
       }
     }
   ]

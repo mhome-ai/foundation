@@ -8,7 +8,6 @@ pub const CREATE: &str = "/app/group/create";
 pub const RENAME: &str = "/app/group/rename";
 pub const MEMBERS_UPDATE: &str = "/app/group/members/update";
 pub const DELETE: &str = "/app/group/delete";
-pub const PRESENTATION: &str = "/app/group/presentation/get";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -25,6 +24,7 @@ pub enum GroupApplyState {
 pub struct GroupSummary {
     pub group_id: String,
     pub name: String,
+    #[serde(rename = "entityType")]
     pub member_type: String,
     pub member_count: usize,
     pub revision: i64,
@@ -43,6 +43,7 @@ pub struct GroupCapability {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GroupMemberProblem {
+    #[serde(rename = "entityId")]
     pub member_id: String,
     pub code: String,
     pub message: String,
@@ -53,9 +54,12 @@ pub struct GroupMemberProblem {
 pub struct GroupDetail {
     #[serde(flatten)]
     pub summary: GroupSummary,
+    #[serde(rename = "entityIds")]
     pub member_ids: Vec<String>,
-    pub capabilities: Vec<GroupCapability>,
-    pub member_problems: Vec<GroupMemberProblem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub capabilities: Option<Vec<GroupCapability>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub member_problems: Option<Vec<GroupMemberProblem>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_problem: Option<crate::FacadeProblem>,
 }
@@ -64,6 +68,7 @@ pub struct GroupDetail {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ListGroupsInput {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "entityType")]
     pub member_type: Option<String>,
 }
 
@@ -75,16 +80,12 @@ pub struct GetGroupsInput {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct GroupPresentationInput {
-    pub group_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CreateGroupInput {
     pub creation_id: String,
     pub name: String,
+    #[serde(rename = "entityType")]
     pub member_type: String,
+    #[serde(rename = "entityIds")]
     pub member_ids: Vec<String>,
 }
 
@@ -100,6 +101,7 @@ pub struct RenameGroupInput {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct UpdateGroupMembersInput {
     pub group_id: String,
+    #[serde(rename = "entityIds")]
     pub member_ids: Vec<String>,
     pub expected_revision: i64,
 }
