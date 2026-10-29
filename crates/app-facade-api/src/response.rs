@@ -1,6 +1,6 @@
 //! Public App result projection. Transport serialization is not a business input.
 use crate::{FacadeResponse, ResponseDetail};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 mod agent;
 mod runtime;
@@ -8,6 +8,20 @@ pub mod time;
 
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
 pub fn outcome(target: &str, data: Value) -> FacadeResponse {
+    if is_acknowledgement(target) {
+        return match data.get("success").and_then(Value::as_bool) {
+            Some(true) => FacadeResponse::acknowledged(),
+            Some(false) => FacadeResponse::error(
+                "OPERATION_FAILED",
+                "The requested operation did not succeed",
+            )
+            .with_details(data),
+            None => {
+                FacadeResponse::error("INVALID_RESPONSE", "Expected an operation acknowledgement")
+                    .with_details(data)
+            }
+        };
+    }
     // These mutation contracts use `success` as the operation outcome. Queries
     // (including execution-status reads) never use this test.
     let mutation = matches!(
@@ -98,6 +112,24 @@ pub fn outcome(target: &str, data: Value) -> FacadeResponse {
     } else {
         FacadeResponse::success(data)
     }
+}
+/// Routes whose completed mutations return no business value. Reads never use this rule.
+pub fn is_acknowledgement(target: &str) -> bool {
+    matches!(
+        target,
+        "/app/agent/identity/save"
+            | "/app/agent/memory/save"
+            | "/app/agent/mode/save"
+            | "/app/agent/llm/mapping/save"
+            | "/app/agent/llm/provider/credential/save"
+            | "/app/agent/llm/provider/credential/delete"
+            | "/app/automation/start"
+            | "/app/automation/stop"
+            | "/app/group/delete"
+            | "/app/widget/delete"
+            | "/app/widget/data/update"
+            | "/app/widget/button/trigger"
+    )
 }
 fn nonempty(data: &Value, key: &str) -> bool {
     data.get(key)
@@ -331,20 +363,20 @@ pub fn render_in_timezone(
     timezone: &str,
 ) -> Result<FacadeResponse, serde_yaml::Error> {
     if detail == ResponseDetail::Essential {
-        if let FacadeResponse::Error { error, text: None } = &response {
+        if let FacadeResponse::Error { error, data: None } = &response {
             let mut problem = serde_json::to_value(error).expect("serializable error");
             if let Some(details) = problem.get_mut("details") {
                 project_error_details(target, details);
             }
             let text = serde_yaml::to_string(&json!({"status":"error","error":problem}))?;
-            return Ok(response.with_text(text));
+            return Ok(response.with_essential_data(text));
         }
     }
     if detail == ResponseDetail::Essential && response.data().is_some() {
         let mut projected = essential(target, response.data().expect("outcome has data"));
         time::localize(target, &mut projected, timezone);
         let text = serde_yaml::to_string(&projected)?;
-        Ok(response.with_text(text))
+        Ok(response.with_essential_data(text))
     } else {
         Ok(response)
     }
@@ -382,8 +414,11 @@ fn project_error_details(target: &str, details: &mut Value) {
 
 /// Text at model/MCP/CLI boundaries. Canonical history keeps the original outcome.
 /// Full responses and non-Facade values retain JSON; Essential content is never JSON-escaped.
-pub fn tool_text(value: &Value) -> String {
-    if let Some(text) = value.get("text").and_then(Value::as_str) {
+pub fn tool_text(value: &Value, detail: ResponseDetail) -> String {
+    if let Some(text) = (detail == ResponseDetail::Essential)
+        .then(|| value.get("data").and_then(Value::as_str))
+        .flatten()
+    {
         if matches!(
             value.get("status").and_then(Value::as_str),
             Some("success" | "partial" | "error")
@@ -454,7 +489,7 @@ mod tests {
                     assert_eq!(value["error"]["details"], data);
                 } else {
                     let yaml: Value =
-                        serde_yaml::from_str(value["text"].as_str().unwrap()).unwrap();
+                        serde_yaml::from_str(value["data"].as_str().unwrap()).unwrap();
                     assert_eq!(yaml["error"]["details"], data);
                 }
             }
@@ -474,11 +509,13 @@ mod tests {
         ] {
             assert!(!outcome(&format!("/app/plugin/llm/{route}"), data.clone()).is_error());
         }
-        assert!(!outcome(
-            "/app/plugin/llm/model/delete",
-            json!({"data":{"ok":true,"deleted":true}})
-        )
-        .is_error());
+        assert!(
+            !outcome(
+                "/app/plugin/llm/model/delete",
+                json!({"data":{"ok":true,"deleted":true}})
+            )
+            .is_error()
+        );
     }
     #[test]
     fn dashboard_card_reads_omit_layout_but_full_is_unchanged() {
@@ -529,7 +566,7 @@ mod tests {
         assert_eq!(text["status"], "partial");
         assert_eq!(text["warnings"][0]["code"], "OFFLINE");
         assert_eq!(
-            serde_yaml::from_str::<Value>(text["text"].as_str().unwrap()).unwrap(),
+            serde_yaml::from_str::<Value>(text["data"].as_str().unwrap()).unwrap(),
             *cached.data().unwrap()
         );
     }
@@ -550,7 +587,7 @@ mod tests {
         assert!(rendered.is_error());
         let value = serde_json::to_value(rendered).unwrap();
         assert!(value["error"].get("details").is_none());
-        let text = tool_text(&value);
+        let text = tool_text(&value, ResponseDetail::Essential);
         let visible: Value = serde_yaml::from_str(&text).unwrap();
         assert_eq!(visible["status"], "error");
         assert_eq!(visible["error"]["details"]["applied"], false);
@@ -579,20 +616,35 @@ mod tests {
 
     #[test]
     fn visible_text_preserves_partial_outcomes_and_warnings() {
+        let full_string = json!({"status":"success","data":"items: []\n"});
+        assert_eq!(
+            tool_text(&full_string, ResponseDetail::Full),
+            full_string.to_string()
+        );
+        assert_eq!(
+            tool_text(&json!({"status":"success"}), ResponseDetail::Essential),
+            r#"{"status":"success"}"#
+        );
         for status in ["success", "partial"] {
-            let value = json!({"status":status,"text":"items: []\n", "warnings":[{"code":"UNAVAILABLE","message":"One source is offline"}]});
-            let text = tool_text(&value);
+            let value = json!({"status":status,"data":"items: []\n", "warnings":[{"code":"UNAVAILABLE","message":"One source is offline"}]});
+            let text = tool_text(&value, ResponseDetail::Essential);
             let yaml: Value = serde_yaml::from_str(&text).unwrap();
             assert_eq!(yaml["status"], status);
             assert_eq!(yaml["warnings"], value["warnings"]);
             assert_eq!(yaml["result"], json!({"items":[]}));
         }
         assert_eq!(
-            tool_text(&json!({"status":"success","text":"items: []\n"})),
+            tool_text(
+                &json!({"status":"success","data":"items: []\n"}),
+                ResponseDetail::Essential
+            ),
             "items: []\n"
         );
         assert_eq!(
-            tool_text(&json!({"data":{"status":"error"}})),
+            tool_text(
+                &json!({"data":{"status":"error"}}),
+                ResponseDetail::Essential
+            ),
             r#"{"data":{"status":"error"}}"#
         );
     }

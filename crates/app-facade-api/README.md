@@ -41,7 +41,7 @@ Composition does not imply a distributed transaction or automatic rollback.
 ## App result contract
 
 `control.responseDetail` selects information depth: `full` (default) returns
-`data`, while `essential` returns YAML in `text`. It is independent of action
+`data`, while `essential` returns YAML in `data`. It is independent of action
 `mode` and is never copied into business input, prepared snapshots or execution
 fingerprints. `responseFormat` and business `outputFormat` are rejected.
 
@@ -49,14 +49,18 @@ Final responses use exactly one of these shapes:
 
 ```json
 {"status":"success","data":{"items":[]}}
-{"status":"success","text":"items: []\n"}
+{"status":"success","data":"items: []\n"}
 {"status":"partial","data":{"moved":["a"],"notMoved":[{"deviceId":"b","reason":"offline"}]}}
 {"status":"error","error":{"code":"PRECONDITION_FAIL","message":"The object changed"}}
 {"status":"cancelled"}
 ```
 
-Success and partial carry exactly one of `data` or `text`. Error carries a
-`code`, `message`, and optional Full `details`. Essential errors carry YAML in top-level `text` and keep only code/message in the machine error object; success, partial and cancellation may
+Success may omit `data` for an acknowledgement; partial always carries `data`.
+The request selects the representation: Full is the business value (which may itself
+be a string); Essential is a YAML string. Do not infer response detail from its type.
+Pure acknowledgements are identical in both modes: `{"status":"success"}`. Error carries a
+`code`, `message`, and optional Full `details`. Essential errors keep code/message
+and place their projected diagnostics in YAML `data`; success, partial and cancellation may
 carry structured `warnings`. Resource state belongs inside data: successfully
 reading a failed job is still a successful invocation. Partial is not complete
 success and must remain visible to the caller. Transport admission failures keep
@@ -218,9 +222,3 @@ Business operation permissions are declared once in [the authorization manifest]
 `/app/matter/device/list` is the management inventory, grouped by Fabric node. It is distinct from the Plugin's Integration enumeration `/matter/device/list`. Its `sourceDeviceId` values identify Plugin projections, not Twin entities. Nodes without projected devices remain visible; `membershipComplete`, `inventoryComplete`, per-node completeness and `errors` describe partial observations. Lists omit endpoints and attribute payloads.
 
 `/app/matter/fabric/node/detail` accepts 1–20 unique `matterNodeIds`, returning an ordered item result or error for each ID. The request uses string IDs without numeric coercion. See `schema/matter-management.v1.schema.json`. All `/app/matter/` operations execute through the Space's Hub irrespective of scope execution mode. Node removal is a manual UI/CLI capability, not a delegated Agent/MCP tool.
-
-Automation description validation errors preserve diagnostic codes, field paths and summaries.
-Full includes original parser locations and descriptions; Essential omits source locations and
-uses concise summaries, deduplicating equal issues. Service failures and stale-source conflicts
-remain distinct from invalid edits. `applied: false` is emitted only before persistence.
-Model/MCP/CLI text adapters use `response::tool_text`, preserving partial outcomes and warnings.

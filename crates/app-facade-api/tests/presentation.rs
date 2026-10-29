@@ -1,4 +1,4 @@
-use app_facade_api::{response, ResponseDetail};
+use app_facade_api::{ResponseDetail, response};
 use serde_json::Value;
 
 #[test]
@@ -58,12 +58,15 @@ fn shared_projection_and_outcome_contract() {
         assert_eq!(essential["status"], case["status"]);
         if case["status"] == "error" {
             assert_eq!(full["error"]["code"], case["code"]);
-            let parsed: Value = serde_yaml::from_str(essential["text"].as_str().unwrap()).unwrap();
+            let parsed: Value = serde_yaml::from_str(essential["data"].as_str().unwrap()).unwrap();
             assert_eq!(parsed, full);
+        } else if case["acknowledgement"] == true {
+            assert_eq!(full, serde_json::json!({"status":"success"}));
+            assert_eq!(essential, full);
         } else {
             assert_eq!(full["data"], case["data"]);
-            assert!(essential.get("data").is_none());
-            let parsed: Value = serde_yaml::from_str(essential["text"].as_str().unwrap()).unwrap();
+            assert!(essential["data"].is_string());
+            let parsed: Value = serde_yaml::from_str(essential["data"].as_str().unwrap()).unwrap();
             assert_eq!(parsed, case["essential"], "{}", case["name"]);
         }
     }
@@ -94,8 +97,8 @@ fn quickword_full_and_essential_preserve_parameter_contract_and_dispatch_result(
         )
         .unwrap();
         assert_eq!(full["data"], data);
-        assert!(essential.get("data").is_none());
-        let parsed: Value = serde_yaml::from_str(essential["text"].as_str().unwrap()).unwrap();
+        assert!(essential["data"].is_string());
+        let parsed: Value = serde_yaml::from_str(essential["data"].as_str().unwrap()).unwrap();
         assert_eq!(parsed, data);
     }
 }

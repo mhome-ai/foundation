@@ -26,7 +26,7 @@ fn projected_responses_stay_structured_and_invocation_kinds_remain_distinct() {
             .is_err()
     );
     let full = ForwardedResponse::Json(json!({"status":"success","data":"hello"}));
-    let essential = ForwardedResponse::Json(json!({"status":"success","text":"hello"}));
+    let essential = ForwardedResponse::Json(json!({"status":"success","data":"hello\n"}));
     assert_ne!(
         serde_json::to_value(full).unwrap(),
         serde_json::to_value(essential).unwrap()
@@ -38,17 +38,19 @@ fn projected_responses_stay_structured_and_invocation_kinds_remain_distinct() {
     mcp.validate().unwrap();
     assert_eq!(mcp.thread_id(), None);
     assert_eq!(mcp.run_id(), None);
-    assert!(ActionInvocation::Mcp {
-        surface_id: " ".into(),
-        operation_id: "op".into()
-    }
-    .validate()
-    .is_err());
+    assert!(
+        ActionInvocation::Mcp {
+            surface_id: " ".into(),
+            operation_id: "op".into()
+        }
+        .validate()
+        .is_err()
+    );
 }
 
 #[test]
 fn shared_routing_cases_match_the_rust_executor_contract() {
-    use app_facade_api::routing::{route_policy_for_target, ExecutionSelector};
+    use app_facade_api::routing::{ExecutionSelector, route_policy_for_target};
     let cases: Vec<serde_json::Value> =
         serde_json::from_str(include_str!("../fixtures/routing/cases.json")).unwrap();
     for case in cases {

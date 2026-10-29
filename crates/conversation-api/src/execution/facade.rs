@@ -43,6 +43,10 @@ pub struct PreparedAction {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct FacadeResult {
+    /// In-process presentation provenance, assigned by the adapter from its request.
+    /// Never inferred from the value type or sent on the wire. RPC adapters restore it.
+    #[serde(skip)]
+    pub response_detail: super::ResponseDetail,
     /// Canonical serialized `FacadeResponse`; never a bare business DTO.
     #[serde(deserialize_with = "deserialize_response")]
     pub value: Value,

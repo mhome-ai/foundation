@@ -47,10 +47,9 @@
       }
     },
     {
-      "name": "success empty text",
+      "name": "success empty string data",
       "value": {
         "status": "success",
-        "text": "",
         "warnings": [
           {
             "code": "STALE",
@@ -59,14 +58,14 @@
               "source": "cloud"
             }
           }
-        ]
+        ],
+        "data": ""
       }
     },
     {
-      "name": "success YAML text",
+      "name": "success YAML string data",
       "value": {
         "status": "success",
-        "text": "ids:\n- a\n",
         "warnings": [
           {
             "code": "STALE",
@@ -75,7 +74,8 @@
               "source": "cloud"
             }
           }
-        ]
+        ],
+        "data": "ids:\n- a\n"
       }
     },
     {
@@ -137,10 +137,9 @@
       }
     },
     {
-      "name": "partial empty text",
+      "name": "partial empty string data",
       "value": {
         "status": "partial",
-        "text": "",
         "warnings": [
           {
             "code": "STALE",
@@ -149,14 +148,14 @@
               "source": "cloud"
             }
           }
-        ]
+        ],
+        "data": ""
       }
     },
     {
-      "name": "partial YAML text",
+      "name": "partial YAML string data",
       "value": {
         "status": "partial",
-        "text": "ids:\n- a\n",
         "warnings": [
           {
             "code": "STALE",
@@ -165,7 +164,8 @@
               "source": "cloud"
             }
           }
-        ]
+        ],
+        "data": "ids:\n- a\n"
       }
     },
     {
@@ -255,24 +255,36 @@
       }
     },
     {
-      "name": "essential error with YAML text",
+      "name": "success acknowledgement",
+      "value": {
+        "status": "success"
+      }
+    },
+    {
+      "name": "success acknowledgement warnings",
+      "value": {
+        "status": "success",
+        "warnings": [
+          {
+            "code": "SYNC_PENDING",
+            "message": "Saved"
+          }
+        ]
+      }
+    },
+    {
+      "name": "essential error diagnostic data",
       "value": {
         "status": "error",
         "error": {
           "code": "BAD_REQUEST",
           "message": "Invalid description"
         },
-        "text": "status: error\nerror:\n  code: BAD_REQUEST\n  message: Invalid description\n"
+        "data": "status: error\nerror:\n  code: BAD_REQUEST\n  message: Invalid description\n"
       }
     }
   ],
   "invalid": [
-    {
-      "name": "success no content",
-      "value": {
-        "status": "success"
-      }
-    },
     {
       "name": "success both contents",
       "value": {
@@ -483,6 +495,17 @@
       }
     },
     {
+      "name": "error with text",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "E",
+          "message": "bad"
+        },
+        "text": ""
+      }
+    },
+    {
       "name": "error with warnings",
       "value": {
         "status": "error",
@@ -546,14 +569,39 @@
       "value": null
     },
     {
-      "name": "error with nonstring text",
+      "name": "success legacy text",
+      "value": {
+        "status": "success",
+        "text": "ids: []"
+      }
+    },
+    {
+      "name": "partial legacy text",
+      "value": {
+        "status": "partial",
+        "text": "ids: []"
+      }
+    },
+    {
+      "name": "error nonstring data",
       "value": {
         "status": "error",
         "error": {
           "code": "BAD_REQUEST",
-          "message": "Invalid description"
+          "message": "Invalid"
         },
-        "text": {}
+        "data": {}
+      }
+    },
+    {
+      "name": "error legacy text",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "BAD_REQUEST",
+          "message": "Invalid"
+        },
+        "text": "legacy"
       }
     }
   ]

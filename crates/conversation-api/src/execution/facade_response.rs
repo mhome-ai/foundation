@@ -28,35 +28,27 @@ pub struct FacadeProblem {
     pub details: Option<Value>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
-#[serde(untagged)]
-pub enum Content {
-    Data { data: Value },
-    Text { text: String },
-}
-
-/// The public response has exactly one content representation on success/partial,
-/// an error with optional Essential text on failure, and no content on cancellation. Constructors and strict
-/// deserialization enforce this invariant on both sides of the wire.
+/// Invocation status is independent of payload presence. Successful acknowledgements
+/// omit data; partial outcomes always retain their result. Full data is a business
+/// value and essential data is YAML text, selected by the request, not inferred here.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum FacadeResponse {
     Success {
-        #[serde(flatten)]
-        content: Content,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        data: Option<Value>,
         #[serde(skip_serializing_if = "Vec::is_empty")]
         warnings: Vec<FacadeProblem>,
     },
     Partial {
-        #[serde(flatten)]
-        content: Content,
+        data: Value,
         #[serde(skip_serializing_if = "Vec::is_empty")]
         warnings: Vec<FacadeProblem>,
     },
     Error {
         error: FacadeProblem,
         #[serde(skip_serializing_if = "Option::is_none")]
-        text: Option<String>,
+        data: Option<String>,
     },
     Cancelled {
         #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -65,18 +57,25 @@ pub enum FacadeResponse {
 }
 
 impl FacadeResponse {
+    /// A completed operation with no business value to return.
+    pub fn acknowledged() -> Self {
+        Self::Success {
+            data: None,
+            warnings: vec![],
+        }
+    }
     pub fn cancelled() -> Self {
         Self::Cancelled { warnings: vec![] }
     }
     pub fn success(data: Value) -> Self {
         Self::Success {
-            content: Content::Data { data },
+            data: Some(data),
             warnings: vec![],
         }
     }
     pub fn partial(data: Value) -> Self {
         Self::Partial {
-            content: Content::Data { data },
+            data,
             warnings: vec![],
         }
     }
@@ -87,7 +86,7 @@ impl FacadeResponse {
                 message: message.into(),
                 details: None,
             },
-            text: None,
+            data: None,
         }
     }
     pub fn with_details(mut self, details: Value) -> Self {
@@ -109,46 +108,39 @@ impl FacadeResponse {
     }
     pub fn data(&self) -> Option<&Value> {
         match self {
-            Self::Success {
-                content: Content::Data { data },
-                ..
-            }
-            | Self::Partial {
-                content: Content::Data { data },
-                ..
-            } => Some(data),
+            Self::Success { data, .. } => data.as_ref(),
+            Self::Partial { data, .. } => Some(data),
             _ => None,
         }
     }
     pub fn data_mut(&mut self) -> Option<&mut Value> {
         match self {
-            Self::Success {
-                content: Content::Data { data },
-                ..
-            }
-            | Self::Partial {
-                content: Content::Data { data },
-                ..
-            } => Some(data),
+            Self::Success { data, .. } => data.as_mut(),
+            Self::Partial { data, .. } => Some(data),
             _ => None,
         }
     }
-    /// Presentation never changes execution outcome or discards warnings.
-    pub fn with_text(self, text: String) -> Self {
+    /// Set the Essential presentation once, preserving the execution outcome.
+    /// Full error details move into the projected diagnostic data. Acknowledgements
+    /// and cancellations remain payload-free.
+    pub fn with_essential_data(self, text: String) -> Self {
         match self {
-            Self::Success { warnings, .. } => Self::Success {
-                content: Content::Text { text },
+            Self::Success {
+                data: Some(_),
+                warnings,
+            } => Self::Success {
+                data: Some(Value::String(text)),
                 warnings,
             },
             Self::Partial { warnings, .. } => Self::Partial {
-                content: Content::Text { text },
+                data: Value::String(text),
                 warnings,
             },
             Self::Error { mut error, .. } => {
                 error.details = None;
                 Self::Error {
                     error,
-                    text: Some(text),
+                    data: Some(text),
                 }
             }
             terminal => terminal,
@@ -178,11 +170,10 @@ impl<'de> Deserialize<'de> for FacadeResponse {
             .ok_or_else(|| D::Error::custom("Missing Facade status"))?;
         let response = match status.as_str() {
             Some("success" | "partial") => {
-                let content = match (fields.remove("data"), fields.remove("text")) {
-                    (Some(data), None) => Content::Data { data },
-                    (None, Some(Value::String(text))) => Content::Text { text },
-                    _ => return Err(D::Error::custom("Exactly one of data or text is required")),
-                };
+                let data = fields.remove("data");
+                if status == "partial" && data.is_none() {
+                    return Err(D::Error::custom("Partial outcome requires data"));
+                }
                 let warnings = fields
                     .remove("warnings")
                     .map(serde_json::from_value)
@@ -190,14 +181,17 @@ impl<'de> Deserialize<'de> for FacadeResponse {
                     .map_err(D::Error::custom)?
                     .unwrap_or_default();
                 if status == "success" {
-                    Self::Success { content, warnings }
+                    Self::Success { data, warnings }
                 } else {
-                    Self::Partial { content, warnings }
+                    Self::Partial {
+                        data: data.expect("partial data checked"),
+                        warnings,
+                    }
                 }
             }
             Some("error") => Self::Error {
-                text: fields
-                    .remove("text")
+                data: fields
+                    .remove("data")
                     .map(serde_json::from_value)
                     .transpose()
                     .map_err(D::Error::custom)?,
@@ -233,19 +227,25 @@ mod tests {
     fn strict_response_roundtrip() {
         for value in [
             json!({"status":"success","data":null}),
-            json!({"status":"success","text":"items: []"}),
+            json!({"status":"success","data":"items: []"}),
+            json!({"status":"success"}),
+            json!({"status":"success","warnings":[{"code":"SYNC_PENDING","message":"Saved"}]}),
             json!({"status":"partial","data":{"done":["a"],"failed":["b"]}}),
             json!({"status":"error","error":{"code":"STALE","message":"Changed"}}),
+            json!({"status":"error","error":{"code":"BAD_REQUEST","message":"Invalid"},"data":"status: error\n"}),
             json!({"status":"cancelled"}),
         ] {
             let parsed: FacadeResponse = serde_json::from_value(value.clone()).unwrap();
             assert_eq!(serde_json::to_value(parsed).unwrap(), value);
         }
         for value in [
-            json!({"status":"success"}),
+            json!({"status":"partial"}),
+            json!({"status":"success","text":"legacy"}),
             json!({"status":"success","data":{},"text":"bad"}),
             json!({"status":"cancelled","data":{}}),
             json!({"status":"error","error":{"message":"bad"}}),
+            json!({"status":"error","error":{"code":"BAD","message":"Invalid"},"data":{}}),
+            json!({"status":"error","error":{"code":"BAD","message":"Invalid"},"text":"legacy"}),
             json!({"status":"done","data":{}}),
         ] {
             assert!(serde_json::from_value::<FacadeResponse>(value).is_err());
@@ -256,15 +256,8 @@ mod tests {
         let result = FacadeResponse::success(json!({"status":"failed","success":false}));
         assert!(!result.is_error());
         assert_eq!(
-            result.with_text("state: failed".into()).status(),
+            result.with_essential_data("state: failed".into()).status(),
             FacadeStatus::Success
         );
-    }
-    #[test]
-    fn error_text_roundtrips_and_stays_an_error() {
-        let value = serde_json::json!({"status":"error","error":{"code":"BAD_REQUEST","message":"Invalid"},"text":"status: error\n"});
-        let response: FacadeResponse = serde_json::from_value(value.clone()).unwrap();
-        assert!(response.is_error());
-        assert_eq!(serde_json::to_value(response).unwrap(), value);
     }
 }

@@ -3176,9 +3176,7 @@
       "success": true
     },
     "status": "success",
-    "essential": {
-      "success": true
-    }
+    "acknowledgement": true
   },
   {
     "name": "agent-identity-multiline",
@@ -3336,5 +3334,356 @@
       "layoutSize": "md",
       "cards": []
     }
+  },
+  {
+    "name": "/app/agent/identity/save acknowledgement True",
+    "target": "/app/agent/identity/save",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/agent/identity/save acknowledgement False",
+    "target": "/app/agent/identity/save",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/agent/identity/save acknowledgement None",
+    "target": "/app/agent/identity/save",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/agent/memory/save acknowledgement True",
+    "target": "/app/agent/memory/save",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/agent/memory/save acknowledgement False",
+    "target": "/app/agent/memory/save",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/agent/memory/save acknowledgement None",
+    "target": "/app/agent/memory/save",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/agent/mode/save acknowledgement True",
+    "target": "/app/agent/mode/save",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/agent/mode/save acknowledgement False",
+    "target": "/app/agent/mode/save",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/agent/mode/save acknowledgement None",
+    "target": "/app/agent/mode/save",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/agent/llm/mapping/save acknowledgement True",
+    "target": "/app/agent/llm/mapping/save",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/agent/llm/mapping/save acknowledgement False",
+    "target": "/app/agent/llm/mapping/save",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/agent/llm/mapping/save acknowledgement None",
+    "target": "/app/agent/llm/mapping/save",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/agent/llm/provider/credential/save acknowledgement True",
+    "target": "/app/agent/llm/provider/credential/save",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/agent/llm/provider/credential/save acknowledgement False",
+    "target": "/app/agent/llm/provider/credential/save",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/agent/llm/provider/credential/save acknowledgement None",
+    "target": "/app/agent/llm/provider/credential/save",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/agent/llm/provider/credential/delete acknowledgement True",
+    "target": "/app/agent/llm/provider/credential/delete",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/agent/llm/provider/credential/delete acknowledgement False",
+    "target": "/app/agent/llm/provider/credential/delete",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/agent/llm/provider/credential/delete acknowledgement None",
+    "target": "/app/agent/llm/provider/credential/delete",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/automation/start acknowledgement True",
+    "target": "/app/automation/start",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/automation/start acknowledgement False",
+    "target": "/app/automation/start",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/automation/start acknowledgement None",
+    "target": "/app/automation/start",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/automation/stop acknowledgement True",
+    "target": "/app/automation/stop",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/automation/stop acknowledgement False",
+    "target": "/app/automation/stop",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/automation/stop acknowledgement None",
+    "target": "/app/automation/stop",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/group/delete acknowledgement True",
+    "target": "/app/group/delete",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/group/delete acknowledgement False",
+    "target": "/app/group/delete",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/group/delete acknowledgement None",
+    "target": "/app/group/delete",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/widget/delete acknowledgement True",
+    "target": "/app/widget/delete",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/widget/delete acknowledgement False",
+    "target": "/app/widget/delete",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/widget/delete acknowledgement None",
+    "target": "/app/widget/delete",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/widget/data/update acknowledgement True",
+    "target": "/app/widget/data/update",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/widget/data/update acknowledgement False",
+    "target": "/app/widget/data/update",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/widget/data/update acknowledgement None",
+    "target": "/app/widget/data/update",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/widget/button/trigger acknowledgement True",
+    "target": "/app/widget/button/trigger",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "/app/widget/button/trigger acknowledgement False",
+    "target": "/app/widget/button/trigger",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "/app/widget/button/trigger acknowledgement None",
+    "target": "/app/widget/button/trigger",
+    "data": {},
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "full string remains valid",
+    "target": "/app/test/string",
+    "data": "line one\nline two",
+    "essential": "line one\nline two",
+    "status": "success"
+  },
+  {
+    "name": "/app/messaging/unlink preserves change result True",
+    "target": "/app/messaging/unlink",
+    "data": {
+      "success": true
+    },
+    "essential": {
+      "success": true
+    },
+    "status": "success"
+  },
+  {
+    "name": "/app/messaging/unlink preserves change result False",
+    "target": "/app/messaging/unlink",
+    "data": {
+      "success": false
+    },
+    "essential": {
+      "success": false
+    },
+    "status": "success"
+  },
+  {
+    "name": "/app/messaging/unbind preserves change result True",
+    "target": "/app/messaging/unbind",
+    "data": {
+      "success": true
+    },
+    "essential": {
+      "success": true
+    },
+    "status": "success"
+  },
+  {
+    "name": "/app/messaging/unbind preserves change result False",
+    "target": "/app/messaging/unbind",
+    "data": {
+      "success": false
+    },
+    "essential": {
+      "success": false
+    },
+    "status": "success"
   }
 ]
