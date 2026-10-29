@@ -246,23 +246,6 @@ fn automation(target: &str, data: &Value) -> Value {
                 "threadId",
             ],
         ),
-        "/app/automation/diagnostic/list" => (
-            "diagnostics",
-            &[
-                "automationId",
-                "name",
-                "threadId",
-                "instanceId",
-                "timestamp",
-                "status",
-                "reportMode",
-                "logCount",
-                "omittedLogs",
-                "truncated",
-                "logsMissing",
-                "failure",
-            ],
-        ),
         "/app/automation/snapshot/list" => (
             "snapshots",
             &["snapshotId", "createdAt", "description", "automationType"],
@@ -482,11 +465,13 @@ mod tests {
         ] {
             assert!(!outcome(&format!("/app/plugin/llm/{route}"), data.clone()).is_error());
         }
-        assert!(!outcome(
-            "/app/plugin/llm/model/delete",
-            json!({"data":{"ok":true,"deleted":true}})
-        )
-        .is_error());
+        assert!(
+            !outcome(
+                "/app/plugin/llm/model/delete",
+                json!({"data":{"ok":true,"deleted":true}})
+            )
+            .is_error()
+        );
     }
     #[test]
     fn dashboard_card_reads_omit_layout_but_full_is_unchanged() {

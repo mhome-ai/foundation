@@ -11,19 +11,6 @@
       "activities.*.timestamp"
     ]
   },
-  "/app/automation/diagnostic/list": {
-    "ms": [
-      "diagnostics.*.timestamp"
-    ]
-  },
-  "/app/automation/diagnostic/detail": {
-    "ms": [
-      "diagnostic.timestamp",
-      "diagnostic.startedAt",
-      "diagnostic.finishedAt",
-      "logs.*.timestamp"
-    ]
-  },
   "/app/automation/snapshot/list": {
     "ms": [
       "snapshots.*.createdAt"
@@ -61,6 +48,14 @@
   "/app/schedule/list": {
     "ms": [
       "schedules.*.timestamp"
+    ]
+  },
+  "/app/automation/diagnostic/get": {
+    "ms": [
+      "diagnostics.*.timestamp",
+      "diagnostics.*.startedAt",
+      "diagnostics.*.finishedAt",
+      "diagnostics.*.logs.*.timestamp"
     ]
   }
 }

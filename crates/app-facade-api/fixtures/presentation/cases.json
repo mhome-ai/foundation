@@ -320,7 +320,8 @@
           "description": "duplicate",
           "singleUse": false
         }
-      ]
+      ],
+      "truncated": true
     },
     "essential": {
       "since": "10min",
@@ -337,12 +338,13 @@
           "threadId": 0,
           "singleUse": false
         }
-      ]
+      ],
+      "truncated": true
     }
   },
   {
-    "name": "automation-diagnostic-list",
-    "target": "/app/automation/diagnostic/list",
+    "name": "automation-diagnostic-get",
+    "target": "/app/automation/diagnostic/get",
     "status": "success",
     "data": {
       "diagnostics": [
@@ -364,7 +366,19 @@
           },
           "revision": 3,
           "startedAt": 90,
-          "finishedAt": 100
+          "finishedAt": 100,
+          "logs": [
+            {
+              "level": "INFO",
+              "message": "Invoked device",
+              "timestamp": 100
+            },
+            {
+              "level": "ERROR",
+              "message": "Timed out",
+              "timestamp": 100
+            }
+          ]
         }
       ]
     },
@@ -385,82 +399,22 @@
           "failure": {
             "message": "device unavailable",
             "code": "TIMEOUT"
-          }
-        }
-      ]
-    }
-  },
-  {
-    "name": "automation-diagnostic-detail",
-    "target": "/app/automation/diagnostic/detail",
-    "status": "success",
-    "data": {
-      "diagnostic": {
-        "automationId": "a1",
-        "name": "Morning",
-        "threadId": 0,
-        "instanceId": "run",
-        "timestamp": 100,
-        "status": "failed",
-        "reportMode": "STD",
-        "logCount": 2,
-        "omittedLogs": 1,
-        "truncated": true,
-        "logsMissing": false,
-        "failure": {
-          "message": "device unavailable",
-          "code": "TIMEOUT"
-        },
-        "revision": 3,
-        "startedAt": 90,
-        "finishedAt": 100
-      },
-      "logs": [
-        {
-          "level": "INFO",
-          "message": "Invoked device",
-          "context": {
-            "id": "light"
-          }
-        },
-        {
-          "level": "ERROR",
-          "message": "Timed out"
-        }
-      ]
-    },
-    "essential": {
-      "diagnostic": {
-        "automationId": "a1",
-        "name": "Morning",
-        "threadId": 0,
-        "instanceId": "run",
-        "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)",
-        "status": "failed",
-        "reportMode": "STD",
-        "logCount": 2,
-        "omittedLogs": 1,
-        "truncated": true,
-        "logsMissing": false,
-        "failure": {
-          "message": "device unavailable",
-          "code": "TIMEOUT"
-        },
-        "revision": 3,
-        "startedAt": "1970-01-01 00:00:00 +00:00 (UTC)",
-        "finishedAt": "1970-01-01 00:00:00 +00:00 (UTC)"
-      },
-      "logs": [
-        {
-          "level": "INFO",
-          "message": "Invoked device",
-          "context": {
-            "id": "light"
-          }
-        },
-        {
-          "level": "ERROR",
-          "message": "Timed out"
+          },
+          "revision": 3,
+          "startedAt": "1970-01-01 00:00:00 +00:00 (UTC)",
+          "finishedAt": "1970-01-01 00:00:00 +00:00 (UTC)",
+          "logs": [
+            {
+              "level": "INFO",
+              "message": "Invoked device",
+              "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)"
+            },
+            {
+              "level": "ERROR",
+              "message": "Timed out",
+              "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)"
+            }
+          ]
         }
       ]
     }
