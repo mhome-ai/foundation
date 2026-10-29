@@ -33,7 +33,7 @@ Internal `/dispatch/app/*` calls accept direct domain execution only. Public
 `/invoke/app/*` forwarding instead carries the complete `ForwardedCall` and enters
 the same Core action orchestration as LAN calls. These are distinct private
 operations, not compatibility formats. The latter preserves Client identity or
-trusted MCP/Agent invocation binding and returns a tagged JSON/text response.
+trusted MCP/Agent invocation binding and returns a tagged JSON response containing the complete Facade result.
 User Client cloud ingress and MCP require a User principal. A verified Agent run
 may carry its original Space principal only back to that bound Space; it does
 not issue a cloud credential to a Space Client or invent an acting User.

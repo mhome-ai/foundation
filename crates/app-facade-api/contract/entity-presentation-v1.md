@@ -18,5 +18,5 @@ are performed. Current Twin states still have their separate read/subscription.
 
 UI uses `control: {mode: "direct", responseDetail: "full"}` and receives the shared
 `{status: "success", data: ...}` envelope. The generic essential projection returns
-`{status: "success", text: ...}` with the same business fields rendered as YAML;
+`{status: "success", data: ...}` with the same business fields rendered as YAML;
 there is no domain field reduction. This is not the compact business detail API.

@@ -73,8 +73,9 @@ execution or replay. Reject returns cancellation. Response detail never changes
 approval meaning or permission checks. Operation and HITL continuation protocols
 are separate from this result envelope.
 
-App UI requests full and unwraps the envelope at its transport boundary. Agent
-and MCP public results use essential; internal workflow reads use full. The CLI
+App UI requests full and preserves the complete envelope through transport and SDK
+parsing. UI consumers explicitly read data and handle warnings and non-success outcomes.
+Agent and MCP public results use essential; internal workflow reads use full. The CLI
 uses `--response-detail full|essential`, and the bundled external Skill requests
 essential. Dashboard essential projection keeps card identity, title, type,
 view choices, excluding renderer configuration and resource payloads. Card list

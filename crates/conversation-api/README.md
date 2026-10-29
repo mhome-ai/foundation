@@ -196,3 +196,8 @@ returns an Artifact reference or text-only reason. Media steps retain the same
 owner. Upload grants and download descriptors reuse the Artifact contract,
 including pinned host identity when the owner is a local Core. Resolve responses
 include the content digest and require signed URLs, never data URLs.
+
+`execution::tool_result_text` renders canonical tool outcomes for model and text interfaces.
+Callers supply the known `ResponseDetail`; the renderer preserves Full JSON and exposes
+Essential YAML with partial outcomes, warnings and late error observations intact.
+It does not change the stored result or choose domain business fields.

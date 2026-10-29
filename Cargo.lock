@@ -1688,7 +1688,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.66.0"
+version = "1.66.1"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -1714,7 +1714,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.8.9"
+version = "0.8.10"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -1736,7 +1736,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-conversation-api"
-version = "5.0.0"
+version = "5.1.0"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -1746,12 +1746,13 @@ dependencies = [
  "serde",
  "serde_ignored",
  "serde_json",
+ "serde_yaml",
  "thiserror 2.0.21",
 ]
 
 [[package]]
 name = "mhome-core-api"
-version = "1.52.2"
+version = "1.52.3"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
@@ -1774,7 +1775,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "1.8.5"
+version = "1.8.6"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1831,7 +1832,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "1.4.35"
+version = "1.4.36"
 dependencies = [
  "cc",
  "mhome-core-api",
