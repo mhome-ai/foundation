@@ -56,7 +56,7 @@ Final responses use exactly one of these shapes:
 ```
 
 Success and partial carry exactly one of `data` or `text`. Error carries a
-`code`, `message`, and optional `details`; success, partial and cancellation may
+`code`, `message`, and optional Full `details`. Essential errors carry YAML in top-level `text` and keep only code/message in the machine error object; success, partial and cancellation may
 carry structured `warnings`. Resource state belongs inside data: successfully
 reading a failed job is still a successful invocation. Partial is not complete
 success and must remain visible to the caller. Transport admission failures keep
@@ -218,3 +218,9 @@ Business operation permissions are declared once in [the authorization manifest]
 `/app/matter/device/list` is the management inventory, grouped by Fabric node. It is distinct from the Plugin's Integration enumeration `/matter/device/list`. Its `sourceDeviceId` values identify Plugin projections, not Twin entities. Nodes without projected devices remain visible; `membershipComplete`, `inventoryComplete`, per-node completeness and `errors` describe partial observations. Lists omit endpoints and attribute payloads.
 
 `/app/matter/fabric/node/detail` accepts 1–20 unique `matterNodeIds`, returning an ordered item result or error for each ID. The request uses string IDs without numeric coercion. See `schema/matter-management.v1.schema.json`. All `/app/matter/` operations execute through the Space's Hub irrespective of scope execution mode. Node removal is a manual UI/CLI capability, not a delegated Agent/MCP tool.
+
+Automation description validation errors preserve diagnostic codes, field paths and summaries.
+Full includes original parser locations and descriptions; Essential omits source locations and
+uses concise summaries, deduplicating equal issues. Service failures and stale-source conflicts
+remain distinct from invalid edits. `applied: false` is emitted only before persistence.
+Model/MCP/CLI text adapters use `response::tool_text`, preserving partial outcomes and warnings.

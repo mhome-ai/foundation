@@ -36,7 +36,7 @@ pub enum Content {
 }
 
 /// The public response has exactly one content representation on success/partial,
-/// an error on failure, and no content on cancellation. Constructors and strict
+/// an error with optional Essential text on failure, and no content on cancellation. Constructors and strict
 /// deserialization enforce this invariant on both sides of the wire.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(tag = "status", rename_all = "snake_case")]
@@ -55,6 +55,8 @@ pub enum FacadeResponse {
     },
     Error {
         error: FacadeProblem,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        text: Option<String>,
     },
     Cancelled {
         #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -85,10 +87,11 @@ impl FacadeResponse {
                 message: message.into(),
                 details: None,
             },
+            text: None,
         }
     }
     pub fn with_details(mut self, details: Value) -> Self {
-        if let Self::Error { error } = &mut self {
+        if let Self::Error { error, .. } = &mut self {
             error.details = Some(details);
         }
         self
@@ -141,6 +144,13 @@ impl FacadeResponse {
                 content: Content::Text { text },
                 warnings,
             },
+            Self::Error { mut error, .. } => {
+                error.details = None;
+                Self::Error {
+                    error,
+                    text: Some(text),
+                }
+            }
             terminal => terminal,
         }
     }
@@ -186,6 +196,11 @@ impl<'de> Deserialize<'de> for FacadeResponse {
                 }
             }
             Some("error") => Self::Error {
+                text: fields
+                    .remove("text")
+                    .map(serde_json::from_value)
+                    .transpose()
+                    .map_err(D::Error::custom)?,
                 error: serde_json::from_value(
                     fields
                         .remove("error")
@@ -244,5 +259,12 @@ mod tests {
             result.with_text("state: failed".into()).status(),
             FacadeStatus::Success
         );
+    }
+    #[test]
+    fn error_text_roundtrips_and_stays_an_error() {
+        let value = serde_json::json!({"status":"error","error":{"code":"BAD_REQUEST","message":"Invalid"},"text":"status: error\n"});
+        let response: FacadeResponse = serde_json::from_value(value.clone()).unwrap();
+        assert!(response.is_error());
+        assert_eq!(serde_json::to_value(response).unwrap(), value);
     }
 }

@@ -95,6 +95,9 @@
         },
         "error": {
           "$ref": "#/$defs/problem"
+        },
+        "text": {
+          "type": "string"
         }
       }
     },

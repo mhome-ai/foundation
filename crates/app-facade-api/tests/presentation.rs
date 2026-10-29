@@ -58,7 +58,8 @@ fn shared_projection_and_outcome_contract() {
         assert_eq!(essential["status"], case["status"]);
         if case["status"] == "error" {
             assert_eq!(full["error"]["code"], case["code"]);
-            assert_eq!(essential, full);
+            let parsed: Value = serde_yaml::from_str(essential["text"].as_str().unwrap()).unwrap();
+            assert_eq!(parsed, full);
         } else {
             assert_eq!(full["data"], case["data"]);
             assert!(essential.get("data").is_none());

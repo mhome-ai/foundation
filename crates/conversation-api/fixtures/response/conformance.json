@@ -253,6 +253,17 @@
         "status": "cancelled",
         "warnings": []
       }
+    },
+    {
+      "name": "essential error with YAML text",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "E",
+          "message": "bad"
+        },
+        "text": "status: error\nerror:\n  code: BAD_REQUEST\n  message: Invalid description\n"
+      }
     }
   ],
   "invalid": [
@@ -472,17 +483,6 @@
       }
     },
     {
-      "name": "error with text",
-      "value": {
-        "status": "error",
-        "error": {
-          "code": "E",
-          "message": "bad"
-        },
-        "text": ""
-      }
-    },
-    {
       "name": "error with warnings",
       "value": {
         "status": "error",
@@ -544,6 +544,17 @@
     {
       "name": "null response",
       "value": null
+    },
+    {
+      "name": "error with nonstring text",
+      "value": {
+        "status": "error",
+        "error": {
+          "code": "BAD_REQUEST",
+          "message": "Invalid description"
+        },
+        "text": {}
+      }
     }
   ]
 }

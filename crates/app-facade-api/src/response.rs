@@ -1,6 +1,6 @@
 //! Public App result projection. Transport serialization is not a business input.
 use crate::{FacadeResponse, ResponseDetail};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 mod agent;
 mod runtime;
@@ -330,6 +330,16 @@ pub fn render_in_timezone(
     detail: ResponseDetail,
     timezone: &str,
 ) -> Result<FacadeResponse, serde_yaml::Error> {
+    if detail == ResponseDetail::Essential {
+        if let FacadeResponse::Error { error, text: None } = &response {
+            let mut problem = serde_json::to_value(error).expect("serializable error");
+            if let Some(details) = problem.get_mut("details") {
+                project_error_details(target, details);
+            }
+            let text = serde_yaml::to_string(&json!({"status":"error","error":problem}))?;
+            return Ok(response.with_text(text));
+        }
+    }
     if detail == ResponseDetail::Essential && response.data().is_some() {
         let mut projected = essential(target, response.data().expect("outcome has data"));
         time::localize(target, &mut projected, timezone);
@@ -338,6 +348,65 @@ pub fn render_in_timezone(
     } else {
         Ok(response)
     }
+}
+
+/// Only this domain owns its diagnostic projection; unrelated error details remain intact.
+fn project_error_details(target: &str, details: &mut Value) {
+    if target != "/app/automation/description/update" {
+        return;
+    }
+    if let Some(diagnostics) = details.get_mut("diagnostics").and_then(Value::as_array_mut) {
+        let mut unique = Vec::new();
+        for item in diagnostics.iter() {
+            let mut projected = serde_json::Map::new();
+            for field in ["field", "code"] {
+                if let Some(value) = item.get(field).filter(|v| !v.is_null()) {
+                    projected.insert(field.into(), value.clone());
+                }
+            }
+            if let Some(message) = item
+                .get("summary")
+                .filter(|v| !v.is_null())
+                .or_else(|| item.get("description").filter(|v| !v.is_null()))
+            {
+                projected.insert("message".into(), message.clone());
+            }
+            let projected = Value::Object(projected);
+            if !unique.contains(&projected) {
+                unique.push(projected);
+            }
+        }
+        *diagnostics = unique;
+    }
+}
+
+/// Text at model/MCP/CLI boundaries. Canonical history keeps the original outcome.
+/// Full responses and non-Facade values retain JSON; Essential content is never JSON-escaped.
+pub fn tool_text(value: &Value) -> String {
+    if let Some(text) = value.get("text").and_then(Value::as_str) {
+        if matches!(
+            value.get("status").and_then(Value::as_str),
+            Some("success" | "partial" | "error")
+        ) {
+            let warnings = value
+                .get("warnings")
+                .filter(|v| v.as_array().is_some_and(|v| !v.is_empty()));
+            if value["status"] != "partial" && warnings.is_none() {
+                return text.to_owned();
+            }
+            let result =
+                serde_yaml::from_str::<Value>(text).unwrap_or_else(|_| Value::String(text.into()));
+            let mut visible = json!({"status":value["status"],"result":result});
+            if let Some(warnings) = warnings {
+                visible["warnings"] = warnings.clone();
+            }
+            return serde_yaml::to_string(&visible).expect("serializable result");
+        }
+    }
+    value
+        .as_str()
+        .map(str::to_owned)
+        .unwrap_or_else(|| value.to_string())
 }
 
 #[cfg(test)]
@@ -381,7 +450,13 @@ mod tests {
                 assert!(result.is_error());
                 let value = serde_json::to_value(result).unwrap();
                 assert_eq!(value["error"]["code"], "MODEL_BUSY");
-                assert_eq!(value["error"]["details"], data);
+                if detail == ResponseDetail::Full {
+                    assert_eq!(value["error"]["details"], data);
+                } else {
+                    let yaml: Value =
+                        serde_yaml::from_str(value["text"].as_str().unwrap()).unwrap();
+                    assert_eq!(yaml["error"]["details"], data);
+                }
             }
         }
     }
@@ -399,13 +474,11 @@ mod tests {
         ] {
             assert!(!outcome(&format!("/app/plugin/llm/{route}"), data.clone()).is_error());
         }
-        assert!(
-            !outcome(
-                "/app/plugin/llm/model/delete",
-                json!({"data":{"ok":true,"deleted":true}})
-            )
-            .is_error()
-        );
+        assert!(!outcome(
+            "/app/plugin/llm/model/delete",
+            json!({"data":{"ok":true,"deleted":true}})
+        )
+        .is_error());
     }
     #[test]
     fn dashboard_card_reads_omit_layout_but_full_is_unchanged() {
@@ -458,6 +531,69 @@ mod tests {
         assert_eq!(
             serde_yaml::from_str::<Value>(text["text"].as_str().unwrap()).unwrap(),
             *cached.data().unwrap()
+        );
+    }
+    #[test]
+    fn error_essential_is_actionable_yaml_and_keeps_full_untouched() {
+        let issue = json!({"field":"description","code":"variable_not_defined",
+            "description":"Original full parser explanation and template", "summary":"Input $missing is not declared",
+            "start":{"row":2,"col":18},"end":{"row":2,"col":26},"level":"error"});
+        let full = FacadeResponse::error("BAD_REQUEST", "Validation failed").with_details(json!({
+            "automationId":"a","reason":"validation_failed","applied":false,"diagnostics":[issue.clone(),issue]}));
+        let original = serde_json::to_value(&full).unwrap();
+        let rendered = render(
+            "/app/automation/description/update",
+            full.clone(),
+            ResponseDetail::Essential,
+        )
+        .unwrap();
+        assert!(rendered.is_error());
+        let value = serde_json::to_value(rendered).unwrap();
+        assert!(value["error"].get("details").is_none());
+        let text = tool_text(&value);
+        let visible: Value = serde_yaml::from_str(&text).unwrap();
+        assert_eq!(visible["status"], "error");
+        assert_eq!(visible["error"]["details"]["applied"], false);
+        assert_eq!(
+            visible["error"]["details"]["diagnostics"],
+            json!([
+            {"field":"description","code":"variable_not_defined","message":"Input $missing is not declared"}])
+        );
+        assert!(!text.contains("start:"));
+        assert!(!text.contains("Original full"));
+        assert_eq!(
+            serde_json::to_value(
+                render(
+                    "/app/automation/description/update",
+                    full,
+                    ResponseDetail::Full
+                )
+                .unwrap()
+            )
+            .unwrap(),
+            original
+        );
+        let decoded: FacadeResponse = serde_json::from_value(value).unwrap();
+        assert!(decoded.is_error());
+    }
+
+    #[test]
+    fn visible_text_preserves_partial_outcomes_and_warnings() {
+        for status in ["success", "partial"] {
+            let value = json!({"status":status,"text":"items: []\n", "warnings":[{"code":"UNAVAILABLE","message":"One source is offline"}]});
+            let text = tool_text(&value);
+            let yaml: Value = serde_yaml::from_str(&text).unwrap();
+            assert_eq!(yaml["status"], status);
+            assert_eq!(yaml["warnings"], value["warnings"]);
+            assert_eq!(yaml["result"], json!({"items":[]}));
+        }
+        assert_eq!(
+            tool_text(&json!({"status":"success","text":"items: []\n"})),
+            "items: []\n"
+        );
+        assert_eq!(
+            tool_text(&json!({"data":{"status":"error"}})),
+            r#"{"data":{"status":"error"}}"#
         );
     }
 }

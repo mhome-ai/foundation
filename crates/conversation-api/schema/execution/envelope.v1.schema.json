@@ -2211,6 +2211,9 @@
             },
             "error": {
               "$ref": "#/$defs/facade_response/$defs/problem"
+            },
+            "text": {
+              "type": "string"
             }
           }
         },
