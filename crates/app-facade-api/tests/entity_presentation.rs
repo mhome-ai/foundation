@@ -1,6 +1,6 @@
 use app_facade_api::{
+    entity_presentation::{GetEntityPresentationInput, GET_TARGET},
     ResponseDetail,
-    entity_presentation::{GET_TARGET, GetEntityPresentationInput},
 };
 use serde_json::Value;
 

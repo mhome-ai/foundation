@@ -1,4 +1,4 @@
-use app_facade_api::{ResponseDetail, response};
+use app_facade_api::{response, ResponseDetail};
 use serde_json::Value;
 
 #[test]
