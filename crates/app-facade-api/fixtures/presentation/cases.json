@@ -3962,5 +3962,95 @@
         }
       ]
     }
+  },
+  {
+    "name": "agent-provider-auth-start",
+    "target": "/app/agent/llm/provider/auth/start",
+    "data": {
+      "success": true,
+      "sessionId": "auth-example",
+      "status": "pending"
+    },
+    "status": "success",
+    "full": {
+      "sessionId": "auth-example",
+      "status": "pending"
+    },
+    "essential": {
+      "sessionId": "auth-example",
+      "status": "pending"
+    }
+  },
+  {
+    "name": "agent-provider-auth-complete",
+    "target": "/app/agent/llm/provider/auth/complete",
+    "data": {
+      "success": true,
+      "sessionId": "auth-example",
+      "status": "persisted"
+    },
+    "status": "success",
+    "full": {
+      "sessionId": "auth-example",
+      "status": "persisted"
+    },
+    "essential": {
+      "sessionId": "auth-example",
+      "status": "persisted"
+    }
+  },
+  {
+    "name": "agent-provider-auth-status",
+    "target": "/app/agent/llm/provider/auth/status",
+    "data": {
+      "success": true,
+      "sessionId": "auth-example",
+      "status": "failed"
+    },
+    "status": "success",
+    "full": {
+      "sessionId": "auth-example",
+      "status": "failed"
+    },
+    "essential": {
+      "sessionId": "auth-example",
+      "status": "failed"
+    }
+  },
+  {
+    "name": "agent-provider-auth-cancel",
+    "target": "/app/agent/llm/provider/auth/cancel",
+    "data": {
+      "success": true
+    },
+    "status": "success",
+    "acknowledgement": true
+  },
+  {
+    "name": "agent-provider-auth-cancel-failed",
+    "target": "/app/agent/llm/provider/auth/cancel",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "agent-provider-auth-request-failed",
+    "target": "/app/agent/llm/provider/auth/complete",
+    "data": {
+      "success": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED"
+  },
+  {
+    "name": "agent-provider-auth-request-malformed",
+    "target": "/app/agent/llm/provider/auth/status",
+    "data": {
+      "status": "persisted"
+    },
+    "status": "error",
+    "code": "INVALID_RESPONSE"
   }
 ]

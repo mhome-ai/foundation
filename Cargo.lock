@@ -1688,7 +1688,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.70.0"
+version = "1.71.0"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -1714,7 +1714,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.8.12"
+version = "0.8.13"
 dependencies = [
  "async-trait",
  "base64 0.22.1",

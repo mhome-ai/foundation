@@ -8,7 +8,7 @@ mod runtime;
 pub mod time;
 
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
-pub fn outcome(target: &str, data: Value) -> FacadeResponse {
+pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
     if matches!(
         target,
         crate::group::CREATE
@@ -39,6 +39,35 @@ pub fn outcome(target: &str, data: Value) -> FacadeResponse {
                     .with_details(data)
             }
         };
+    }
+    // The internal authorization DTO reports request completion separately from
+    // the authorization session state. Only the latter is public business data.
+    if matches!(
+        target,
+        "/app/agent/llm/provider/auth/start"
+            | "/app/agent/llm/provider/auth/complete"
+            | "/app/agent/llm/provider/auth/status"
+    ) {
+        match data.get("success").and_then(Value::as_bool) {
+            Some(true) => {
+                data.as_object_mut().unwrap().remove("success");
+                return FacadeResponse::success(data);
+            }
+            Some(false) => {
+                return FacadeResponse::error(
+                    "OPERATION_FAILED",
+                    "The authorization request did not succeed",
+                )
+                .with_details(data);
+            }
+            None => {
+                return FacadeResponse::error(
+                    "INVALID_RESPONSE",
+                    "Expected an authorization request outcome",
+                )
+                .with_details(data);
+            }
+        }
     }
     // These mutation contracts use `success` as the operation outcome. Queries
     // (including execution-status reads) never use this test.
@@ -141,6 +170,7 @@ pub fn is_acknowledgement(target: &str) -> bool {
             | "/app/agent/llm/mapping/save"
             | "/app/agent/llm/provider/credential/save"
             | "/app/agent/llm/provider/credential/delete"
+            | "/app/agent/llm/provider/auth/cancel"
             | "/app/automation/start"
             | "/app/automation/stop"
             | "/app/widget/delete"
