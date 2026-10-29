@@ -31,6 +31,7 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/pod/enrollment/get",
     "/app/host/directory/list",
     "/app/pod/rename",
+    "/app/artifact/external/resolve",
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[

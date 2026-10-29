@@ -232,3 +232,15 @@ Business operation permissions are declared once in [the authorization manifest]
 
 UI Integration metadata uses `/app/integration/presentation/get`; see
 [the presentation contract](contract/integration-presentation-v1.md).
+
+## Artifact delivery
+
+`/app/artifact/resolve` follows the Space execution route and can return a Host-local
+URL with its TLS identity. `/app/artifact/external/resolve` is an explicit cloud-only
+read using the same `ResolveArtifactRequest` and `ResolveArtifactResponse` contract.
+It returns a short-lived signed HTTPS URL through an externally reachable cloud
+origin. The URL lifetime never extends the underlying artifact's retention.
+Cloud-owned content uses an object-store signed URL; local content is read from its
+owning Hub on demand. External resolution creates no cloud replica and cannot
+make an offline local owner readable. The current inline Hub bridge size limit
+still applies. Local file download remains a client workflow over ordinary resolve.

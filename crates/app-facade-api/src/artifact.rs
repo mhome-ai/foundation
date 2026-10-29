@@ -10,6 +10,9 @@ pub use artifact_api::{
 /// Resolve an Artifact through the MeowLink-facing App Facade.
 pub const RESOLVE_TARGET: &str = "/app/artifact/resolve";
 
+/// Resolve a public HTTPS delivery URL through the cloud without replicating content.
+pub const EXTERNAL_RESOLVE_TARGET: &str = "/app/artifact/external/resolve";
+
 pub const PUT_TARGET: &str = "/app/artifact/put";
 pub const IMPORT_TARGET: &str = "/app/artifact/import";
 
@@ -20,6 +23,7 @@ pub const UPLOAD_COMPLETE_TARGET: &str = "/app/artifact/upload/complete";
 pub const UPLOAD_CANCEL_TARGET: &str = "/app/artifact/upload/cancel";
 pub const REQUEST_TARGETS: &[&str] = &[
     RESOLVE_TARGET,
+    EXTERNAL_RESOLVE_TARGET,
     PUT_TARGET,
     IMPORT_TARGET,
     DELETE_TARGET,

@@ -770,7 +770,7 @@ fn topology_snapshot_matches_public_schema() {
 
 #[test]
 fn artifact_is_registered_as_a_scope_mode_app_facade_domain() {
-    use app_facade_api::artifact::{REQUEST_TARGETS, RESOLVE_TARGET};
+    use app_facade_api::artifact::{EXTERNAL_RESOLVE_TARGET, REQUEST_TARGETS, RESOLVE_TARGET};
     use app_facade_api::routing::{route_policy_for_target, ExecutionSelector};
 
     let manifest: Value =
@@ -784,6 +784,12 @@ fn artifact_is_registered_as_a_scope_mode_app_facade_domain() {
     assert_eq!(RESOLVE_TARGET, "/app/artifact/resolve");
     let policy = route_policy_for_target(RESOLVE_TARGET).unwrap();
     assert_eq!(policy.execution, ExecutionSelector::ScopeMode);
+    assert_eq!(
+        route_policy_for_target(EXTERNAL_RESOLVE_TARGET)
+            .unwrap()
+            .execution,
+        ExecutionSelector::Cloud
+    );
 }
 
 #[test]

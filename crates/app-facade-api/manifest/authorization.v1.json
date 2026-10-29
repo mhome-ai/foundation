@@ -26,6 +26,7 @@
     "/app/artifact/import": "spaceWrite",
     "/app/artifact/put": "spaceWrite",
     "/app/artifact/resolve": "spaceRead",
+    "/app/artifact/external/resolve": "spaceRead",
     "/app/artifact/upload/cancel": "spaceWrite",
     "/app/artifact/upload/complete": "spaceWrite",
     "/app/artifact/upload/start": "spaceWrite",

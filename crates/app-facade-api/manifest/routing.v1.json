@@ -34,7 +34,8 @@
       "/app/messaging/unbind",
       "/app/pod/enrollment/get",
       "/app/host/directory/list",
-      "/app/pod/rename"
+      "/app/pod/rename",
+      "/app/artifact/external/resolve"
     ],
     "scopeModeTargets": [
       "/app/artifact/resolve",

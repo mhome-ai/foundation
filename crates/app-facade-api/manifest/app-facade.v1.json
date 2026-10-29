@@ -9,6 +9,7 @@
       "contract": "mhome.artifact.v1",
       "requestTargets": [
         "/app/artifact/resolve",
+        "/app/artifact/external/resolve",
         "/app/artifact/put",
         "/app/artifact/import",
         "/app/artifact/delete",
