@@ -1,6 +1,6 @@
 [package]
 name = "mhome-wasm-runtime"
-version = "0.3.0"
+version = "0.3.1"
 rust-version = "1.95"
 edition.workspace = true
 license.workspace = true
@@ -13,8 +13,8 @@ mhome-script-sdk = { package = "mhome-script-sdk", version = "=0.2.0", path = ".
 tokio = { version = "1", features = ["rt", "sync", "time", "macros"] }
 tokio-util = { version = "0.7", features = ["rt"] }
 [target.'cfg(not(target_os = "ios"))'.dependencies]
-wasmtime = { version = "48.0.7", features = ["pulley"] }
+wasmtime = { version = "48.0.8", features = ["pulley"] }
 [target.'cfg(target_os = "ios")'.dependencies]
-wasmtime = { version = "48.0.7", default-features = false, features = ["std", "runtime", "async", "cranelift", "pulley", "anyhow"] }
+wasmtime = { version = "48.0.8", default-features = false, features = ["std", "runtime", "async", "cranelift", "pulley", "anyhow"] }
 [dev-dependencies]
 wat = "1"
