@@ -21,5 +21,7 @@
   {"target":"/dispatch/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
   {"target":"/dispatch/agent/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
   {"target":"/bridge/automation/parse","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":205000,"lionWaitMs":230000},
-  {"target":"/bridge/automation/format","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":205000,"lionWaitMs":230000}
+  {"target":"/bridge/automation/format","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":205000,"lionWaitMs":230000},
+  {"target":"/dispatch/hub/revoke/start","payload":{},"operation":"hubMigration","totalMs":600000},
+  {"target":"/bridge/hub/revoke/dataUploaded","payload":{},"operation":"hubMigration","totalMs":600000}
 ]

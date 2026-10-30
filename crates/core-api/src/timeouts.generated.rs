@@ -3,6 +3,7 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Operation {
     CoreRequest,
+    HubMigration,
     EventProcessing,
     EntityRefresh,
     HarnessSessionOpen,
@@ -19,6 +20,7 @@ impl Operation {
     pub const fn id(self) -> &'static str {
         match self {
             Self::CoreRequest => "coreRequest",
+            Self::HubMigration => "hubMigration",
             Self::EventProcessing => "eventProcessing",
             Self::EntityRefresh => "entityRefresh",
             Self::HarnessSessionOpen => "harnessSessionOpen",
@@ -35,6 +37,7 @@ impl Operation {
     pub const fn timeout(self) -> Duration {
         Duration::from_millis(match self {
             Self::CoreRequest => 60000,
+            Self::HubMigration => 600000,
             Self::EventProcessing => 60000,
             Self::EntityRefresh => 85000,
             Self::HarnessSessionOpen => 150000,
@@ -101,6 +104,8 @@ const SOURCE_SCRIPT_VALIDATION: &[&str] = &[
 ];
 
 const ORDINARY_OVERRIDES: &[(&str, Operation)] = &[
+    ("/hub/revoke/start", Operation::HubMigration),
+    ("/bridge/hub/revoke/dataUploaded", Operation::HubMigration),
     ("/app/integration/entity/refresh", Operation::EntityRefresh),
     ("/harness/test/session/open", Operation::HarnessSessionOpen),
 ];

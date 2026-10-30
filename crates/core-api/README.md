@@ -191,6 +191,10 @@ of a completed result or timeout error; it never grants the callee more executio
 time. Existing domain-owned lifetimes (streams, subscriptions, long batch jobs)
 and implementation-specific step timeouts are not replaced by a default request
 budget. New shared operations need an explicit catalog entry and selector tests.
+`hubMigration` gives an accepted migration worker up to ten minutes, including drain
+and transfer. Starting a migration and querying its status remain ordinary requests.
+Expiry fails the attempt; it does not prove that source requests drained or reopen
+the Space. Explicit retries replace uncommitted snapshots and finish committed ownership.
 
 `execution_budget::Budgeted<T>` adds optional `executionBudget: { remainingMs }`
 metadata alongside an object envelope's existing fields. Bridge uses it on MWS
