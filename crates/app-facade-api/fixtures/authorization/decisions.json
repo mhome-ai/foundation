@@ -1,6 +1,6 @@
 [
   {
-    "name": "owner:/app/device/brief/list",
+    "name": "owner:/app/device/list",
     "principal": {
       "kind": "user",
       "userId": "owner"
@@ -8,7 +8,7 @@
     "memberRole": "OWNER",
     "tenantId": "tenant",
     "scopeId": "space",
-    "target": "/app/device/brief/list",
+    "target": "/app/device/list",
     "allowed": true
   },
   {
@@ -84,7 +84,7 @@
     "allowed": false
   },
   {
-    "name": "member:/app/device/brief/list",
+    "name": "member:/app/device/list",
     "principal": {
       "kind": "user",
       "userId": "member"
@@ -92,7 +92,7 @@
     "memberRole": "MEMBER",
     "tenantId": "tenant",
     "scopeId": "space",
-    "target": "/app/device/brief/list",
+    "target": "/app/device/list",
     "allowed": true
   },
   {
@@ -168,7 +168,7 @@
     "allowed": false
   },
   {
-    "name": "removed:/app/device/brief/list",
+    "name": "removed:/app/device/list",
     "principal": {
       "kind": "user",
       "userId": "former"
@@ -176,7 +176,7 @@
     "memberRole": null,
     "tenantId": "tenant",
     "scopeId": "space",
-    "target": "/app/device/brief/list",
+    "target": "/app/device/list",
     "allowed": false
   },
   {
@@ -252,7 +252,7 @@
     "allowed": false
   },
   {
-    "name": "space:/app/device/brief/list",
+    "name": "space:/app/device/list",
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
@@ -261,7 +261,7 @@
     "memberRole": null,
     "tenantId": "tenant",
     "scopeId": "space",
-    "target": "/app/device/brief/list",
+    "target": "/app/device/list",
     "allowed": true
   },
   {
@@ -343,7 +343,7 @@
     "allowed": false
   },
   {
-    "name": "space-cannot-borrow-owner:/app/device/brief/list",
+    "name": "space-cannot-borrow-owner:/app/device/list",
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
@@ -352,7 +352,7 @@
     "memberRole": "OWNER",
     "tenantId": "tenant",
     "scopeId": "space",
-    "target": "/app/device/brief/list",
+    "target": "/app/device/list",
     "allowed": true
   },
   {
@@ -434,7 +434,7 @@
     "allowed": false
   },
   {
-    "name": "foreign-space:/app/device/brief/list",
+    "name": "foreign-space:/app/device/list",
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
@@ -443,7 +443,7 @@
     "memberRole": null,
     "tenantId": "tenant",
     "scopeId": "space",
-    "target": "/app/device/brief/list",
+    "target": "/app/device/list",
     "allowed": false
   },
   {
@@ -525,7 +525,7 @@
     "allowed": false
   },
   {
-    "name": "foreign-tenant:/app/device/brief/list",
+    "name": "foreign-tenant:/app/device/list",
     "principal": {
       "kind": "space",
       "tenantId": "other",
@@ -534,7 +534,7 @@
     "memberRole": null,
     "tenantId": "tenant",
     "scopeId": "space",
-    "target": "/app/device/brief/list",
+    "target": "/app/device/list",
     "allowed": false
   },
   {

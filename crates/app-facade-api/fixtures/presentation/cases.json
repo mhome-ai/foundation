@@ -451,7 +451,7 @@
   },
   {
     "name": "device-briefs-keep-discovery-definitions",
-    "target": "/app/device/brief/list",
+    "target": "/app/device/list",
     "data": {
       "devices": [
         {
@@ -525,7 +525,7 @@
   },
   {
     "name": "device-empty-briefs",
-    "target": "/app/device/brief/list",
+    "target": "/app/device/list",
     "data": {
       "devices": []
     },

@@ -215,7 +215,7 @@ pub fn essential(target: &str, data: &Value) -> Value {
         result
     } else if let Some(result) = runtime::project(target, data) {
         result
-    } else if target == "/app/device/brief/list" {
+    } else if target == "/app/device/list" {
         device_briefs(data)
     } else if target.starts_with("/app/dashboard/") {
         dashboard(
