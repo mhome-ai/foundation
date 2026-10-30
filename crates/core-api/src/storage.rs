@@ -1,82 +1,28 @@
+//! Core-owned Storage access and transport. Domain types have one source in storage-api.
 use serde::{Deserialize, Serialize};
-use std::fmt;
-
+pub use storage_api::*;
 pub const STORAGE_NODE_TYPE: &str = "storage";
-pub const STORAGE_PROTOCOL_VERSION: &str = "storage.v3";
-
+pub const STORAGE_PROTOCOL_VERSION: &str = storage_api::PROTOCOL_VERSION;
 pub const STORAGE_READINESS_ROUTE: &str = "/storage/readiness";
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub enum StorageOverflowStrategy {
-    #[default]
-    Reject,
-    EvictOldest,
+pub struct ObjectStorageSession {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub host_identity: Option<artifact_api::HostTlsIdentity>,
+    pub protocol_version: String,
+    pub folder: ObjectStorageFolder,
+    pub endpoint: String,
+    pub access_token: String,
+    #[serde(with = "storage_api::decimal_u64")]
+    pub expires_at_ms: u64,
+    pub permissions: Vec<StoragePermission>,
 }
 
-impl StorageOverflowStrategy {
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Reject => "reject",
-            Self::EvictOldest => "evictOldest",
-        }
-    }
-
-    pub fn parse(value: &str) -> Result<Self, UnsupportedStorageOverflowStrategy> {
-        match value {
-            "reject" => Ok(Self::Reject),
-            "evictOldest" => Ok(Self::EvictOldest),
-            _ => Err(UnsupportedStorageOverflowStrategy(value.to_string())),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnsupportedStorageOverflowStrategy(String);
-
-impl fmt::Display for UnsupportedStorageOverflowStrategy {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            formatter,
-            "unsupported storage overflow strategy: {}",
-            self.0
-        )
-    }
-}
-
-impl std::error::Error for UnsupportedStorageOverflowStrategy {}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum StoragePermission {
-    Read,
-    Write,
-    Delete,
-    List,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StorageObject {
-    pub key: String,
-    pub object_id: String,
-    pub size_bytes: u64,
-    pub sha256: String,
-    pub content_type: Option<String>,
-    pub committed_at_ms: u64,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StorageObjectList {
-    pub objects: Vec<StorageObject>,
-    pub next_cursor: Option<String>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum StorageWriteState {
-    Writable,
-    LowSpace,
-    BlockedByPhysicalSpace,
+/// Host-owned native HTTPS origin, projected independently of Artifact routes.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct StorageEndpointProjection {
+    pub base_url: String,
+    pub host_identity: artifact_api::HostTlsIdentity,
 }

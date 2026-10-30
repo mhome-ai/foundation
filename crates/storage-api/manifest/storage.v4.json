@@ -1,0 +1,28 @@
+{
+  "protocol": "storage.v4",
+  "contractVersion": "0.1.0",
+  "schema": "schema/storage.v4.schema.json",
+  "definitions": [
+    "decimalU64",
+    "permission",
+    "overflowStrategy",
+    "writeState",
+    "createFolder",
+    "updateFolder",
+    "sessionRequest",
+    "folder",
+    "object",
+    "objectList",
+    "blob",
+    "capacity",
+    "error",
+    "folderIdRequest",
+    "folderList",
+    "filesystemCapacity",
+    "usage",
+    "safety",
+    "backend",
+    "overview"
+  ],
+  "contract": "contract/storage-v4.md"
+}

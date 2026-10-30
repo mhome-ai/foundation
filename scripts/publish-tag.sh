@@ -37,10 +37,10 @@ case "${tag}" in
     manifest="crates/llm-api/Cargo.toml"
     version="${tag#mhome-llm-api-v}"
     ;;
-  mhome-storage-v*)
-    package="mhome-storage"
-    manifest="crates/storage/Cargo.toml"
-    version="${tag#mhome-storage-v}"
+  mhome-storage-api-v*)
+    package="mhome-storage-api"
+    manifest="crates/storage-api/Cargo.toml"
+    version="${tag#mhome-storage-api-v}"
     ;;
   mhome-artifact-api-v*)
     package="mhome-artifact-api"

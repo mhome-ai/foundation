@@ -1,0 +1,18 @@
+[package]
+name = "mhome-storage-api"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Canonical Folder and object storage capability contracts"
+publish = ["crates-io"]
+readme = "README.md"
+include = ["src/**", "tests/**", "schema/**", "manifest/**", "contract/**", "Cargo.toml", "README.md", "LICENSE"]
+[lib]
+name = "storage_api"
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+[dev-dependencies]
+jsonschema = { version = "0.30", default-features = false }

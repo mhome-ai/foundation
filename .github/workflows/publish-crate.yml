@@ -7,7 +7,7 @@ on:
       - "mhome-script-sdk-v*"
       - "mhome-wasm-runtime-v*"
       - "mhome-artifact-api-v*"
-      - "mhome-storage-v*"
+      - "mhome-storage-api-v*"
       - "mhome-llm-api-v*"
       - "mhome-person-api-v*"
       - "mhome-face-matching-v*"

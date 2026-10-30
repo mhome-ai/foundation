@@ -1,0 +1,535 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/protocol/storage/v4",
+  "$defs": {
+    "decimalU64": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,18}|1[0-7][0-9]{18}|18[0-3][0-9]{17}|184[0-3][0-9]{16}|1844[0-5][0-9]{15}|18446[0-6][0-9]{14}|184467[0-3][0-9]{13}|1844674[0-3][0-9]{12}|184467440[0-6][0-9]{10}|1844674407[0-2][0-9]{9}|18446744073[0-6][0-9]{8}|1844674407370[0-8][0-9]{6}|18446744073709[0-4][0-9]{5}|184467440737095[0-4][0-9]{4}|18446744073709550[0-9]{3}|18446744073709551[0-5][0-9]{2}|1844674407370955160[0-9]{1}|1844674407370955161[0-4]|18446744073709551615)$",
+      "maxLength": 20
+    },
+    "permission": {
+      "enum": [
+        "read",
+        "write",
+        "delete",
+        "list"
+      ]
+    },
+    "overflowStrategy": {
+      "enum": [
+        "reject",
+        "evictOldest"
+      ]
+    },
+    "writeState": {
+      "enum": [
+        "writable",
+        "lowSpace",
+        "blockedByPhysicalSpace"
+      ]
+    },
+    "createFolder": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "maxBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "overflowStrategy": {
+          "$ref": "#/$defs/overflowStrategy"
+        }
+      },
+      "required": [
+        "name",
+        "maxBytes"
+      ],
+      "additionalProperties": false
+    },
+    "updateFolder": {
+      "type": "object",
+      "properties": {
+        "folderId": {
+          "type": "string"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "maxBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "overflowStrategy": {
+          "$ref": "#/$defs/overflowStrategy"
+        }
+      },
+      "required": [
+        "folderId",
+        "expectedRevision",
+        "name",
+        "maxBytes",
+        "overflowStrategy"
+      ],
+      "additionalProperties": false
+    },
+    "sessionRequest": {
+      "type": "object",
+      "properties": {
+        "folderId": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/permission"
+          }
+        },
+        "ttlSeconds": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/decimalU64"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "folderId"
+      ],
+      "additionalProperties": false
+    },
+    "folder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "system": {
+          "type": "boolean"
+        },
+        "maxBytes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/decimalU64"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overflowStrategy": {
+          "$ref": "#/$defs/overflowStrategy"
+        },
+        "usedBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "reservedBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "objectCount": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "evictedObjectCount": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "evictedBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "rejectedWriteCount": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "revision": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "createdAtMs": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "updatedAtMs": {
+          "$ref": "#/$defs/decimalU64"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "system",
+        "maxBytes",
+        "overflowStrategy",
+        "usedBytes",
+        "reservedBytes",
+        "objectCount",
+        "evictedObjectCount",
+        "evictedBytes",
+        "rejectedWriteCount",
+        "revision",
+        "createdAtMs",
+        "updatedAtMs"
+      ],
+      "additionalProperties": false
+    },
+    "object": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "objectId": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "contentType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "committedAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      },
+      "required": [
+        "key",
+        "objectId",
+        "sizeBytes",
+        "sha256",
+        "contentType",
+        "committedAtMs"
+      ],
+      "additionalProperties": false
+    },
+    "objectList": {
+      "type": "object",
+      "properties": {
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/object"
+          }
+        },
+        "nextCursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "objects",
+        "nextCursor"
+      ],
+      "additionalProperties": false
+    },
+    "blob": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "sizeBytes",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "capacity": {
+      "type": "object",
+      "properties": {
+        "repositoryId": {
+          "type": "string"
+        },
+        "volumeId": {
+          "type": "string"
+        },
+        "totalBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "availableBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "stopAtAvailableBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "warningAtAvailableBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      },
+      "required": [
+        "repositoryId",
+        "volumeId",
+        "totalBytes",
+        "availableBytes",
+        "stopAtAvailableBytes",
+        "warningAtAvailableBytes"
+      ],
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "enum": [
+            "INVALID_INPUT",
+            "NOT_FOUND",
+            "CONFLICT",
+            "QUOTA_EXCEEDED",
+            "VOLUME_FULL",
+            "INTEGRITY",
+            "UNAUTHORIZED",
+            "UNAVAILABLE",
+            "SCOPE_REMOVING",
+            "SYSTEM_FOLDER_PROTECTED",
+            "REPOSITORY_IDENTITY_MISMATCH",
+            "PROTOCOL_MISMATCH",
+            "EVICTION_FAILED",
+            "INTERNAL"
+          ]
+        },
+        "detail": {
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "notApplied",
+            "partial",
+            "unknown"
+          ]
+        },
+        "evictedObjects": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      },
+      "required": [
+        "code",
+        "detail",
+        "outcome"
+      ],
+      "additionalProperties": false
+    },
+    "folderIdRequest": {
+      "type": "object",
+      "properties": {
+        "folderId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "folderId"
+      ],
+      "additionalProperties": false
+    },
+    "folderList": {
+      "type": "object",
+      "properties": {
+        "folders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/folder"
+          }
+        }
+      },
+      "required": [
+        "folders"
+      ],
+      "additionalProperties": false
+    },
+    "filesystemCapacity": {
+      "type": "object",
+      "properties": {
+        "totalBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "availableBytes": {
+          "$ref": "#/$defs/decimalU64"
+        }
+      },
+      "required": [
+        "totalBytes",
+        "availableBytes"
+      ],
+      "additionalProperties": false
+    },
+    "usage": {
+      "type": "object",
+      "properties": {
+        "usedBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "reservedBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "writableBytes": {
+          "$ref": "#/$defs/decimalU64"
+        }
+      },
+      "required": [
+        "usedBytes",
+        "reservedBytes",
+        "writableBytes"
+      ],
+      "additionalProperties": false
+    },
+    "safety": {
+      "type": "object",
+      "properties": {
+        "warningAtAvailableBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "stopAtAvailableBytes": {
+          "$ref": "#/$defs/decimalU64"
+        }
+      },
+      "required": [
+        "warningAtAvailableBytes",
+        "stopAtAvailableBytes"
+      ],
+      "additionalProperties": false
+    },
+    "backend": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "internal",
+            "external"
+          ]
+        },
+        "repositoryId": {
+          "type": "string"
+        },
+        "online": {
+          "type": "boolean"
+        },
+        "capacity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/filesystemCapacity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "repositoryId",
+        "online",
+        "capacity"
+      ],
+      "additionalProperties": false
+    },
+    "overview": {
+      "type": "object",
+      "properties": {
+        "backends": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/backend"
+          }
+        },
+        "protocolVersion": {
+          "const": "storage.v4"
+        },
+        "writeState": {
+          "$ref": "#/$defs/writeState"
+        },
+        "writeAvailable": {
+          "type": "boolean"
+        },
+        "filesystem": {
+          "$ref": "#/$defs/filesystemCapacity"
+        },
+        "storage": {
+          "$ref": "#/$defs/usage"
+        },
+        "safety": {
+          "$ref": "#/$defs/safety"
+        },
+        "folderCount": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "objectCount": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "currentSpaceFolderCount": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "currentSpaceObjectCount": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "currentSpaceUsedBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "currentSpaceReservedBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "otherSpacesUsedBytes": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "activeUploadCount": {
+          "$ref": "#/$defs/decimalU64"
+        },
+        "pendingDeletionCount": {
+          "$ref": "#/$defs/decimalU64"
+        }
+      },
+      "required": [
+        "backends",
+        "protocolVersion",
+        "writeState",
+        "writeAvailable",
+        "filesystem",
+        "storage",
+        "safety",
+        "folderCount",
+        "objectCount",
+        "currentSpaceFolderCount",
+        "currentSpaceObjectCount",
+        "currentSpaceUsedBytes",
+        "currentSpaceReservedBytes",
+        "otherSpacesUsedBytes",
+        "activeUploadCount",
+        "pendingDeletionCount"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

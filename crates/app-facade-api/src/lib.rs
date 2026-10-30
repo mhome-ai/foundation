@@ -41,3 +41,5 @@ pub use conversation_api::execution::{FacadeProblem, FacadeResponse, FacadeStatu
 
 pub mod resource_read;
 pub mod response;
+
+pub mod storage;

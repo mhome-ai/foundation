@@ -18,7 +18,7 @@ members = [
   "crates/os-permissions",
   "crates/protocomm",
   "crates/ble-commission",
-  "crates/storage",
+  "crates/storage-api",
 ]
 
 [workspace.package]

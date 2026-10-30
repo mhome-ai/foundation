@@ -260,6 +260,7 @@ pub enum ExternalCoreEventKind {
     MessagingRelationshipsRequested,
     ArtifactDeliveryProjectionRequested,
     ArtifactUploadProjectionRequested,
+    StorageEndpointProjectionRequested,
 }
 
 /// Messaging-only Core -> Host request. A successful response means delivery was accepted by
