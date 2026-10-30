@@ -1688,7 +1688,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.78.0"
+version = "1.79.0"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -1716,7 +1716,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.8.20"
+version = "0.9.1"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -1778,7 +1778,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "1.9.1"
+version = "1.10.0"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -4496,7 +4496,3 @@ dependencies = [
  "cc",
  "pkg-config",
 ]
-
-[[patch.unused]]
-name = "mhome-storage-disk"
-version = "0.1.0"

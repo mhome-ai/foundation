@@ -65,6 +65,7 @@
         "expiresAt": { "type": "integer" },
         "hostId": { "type": "string" },
         "hubId": { "type": "string" },
+        "removalStrategy": {"type": "string", "enum": ["NORMAL_BACKUP", "FORCE_CLOUD_ONLY", "SCOPE_TEARDOWN"]},
         "failure": {
           "type": "object",
           "additionalProperties": false,

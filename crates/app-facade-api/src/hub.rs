@@ -122,6 +122,8 @@ pub struct HubOperation {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hub_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub removal_strategy: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub failure: Option<HubOperationFailure>,
 }
 
@@ -270,13 +272,28 @@ pub struct HubSetupStartRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HubSetupStartResponse {
-    pub scope_id: String,
-    pub session_id: String,
-    pub candidate: HubCandidate,
-    pub pairing_code: String,
-    pub expires_at: i64,
+#[serde(
+    tag = "outcome",
+    rename_all = "SCREAMING_SNAKE_CASE",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum HubSetupStartResponse {
+    PairingRequired {
+        scope_id: String,
+        session_id: String,
+        candidate: HubCandidate,
+        pairing_code: String,
+        expires_at: i64,
+    },
+    Running {
+        scope_id: String,
+        hub_id: String,
+    },
+    Completed {
+        scope_id: String,
+        hub_id: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
