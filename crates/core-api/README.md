@@ -5,6 +5,11 @@ provider runtimes. Public `/app/*` contracts belong to
 `mhome-app-facade-api`; this crate owns internal MWS, authentication, LLM,
 Messaging normalization, Node runtime, and Storage contracts.
 
+Plugin management uses the [generic transport contract](contract/plugin-management-v1.md).
+This package distributes shared Node wire contracts, including Matter and Camera
+management schemas; each Plugin owns their execution. App consumers use the
+opaque Plugin Facade envelope, and Core does not aggregate these inventories.
+
 `messaging::IngressRedeem` carries a parsed identity code and a dedicated
 `IdentityRedemptionContext`: event ID, receiving address, sender and optional
 conversation display name. Redemption is independent of normalized message

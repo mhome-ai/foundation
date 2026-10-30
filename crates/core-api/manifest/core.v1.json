@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.55.0",
+  "contractVersion": "1.56.0",
   "protocols": {
     "agentGateway": {
       "submitTarget": "/agent/submit",
@@ -10,6 +10,9 @@
       "completeTarget": "/llm/complete"
     },
     "node": {
+      "managementEventTarget": "/node/app/event",
+      "managementEventAppTarget": "/app/plugin/event",
+      "managementContract": "contract/plugin-management-v1.md",
       "settingsChangedTarget": "/node/settings/changed",
       "statusContract": "mhome.node.status.v1",
       "runtimeVersion": "v1",
@@ -23,6 +26,24 @@
       "metadataTarget": "/node/metadata",
       "metadataSchema": "schema/node-metadata.v1.schema.json",
       "metadataContract": "contract/node-metadata-v1.md"
+    },
+    "matterPlugin": {
+      "version": "v1",
+      "nodeType": "matter",
+      "appTargetPrefix": "/app/plugin/matter/",
+      "runtimeTargetPrefix": "/matter/app/",
+      "managementSchema": "schema/matter-plugin-management.v1.schema.json",
+      "routes": {
+        "status": "status",
+        "inventoryGet": "inventory/get",
+        "commissionableList": "commissionable/list",
+        "fabricGet": "fabric/get",
+        "nodeDetail": "fabric/node/detail",
+        "onboardingStart": "onboarding/start",
+        "onboardingInput": "onboarding/input",
+        "onboardingStatus": "onboarding/status",
+        "nodeRemove": "fabric/node/remove"
+      }
     },
     "cameraPlugin": {
       "version": "v1",

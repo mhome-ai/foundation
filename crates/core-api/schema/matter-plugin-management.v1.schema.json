@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mhome.ai/schema/app-facade/matter-management.v1.schema.json",
-  "title": "Matter management reads",
+  "$id": "https://mhome.ai/schema/core/matter-plugin-management.v1.schema.json",
+  "title": "Matter Plugin management payloads",
   "$defs": {
     "nodeDetailRequest": {
       "type": "object",

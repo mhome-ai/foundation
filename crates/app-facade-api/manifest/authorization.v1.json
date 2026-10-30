@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.79.0",
+  "contractVersion": "1.80.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -143,15 +143,6 @@
     "/app/interaction-flow/next": "spaceWrite",
     "/app/interaction-flow/resolve": "spaceRead",
     "/app/interaction-flow/start": "spaceWrite",
-    "/app/matter/commissionable/list": "spaceRead",
-    "/app/matter/device/list": "spaceRead",
-    "/app/matter/fabric/get": "spaceRead",
-    "/app/matter/fabric/node/detail": "spaceRead",
-    "/app/matter/fabric/node/remove": "spaceWrite",
-    "/app/matter/onboarding/input": "spaceWrite",
-    "/app/matter/onboarding/start": "spaceWrite",
-    "/app/matter/onboarding/status": "spaceRead",
-    "/app/matter/status": "spaceRead",
     "/app/messaging/bind/code/create": "spaceWrite",
     "/app/messaging/binding/list": "spaceRead",
     "/app/messaging/code/status": "userRead",

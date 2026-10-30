@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/core/plugin-management.v1.schema.json",
+  "$defs": {
+    "preparedOperation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["preview", "payload"],
+      "properties": {
+        "preview": {
+          "type": "object", "additionalProperties": false,
+          "required": ["title", "message", "details"],
+          "properties": {"title":{"type":"string","minLength":1},"message":{"type":"string"},"details":{"type":"object"}}
+        },
+        "payload": {"type":"object"}
+      }
+    },
+    "event": {
+      "type":"object", "additionalProperties":false,
+      "required":["version","event","data"],
+      "properties": {
+        "version":{"const":"v1"},
+        "event":{"type":"string","maxLength":256,"pattern":"^[a-z0-9_-]+(/[a-z0-9_-]+)*$"},
+        "data":{}
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.79.0",
+  "contractVersion": "1.80.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode"
@@ -69,8 +69,7 @@
       "/app/object-storage/",
       "/app/runtime/",
       "/app/system/hosts/",
-      "/app/person/",
-      "/app/matter/"
+      "/app/person/"
     ],
     "requestPlacementPrefixes": [
       "/app/messaging/"

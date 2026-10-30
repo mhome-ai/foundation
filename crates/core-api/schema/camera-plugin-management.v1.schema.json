@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://mhome.ai/schema/camera-plugin-management.v1.schema.json",
   "title": "Camera Plugin management values",
-  "oneOf": [
+  "anyOf": [
     {
       "$ref": "#/$defs/emptyRequest"
     },
@@ -220,25 +220,18 @@
     },
     "deviceListResponse": {
       "type": "object",
+      "additionalProperties": false,
       "required": [
-        "devices",
-        "onlineStates"
+        "connections"
       ],
       "properties": {
-        "devices": {
+        "connections": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/cameraDevice"
-          }
-        },
-        "onlineStates": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/onlineStateObservation"
+            "$ref": "#/$defs/connectionBrief"
           }
         }
-      },
-      "additionalProperties": false
+      }
     },
     "connectionMutationResponse": {
       "type": "object",
@@ -554,6 +547,126 @@
         }
       },
       "additionalProperties": false
+    },
+    "connectionBrief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "provider",
+        "name",
+        "revision",
+        "deviceCount",
+        "devices"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lastError": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deviceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "devices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/deviceBrief"
+          }
+        }
+      }
+    },
+    "deviceBrief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "health",
+        "resolutionStatus",
+        "online"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "manufacturerName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "health": {
+          "enum": [
+            "applying",
+            "ready",
+            "degraded",
+            "error"
+          ]
+        },
+        "resolutionStatus": {
+          "enum": [
+            "unresolved",
+            "ready",
+            "failed"
+          ]
+        },
+        "lastError": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "online": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "state"
+              ],
+              "properties": {
+                "state": {
+                  "type": "string"
+                },
+                "observedAt": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
     }
   }
 }

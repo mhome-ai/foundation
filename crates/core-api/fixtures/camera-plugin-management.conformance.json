@@ -70,8 +70,7 @@
     {
       "name": "device list",
       "value": {
-        "devices": [],
-        "onlineStates": []
+        "connections": []
       }
     },
     {
@@ -167,6 +166,31 @@
         "settings": {
           "postRollSeconds": 30
         }
+      }
+    },
+    {
+      "name": "grouped inventory with unknown observation time",
+      "value": {
+        "connections": [
+          {
+            "id": "conn",
+            "provider": "onvif",
+            "name": "Entrance",
+            "revision": 2,
+            "deviceCount": 1,
+            "devices": [
+              {
+                "id": "cam",
+                "name": "Door",
+                "health": "ready",
+                "resolutionStatus": "ready",
+                "online": {
+                  "state": "unknown"
+                }
+              }
+            ]
+          }
+        ]
       }
     }
   ],

@@ -124,6 +124,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/node-runtime-protocol-v1.json",
       "contract/node-service-protocol-v1.json",
       "contract/node-metadata-v1.md",
+      "contract/plugin-management-v1.md",
       "schema/node-metadata.v1.schema.json",
       "contract/recipient-id-v1.md",
       "contract/host-management-v1.json",
@@ -135,6 +136,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       normalizedInbound: "schema/normalized-inbound.v4.schema.json",
       messagingCommands: "schema/messaging-commands.v1.schema.json",
       interactionFlowNode: "schema/interaction-flow-node.v1.schema.json",
+      matterPluginManagement: "schema/matter-plugin-management.v1.schema.json",
+      pluginManagement: "schema/plugin-management.v1.schema.json",
       cameraPluginManagement: "schema/camera-plugin-management.v1.schema.json",
     }),
     fixtures: Object.freeze({

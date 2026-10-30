@@ -236,8 +236,39 @@ pub struct ManagementSnapshot {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DeviceListResponse {
-    pub devices: Vec<CameraDevice>,
-    pub online_states: Vec<OnlineStateObservation>,
+    pub connections: Vec<ConnectionBrief>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ConnectionBrief {
+    pub id: String,
+    pub provider: String,
+    pub name: String,
+    pub revision: u64,
+    pub last_error: Option<String>,
+    pub device_count: usize,
+    pub devices: Vec<DeviceBrief>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DeviceBrief {
+    pub id: String,
+    pub name: String,
+    pub manufacturer_name: Option<String>,
+    pub health: CameraDeviceHealth,
+    pub resolution_status: CameraResolutionStatus,
+    pub last_error: Option<String>,
+    pub online: Option<OnlineBrief>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct OnlineBrief {
+    pub state: String,
+    pub observed_at: Option<i64>,
+    pub reason: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
