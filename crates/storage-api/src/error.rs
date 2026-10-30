@@ -6,7 +6,6 @@ pub enum StorageErrorCode {
     InvalidInput,
     NotFound,
     Conflict,
-    QuotaExceeded,
     VolumeFull,
     Integrity,
     Unauthorized,
@@ -15,7 +14,6 @@ pub enum StorageErrorCode {
     SystemFolderProtected,
     RepositoryIdentityMismatch,
     ProtocolMismatch,
-    EvictionFailed,
     Internal,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -32,7 +30,7 @@ pub struct StorageError {
     pub detail: String,
     pub outcome: MutationOutcome,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub evicted_objects: Option<u64>,
+    pub deleted_objects: Option<u64>,
 }
 impl StorageError {
     pub fn new(code: StorageErrorCode, detail: impl Into<String>) -> Self {
@@ -40,7 +38,7 @@ impl StorageError {
             code,
             detail: detail.into(),
             outcome: MutationOutcome::NotApplied,
-            evicted_objects: None,
+            deleted_objects: None,
         }
     }
     pub fn uncertain(mut self) -> Self {
@@ -49,7 +47,7 @@ impl StorageError {
     }
     pub fn partial(mut self, count: u64) -> Self {
         self.outcome = MutationOutcome::Partial;
-        self.evicted_objects = Some(count);
+        self.deleted_objects = Some(count);
         self
     }
     pub fn http_status(&self) -> u16 {
@@ -58,7 +56,7 @@ impl StorageError {
             InvalidInput | Integrity => 400,
             NotFound => 404,
             Unauthorized | SystemFolderProtected | ScopeRemoving => 403,
-            Conflict | QuotaExceeded | RepositoryIdentityMismatch | EvictionFailed => 409,
+            Conflict | RepositoryIdentityMismatch => 409,
             VolumeFull => 507,
             Unavailable | ProtocolMismatch => 503,
             Internal => 500,

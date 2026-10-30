@@ -6,4 +6,7 @@ mod model;
 pub use error::*;
 pub use management::*;
 pub use model::*;
-pub const PROTOCOL_VERSION: &str = "storage.v4";
+pub const PROTOCOL_VERSION: &str = "storage.v5";
+
+mod path;
+pub use path::{is_folder_within, validate_folder_id};

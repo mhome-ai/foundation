@@ -153,7 +153,7 @@ impl FileGateway {
                 || (url.query().is_none()
                     && url
                         .path()
-                        .strip_prefix("/storage/v4/")
+                        .strip_prefix("/storage/v5/")
                         .is_some_and(|id| id.len() == 36
                             && id.bytes().enumerate().all(|(i, b)| {
                                 if [8, 13, 18, 23].contains(&i) {
@@ -513,7 +513,7 @@ mod tests {
         let (cert, private) = tls::certificate(&key).unwrap();
         let tcp = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let endpoint = format!(
-            "https://{}/storage/v4/11111111-1111-4111-8111-111111111111",
+            "https://{}/storage/v5/11111111-1111-4111-8111-111111111111",
             tcp.local_addr().unwrap()
         );
         let listener = tls::Listener::new(
@@ -521,7 +521,7 @@ mod tests {
             tls::server_config(cert.as_bytes(), private.as_bytes()).unwrap(),
         );
         let app = Router::new().route(
-            "/storage/v4/11111111-1111-4111-8111-111111111111/objects/file",
+            "/storage/v5/11111111-1111-4111-8111-111111111111/objects/file",
             axum::routing::put(upload),
         );
         let server = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });

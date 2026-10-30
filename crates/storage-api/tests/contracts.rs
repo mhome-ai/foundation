@@ -2,7 +2,7 @@ use serde_json::{json, Value};
 use storage_api::*;
 fn validate(kind: &str, value: &Value) {
     let mut schema: Value =
-        serde_json::from_str(include_str!("../schema/storage.v4.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/storage.v5.schema.json")).unwrap();
     schema["$ref"] = json!(format!("#/$defs/{kind}"));
     jsonschema::validator_for(&schema)
         .unwrap()
@@ -10,35 +10,41 @@ fn validate(kind: &str, value: &Value) {
         .unwrap();
 }
 #[test]
-fn canonical_decimal_requests_and_shared_enums() {
-    let value =
-        json!({"name":"Files","maxBytes":"9007199254740993","overflowStrategy":"evictOldest"});
+fn immutable_path_requests_have_no_settings_or_implicit_recursive_deletion() {
+    let value = json!({"folderId":"home/photos"});
     validate("createFolder", &value);
-    let request: ObjectStorageCreateFolderRequest = serde_json::from_value(value.clone()).unwrap();
-    assert_eq!(request.max_bytes, 9007199254740993);
-    assert_eq!(serde_json::to_value(request).unwrap(), value);
-    for bad in [
-        json!(1),
-        json!("01"),
-        json!("-1"),
-        json!("18446744073709551616"),
-    ] {
-        assert!(serde_json::from_value::<ObjectStorageCreateFolderRequest>(
-            json!({"name":"Files","maxBytes":bad})
+    assert_eq!(
+        serde_json::to_value(
+            serde_json::from_value::<ObjectStorageCreateFolderRequest>(value.clone()).unwrap()
         )
-        .is_err());
+        .unwrap(),
+        value
+    );
+    assert!(
+        !serde_json::from_value::<ObjectStorageDeleteFolderRequest>(value)
+            .unwrap()
+            .recursive
+    );
+    validate(
+        "deleteFolder",
+        &json!({"folderId":"home/photos","recursive":true}),
+    );
+    for field in ["name", "maxBytes", "overflowStrategy", "expectedRevision"] {
+        let mut value = json!({"folderId":"home/photos"});
+        value[field] = json!("legacy");
+        assert!(serde_json::from_value::<ObjectStorageCreateFolderRequest>(value).is_err());
     }
     validate(
         "sessionRequest",
         &serde_json::to_value(ObjectStorageSessionRequest {
-            folder_id: "folder".into(),
+            folder_id: "home/photos".into(),
             permissions: vec![StoragePermission::Read],
             ttl_seconds: Some(900),
         })
         .unwrap(),
     );
     assert!(serde_json::from_value::<ObjectStorageSessionRequest>(
-        json!({"folderId":"folder","permissions":["admin"]})
+        json!({"folderId":"home/photos","permissions":["admin"]})
     )
     .is_err());
 }
@@ -47,7 +53,7 @@ fn typed_errors_and_physical_contracts_round_trip() {
     for error in [
         StorageError::new(StorageErrorCode::VolumeFull, "full"),
         StorageError::new(StorageErrorCode::Unavailable, "timeout").uncertain(),
-        StorageError::new(StorageErrorCode::EvictionFailed, "delete failed").partial(2),
+        StorageError::new(StorageErrorCode::Unavailable, "delete failed").partial(2),
     ] {
         let value = serde_json::to_value(&error).unwrap();
         validate("error", &value);
@@ -73,7 +79,7 @@ fn typed_errors_and_physical_contracts_round_trip() {
 
 #[test]
 fn management_contract_covers_system_folders_and_multiple_repositories() {
-    let folder = json!({"system":true,"cleanupOwner":"consumer","id":"artifact-folder","name":"artifact","maxBytes":null,"overflowStrategy":"reject","usedBytes":"5","reservedBytes":"0","objectCount":"1","evictedObjectCount":"0","evictedBytes":"0","rejectedWriteCount":"0","revision":"1","createdAtMs":"1","updatedAtMs":"1"});
+    let folder = json!({"system":true,"deleting":false,"id":"artifact","usedBytes":"5","reservedBytes":"0","objectCount":"1","createdAtMs":"1","updatedAtMs":"1"});
     let typed: ObjectStorageFolder = serde_json::from_value(folder.clone()).unwrap();
     validate("folder", &serde_json::to_value(typed).unwrap());
     validate("folderList", &json!({"folders":[folder]}));
@@ -88,7 +94,7 @@ fn management_contract_covers_system_folders_and_multiple_repositories() {
         overview
     );
     let manifest: Value =
-        serde_json::from_str(include_str!("../manifest/storage.v4.json")).unwrap();
+        serde_json::from_str(include_str!("../manifest/storage.v5.json")).unwrap();
     assert_eq!(manifest["contractVersion"], env!("CARGO_PKG_VERSION"));
     assert_eq!(manifest["protocol"], PROTOCOL_VERSION);
 }
@@ -96,7 +102,7 @@ fn management_contract_covers_system_folders_and_multiple_repositories() {
 #[test]
 fn schema_enforces_the_same_decimal_u64_boundary_as_rust() {
     let mut schema: Value =
-        serde_json::from_str(include_str!("../schema/storage.v4.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/storage.v5.schema.json")).unwrap();
     schema["$ref"] = json!("#/$defs/decimalU64");
     let validator = jsonschema::validator_for(&schema).unwrap();
     for value in [
@@ -123,17 +129,33 @@ fn schema_enforces_the_same_decimal_u64_boundary_as_rust() {
 }
 
 #[test]
-fn consumer_cleanup_is_explicit_and_never_auto_evicts() {
-    let value = json!({"system":false,"cleanupOwner":"consumer","id":"camera-folder","name":"Recordings","maxBytes":"100","overflowStrategy":"reject","usedBytes":"5","reservedBytes":"0","objectCount":"1","evictedObjectCount":"0","evictedBytes":"0","rejectedWriteCount":"0","revision":"1","createdAtMs":"1","updatedAtMs":"1"});
-    validate("folder", &value);
-    let typed: ObjectStorageFolder = serde_json::from_value(value.clone()).unwrap();
-    assert_eq!(typed.cleanup_owner, StorageCleanupOwner::Consumer);
-    let mut invalid = value;
-    invalid["overflowStrategy"] = json!("evictOldest");
-    let schema: serde_json::Value =
-        serde_json::from_str(include_str!("../schema/storage.v4.schema.json")).unwrap();
-    let schema = json!({"$ref":"#/$defs/folder","$defs":schema["$defs"]});
-    assert!(!jsonschema::validator_for(&schema)
-        .unwrap()
-        .is_valid(&invalid));
+fn schema_enforces_namespaces_and_path_segments() {
+    let mut schema: Value =
+        serde_json::from_str(include_str!("../schema/storage.v5.schema.json")).unwrap();
+    schema["$ref"] = json!("#/$defs/folderPath");
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    for path in [
+        "artifact",
+        "home/照片",
+        "home/a_b%/c",
+        "plugin/camera/one/recordings",
+        "core/cache/files",
+    ] {
+        assert!(validator.is_valid(&json!(path)), "{path}");
+    }
+    for path in [
+        "home",
+        "home/",
+        "home/../a",
+        "home/a//b",
+        "home/ a",
+        "home/a ",
+        "artifact/a",
+        "plugin/camera/one",
+        "unknown/a",
+    ] {
+        assert!(!validator.is_valid(&json!(path)), "{path}");
+    }
+    assert!(!validator.is_valid(&json!(format!("home/{}", "x".repeat(81)))));
+    assert!(!validator.is_valid(&json!(format!("home/{}", vec!["x"; 16].join("/")))));
 }

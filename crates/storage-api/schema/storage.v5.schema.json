@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mhome.ai/protocol/storage/v4",
+  "$id": "https://mhome.ai/protocol/storage/v5",
   "$defs": {
     "decimalU64": {
       "type": "string",
@@ -15,12 +15,6 @@
         "list"
       ]
     },
-    "overflowStrategy": {
-      "enum": [
-        "reject",
-        "evictOldest"
-      ]
-    },
     "writeState": {
       "enum": [
         "writable",
@@ -30,56 +24,21 @@
     },
     "createFolder": {
       "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "maxBytes": {
-          "$ref": "#/$defs/decimalU64"
-        },
-        "overflowStrategy": {
-          "$ref": "#/$defs/overflowStrategy"
-        }
-      },
-      "required": [
-        "name",
-        "maxBytes"
-      ],
-      "additionalProperties": false
-    },
-    "updateFolder": {
-      "type": "object",
+      "additionalProperties": false,
       "properties": {
         "folderId": {
-          "type": "string"
-        },
-        "expectedRevision": {
-          "$ref": "#/$defs/decimalU64"
-        },
-        "name": {
-          "type": "string"
-        },
-        "maxBytes": {
-          "$ref": "#/$defs/decimalU64"
-        },
-        "overflowStrategy": {
-          "$ref": "#/$defs/overflowStrategy"
+          "$ref": "#/$defs/folderPath"
         }
       },
       "required": [
-        "folderId",
-        "expectedRevision",
-        "name",
-        "maxBytes",
-        "overflowStrategy"
-      ],
-      "additionalProperties": false
+        "folderId"
+      ]
     },
     "sessionRequest": {
       "type": "object",
       "properties": {
         "folderId": {
-          "type": "string"
+          "$ref": "#/$defs/folderPath"
         },
         "permissions": {
           "type": "array",
@@ -107,26 +66,10 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
+          "$ref": "#/$defs/folderPath"
         },
         "system": {
           "type": "boolean"
-        },
-        "maxBytes": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/decimalU64"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "overflowStrategy": {
-          "$ref": "#/$defs/overflowStrategy"
         },
         "usedBytes": {
           "$ref": "#/$defs/decimalU64"
@@ -137,64 +80,27 @@
         "objectCount": {
           "$ref": "#/$defs/decimalU64"
         },
-        "evictedObjectCount": {
-          "$ref": "#/$defs/decimalU64"
-        },
-        "evictedBytes": {
-          "$ref": "#/$defs/decimalU64"
-        },
-        "rejectedWriteCount": {
-          "$ref": "#/$defs/decimalU64"
-        },
-        "revision": {
-          "$ref": "#/$defs/decimalU64"
-        },
         "createdAtMs": {
           "$ref": "#/$defs/decimalU64"
         },
         "updatedAtMs": {
           "$ref": "#/$defs/decimalU64"
         },
-        "cleanupOwner": {
-          "$ref": "#/$defs/cleanupOwner"
+        "deleting": {
+          "type": "boolean"
         }
       },
       "required": [
         "id",
-        "name",
         "system",
-        "maxBytes",
-        "overflowStrategy",
         "usedBytes",
         "reservedBytes",
         "objectCount",
-        "evictedObjectCount",
-        "evictedBytes",
-        "rejectedWriteCount",
-        "revision",
         "createdAtMs",
         "updatedAtMs",
-        "cleanupOwner"
+        "deleting"
       ],
-      "additionalProperties": false,
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "cleanupOwner": {
-                "const": "consumer"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "overflowStrategy": {
-                "const": "reject"
-              }
-            }
-          }
-        }
-      ]
+      "additionalProperties": false
     },
     "object": {
       "type": "object",
@@ -329,7 +235,6 @@
             "INVALID_INPUT",
             "NOT_FOUND",
             "CONFLICT",
-            "QUOTA_EXCEEDED",
             "VOLUME_FULL",
             "INTEGRITY",
             "UNAUTHORIZED",
@@ -338,7 +243,6 @@
             "SYSTEM_FOLDER_PROTECTED",
             "REPOSITORY_IDENTITY_MISMATCH",
             "PROTOCOL_MISMATCH",
-            "EVICTION_FAILED",
             "INTERNAL"
           ]
         },
@@ -352,7 +256,7 @@
             "unknown"
           ]
         },
-        "evictedObjects": {
+        "deletedObjects": {
           "type": "integer",
           "minimum": 0,
           "maximum": 18446744073709551615
@@ -369,7 +273,7 @@
       "type": "object",
       "properties": {
         "folderId": {
-          "type": "string"
+          "$ref": "#/$defs/folderPath"
         }
       },
       "required": [
@@ -488,7 +392,7 @@
           }
         },
         "protocolVersion": {
-          "const": "storage.v4"
+          "const": "storage.v5"
         },
         "writeState": {
           "$ref": "#/$defs/writeState"
@@ -553,11 +457,39 @@
       ],
       "additionalProperties": false
     },
-    "cleanupOwner": {
+    "folderPath": {
       "type": "string",
-      "enum": [
-        "storage",
-        "consumer"
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Exact case-sensitive logical path, never normalized. At most 1024 UTF-8 bytes (validated by the service), 16 segments and 80 Unicode characters per segment; no edge whitespace, empty/dot/dot-dot segments, backslash or controls. Namespace roots are virtual; artifact is reserved.",
+      "pattern": "^(?:artifact|home/(?!\\.{1,2}(?:/|$))[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f](?:[^/\\\\\\x00-\\x1f\\x7f-\\x9f]{0,78}[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f])?(?:/(?!\\.{1,2}(?:/|$))[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f](?:[^/\\\\\\x00-\\x1f\\x7f-\\x9f]{0,78}[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f])?){0,14}|plugin/(?!\\.{1,2}(?:/|$))[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f](?:[^/\\\\\\x00-\\x1f\\x7f-\\x9f]{0,78}[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f])?/(?!\\.{1,2}(?:/|$))[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f](?:[^/\\\\\\x00-\\x1f\\x7f-\\x9f]{0,78}[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f])?/(?!\\.{1,2}(?:/|$))[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f](?:[^/\\\\\\x00-\\x1f\\x7f-\\x9f]{0,78}[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f])?(?:/(?!\\.{1,2}(?:/|$))[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f](?:[^/\\\\\\x00-\\x1f\\x7f-\\x9f]{0,78}[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f])?){0,12}|core/(?!\\.{1,2}(?:/|$))[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f](?:[^/\\\\\\x00-\\x1f\\x7f-\\x9f]{0,78}[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f])?/(?!\\.{1,2}(?:/|$))[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f](?:[^/\\\\\\x00-\\x1f\\x7f-\\x9f]{0,78}[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f])?(?:/(?!\\.{1,2}(?:/|$))[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f](?:[^/\\\\\\x00-\\x1f\\x7f-\\x9f]{0,78}[^/\\\\\\s\\x00-\\x1f\\x7f-\\x9f])?){0,13})$"
+    },
+    "deleteFolder": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "folderId": {
+          "$ref": "#/$defs/folderPath"
+        },
+        "recursive": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "folderId"
+      ]
+    },
+    "deleteFolderResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deleted": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "deleted"
       ]
     }
   }

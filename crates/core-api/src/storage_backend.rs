@@ -4,7 +4,7 @@ pub const STORAGE_BACKEND_PROTOCOL_VERSION: &str = "storage.backend.v1";
 pub const STORAGE_BACKEND_DESCRIBE: &str = "/storage/backend/describe";
 pub const STORAGE_BACKEND_GRANT: &str = "/storage/backend/grant";
 pub const STORAGE_BACKEND_PREPARE_WRITE: &str = "/storage/backend/prepare-write";
-pub const STORAGE_GATEWAY_PREFIX: &str = "/storage/v4/";
+pub const STORAGE_GATEWAY_PREFIX: &str = "/storage/v5/";
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum StorageBackendPermission {

@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.80.0",
+  "contractVersion": "1.81.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -172,7 +172,7 @@
     "/app/object-storage/folders/create": "spaceWrite",
     "/app/object-storage/folders/get": "spaceRead",
     "/app/object-storage/folders/list": "spaceRead",
-    "/app/object-storage/folders/update": "spaceWrite",
+    "/app/object-storage/folders/delete": "spaceWrite",
     "/app/object-storage/overview": "spaceRead",
     "/app/object-storage/session/acquire": "spaceWrite",
     "/app/person/backup/close": "spaceWrite",

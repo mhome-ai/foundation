@@ -1,14 +1,12 @@
 {
-  "protocol": "storage.v4",
-  "contractVersion": "0.1.0",
-  "schema": "schema/storage.v4.schema.json",
+  "protocol": "storage.v5",
+  "contractVersion": "0.2.0",
+  "schema": "schema/storage.v5.schema.json",
   "definitions": [
     "decimalU64",
     "permission",
-    "overflowStrategy",
     "writeState",
     "createFolder",
-    "updateFolder",
     "sessionRequest",
     "folder",
     "object",
@@ -23,7 +21,9 @@
     "safety",
     "backend",
     "overview",
-    "cleanupOwner"
+    "folderPath",
+    "deleteFolder",
+    "deleteFolderResponse"
   ],
-  "contract": "contract/storage-v4.md"
+  "contract": "contract/storage-v5.md"
 }

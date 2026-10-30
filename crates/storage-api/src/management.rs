@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde::{Deserializer, Serializer};
 
-use crate::{StorageOverflowStrategy, StoragePermission, StorageWriteState};
+use crate::{StoragePermission, StorageWriteState};
 
 pub mod decimal_u64 {
     use super::*;
@@ -58,26 +58,25 @@ pub mod optional_decimal_u64 {
     }
 }
 
+/// Idempotent creation of an immutable logical path in the caller's namespace.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ObjectStorageCreateFolderRequest {
-    pub name: String,
-    #[serde(with = "decimal_u64")]
-    pub max_bytes: u64,
-    #[serde(default)]
-    pub overflow_strategy: StorageOverflowStrategy,
+    pub folder_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ObjectStorageUpdateFolderRequest {
+pub struct ObjectStorageDeleteFolderRequest {
     pub folder_id: String,
-    #[serde(with = "decimal_u64")]
-    pub expected_revision: u64,
-    pub name: String,
-    #[serde(with = "decimal_u64")]
-    pub max_bytes: u64,
-    pub overflow_strategy: StorageOverflowStrategy,
+    #[serde(default)]
+    pub recursive: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObjectStorageDeleteFolderResponse {
+    pub deleted: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -99,27 +98,17 @@ pub struct ObjectStorageSessionRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ObjectStorageFolder {
-    pub system: bool,
-    pub cleanup_owner: crate::StorageCleanupOwner,
+    /// Immutable, case-sensitive logical path; never a filesystem path.
     pub id: String,
-    pub name: String,
-    #[serde(default, with = "optional_decimal_u64")]
-    pub max_bytes: Option<u64>,
-    pub overflow_strategy: StorageOverflowStrategy,
+    pub system: bool,
+    /// Cleanup was requested and must finish before this path can be reused.
+    pub deleting: bool,
     #[serde(with = "decimal_u64")]
     pub used_bytes: u64,
     #[serde(with = "decimal_u64")]
     pub reserved_bytes: u64,
     #[serde(with = "decimal_u64")]
     pub object_count: u64,
-    #[serde(with = "decimal_u64")]
-    pub evicted_object_count: u64,
-    #[serde(with = "decimal_u64")]
-    pub evicted_bytes: u64,
-    #[serde(with = "decimal_u64")]
-    pub rejected_write_count: u64,
-    #[serde(with = "decimal_u64")]
-    pub revision: u64,
     #[serde(with = "decimal_u64")]
     pub created_at_ms: u64,
     #[serde(with = "decimal_u64")]
