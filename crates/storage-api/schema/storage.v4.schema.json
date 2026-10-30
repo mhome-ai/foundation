@@ -154,6 +154,9 @@
         },
         "updatedAtMs": {
           "$ref": "#/$defs/decimalU64"
+        },
+        "cleanupOwner": {
+          "$ref": "#/$defs/cleanupOwner"
         }
       },
       "required": [
@@ -170,9 +173,28 @@
         "rejectedWriteCount",
         "revision",
         "createdAtMs",
-        "updatedAtMs"
+        "updatedAtMs",
+        "cleanupOwner"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "cleanupOwner": {
+                "const": "consumer"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "overflowStrategy": {
+                "const": "reject"
+              }
+            }
+          }
+        }
+      ]
     },
     "object": {
       "type": "object",
@@ -530,6 +552,13 @@
         "pendingDeletionCount"
       ],
       "additionalProperties": false
+    },
+    "cleanupOwner": {
+      "type": "string",
+      "enum": [
+        "storage",
+        "consumer"
+      ]
     }
   }
 }

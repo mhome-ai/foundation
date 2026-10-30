@@ -73,7 +73,7 @@ fn typed_errors_and_physical_contracts_round_trip() {
 
 #[test]
 fn management_contract_covers_system_folders_and_multiple_repositories() {
-    let folder = json!({"system":true,"id":"artifact-folder","name":"artifact","maxBytes":null,"overflowStrategy":"reject","usedBytes":"5","reservedBytes":"0","objectCount":"1","evictedObjectCount":"0","evictedBytes":"0","rejectedWriteCount":"0","revision":"1","createdAtMs":"1","updatedAtMs":"1"});
+    let folder = json!({"system":true,"cleanupOwner":"consumer","id":"artifact-folder","name":"artifact","maxBytes":null,"overflowStrategy":"reject","usedBytes":"5","reservedBytes":"0","objectCount":"1","evictedObjectCount":"0","evictedBytes":"0","rejectedWriteCount":"0","revision":"1","createdAtMs":"1","updatedAtMs":"1"});
     let typed: ObjectStorageFolder = serde_json::from_value(folder.clone()).unwrap();
     validate("folder", &serde_json::to_value(typed).unwrap());
     validate("folderList", &json!({"folders":[folder]}));
@@ -120,4 +120,20 @@ fn schema_enforces_the_same_decimal_u64_boundary_as_rust() {
     ] {
         assert!(!validator.is_valid(&json!(value)), "{value}");
     }
+}
+
+#[test]
+fn consumer_cleanup_is_explicit_and_never_auto_evicts() {
+    let value = json!({"system":false,"cleanupOwner":"consumer","id":"camera-folder","name":"Recordings","maxBytes":"100","overflowStrategy":"reject","usedBytes":"5","reservedBytes":"0","objectCount":"1","evictedObjectCount":"0","evictedBytes":"0","rejectedWriteCount":"0","revision":"1","createdAtMs":"1","updatedAtMs":"1"});
+    validate("folder", &value);
+    let typed: ObjectStorageFolder = serde_json::from_value(value.clone()).unwrap();
+    assert_eq!(typed.cleanup_owner, StorageCleanupOwner::Consumer);
+    let mut invalid = value;
+    invalid["overflowStrategy"] = json!("evictOldest");
+    let schema: serde_json::Value =
+        serde_json::from_str(include_str!("../schema/storage.v4.schema.json")).unwrap();
+    let schema = json!({"$ref":"#/$defs/folder","$defs":schema["$defs"]});
+    assert!(!jsonschema::validator_for(&schema)
+        .unwrap()
+        .is_valid(&invalid));
 }

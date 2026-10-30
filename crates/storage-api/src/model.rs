@@ -1,3 +1,11 @@
+/// Fixed at Folder creation. Consumers with shared references own their cleanup.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum StorageCleanupOwner {
+    Storage,
+    Consumer,
+}
+
 use serde::{Deserialize, Serialize};
 use std::fmt;
 

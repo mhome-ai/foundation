@@ -100,6 +100,7 @@ pub struct ObjectStorageSessionRequest {
 #[serde(rename_all = "camelCase")]
 pub struct ObjectStorageFolder {
     pub system: bool,
+    pub cleanup_owner: crate::StorageCleanupOwner,
     pub id: String,
     pub name: String,
     #[serde(default, with = "optional_decimal_u64")]

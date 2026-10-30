@@ -22,7 +22,8 @@
     "usage",
     "safety",
     "backend",
-    "overview"
+    "overview",
+    "cleanupOwner"
   ],
   "contract": "contract/storage-v4.md"
 }

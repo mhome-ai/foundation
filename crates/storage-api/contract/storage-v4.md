@@ -31,6 +31,13 @@ logically unlimited, cannot acquire an ordinary Folder session, cannot be rename
 or configured through Storage settings and never participates in eviction. Real
 physical capacity and host safety headroom still apply. Camera owns its recording
 retention and shared references; Storage does not infer those relationships.
+Every Folder declares an immutable `cleanupOwner`: `storage` permits quota
+policy selection; `consumer` requires `overflowStrategy: reject` and prohibits
+Storage eviction through all management paths. Application-provisioned Folders
+and the Artifact system Folder use `consumer`. Name and quota remain editable
+for ordinary consumer Folders; the consumer chooses complete business resources
+to delete. Camera refreshes Folder quotas and targets the smaller of its own
+retention limit and 90% of the Folder quota, while preserving pinned/shared media.
 Temporary Artifact content uses the Core transient store and a one-hour idle TTL.
 
 A write reserves staging space and validates its full size and SHA-256 before
@@ -54,10 +61,12 @@ changing placement. Control replies are tagged `status: ok | error` with either
 body (HEAD has only its HTTP status). Host identity and grant expiry must be
 forwarded unchanged. TLS is pinned; redirects and proxy inheritance are disabled.
 
-`mhome-storage-disk`, published independently from the Core repository, owns only
+`mhome-storage-disk`, an internal source crate (`publish = false`) in Core, owns only
 physical byte durability, repository identity, reservation receipts and idempotent
 unlink. It does not depend on Core and cannot see Folder policies or Artifact
 identities. Core's internal disk and the Storage Plugin use this implementation.
+Core uses a local path; the Plugin pins a full Core Git commit. The disk crate
+has no independent public package release or versioned compatibility contract.
 
 ## Errors and reads
 
