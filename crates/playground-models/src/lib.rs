@@ -196,14 +196,14 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "online": true,
             "temperature": temperature(22.4, "C"),
             "humidity": 45,
-            "airQualityLevel": "good",
-            "airQualityIndex": 32,
+            "qualityState": "good",
+            "index": 32,
             "co2": 520,
-            "co2Level": "low",
+            "co2State": "low",
             "pm25": 7,
-            "pm25Level": "low",
-            "voc": 0.18,
-            "vocLevel": "low",
+            "pm25State": "low",
+            "vocPpb": 180,
+            "vocState": "low",
             "batteryLevel": 100,
             "chargingState": "full"
         })),
@@ -248,10 +248,10 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "availableFanModes": ["auto", "sleep", "low", "medium", "high", "turbo"],
             "supportFanSpeedPercentage": true,
             "supportFanMode": true,
-            "airQualityLevel": "good",
-            "airQualityIndex": 35,
+            "qualityState": "good",
+            "index": 35,
             "pm25": 8,
-            "pm25Level": "low"
+            "pm25State": "low"
         })),
         SPEAKER_MEDIA_BROADCAST_V1 => object_map(json!({
             "online": true,
@@ -362,10 +362,7 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
         AIR_MONITOR_V1 => &[
             "state.temperature",
             "state.humidity",
-            "state.airQuality",
-            "state.co2",
-            "state.pm25",
-            "state.voc",
+            "state.air",
             "state.battery",
         ][..],
         SMOKE_CO_ALARM_V1 => &[
@@ -390,8 +387,7 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "command.onOff",
             "state.fan",
             "command.setFan",
-            "state.airQuality",
-            "state.pm25",
+            "state.air",
         ][..],
         SPEAKER_MEDIA_BROADCAST_V1 => &[
             "state.audioMute",
@@ -415,6 +411,37 @@ pub fn exposes_capability(model_id: &str, capability: &str) -> bool {
     capabilities(model_id)
         .map(|items| items.iter().any(|item| item == capability))
         .unwrap_or(false)
+}
+
+fn air_fields(model_id: &str) -> &'static [&'static str] {
+    match model_id {
+        AIR_MONITOR_V1 => &[
+            "qualityState",
+            "index",
+            "co2",
+            "co2State",
+            "pm25",
+            "pm25State",
+            "vocPpb",
+            "vocState",
+        ],
+        FAN_PURIFIER_V1 => &["qualityState", "index", "pm25", "pm25State"],
+        _ => &[],
+    }
+}
+fn air_options(field: &str) -> &'static [&'static str] {
+    if field == "qualityState" {
+        &[
+            "good",
+            "fair",
+            "moderate",
+            "poor",
+            "very poor",
+            "extremely poor",
+        ]
+    } else {
+        &["low", "medium", "high", "critical"]
+    }
 }
 
 pub fn project_state(
@@ -479,22 +506,23 @@ pub fn project_state(
         "state.humidity" => Ok(object_map(json!({
             "humidity": number_attr(attrs, "humidity")?
         }))?),
-        "state.airQuality" => Ok(object_map(json!({
-            "level": string_attr(attrs, "airQualityLevel")?,
-            "index": number_attr(attrs, "airQualityIndex")?
-        }))?),
-        "state.co2" => Ok(object_map(json!({
-            "concentration": number_attr(attrs, "co2")?,
-            "level": string_attr(attrs, "co2Level")?
-        }))?),
-        "state.pm25" => Ok(object_map(json!({
-            "concentration": number_attr(attrs, "pm25")?,
-            "level": string_attr(attrs, "pm25Level")?
-        }))?),
-        "state.voc" => Ok(object_map(json!({
-            "concentration": number_attr(attrs, "voc")?,
-            "level": string_attr(attrs, "vocLevel")?
-        }))?),
+        "state.air" => Ok(air_fields(model_id)
+            .iter()
+            .map(|field| {
+                let value = attrs
+                    .get(*field)
+                    .filter(|v| {
+                        if field.ends_with("State") {
+                            v.as_str().is_some_and(|s| air_options(field).contains(&s))
+                        } else {
+                            v.as_f64().is_some_and(|n| n.is_finite() && n >= 0.0)
+                        }
+                    })
+                    .cloned()
+                    .unwrap_or(Value::Null);
+                ((*field).into(), value)
+            })
+            .collect()),
         "state.smoke" => Ok(object_map(json!({
             "state": string_attr(attrs, "smokeState")?
         }))?),
@@ -556,6 +584,17 @@ pub fn project_discovery(
 ) -> Result<Map<String, Value>> {
     let _ = model_id;
     match capability {
+        "state.air" => {
+            let fields = air_fields(model_id);
+            let mut out = Map::new();
+            out.insert("availableFields".into(), json!(fields));
+            out.insert("indexScale".into(), json!("playground:air-index-v1"));
+            for field in fields.iter().filter(|field| field.ends_with("State")) {
+                out.insert(format!("{field}s"), json!(air_options(field)));
+            }
+            Ok(out)
+        }
+
         "state.colorTemperature" | "command.setColorTemperature" => Ok(object_map(json!({
             "min": number_attr(attrs, "minColorTemperature")?,
             "max": number_attr(attrs, "maxColorTemperature")?
@@ -696,21 +735,12 @@ pub fn apply_observed_payload(
         "state.water" => copy_payload_field(attrs, payload, "state", "waterState")?,
         "state.temperature" => copy_payload_field(attrs, payload, "temperature", "temperature")?,
         "state.humidity" => copy_payload_field(attrs, payload, "humidity", "humidity")?,
-        "state.airQuality" => {
-            copy_payload_field(attrs, payload, "level", "airQualityLevel")?;
-            copy_payload_field(attrs, payload, "index", "airQualityIndex")?;
-        }
-        "state.co2" => {
-            copy_payload_field(attrs, payload, "concentration", "co2")?;
-            copy_payload_field(attrs, payload, "level", "co2Level")?;
-        }
-        "state.pm25" => {
-            copy_payload_field(attrs, payload, "concentration", "pm25")?;
-            copy_payload_field(attrs, payload, "level", "pm25Level")?;
-        }
-        "state.voc" => {
-            copy_payload_field(attrs, payload, "concentration", "voc")?;
-            copy_payload_field(attrs, payload, "level", "vocLevel")?;
+        "state.air" => {
+            for field in air_fields(model_id) {
+                if let Some(value) = payload.get(*field) {
+                    attrs.insert((*field).into(), value.clone());
+                }
+            }
         }
         "state.smoke" => copy_payload_field(attrs, payload, "state", "smokeState")?,
         "state.carbonMonoxide" => {
@@ -1447,5 +1477,31 @@ mod tests {
                 .and_then(Value::as_f64),
             Some(180.0)
         );
+    }
+    #[test]
+    fn unified_air_discovery_state_and_observed_updates_agree() {
+        for model in [AIR_MONITOR_V1, FAN_PURIFIER_V1] {
+            let mut attrs = default_attributes(model).unwrap();
+            let discovery = project_discovery(model, &attrs, "state.air", "$f1").unwrap();
+            assert_eq!(discovery["availableFields"], json!(air_fields(model)));
+            assert!(capabilities(model)
+                .unwrap()
+                .contains(&"state.air".to_string()));
+            apply_observed_payload(
+                model,
+                &mut attrs,
+                "state.air",
+                &object_map(json!({"pm25":null,"qualityState":"poor"})).unwrap(),
+            )
+            .unwrap();
+            let state = project_state(model, &attrs, "state.air").unwrap();
+            assert_eq!(state.len(), air_fields(model).len());
+            assert!(state["pm25"].is_null());
+            assert_eq!(state["qualityState"], "poor");
+            assert_eq!(
+                state["pm25State"], "low",
+                "independent source category is preserved"
+            );
+        }
     }
 }
