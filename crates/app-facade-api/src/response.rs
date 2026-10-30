@@ -243,6 +243,7 @@ fn device_briefs(data: &Value) -> Value {
                         "entityId"
                             | "name"
                             | "active"
+                            | "applyState"
                             | "roomId"
                             | "roomName"
                             | "capabilities"

@@ -477,14 +477,14 @@
         {
           "entityId": "g:1",
           "name": "Lights",
-          "active": true,
           "roomId": "",
           "roomName": "",
           "capabilities": [
             "command.onOff"
           ],
           "group": true,
-          "integration": "demo.device"
+          "integration": "demo.device",
+          "applyState": "ready"
         }
       ]
     },
@@ -511,14 +511,14 @@
         {
           "entityId": "g:1",
           "name": "Lights",
-          "active": true,
           "roomId": "",
           "roomName": "",
           "capabilities": [
             "command.onOff"
           ],
           "group": true,
-          "integration": "demo.device"
+          "integration": "demo.device",
+          "applyState": "ready"
         }
       ]
     }
@@ -570,7 +570,6 @@
           "device": {
             "entityId": "g:1",
             "name": "Lights",
-            "active": true,
             "roomId": "",
             "roomName": "",
             "capabilities": [
@@ -580,7 +579,8 @@
             "integration": "demo.device",
             "entityIds": [
               "d1"
-            ]
+            ],
+            "applyState": "ready"
           }
         },
         {
@@ -624,7 +624,6 @@
           "device": {
             "entityId": "g:1",
             "name": "Lights",
-            "active": true,
             "roomId": "",
             "roomName": "",
             "capabilities": [
@@ -634,7 +633,8 @@
             "integration": "demo.device",
             "entityIds": [
               "d1"
-            ]
+            ],
+            "applyState": "ready"
           }
         },
         {

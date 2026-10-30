@@ -9,12 +9,21 @@ follow the Space execution authority on both local Core and cloud.
 
 | Target | Input | Business data |
 | --- | --- | --- |
-| `/app/device/detail/get` | `{ids}` | Existing ordered `items` with `device` definitions, capabilities, group membership, enabled/source metadata; no online or state fields |
+| `/app/device/detail/get` | `{ids}` | Existing ordered `items` with `device` definitions, capabilities, group membership, physical Twin enablement or Group application state, source metadata; no online or state fields |
 | `/app/device/state/get` | `{ids}` | Ordered `items` with `resource: {entityId, online?, onlineUpdatedAtSec?, latest}` |
 | `/app/widget/detail/get` | `{ids}` | Existing ordered `items` with `widget` configuration; no value, next or nextTimestamp |
 | `/app/widget/value/get` | `{ids}` | Ordered `items` with `resource: {widgetId, revision, value, next?, nextTimestamp?}` |
 | `/app/automation/status` | `{ids}` | Ordered `items` with `resource: {automationId, enabled, runnable, running, blocked, lastRunAt}` |
 | `/app/graph/relations/get` | `{resource: {kind, id}}` | `{resource, relations: [{from, relation, to, capabilityIds?}]}` |
+
+Device list and detail discriminate status using `group`: physical Devices (`false`)
+always include boolean `active` and omit `applyState`; Groups (`true`) always include
+`applyState` (`applying`, `ready`, `failed`, `deleting`) and omit `active`. Both Full
+and Essential preserve these fields. `active` describes physical Twin enablement,
+not on/off or reachability. Group state comes from its stored definition, never a
+Twin lookup; `ready` confirms application, not member reachability. Group diagnostics
+and application errors are available through Group detail. Device enable/disable
+accepts physical IDs only. This does not add Group enablement or alter lifecycle writes.
 
 Observation batches accept 1–100 IDs, reject blanks, trim and deduplicate preserving
 request order. Every normalized ID gets `{requestedId, found, resource?}`; missing
