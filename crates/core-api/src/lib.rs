@@ -20,6 +20,7 @@ pub mod webhook;
 pub use node_commissioning::*;
 mod recipient;
 mod storage;
+mod storage_backend;
 
 pub use delivery::*;
 pub use external_rpc::*;
@@ -27,6 +28,7 @@ pub use node_metadata::*;
 pub use node_service::*;
 pub use recipient::*;
 pub use storage::*;
+pub use storage_backend::*;
 
 pub use runtime_paths::RuntimeEnv;
 use serde::{Deserialize, Serialize};

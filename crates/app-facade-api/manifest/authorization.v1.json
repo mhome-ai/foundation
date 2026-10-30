@@ -183,7 +183,7 @@
     "/app/object-storage/folders/list": "spaceRead",
     "/app/object-storage/folders/update": "spaceWrite",
     "/app/object-storage/overview": "spaceRead",
-    "/app/object-storage/settings/update": "spaceWrite",
+    "/app/object-storage/session/acquire": "spaceWrite",
     "/app/person/backup/close": "spaceWrite",
     "/app/person/backup/export": "spaceWrite",
     "/app/person/backup/import/commit": "spaceWrite",

@@ -12,6 +12,7 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 - `mhome-face-matching`: shared pure matching over model-compatible galleries.
 
 - `mhome-artifact-api`: storage-independent, scoped artifact references.
+- `mhome-storage`: shared logical Folder catalog, durable disk repository and temporary memory storage.
 - `mhome-app-facade-api`: the canonical public `/app/*` request, response, and event protocol.
 - `mhome-conversation-api`: client conversation protocol plus Agent execution contracts/ports in `execution`.
 - `mhome-llm-api`: canonical model messages, tool schemas, completions and private continuation.

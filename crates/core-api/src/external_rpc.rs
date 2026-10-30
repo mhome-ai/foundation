@@ -4,7 +4,7 @@ use serde_json::Value;
 use crate::{AuthRequest, AuthenticatedSession, ServiceCoreInput, ServiceCoreOutput};
 use std::collections::HashMap;
 
-pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 24;
+pub const EXTERNAL_CORE_PROTOCOL_VERSION: u32 = 25;
 /// Maximum single native artifact body, separate from the JSON control frame limit.
 pub const MAX_NATIVE_ARTIFACT_BYTES: usize = 50 * 1024 * 1024;
 pub const MAX_NATIVE_ARTIFACT_BASE64_BYTES: usize = MAX_NATIVE_ARTIFACT_BYTES.div_ceil(3) * 4;
@@ -102,6 +102,7 @@ pub enum ExternalCoreMethod {
     PutArtifact,
     OpenArtifact,
     AuthorizeArtifactRead,
+    StorageGateway,
     AuthorizeArtifactUpload,
     CommitArtifactUpload,
     StreamArtifactUpload,
@@ -329,6 +330,9 @@ pub struct ExternalCommitArtifactUploadRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExternalArtifactReadDescriptor {
+    /// An authenticated byte source for content stored outside the hosting process.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remote: Option<crate::StorageBackendGrant>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub data_base64: Option<String>,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
@@ -506,8 +510,11 @@ impl ExternalArtifactReadDescriptor {
     pub fn inline_content(&self) -> Result<Option<Vec<u8>>, String> {
         use base64::Engine as _;
         use sha2::{Digest, Sha256};
+        if self.remote.is_some() && (!self.path.is_empty() || self.data_base64.is_some()) {
+            return Err("artifact descriptor has conflicting content sources".into());
+        }
         let Some(encoded) = &self.data_base64 else {
-            return if self.path.is_empty() {
+            return if self.path.is_empty() && self.remote.is_none() {
                 Err("artifact descriptor has no content".into())
             } else {
                 Ok(None)
@@ -621,7 +628,7 @@ mod tests {
         };
 
         let value = serde_json::to_value(event).unwrap();
-        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 24);
+        assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 25);
         assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
         assert_eq!(value["payload"]["scopeId"], "scope-1");
@@ -651,6 +658,7 @@ mod tests {
     #[test]
     fn artifact_host_contract_uses_canonical_wire_types() {
         let descriptor = ExternalArtifactReadDescriptor {
+            remote: None,
             temporary: false,
             data_base64: None,
             path: "/runtime/artifacts/blob".to_string(),

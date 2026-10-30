@@ -69,10 +69,10 @@
       "commandsSchema": "schema/messaging-commands.v1.schema.json"
     },
     "storage": {
-      "version": "storage.v2"
+      "version": "storage.v3"
     },
     "hostDelivery": {
-      "externalProtocolVersion": 24,
+      "externalProtocolVersion": 25,
       "requestKind": "deliveryRequested",
       "connectionControlKind": "connectionControlRequested",
       "acceptanceBoundaries": [
