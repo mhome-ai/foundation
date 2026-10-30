@@ -56,13 +56,18 @@ pub fn localize(target: &str, data: &mut Value, home_timezone: &str) {
                     .split('.')
                     .collect::<Vec<_>>(),
                 if unit == "sec" { 1000 } else { 1 },
+                unit == "typedMs",
                 home_timezone,
             );
         }
     }
 }
-fn visit(value: &mut Value, path: &[&str], multiplier: i64, zone: &str) {
+fn visit(value: &mut Value, path: &[&str], multiplier: i64, typed: bool, zone: &str) {
     let Some((key, remaining)) = path.split_first() else {
+        if typed {
+            localize_typed(value, zone);
+            return;
+        }
         if let Some(timestamp) = value
             .as_i64()
             .filter(|v| *v > 0)
@@ -76,11 +81,11 @@ fn visit(value: &mut Value, path: &[&str], multiplier: i64, zone: &str) {
     if *key == "*" {
         if let Some(items) = value.as_array_mut() {
             for item in items {
-                visit(item, remaining, multiplier, zone);
+                visit(item, remaining, multiplier, typed, zone);
             }
         }
     } else if let Some(item) = value.get_mut(*key) {
-        visit(item, remaining, multiplier, zone);
+        visit(item, remaining, multiplier, typed, zone);
     }
 }
 #[cfg(test)]
@@ -116,5 +121,42 @@ mod tests {
             format_millis(1730615400000, "invalid"),
             format_millis(1730615400000, "UTC")
         );
+    }
+}
+
+// Only explicitly typed business values are dates. Numeric values and durations stay intact.
+fn localize_typed(value: &mut Value, zone: &str) {
+    if let Some(items) = value.as_array_mut() {
+        for item in items {
+            localize_typed(item, zone);
+        }
+    } else if value["_type"] == "Timestamp" {
+        if let Some(text) = value["value"]
+            .as_i64()
+            .and_then(|millis| format_millis(millis, zone))
+        {
+            value["value"] = Value::String(text);
+        }
+    }
+}
+
+#[cfg(test)]
+mod widget_tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn widget_dates_keep_units_zone_and_business_type_without_converting_numbers() {
+        let mut value = json!({"items":[{"resource":{"nextTimestamp":1730615400000_i64,
+          "value":[{"_type":"Timestamp","value":1730615400000_i64},
+                   {"_type":"Duration","value":30000,"unit":"ms"},1730615400000_i64]}}]});
+        localize("/app/widget/value/get", &mut value, "America/New_York");
+        let resource = &value["items"][0]["resource"];
+        assert_eq!(
+            resource["nextTimestamp"],
+            "2024-11-03 01:30:00 -05:00 (America/New_York)"
+        );
+        assert_eq!(resource["value"][0]["value"], resource["nextTimestamp"]);
+        assert_eq!(resource["value"][1]["value"], 30000);
+        assert_eq!(resource["value"][2], 1730615400000_i64);
     }
 }

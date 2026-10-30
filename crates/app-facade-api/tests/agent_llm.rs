@@ -1,5 +1,5 @@
 use app_facade_api::agent_llm::*;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 #[test]
 fn shared_settings_corpus_matches_types_and_schema() {

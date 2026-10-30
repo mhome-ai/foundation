@@ -3700,5 +3700,85 @@
     },
     "status": "error",
     "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "widget-definition-essential",
+    "target": "/app/widget/detail/get",
+    "data": {
+      "items": [
+        {
+          "requestedId": "w",
+          "found": true,
+          "widget": {
+            "id": "w",
+            "revision": 7,
+            "type": "data",
+            "name": "Reminder",
+            "description": "Alarm instant",
+            "source": "user",
+            "dataType": "Timestamp",
+            "repeated": false,
+            "displayName": "UI name",
+            "global": true,
+            "baseId": "owner",
+            "steps": [
+              1
+            ],
+            "stepUnits": [
+              "ms"
+            ],
+            "options": [
+              {
+                "_type": "Timestamp",
+                "value": 1730615400000
+              }
+            ],
+            "min": {
+              "_type": "Timestamp",
+              "value": 0
+            }
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "items": [
+        {
+          "requestedId": "w",
+          "found": true,
+          "widget": {
+            "id": "w",
+            "revision": 7,
+            "type": "data",
+            "name": "Reminder",
+            "description": "Alarm instant",
+            "source": "user",
+            "dataType": "Timestamp",
+            "repeated": false,
+            "options": [
+              {
+                "_type": "Timestamp",
+                "value": "2024-11-03 06:30:00 +00:00 (UTC)"
+              }
+            ],
+            "min": {
+              "_type": "Timestamp",
+              "value": "1970-01-01 00:00:00 +00:00 (UTC)"
+            }
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    }
   }
 ]

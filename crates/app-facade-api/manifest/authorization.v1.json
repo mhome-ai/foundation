@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.75.0",
+  "contractVersion": "1.76.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -253,7 +253,7 @@
     "/app/user/profile/avatar/prepare": "userWrite",
     "/app/user/profile/get": "userRead",
     "/app/user/profile/update": "userWrite",
-    "/app/widget/brief/list": "spaceRead",
+    "/app/widget/list": "spaceRead",
     "/app/widget/button/config/update": "spaceWrite",
     "/app/widget/button/create": "spaceWrite",
     "/app/widget/button/trigger": "spaceWrite",
@@ -265,7 +265,6 @@
     "/app/widget/delete": "spaceWrite",
     "/app/widget/detail/get": "spaceRead",
     "/app/widget/history/list": "spaceRead",
-    "/app/widget/list": "spaceRead",
     "/app/widget/upsert": "spaceWrite",
     "/automation/activity/list": "spaceRead",
     "/automation/batchGet": "spaceRead",

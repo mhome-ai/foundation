@@ -74,6 +74,7 @@ fn current_conversation_and_talk_routes_are_all_declared() {
     for target in [
         "/app/system/hosts/claim",
         "/app/widget/state/get",
+        "/app/widget/brief/list",
         "/app/device/brief/list",
         "/integration/fix",
     ] {

@@ -26,6 +26,9 @@
   "/app/widget/history/list": {
     "sec": [
       "history.*.timestamp"
+    ],
+    "typedMs": [
+      "history.*.value"
     ]
   },
   "/app/notification/list": {
@@ -68,6 +71,10 @@
   "/app/widget/value/get": {
     "ms": [
       "items.*.resource.nextTimestamp"
+    ],
+    "typedMs": [
+      "items.*.resource.value",
+      "items.*.resource.next"
     ]
   },
   "/app/device/state/get": {
@@ -76,6 +83,14 @@
       "items.*.resource.latest.*.state.timestamp",
       "items.*.resource.latest.*.event.timestamp",
       "items.*.resource.latest.*.log.timestamp"
+    ]
+  },
+  "/app/widget/detail/get": {
+    "typedMs": [
+      "items.*.widget.options",
+      "items.*.widget.min",
+      "items.*.widget.max",
+      "items.*.widget.offset"
     ]
   }
 }

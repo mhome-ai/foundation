@@ -11,6 +11,7 @@ follow the Space execution authority on both local Core and cloud.
 | --- | --- | --- |
 | `/app/device/detail/get` | `{ids}` | Existing ordered `items` with `device` definitions, capabilities, group membership, physical Twin enablement or Group application state, source metadata; no online or state fields |
 | `/app/device/state/get` | `{ids}` | Ordered `items` with `resource: {entityId, online?, onlineUpdatedAtSec?, latest}` |
+| `/app/widget/list` | `{}` | Summaries: id, name, description, type, tag; Data adds dataType/repeated. No list mode or full-definition catalog |
 | `/app/widget/detail/get` | `{ids}` | Existing ordered `items` with `widget` configuration; no value, next or nextTimestamp |
 | `/app/widget/value/get` | `{ids}` | Ordered `items` with `resource: {widgetId, revision, value, next?, nextTimestamp?}` |
 | `/app/automation/status` | `{ids}` | Ordered `items` with `resource: {automationId, enabled, runnable, running, blocked, lastRunAt}` |
@@ -82,3 +83,14 @@ Generated Twin program inspection retains its internal `/automation/get`,
 `/automation/status` and `/automation/info` UI readers. These IDs are not accepted
 by the shared user-program Automation detail/status contract. User program detail
 pages use the shared definition, status and graph readers.
+
+## Widget presentation
+
+Widget detail uses an explicit public definition DTO on Core and cloud, including
+revision and a boolean repeated flag. It excludes runtime value/next/nextTimestamp.
+Essential omits displayName/global/baseId/steps/stepUnits; editable constraints,
+options and complete Circadian schedules remain. Full preserves the full definition DTO.
+History timestamps are epoch seconds; nextTimestamp and explicitly typed Timestamp
+values are epoch milliseconds in Full. Essential presents these dates in the Home
+IANA timezone, with UTC fallback for missing/invalid timezone configuration. Numeric
+values, Duration values and schedule wall-clock times are not inferred to be dates.

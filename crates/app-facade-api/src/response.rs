@@ -215,6 +215,8 @@ pub fn essential(target: &str, data: &Value) -> Value {
         result
     } else if let Some(result) = runtime::project(target, data) {
         result
+    } else if target == "/app/widget/detail/get" {
+        widget_definition(data)
     } else if target == "/app/device/list" {
         device_briefs(data)
     } else if target.starts_with("/app/dashboard/") {
@@ -228,6 +230,21 @@ pub fn essential(target: &str, data: &Value) -> Value {
     } else {
         automation(target, data)
     }
+}
+
+// Keep editable configuration and identity; UI rendering helpers are not model context.
+fn widget_definition(data: &Value) -> Value {
+    let mut result = data.clone();
+    if let Some(items) = result.get_mut("items").and_then(Value::as_array_mut) {
+        for item in items {
+            if let Some(widget) = item.get_mut("widget").and_then(Value::as_object_mut) {
+                for field in ["displayName", "global", "baseId", "steps", "stepUnits"] {
+                    widget.remove(field);
+                }
+            }
+        }
+    }
+    result
 }
 
 // Discovery keeps functional and availability metadata. Connection and manufacturer
