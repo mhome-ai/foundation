@@ -102,3 +102,24 @@ fn quickword_full_and_essential_preserve_parameter_contract_and_dispatch_result(
         assert_eq!(parsed, data);
     }
 }
+
+#[test]
+fn plugin_business_fields_do_not_determine_facade_outcome() {
+    for plugin in ["camera", "example"] {
+        let target = format!("/app/plugin/{plugin}/device/list");
+        let data = serde_json::json!({"nodeId":"node", "nodeType":plugin, "version":"v1", "data":{"ok":false,"reason":"resource state"}});
+        let response = serde_json::to_value(
+            response::present(&target, data.clone(), ResponseDetail::Full).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(response["status"], "success");
+        assert_eq!(response["data"], data);
+        let failure =
+            app_facade_api::FacadeResponse::error("PRECONDITION_FAIL", "Resource changed");
+        let response =
+            serde_json::to_value(response::render(&target, failure, ResponseDetail::Full).unwrap())
+                .unwrap();
+        assert_eq!(response["status"], "error");
+        assert_eq!(response["error"]["code"], "PRECONDITION_FAIL");
+    }
+}

@@ -123,19 +123,6 @@ pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
             .to_owned();
         return FacadeResponse::error("OPERATION_FAILED", message).with_details(data);
     }
-    if target.starts_with("/app/plugin/camera/")
-        && data
-            .get("ok")
-            .or_else(|| data.get("data").and_then(|payload| payload.get("ok")))
-            .and_then(Value::as_bool)
-            == Some(false)
-    {
-        return FacadeResponse::error(
-            "PLUGIN_OPERATION_FAILED",
-            "Camera operation did not succeed",
-        )
-        .with_details(data);
-    }
     if target.starts_with("/app/plugin/audiobridge/")
         && data.pointer("/data/ok").and_then(Value::as_bool) == Some(false)
     {

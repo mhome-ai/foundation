@@ -159,18 +159,6 @@
     "code": "OPERATION_FAILED"
   },
   {
-    "name": "camera-plugin-failed",
-    "target": "/app/plugin/camera/connection/disconnect",
-    "data": {
-      "data": {
-        "ok": false,
-        "reason": "CONNECTION_CHANGED"
-      }
-    },
-    "status": "error",
-    "code": "PLUGIN_OPERATION_FAILED"
-  },
-  {
     "name": "null-is-a-valid-full-value",
     "target": "/app/test/read",
     "data": null,
