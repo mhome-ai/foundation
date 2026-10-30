@@ -1,6 +1,5 @@
 pub mod agent_gateway;
 pub mod audiobridge;
-pub mod camera;
 pub mod llm;
 
 /// Revisions are per Node type. Bump only the affected entry when its Core-facing

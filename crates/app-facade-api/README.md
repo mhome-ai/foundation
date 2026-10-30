@@ -243,9 +243,9 @@ Business operation permissions are declared once in [the authorization manifest]
 
 Matter management uses the generic `/app/plugin/matter/*` transport with an exact
 Space-bound `nodeId`, `version`, and Plugin-owned `payload`. The former
-`/app/matter/*` Facade is retired. Business contracts are published in Core's
-`schema/matter-plugin-management.v1.schema.json`; runtime behavior lives in the
-Integration repository's Matter Plugin. Binding/offline observations come from
+`/app/matter/*` Facade is retired. The business contract is owned by the Integration repository at
+`plugins/matter/contract.json`. Consumers pin plain JSON snapshots; Foundation
+contains only the generic transport contract. Binding/offline observations come from
 `/app/plugin/enabled/list`, independently of the runtime's status.
 
 UI Integration metadata uses `/app/integration/presentation/get`; see

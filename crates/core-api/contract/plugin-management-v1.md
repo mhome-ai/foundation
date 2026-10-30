@@ -38,26 +38,32 @@ identity or choose a platform event target. Consumers filter publisher identity
 and Space. This is an observation; capability subscriptions retain their separate
 protocol and delivery ledger.
 
-## Matter
+## Business contract ownership and discovery
 
-The Matter Plugin owns `status`, `commissionable/list`, `fabric/get`,
-`fabric/node/detail`, `inventory/get`, `onboarding/start`, `onboarding/input`,
-`onboarding/status` and `fabric/node/remove`. Read routes require Space read;
-start, input and removal require Space write. There is no `/app/matter/*` Facade.
-The management inventory and detail payload schema is
-`schema/matter-plugin-management.v1.schema.json`.
+Plugin-owned JSON contracts live with their implementations, independently of
+Foundation packages. The official Camera, Matter and Mac sources are
+`mhome-ai/integration`, under `plugins/<id>/contract.json`. Their business payloads,
+operation identifiers and fixtures are not published in Foundation. LLM and Storage
+platform backend contracts and canonical capability schemas remain platform-owned.
 
-`status` returns runtime information or `runtimeError`, plus trusted `spaceId`.
-Binding and offline observations come from `/app/plugin/enabled/list`, which can
-answer even when the Plugin is unavailable. Commissioning retains operation ID,
-session ID and expected revision semantics. Consumers pin the Node ID throughout
-the operation and its durable continuation; closing a UI does not cancel it.
-Discovery publishes `commissionable/report` through the generic event channel.
+A signed release can reference business contracts under
+`nodeMetadata.plugin.businessContracts`: each reference contains `id`, `version`
+(contract SemVer), `sha256` (exact JSON bytes), package-relative `path`, and implemented
+`operations`. Native packages carry the referenced JSON; firmware can embed the
+reference and retain the pinned JSON in its source distribution.
 
-The separate Integration `/matter/device/list` response remains
-`{"ok":true,"data":[...]}`. It enumerates source entities and is not a management
-list. ESP implementations must implement and advertise only supported routes;
-they must not dual-write alternate array/object envelopes.
+The authenticated Node description may advertise `details.businessContracts`, with
+`id`, `version`, `sha256` and its actual supported `operations`. This is descriptive,
+not an authorization grant. `routes` and `appAccess` still control availability and
+permission. The Plugin detail Facade projects public `api.businessContracts` and
+`api.appAccess` from that session, never arbitrary runtime details. `api: null`
+means offline/loading/unavailable; a null `businessContracts` means this older
+implementation has no advertisement. Neither is an empty supported set.
 
-These contracts continue to ship with Foundation. Plugin execution ownership does
-not introduce a new package publication system or move provider schema sources.
+Clients pin the business contract's identity and compatible major, and check
+operation availability separately. An implementation may support a subset. A
+schema/document move does not change wire version, payload shape or permissions.
+Consumers tolerate additive response fields. New requests must not send fields
+or operations that the selected implementation has not advertised support for;
+unknown enum variants require an explicit fallback or a new major. Legacy strict
+readers do not become compatible simply because this rule was documented.
