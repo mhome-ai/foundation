@@ -1,7 +1,7 @@
 {
-  "protocol": "storage.v5",
-  "contractVersion": "0.2.0",
-  "schema": "schema/storage.v5.schema.json",
+  "protocol": "storage.v1",
+  "contractVersion": "0.3.0",
+  "schema": "schema/storage.v1.schema.json",
   "definitions": [
     "decimalU64",
     "permission",
@@ -25,5 +25,5 @@
     "deleteFolder",
     "deleteFolderResponse"
   ],
-  "contract": "contract/storage-v5.md"
+  "contract": "contract/storage-v1.md"
 }

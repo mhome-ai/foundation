@@ -1,9 +1,13 @@
-# Storage capability, version 5
+# Storage capability, version 1
 
 `mhome-storage-api` owns logical Folder and object contracts, permissions, usage,
 path validation and structured errors. It has no Catalog, filesystem or network
 implementation. Core API re-exports it and adds binding and Host TLS messages;
 App Facade API re-exports the same contracts for `/app/object-storage/`.
+
+The wire generation is `storage.v1`; package versions independently identify
+published build artifacts. During development, providers and consumers are
+updated together. Earlier development contracts are not negotiated or served.
 
 ## Names and ownership
 
@@ -71,7 +75,7 @@ timestamps are decimal strings; object/physical receipts use JSON u64.
 
 ## Physical backend and reads
 
-`storage.backend.v1` remains separate from the public `storage.v5` capability.
+`storage.backend.v1` remains separate from the public `storage.v1` capability.
 Describe reports capacity; grant authorizes stat/read/delete; prepare-write reserves
 space for an immutable Blob before issuing a write grant. A lost reply can have
 reserved bytes. Receipts are resolved before changing repositories. TLS is pinned,

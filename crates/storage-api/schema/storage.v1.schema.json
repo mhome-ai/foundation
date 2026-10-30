@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mhome.ai/protocol/storage/v5",
+  "$id": "https://mhome.ai/protocol/storage/v1",
   "$defs": {
     "decimalU64": {
       "type": "string",
@@ -392,7 +392,7 @@
           }
         },
         "protocolVersion": {
-          "const": "storage.v5"
+          "const": "storage.v1"
         },
         "writeState": {
           "$ref": "#/$defs/writeState"

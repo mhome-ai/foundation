@@ -2,7 +2,7 @@ use serde_json::{json, Value};
 use storage_api::*;
 fn validate(kind: &str, value: &Value) {
     let mut schema: Value =
-        serde_json::from_str(include_str!("../schema/storage.v5.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/storage.v1.schema.json")).unwrap();
     schema["$ref"] = json!(format!("#/$defs/{kind}"));
     jsonschema::validator_for(&schema)
         .unwrap()
@@ -94,7 +94,7 @@ fn management_contract_covers_system_folders_and_multiple_repositories() {
         overview
     );
     let manifest: Value =
-        serde_json::from_str(include_str!("../manifest/storage.v5.json")).unwrap();
+        serde_json::from_str(include_str!("../manifest/storage.v1.json")).unwrap();
     assert_eq!(manifest["contractVersion"], env!("CARGO_PKG_VERSION"));
     assert_eq!(manifest["protocol"], PROTOCOL_VERSION);
 }
@@ -102,7 +102,7 @@ fn management_contract_covers_system_folders_and_multiple_repositories() {
 #[test]
 fn schema_enforces_the_same_decimal_u64_boundary_as_rust() {
     let mut schema: Value =
-        serde_json::from_str(include_str!("../schema/storage.v5.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/storage.v1.schema.json")).unwrap();
     schema["$ref"] = json!("#/$defs/decimalU64");
     let validator = jsonschema::validator_for(&schema).unwrap();
     for value in [
@@ -131,7 +131,7 @@ fn schema_enforces_the_same_decimal_u64_boundary_as_rust() {
 #[test]
 fn schema_enforces_namespaces_and_path_segments() {
     let mut schema: Value =
-        serde_json::from_str(include_str!("../schema/storage.v5.schema.json")).unwrap();
+        serde_json::from_str(include_str!("../schema/storage.v1.schema.json")).unwrap();
     schema["$ref"] = json!("#/$defs/folderPath");
     let validator = jsonschema::validator_for(&schema).unwrap();
     for path in [
