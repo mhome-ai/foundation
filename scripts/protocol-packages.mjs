@@ -70,6 +70,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "schema/host-management.v1.schema.json",
       "schema/client-appearance.v1.schema.json",
       "schema/client-page.v1.schema.json",
+      "schema/client-screenshot.v1.schema.json",
+      "contract/client-screenshot-v1.md",
       "schema/delegated-call.v1.schema.json",
     ]),
     schemas: Object.freeze({

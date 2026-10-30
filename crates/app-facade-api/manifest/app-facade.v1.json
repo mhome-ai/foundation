@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.76.0",
+  "contractVersion": "1.77.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -281,6 +281,15 @@
         "/app/agent/llm/mapping/list",
         "/app/agent/llm/mapping/save"
       ]
+    },
+    "clientScreenshot": {
+      "schema": "schema/client-screenshot.v1.schema.json",
+      "contract": "contract/client-screenshot-v1.md",
+      "requestTargets": [
+        "/app/client/screenshot/report"
+      ],
+      "owner": "authenticatedClient",
+      "persistence": "connection lease only"
     }
   },
   "authorization": "manifest/authorization.v1.json",

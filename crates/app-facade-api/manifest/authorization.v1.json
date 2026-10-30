@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.76.0",
+  "contractVersion": "1.77.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -406,7 +406,8 @@
     "/app/device/history/series/get": "spaceRead",
     "/app/widget/value/get": "spaceRead",
     "/app/graph/relations/get": "spaceRead",
-    "/app/device/view/get": "spaceRead"
+    "/app/device/view/get": "spaceRead",
+    "/app/client/screenshot/report": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [
