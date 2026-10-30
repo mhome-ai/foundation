@@ -148,6 +148,7 @@ cargo publish -p "${package}" --locked --dry-run --allow-dirty
 
 staging_root=""
 protocol_tarball=""
+protocol_provenance=""
 if [[ -n "${protocol}" ]]; then
   npm run test:protocol-packages
   staging_root="$(mktemp -d)"
@@ -169,6 +170,17 @@ if [[ "${publish}" != "--publish" ]]; then
     echo "verified ${package} ${version}"
   fi
   exit 0
+fi
+
+if [[ -n "${npm_package}" ]]; then
+  # npm 12.2.1 honors provenance-file during trusted publishing. Earlier npm
+  # clients can discard the supplied bundle and generate a second one instead.
+  if [[ "$(npm --version)" != "12.2.1" ]]; then
+    echo "Protocol publication requires npm 12.2.1 for supplied provenance" >&2
+    exit 1
+  fi
+  protocol_provenance="${staging_root}/provenance.sigstore.json"
+  node scripts/protocol-provenance.mjs "${npm_package}" "${version}" "${protocol_tarball}" "${protocol_provenance}"
 fi
 
 crate_url="https://crates.io/api/v1/crates/${package}/${version}"
@@ -218,6 +230,6 @@ if [[ -n "${npm_package}" ]]; then
   else
     # Always make the current canonical release the default, including when a
     # previously published erroneous version has a numerically higher semver.
-    npm publish "${protocol_tarball}" --access public --provenance --tag latest
+    npm publish "${protocol_tarball}" --access public --provenance-file "${protocol_provenance}" --tag latest
   fi
 fi

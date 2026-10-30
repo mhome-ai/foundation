@@ -80,6 +80,15 @@ npm pack "${staging}"
 The published protocol packages trust GitHub Actions for organization `mhome-ai`, repository
 `foundation`, and workflow `publish-crate.yml`. That workflow runs on `ubuntu-latest`, grants
 `id-token: write`, and publishes with provenance. No npm token is required.
+The release workflow pins Node 24.22.1 and npm 12.2.1. Before uploading either
+package, `scripts/protocol-provenance.mjs` signs the final npm tarball's SLSA
+statement and verifies its certificate identity, signature and transparency-log
+proof. Its Rekor client fetches an equivalent existing entry after a duplicate
+registration response, preserving provenance when a successful request loses its
+response. npm receives that verified bundle through `--provenance-file`; it does
+not generate another attestation. Signature or proof verification failures stop
+publication. Run the offline recovery tests with
+`node --test scripts/tests/protocol-provenance.test.mjs`.
 
 `mhome-artifact-api` 0.1.0 was originally published from Baycat. The contract moved here and this
 repository is authoritative beginning with version 0.2.0.

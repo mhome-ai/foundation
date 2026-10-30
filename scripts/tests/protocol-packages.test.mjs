@@ -44,7 +44,6 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
       });
       assert.deepEqual(staged.packageJson.publishConfig, {
         access: "public",
-        provenance: true,
       });
       assert.equal(staged.packageJson.main, undefined);
       assert.equal(staged.packageJson.module, undefined);
@@ -91,7 +90,7 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
     );
     try {
       const staged = stageProtocolPackage(name, path.join(tempRoot, "package"));
-      const [packed] = JSON.parse(execFileSync("npm", [
+      const packResult = JSON.parse(execFileSync("npm", [
         "pack", staged.stagingRoot, "--json", "--offline", "--ignore-scripts",
         "--pack-destination", tempRoot,
       ], {
@@ -99,6 +98,9 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
         encoding: "utf8",
         env: { ...process.env, npm_config_cache: path.join(tempRoot, "npm-cache") },
       }));
+      // npm 12 keys JSON results by package name; npm 11 returns an array.
+      const [packed] = Array.isArray(packResult) ? packResult : Object.values(packResult);
+      assert.equal(packed.name, config.npmName);
       assert.ok(fs.statSync(path.join(tempRoot, packed.filename)).isFile());
       const packedFiles = new Set(packed.files.map((file) => file.path));
       if (name === "appFacade") {

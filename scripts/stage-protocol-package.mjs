@@ -101,7 +101,9 @@ export function stageProtocolPackage(name, outputDir) {
       "./schema/*": "./schema/*",
       "./fixtures/*": "./fixtures/*",
     },
-    publishConfig: { access: "public", provenance: true },
+    // Publication supplies a verified bundle through --provenance-file. npm
+    // rejects combining that option with publishConfig.provenance.
+    publishConfig: { access: "public" },
   };
   fs.writeFileSync(
     path.join(stagingRoot, "protocol.json"),
