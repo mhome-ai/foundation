@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde::{Deserializer, Serializer};
 
-use crate::{StoragePermission, StorageWriteState};
+use crate::StorageWriteState;
 
 pub mod decimal_u64 {
     use super::*;
@@ -32,29 +32,6 @@ pub mod decimal_u64 {
         } else {
             Err("must be a canonical unsigned decimal string")
         }
-    }
-}
-
-pub mod optional_decimal_u64 {
-    use super::*;
-
-    pub fn serialize<S>(value: &Option<u64>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match value {
-            Some(value) => serializer.serialize_some(&value.to_string()),
-            None => serializer.serialize_none(),
-        }
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        Option::<String>::deserialize(deserializer)?
-            .map(|value| decimal_u64::parse(&value).map_err(serde::de::Error::custom))
-            .transpose()
     }
 }
 
@@ -89,10 +66,9 @@ pub struct ObjectStorageFolderIdRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ObjectStorageSessionRequest {
     pub folder_id: String,
-    #[serde(default)]
-    pub permissions: Vec<StoragePermission>,
-    #[serde(default, with = "optional_decimal_u64")]
-    pub ttl_seconds: Option<u64>,
+    /// SDK renewal fence; never a user-selected Folder ID.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected_incarnation: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

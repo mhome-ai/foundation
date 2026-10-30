@@ -191,11 +191,9 @@ impl FileGateway {
         let mut tickets = self.state.tickets.lock().expect("file tickets");
         ensure!(!owner.is_retired(), "File owner retired");
         tickets.retain(|_, t| {
-            let keep = t.expires > now() && !t.cancel.is_cancelled();
-            if !keep {
-                t.cancel.cancel();
-            }
-            keep
+            // Expiry blocks new requests, but an admitted transfer owns an Arc
+            // until its stream ends. Keep it releasable without cancelling it.
+            !t.cancel.is_cancelled() && (t.expires > now() || Arc::strong_count(t) > 1)
         });
         ensure!(tickets.len() < 256, "Too many active file authorizations");
         tickets.insert(
@@ -404,6 +402,37 @@ mod tests {
             storage_prefix: false,
             headers: Default::default(),
         }
+    }
+
+    #[tokio::test]
+    async fn refreshing_expired_tickets_keeps_admitted_transfers_releasable() {
+        let gateway = FileGateway::start().await.unwrap();
+        let owner = gateway.owner();
+        let key = public_key(new_key().verifying_key());
+        let url = "https://127.0.0.1/file".to_string();
+        let old = gateway
+            .register(&owner, grant(url.clone(), key.clone()))
+            .await
+            .unwrap();
+        let id = old.strip_prefix(&gateway.base).unwrap();
+        let active = {
+            let mut tickets = gateway.state.tickets.lock().unwrap();
+            let ticket = tickets.get_mut(id).unwrap();
+            Arc::get_mut(ticket).unwrap().expires = 0;
+            ticket.clone() // The ownership held by an admitted streaming transfer.
+        };
+        let new = gateway.register(&owner, grant(url, key)).await.unwrap();
+        assert!(!active.cancel.is_cancelled());
+        assert!(gateway.state.tickets.lock().unwrap().contains_key(id));
+        gateway.release(&owner, &old);
+        assert!(active.cancel.is_cancelled());
+        assert!(gateway
+            .state
+            .tickets
+            .lock()
+            .unwrap()
+            .contains_key(new.strip_prefix(&gateway.base).unwrap()));
+        gateway.stop().await;
     }
 
     #[tokio::test]

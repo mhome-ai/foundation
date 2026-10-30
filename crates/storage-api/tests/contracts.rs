@@ -38,8 +38,7 @@ fn immutable_path_requests_have_no_settings_or_implicit_recursive_deletion() {
         "sessionRequest",
         &serde_json::to_value(ObjectStorageSessionRequest {
             folder_id: "home/photos".into(),
-            permissions: vec![StoragePermission::Read],
-            ttl_seconds: Some(900),
+            expected_incarnation: Some("creation-one".into()),
         })
         .unwrap(),
     );
@@ -52,6 +51,7 @@ fn immutable_path_requests_have_no_settings_or_implicit_recursive_deletion() {
 fn typed_errors_and_physical_contracts_round_trip() {
     for error in [
         StorageError::new(StorageErrorCode::VolumeFull, "full"),
+        StorageError::new(StorageErrorCode::SessionExpired, "expired"),
         StorageError::new(StorageErrorCode::Unavailable, "timeout").uncertain(),
         StorageError::new(StorageErrorCode::Unavailable, "delete failed").partial(2),
     ] {
@@ -158,4 +158,28 @@ fn schema_enforces_namespaces_and_path_segments() {
     }
     assert!(!validator.is_valid(&json!(format!("home/{}", "x".repeat(81)))));
     assert!(!validator.is_valid(&json!(format!("home/{}", vec!["x"; 16].join("/")))));
+}
+
+#[test]
+fn sessions_have_fixed_authority_and_expiry() {
+    for field in ["permissions", "ttlSeconds"] {
+        let mut value = json!({"folderId":"home/photos"});
+        value[field] = if field == "permissions" {
+            json!(["read"])
+        } else {
+            json!("900")
+        };
+        assert!(serde_json::from_value::<ObjectStorageSessionRequest>(value).is_err());
+    }
+    let request: ObjectStorageSessionRequest =
+        serde_json::from_value(json!({"folderId":"home/photos"})).unwrap();
+    assert!(request.expected_incarnation.is_none());
+    assert_eq!(
+        StorageError::new(StorageErrorCode::SessionExpired, "expired").http_status(),
+        401
+    );
+    assert_eq!(
+        StorageError::new(StorageErrorCode::Unauthorized, "unbound").http_status(),
+        403
+    );
 }

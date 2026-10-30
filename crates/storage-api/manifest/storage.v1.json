@@ -4,7 +4,6 @@
   "schema": "schema/storage.v1.schema.json",
   "definitions": [
     "decimalU64",
-    "permission",
     "writeState",
     "createFolder",
     "sessionRequest",

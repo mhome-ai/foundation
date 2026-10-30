@@ -1,6 +1,6 @@
 # Storage capability, version 1
 
-`mhome-storage-api` owns logical Folder and object contracts, permissions, usage,
+`mhome-storage-api` owns logical Folder and object contracts, usage,
 path validation and structured errors. It has no Catalog, filesystem or network
 implementation. Core API re-exports it and adds binding and Host TLS messages;
 App Facade API re-exports the same contracts for `/app/object-storage/`.
@@ -69,9 +69,39 @@ budget independently of Storage. Temporary Artifact content retains its transien
 store and idle TTL. Logically unlimited Artifact storage still needs real space.
 
 Object keys are immutable: the same key, size and SHA-256 is an idempotent retry;
-new content requires a new key. Sessions require explicit permissions and include
-an expiring HTTPS endpoint, token and Host identity. Management byte counts and
-timestamps are decimal strings; object/physical receipts use JSON u64.
+new content requires a new key. Management byte counts and timestamps are decimal
+strings; object/physical receipts use JSON u64.
+
+## Folder SDK and internal transport
+
+Business callers use `ensureFolder` (explicit, idempotent creation), `openFolder`
+(existing only), Folder listing/deletion and overview. A Folder handle provides
+put/get/stat/list/delete. The existing Node SDK owns the Plugin client, and the
+App SDK owns the `home/` client. Core internal consumers call the engine directly.
+Camera retains recording retention and shared-segment references.
+
+`/app/object-storage/session/acquire` is an internal transport operation, with
+`folderId` and optional `expectedIncarnation`. It accepts no `permissions` or
+`ttlSeconds`. An authorized namespace owner receives all object operations for
+that Folder; the fixed 15-minute expiry is not a business setting. Its Core API
+response includes `folderIncarnation`, HTTPS endpoint, token, Host identity and
+expiry. SDKs keep these private and renew shortly before expiry. The incarnation
+is an opaque transport fence, not another public Folder ID.
+
+Each handle binds to its originating Space and owner. Renewals send the original
+creation identity and never call Folder creation. A deleted/recreated path cannot
+replace an existing handle. App login/Space changes retire handles and active
+transfers; Plugin context changes reject the old binding. Reopen explicitly after
+an authorization refusal. HTTP 401 `SESSION_EXPIRED` is raised before object
+mutation and permits one retry after refresh. HTTP 403 remains terminal. Other
+failures, including uncertain writes, are returned without automatic replay.
+Retried uploads retain their original key, length and SHA-256. Native file tickets
+are owned per transfer: renewal leaves an admitted read alive, and completion,
+cancellation or SDK disposal releases its ticket.
+
+These logical sessions do not replace physical backend grants. Physical read,
+stat, delete and prepared-write grants remain separate, including Artifact read
+and removal-only cleanup authority.
 
 ## Physical backend and reads
 

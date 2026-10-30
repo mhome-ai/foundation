@@ -9,6 +9,8 @@ pub enum StorageErrorCode {
     VolumeFull,
     Integrity,
     Unauthorized,
+    /// The data-plane credential can be refreshed; no object mutation was attempted.
+    SessionExpired,
     Unavailable,
     ScopeRemoving,
     SystemFolderProtected,
@@ -55,6 +57,7 @@ impl StorageError {
         match self.code {
             InvalidInput | Integrity => 400,
             NotFound => 404,
+            SessionExpired => 401,
             Unauthorized | SystemFolderProtected | ScopeRemoving => 403,
             Conflict | RepositoryIdentityMismatch => 409,
             VolumeFull => 507,
