@@ -19,6 +19,7 @@ use tokio::time::Instant;
 
 pub const SETUP_TIMEOUT: Duration = Duration::from_secs(600);
 const READ_TIMEOUT: Duration = Duration::from_secs(15);
+const COMMAND_TIMEOUT: Duration = core_api::timeouts::Operation::CoreRequest.timeout();
 const RETAIN_FAILURE: Duration = Duration::from_secs(300);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,6 +66,7 @@ pub trait Platform: Send + Sync + 'static {
         scope: &str,
         path: &str,
         body: Value,
+        timeout: Duration,
     ) -> Result<Value, String>;
     /// Sends once, with no redirects/replay/proxy. Select the recorded LAN and
     /// reject network changes. `None` is allowed only for public challenge I/O.
@@ -155,6 +157,16 @@ impl Commissioning {
         let context = self.platform.account_context().await?;
         let mut view = self.platform.view(&context, scope).await?;
         self.current(&context).await?;
+        if view.configured && view.operation.is_none() {
+            if let Some(hub) = view
+                .hub
+                .as_ref()
+                .filter(|h| h.cloud.status.eq_ignore_ascii_case("ready"))
+            {
+                self.retire_pairing(&context, scope, &hub.cloud.host_id, &hub.cloud.id)
+                    .await?;
+            }
+        }
         let mut state = self
             .state
             .lock()
@@ -182,10 +194,46 @@ impl Commissioning {
         request: api::HubSetupStartRequest,
         expected_host_key: Option<&PublicKey>,
     ) -> Result<api::HubSetupStartResponse, String> {
+        tokio::time::timeout(
+            COMMAND_TIMEOUT,
+            self.start_pinned_inner(scope, request, expected_host_key),
+        )
+        .await
+        .map_err(|_| "Hub setup request timed out; reload its status")?
+    }
+    async fn start_pinned_inner(
+        self: &Arc<Self>,
+        scope: &str,
+        request: api::HubSetupStartRequest,
+        expected_host_key: Option<&PublicKey>,
+    ) -> Result<api::HubSetupStartResponse, String> {
         if scope.trim().is_empty() || request.host_id.trim().is_empty() {
             return Err("Space and Host are required".into());
         }
         let context = self.platform.account_context().await?;
+        let current = self.platform.view(&context, scope).await?;
+        self.current(&context).await?;
+        if current
+            .operation
+            .as_ref()
+            .is_some_and(|op| op.kind != api::HubOperationKind::Setup)
+        {
+            return Err("Finish the current Hub operation first".into());
+        }
+        if let Some(result) = self
+            .continue_setup(&context, scope, &request.host_id, &current)
+            .await?
+        {
+            return Ok(result);
+        }
+        if current.configured
+            && current
+                .hub
+                .as_ref()
+                .is_none_or(|hub| !hub.cloud.status.eq_ignore_ascii_case("setup"))
+        {
+            return Err("This Space already has a Hub".into());
+        }
         let start_key = (context.clone(), scope.to_owned());
         let sequence = {
             let mut state = self
@@ -205,22 +253,6 @@ impl Commissioning {
                 .retain(|_, s| s.context != context || s.scope != scope);
             sequence
         };
-        let current = self.platform.view(&context, scope).await?;
-        if current.configured
-            && current
-                .hub
-                .as_ref()
-                .is_none_or(|hub| !hub.cloud.status.eq_ignore_ascii_case("setup"))
-        {
-            return Err("This Space already has a Hub".into());
-        }
-        if current
-            .operation
-            .as_ref()
-            .is_some_and(|op| op.kind != api::HubOperationKind::Setup)
-        {
-            return Err("Finish the current Hub operation first".into());
-        }
         let mut candidates = self
             .platform
             .candidates(&context, scope)
@@ -291,13 +323,165 @@ impl Commissioning {
             .sessions
             .retain(|_, s| s.context != context || s.scope != scope);
         state.sessions.insert(id.clone(), session);
-        Ok(api::HubSetupStartResponse {
+        Ok(api::HubSetupStartResponse::PairingRequired {
             scope_id: scope.into(),
             session_id: id,
             candidate: candidate.view(),
             pairing_code: code,
             expires_at: now_ms() + (ttl * 1000) as i64,
         })
+    }
+    // Only cloud state selects this branch. The cloud rechecks the exact target
+    // and committed checkpoint before doing any work; no LAN proof or new token
+    // is needed to finish an already authorized migration.
+    async fn continue_setup(
+        &self,
+        context: &str,
+        scope: &str,
+        host: &str,
+        view: &api::LocalHubState,
+    ) -> Result<Option<api::HubSetupStartResponse>, String> {
+        let hub = if let Some(op) = view.operation.as_ref() {
+            if op.kind != api::HubOperationKind::Setup
+                || op.phase != api::HubOperationPhase::Finalizing
+            {
+                return Ok(None);
+            }
+            if op.host_id.as_deref() != Some(host) {
+                return Err("Hub setup belongs to another Host".into());
+            }
+            op.hub_id.as_deref().ok_or("Hub setup target is missing")?
+        } else if let Some(hub) = view
+            .hub
+            .as_ref()
+            .filter(|hub| view.configured && hub.cloud.status.eq_ignore_ascii_case("ready"))
+        {
+            if hub.cloud.host_id != host {
+                return Err("This Space already has another Hub".into());
+            }
+            &hub.cloud.id
+        } else {
+            return Ok(None);
+        };
+        self.current(context).await?;
+        let reply = tokio::time::timeout(
+            COMMAND_TIMEOUT,
+            self.platform.cloud(
+                context,
+                scope,
+                "/hub/setup/initiate",
+                json!({"hostId":host,"hubId":hub,
+                "isTest":view.hub.as_ref().is_some_and(|h| h.cloud.is_test)}),
+                COMMAND_TIMEOUT,
+            ),
+        )
+        .await
+        .map_err(|_| "Hub finalization request timed out; reload its status")??;
+        self.current(context).await?;
+        if reply["hubId"].as_str() != Some(hub) {
+            return Err("Cloud returned a different Hub setup target".into());
+        }
+        match reply["outcome"].as_str() {
+            Some("RUNNING") => Ok(Some(api::HubSetupStartResponse::Running {
+                scope_id: scope.into(),
+                hub_id: hub.into(),
+            })),
+            Some("COMPLETED") => {
+                // Keep a matching session available for its existing status waiter,
+                // but do not let its stale failure obscure authoritative completion.
+                self.retire_pairing(context, scope, host, hub).await?;
+                Ok(Some(api::HubSetupStartResponse::Completed {
+                    scope_id: scope.into(),
+                    hub_id: hub.into(),
+                }))
+            }
+            _ => Err("Cloud did not confirm Hub finalization".into()),
+        }
+    }
+    async fn retire_pairing(
+        &self,
+        context: &str,
+        scope: &str,
+        host: &str,
+        hub: &str,
+    ) -> Result<(), String> {
+        let candidate = self.state.lock().ok().and_then(|state| {
+            state
+                .operations
+                .get(&(context.into(), scope.into()))
+                .filter(|op| {
+                    op.session.candidate.host_id == host
+                        && op.view.hub_id.as_deref() == Some(hub)
+                        && op.view.state != "COMPLETED"
+                })
+                .map(|op| op.session.candidate.clone())
+        });
+        if let Some(candidate) = candidate {
+            // Preserve the normal pairing completion hook when this process still
+            // owns its authenticated LAN observation. No new discovery is required.
+            self.platform
+                .connected(context, scope, hub, &candidate)
+                .await?;
+            self.current(context).await?;
+            if let Ok(mut state) = self.state.lock() {
+                if let Some(op) = state.operations.get_mut(&(context.into(), scope.into())) {
+                    if op.session.candidate.host_id == host
+                        && op.view.hub_id.as_deref() == Some(hub)
+                    {
+                        if let Some(task) = op.task.take() {
+                            task.abort();
+                        }
+                        op.view.state = "COMPLETED".into();
+                        op.view.phase = "COMPLETED".into();
+                        op.view.failure = None;
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+    async fn wait_for_committed_setup(
+        &self,
+        context: &str,
+        scope: &str,
+        host: &str,
+        hub: &str,
+        deadline: Instant,
+    ) -> Result<(), String> {
+        tokio::time::timeout_at(deadline, async {
+            loop {
+                let view = self.platform.view(context, scope).await?;
+                self.current(context).await?;
+                if let Some(operation) = view.operation {
+                    if operation.kind != api::HubOperationKind::Setup
+                        || operation.host_id.as_deref() != Some(host)
+                        || operation.hub_id.as_deref() != Some(hub)
+                    {
+                        return Err("Hub setup was replaced; reload its status".into());
+                    }
+                    if operation.state == api::HubOperationState::Failed {
+                        return Err(operation
+                            .failure
+                            .map(|f| f.reason)
+                            .unwrap_or_else(|| "Hub setup failed; retry initialization".into()));
+                    }
+                } else if view.configured
+                    && view.hub.as_ref().is_some_and(|h| {
+                        h.cloud.id == hub
+                            && h.cloud.host_id == host
+                            && h.cloud.status.eq_ignore_ascii_case("ready")
+                    })
+                {
+                    self.retire_pairing(context, scope, host, hub).await?;
+                    return Ok(());
+                } else {
+                    return Err("Hub setup no longer matches this device".into());
+                }
+                tokio::time::sleep(Duration::from_millis(500)).await;
+            }
+        })
+        .await
+        .map_err(|_| "Device Hub setup timed out; retry initialization")?
     }
     /// Product initialization already authenticated the owner and paired with
     /// this exact Host key. Reuse normal Hub setup without another UI ceremony.
@@ -309,16 +493,17 @@ impl Commissioning {
     ) -> Result<(), String> {
         let context = self.platform.account_context().await?;
         let view = self.platform.view(&context, scope).await?;
-        if view.configured
-            && view.operation.is_none()
-            && view
-                .hub
-                .as_ref()
-                .is_some_and(|h| !h.cloud.status.eq_ignore_ascii_case("setup"))
-        {
-            return Ok(());
-        }
         let deadline = Instant::now() + SETUP_TIMEOUT;
+        if let Some(result) = self.continue_setup(&context, scope, host_id, &view).await? {
+            return match result {
+                api::HubSetupStartResponse::Completed { .. } => Ok(()),
+                api::HubSetupStartResponse::Running { hub_id, .. } => {
+                    self.wait_for_committed_setup(&context, scope, host_id, &hub_id, deadline)
+                        .await
+                }
+                api::HubSetupStartResponse::PairingRequired { .. } => unreachable!(),
+            };
+        }
         // The dependent Host can launch its preinstalled Core only after the
         // Client binding commits. Wait for that actual LAN advertisement.
         loop {
@@ -347,10 +532,19 @@ impl Commissioning {
                 Some(host_key),
             )
             .await?;
-        self.confirm(scope, &session.session_id).await?;
+        let session_id = match session {
+            api::HubSetupStartResponse::PairingRequired { session_id, .. } => session_id,
+            api::HubSetupStartResponse::Completed { .. } => return Ok(()),
+            api::HubSetupStartResponse::Running { hub_id, .. } => {
+                return self
+                    .wait_for_committed_setup(&context, scope, host_id, &hub_id, deadline)
+                    .await
+            }
+        };
+        self.confirm(scope, &session_id).await?;
         loop {
             self.current(&context).await?;
-            let state = self.status(scope, &session.session_id).await?;
+            let state = self.status(scope, &session_id).await?;
             if state.complete {
                 return Ok(());
             }
@@ -480,6 +674,8 @@ impl Commissioning {
             let initiated = self.cloud(&session, "/hub/setup/initiate", json!({"hostId":session.candidate.host_id,"hubType":session.candidate.hub_type,"name":session.candidate.host_name,"candidateFingerprint":session.candidate.fingerprint,"clientNonce":nonce,"isTest":is_test})).await?;
             let hub_id = text(&initiated,"hubId")?;
             self.update(&key,&id, |op| { op.view.hub_id = Some(hub_id); op.view.phase = "STARTING_SETUP".into(); });
+            if matches!(initiated["outcome"].as_str(), Some("COMPLETED" | "RUNNING")) { return Ok(()); }
+            if initiated["outcome"] != "AUTHORIZED" { return Err("Invalid Hub setup authorization response".into()); }
             let response = self.lan(&session.context,&session.candidate,&session.base,Some(&session.key),"/setup/start",json!({
                 "env":RuntimeEnv::current(),"setupToken":text(&initiated,"setupToken")?,"commissionSessionId":text(&initiated,"commissionSessionId")?,
                 "commissionSessionSecret":text(&initiated,"commissionSessionSecret")?,"candidateFingerprint":session.candidate.fingerprint,"clientNonce":nonce,
@@ -650,7 +846,7 @@ impl Commissioning {
         let result = tokio::time::timeout(
             READ_TIMEOUT,
             self.platform
-                .cloud(&session.context, &session.scope, path, body),
+                .cloud(&session.context, &session.scope, path, body, READ_TIMEOUT),
         )
         .await
         .map_err(|_| "Cloud authorization timed out")??;

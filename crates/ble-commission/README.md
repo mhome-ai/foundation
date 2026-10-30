@@ -126,3 +126,14 @@ runtime Space policy before sending secrets. Platform adapters reject route/logi
 replacement, redirects and proxy use. Confirm starts one fixed ten-minute attempt;
 fresh retry retires the previous local job. Cloud/Core attempt IDs fence late work.
 Status reconciles the exact committed Hub even if the setup response was lost.
+
+`/local/hub/setup/start` returns a tagged result: `PAIRING_REQUIRED` carries the
+pairing session/code, while `RUNNING` and `COMPLETED` carry the exact `hubId`.
+A retry reads cloud state first. Before the commit checkpoint it starts a fresh
+paired attempt; at `FINALIZING` it uses the same cloud initiate entrypoint to
+finish the recorded Hub without LAN discovery or new credentials. Completed
+retries require the same Host and Hub. The cloud always rechecks Space ownership.
+The command has the shared Core-request deadline (60 seconds); adapters receive
+the cloud call's budget explicitly. A running migration is observed separately
+within the existing ten-minute setup deadline. Failure preserves the recorded
+phase for an explicit retry, rather than starting automatic recovery.

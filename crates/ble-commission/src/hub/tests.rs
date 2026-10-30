@@ -6,6 +6,11 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering::SeqCst};
 struct Fake {
     context: Mutex<String>,
     ready: AtomicBool,
+    offline: AtomicBool,
+    operation: Mutex<Option<api::HubOperation>>,
+    cloud_outcome: Mutex<String>,
+    cloud_delay: Mutex<Duration>,
+    cloud_count: AtomicUsize,
     wrong_peer: AtomicBool,
     fail: AtomicBool,
     lost_response: AtomicBool,
@@ -19,6 +24,11 @@ impl Fake {
         Arc::new(Self {
             context: Mutex::new("login-one".into()),
             ready: false.into(),
+            offline: false.into(),
+            operation: Mutex::new(None),
+            cloud_outcome: Mutex::new("COMPLETED".into()),
+            cloud_delay: Mutex::new(Duration::ZERO),
+            cloud_count: 0.into(),
             wrong_peer: false.into(),
             fail: false.into(),
             lost_response: false.into(),
@@ -57,19 +67,42 @@ impl Platform for Fake {
         Ok(self.context.lock().unwrap().clone())
     }
     async fn candidates(&self, _: &str, _: &str) -> Result<Vec<Candidate>, String> {
+        if self.offline.load(SeqCst) {
+            return Err("LAN unavailable".into());
+        }
         Ok(vec![Self::candidate()])
     }
     async fn view(&self, _: &str, scope: &str) -> Result<api::LocalHubState, String> {
         let ready = self.ready.load(SeqCst);
-        serde_json::from_value(json!({"scopeId":scope,"configured":ready,"hub":if ready{json!({"id":"hub-one","hostId":"host","type":"linux","isTest":false,"status":"ready","cloud":{},"local":{"discovered":true,"connected":true}})}else{Value::Null}})).map_err(|e|e.to_string())
+        serde_json::from_value(json!({"scopeId":scope,"configured":ready,"operation":self.operation.lock().unwrap().clone(),"hub":if ready{json!({"id":"hub-one","hostId":"host","type":"linux","isTest":false,"status":"ready","cloud":{},"local":{"discovered":true,"connected":true}})}else{Value::Null}})).map_err(|e|e.to_string())
     }
-    async fn cloud(&self, _: &str, _: &str, path: &str, _: Value) -> Result<Value, String> {
+    async fn cloud(
+        &self,
+        _: &str,
+        _: &str,
+        path: &str,
+        body: Value,
+        _: Duration,
+    ) -> Result<Value, String> {
         assert_eq!(path, "/hub/setup/initiate");
+        self.cloud_count.fetch_add(1, SeqCst);
+        let delay = *self.cloud_delay.lock().unwrap();
+        tokio::time::sleep(delay).await;
         if self.fail.load(SeqCst) {
             return Err("Cloud unavailable".into());
         }
+        if body["hubId"] == "hub-one" {
+            assert_eq!(body["hostId"], "host");
+            assert!(body.get("candidateFingerprint").is_none());
+            let outcome = self.cloud_outcome.lock().unwrap().clone();
+            if outcome == "COMPLETED" {
+                *self.operation.lock().unwrap() = None;
+                self.ready.store(true, SeqCst);
+            }
+            return Ok(json!({"hubId":"hub-one","outcome":outcome}));
+        }
         Ok(
-            json!({"hubId":"hub-one","setupToken":"secret","commissionSessionId":"cs","commissionSessionSecret":"cs-secret"}),
+            json!({"outcome":"AUTHORIZED","hubId":"hub-one","setupToken":"secret","commissionSessionId":"cs","commissionSessionSecret":"cs-secret"}),
         )
     }
     async fn lan(
@@ -120,8 +153,8 @@ impl Platform for Fake {
         Ok(())
     }
 }
-async fn start(engine: &Arc<Commissioning>) -> api::HubSetupStartResponse {
-    engine
+async fn start(engine: &Arc<Commissioning>) -> String {
+    let result = engine
         .start(
             "home",
             api::HubSetupStartRequest {
@@ -130,7 +163,11 @@ async fn start(engine: &Arc<Commissioning>) -> api::HubSetupStartResponse {
             },
         )
         .await
-        .unwrap()
+        .unwrap();
+    match result {
+        api::HubSetupStartResponse::PairingRequired { session_id, .. } => session_id,
+        _ => panic!("Expected pairing"),
+    }
 }
 
 #[tokio::test(start_paused = true)]
@@ -138,29 +175,17 @@ async fn slow_import_uses_the_setup_deadline_and_waits_for_exact_cloud_commit() 
     let platform = Fake::new();
     let engine = Commissioning::new(platform.clone());
     let pair = start(&engine).await;
-    engine.confirm("home", &pair.session_id).await.unwrap();
+    engine.confirm("home", &pair).await.unwrap();
     platform.entered.notified().await;
     tokio::time::advance(Duration::from_secs(46)).await;
-    let status = engine.status("home", &pair.session_id).await.unwrap();
+    let status = engine.status("home", &pair).await.unwrap();
     assert!(!status.complete);
     assert_eq!(status.pairing.unwrap().state, "RUNNING");
     tokio::time::advance(Duration::from_secs(15)).await;
     tokio::task::yield_now().await;
-    assert!(
-        !engine
-            .status("home", &pair.session_id)
-            .await
-            .unwrap()
-            .complete
-    );
+    assert!(!engine.status("home", &pair).await.unwrap().complete);
     platform.ready.store(true, SeqCst);
-    assert!(
-        engine
-            .status("home", &pair.session_id)
-            .await
-            .unwrap()
-            .complete
-    );
+    assert!(engine.status("home", &pair).await.unwrap().complete);
     assert_eq!(platform.connected.load(SeqCst), 1);
 }
 #[tokio::test(start_paused = true)]
@@ -168,23 +193,23 @@ async fn retry_replaces_old_job_and_late_work_cannot_replace_new_attempt() {
     let platform = Fake::new();
     let engine = Commissioning::new(platform.clone());
     let old = start(&engine).await;
-    engine.confirm("home", &old.session_id).await.unwrap();
+    engine.confirm("home", &old).await.unwrap();
     platform.entered.notified().await;
     let new = start(&engine).await;
-    engine.confirm("home", &new.session_id).await.unwrap();
+    engine.confirm("home", &new).await.unwrap();
     platform.entered.notified().await;
     tokio::time::advance(Duration::from_secs(65)).await;
     tokio::task::yield_now().await;
-    assert!(engine.status("home", &old.session_id).await.is_err());
+    assert!(engine.status("home", &old).await.is_err());
     assert_eq!(
         engine
-            .status("home", &new.session_id)
+            .status("home", &new)
             .await
             .unwrap()
             .pairing
             .unwrap()
             .session_id,
-        new.session_id
+        new
     );
 }
 #[tokio::test]
@@ -193,8 +218,8 @@ async fn replacement_login_cannot_confirm_or_read_another_accounts_attempt() {
     let engine = Commissioning::new(platform.clone());
     let pair = start(&engine).await;
     *platform.context.lock().unwrap() = "login-two".into();
-    assert!(engine.confirm("home", &pair.session_id).await.is_err());
-    assert!(engine.cancel("home", &pair.session_id).await.is_err());
+    assert!(engine.confirm("home", &pair).await.is_err());
+    assert!(engine.cancel("home", &pair).await.is_err());
     assert_eq!(platform.setup.load(SeqCst), 0);
 }
 #[tokio::test]
@@ -220,11 +245,11 @@ async fn expiry_does_not_extend_on_status_polls_and_cloud_failure_allows_fresh_r
     let engine = Commissioning::new(platform.clone());
     platform.fail.store(true, SeqCst);
     let pair = start(&engine).await;
-    engine.confirm("home", &pair.session_id).await.unwrap();
+    engine.confirm("home", &pair).await.unwrap();
     tokio::task::yield_now().await;
     assert_eq!(
         engine
-            .status("home", &pair.session_id)
+            .status("home", &pair)
             .await
             .unwrap()
             .pairing
@@ -234,13 +259,13 @@ async fn expiry_does_not_extend_on_status_polls_and_cloud_failure_allows_fresh_r
     );
     platform.fail.store(false, SeqCst);
     let pair = start(&engine).await;
-    engine.confirm("home", &pair.session_id).await.unwrap();
+    engine.confirm("home", &pair).await.unwrap();
     platform.entered.notified().await;
     tokio::time::advance(Duration::from_secs(601)).await;
     tokio::task::yield_now().await;
     assert_eq!(
         engine
-            .status("home", &pair.session_id)
+            .status("home", &pair)
             .await
             .unwrap()
             .pairing
@@ -256,25 +281,13 @@ async fn committed_hub_reconciles_a_lost_response_and_repeated_status_is_idempot
     platform.lost_response.store(true, SeqCst);
     let engine = Commissioning::new(platform.clone());
     let pair = start(&engine).await;
-    engine.confirm("home", &pair.session_id).await.unwrap();
+    engine.confirm("home", &pair).await.unwrap();
     platform.entered.notified().await;
     platform.ready.store(true, SeqCst);
-    assert!(
-        engine
-            .status("home", &pair.session_id)
-            .await
-            .unwrap()
-            .complete
-    );
+    assert!(engine.status("home", &pair).await.unwrap().complete);
     tokio::time::advance(Duration::from_secs(65)).await;
     tokio::task::yield_now().await;
-    assert!(
-        engine
-            .status("home", &pair.session_id)
-            .await
-            .unwrap()
-            .complete
-    );
+    assert!(engine.status("home", &pair).await.unwrap().complete);
     assert_eq!(platform.connected.load(SeqCst), 1);
     assert!(engine.view("home").await.unwrap().pairing.is_none());
 }
@@ -346,4 +359,218 @@ async fn product_setup_waits_for_cloud_commit_before_credential_issuance() {
     task.await.unwrap().unwrap();
     assert_eq!(platform.count.load(SeqCst), 1);
     assert_eq!(platform.setup.load(SeqCst), 1);
+}
+
+fn finalizing() -> api::HubOperation {
+    serde_json::from_value(json!({"kind":"SETUP","state":"FAILED","phase":"FINALIZING",
+        "hubId":"hub-one","hostId":"host","startedAt":1,
+        "failure":{"reason":"Finalization interrupted"}}))
+    .unwrap()
+}
+
+#[tokio::test(start_paused = true)]
+async fn committed_retry_skips_lan_and_pairing_even_when_hub_is_already_ready() {
+    let platform = Fake::new();
+    platform.ready.store(true, SeqCst);
+    platform.offline.store(true, SeqCst);
+    *platform.operation.lock().unwrap() = Some(finalizing());
+    *platform.cloud_delay.lock().unwrap() = Duration::from_secs(20);
+    let engine = Commissioning::new(platform.clone());
+    let result = engine
+        .start(
+            "home",
+            api::HubSetupStartRequest {
+                host_id: "host".into(),
+                endpoint: None,
+            },
+        )
+        .await
+        .unwrap();
+    assert!(
+        matches!(result, api::HubSetupStartResponse::Completed { hub_id, .. } if hub_id == "hub-one")
+    );
+    assert_eq!(platform.count.load(SeqCst), 0);
+    assert_eq!(platform.setup.load(SeqCst), 0);
+    assert!(engine.view("home").await.unwrap().operation.is_none());
+    // Response loss is retried against the same ready Hub without issuing credentials.
+    let again = engine
+        .start(
+            "home",
+            api::HubSetupStartRequest {
+                host_id: "host".into(),
+                endpoint: None,
+            },
+        )
+        .await
+        .unwrap();
+    assert!(matches!(
+        again,
+        api::HubSetupStartResponse::Completed { .. }
+    ));
+}
+
+#[tokio::test(start_paused = true)]
+async fn committed_retry_timeout_or_error_keeps_the_saved_operation_retryable() {
+    let platform = Fake::new();
+    platform.ready.store(true, SeqCst);
+    platform.offline.store(true, SeqCst);
+    *platform.operation.lock().unwrap() = Some(finalizing());
+    *platform.cloud_delay.lock().unwrap() = Duration::from_secs(61);
+    let engine = Commissioning::new(platform.clone());
+    assert!(engine
+        .start(
+            "home",
+            api::HubSetupStartRequest {
+                host_id: "host".into(),
+                endpoint: None
+            }
+        )
+        .await
+        .is_err());
+    assert!(engine.view("home").await.unwrap().operation.is_some());
+    assert_eq!(platform.count.load(SeqCst), 0);
+    *platform.cloud_delay.lock().unwrap() = Duration::ZERO;
+    platform.fail.store(true, SeqCst);
+    assert!(engine
+        .start(
+            "home",
+            api::HubSetupStartRequest {
+                host_id: "host".into(),
+                endpoint: None
+            }
+        )
+        .await
+        .is_err());
+    assert!(engine.view("home").await.unwrap().operation.is_some());
+}
+
+#[tokio::test]
+async fn committed_retry_rejects_a_different_host_without_cloud_or_lan_work() {
+    let platform = Fake::new();
+    platform.ready.store(true, SeqCst);
+    *platform.operation.lock().unwrap() = Some(finalizing());
+    let engine = Commissioning::new(platform.clone());
+    assert!(engine
+        .start(
+            "home",
+            api::HubSetupStartRequest {
+                host_id: "other".into(),
+                endpoint: None
+            }
+        )
+        .await
+        .is_err());
+    assert_eq!(platform.cloud_count.load(SeqCst), 0);
+    assert_eq!(platform.count.load(SeqCst), 0);
+}
+
+#[tokio::test(start_paused = true)]
+async fn product_setup_continues_committed_work_without_waiting_for_lan() {
+    let platform = Fake::new();
+    platform.offline.store(true, SeqCst);
+    *platform.operation.lock().unwrap() = Some(finalizing());
+    let engine = Commissioning::new(platform.clone());
+    engine
+        .setup_product("home", "host", &Fake::peer())
+        .await
+        .unwrap();
+    assert_eq!(platform.cloud_count.load(SeqCst), 1);
+    assert_eq!(platform.count.load(SeqCst), 0);
+}
+
+#[tokio::test]
+async fn running_finalization_returns_a_cloud_operation_without_a_pairing_session() {
+    let platform = Fake::new();
+    platform.offline.store(true, SeqCst);
+    *platform.operation.lock().unwrap() = Some(finalizing());
+    *platform.cloud_outcome.lock().unwrap() = "RUNNING".into();
+    let engine = Commissioning::new(platform.clone());
+    let result = engine
+        .start(
+            "home",
+            api::HubSetupStartRequest {
+                host_id: "host".into(),
+                endpoint: None,
+            },
+        )
+        .await
+        .unwrap();
+    assert!(matches!(result, api::HubSetupStartResponse::Running { .. }));
+    assert!(engine.state.lock().unwrap().sessions.is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn committed_completion_retires_the_old_local_pairing_failure() {
+    let platform = Fake::new();
+    let engine = Commissioning::new(platform.clone());
+    let session = start(&engine).await;
+    platform.fail.store(true, SeqCst);
+    engine.confirm("home", &session).await.unwrap();
+    tokio::task::yield_now().await;
+    let key = ("login-one".to_owned(), "home".to_owned());
+    engine.update(&key, &session, |operation| {
+        operation.view.state = "FAILED".into();
+        operation.view.hub_id = Some("hub-one".into());
+    });
+    platform.fail.store(false, SeqCst);
+    *platform.operation.lock().unwrap() = Some(finalizing());
+    let result = engine
+        .start(
+            "home",
+            api::HubSetupStartRequest {
+                host_id: "host".into(),
+                endpoint: None,
+            },
+        )
+        .await
+        .unwrap();
+    assert!(matches!(
+        result,
+        api::HubSetupStartResponse::Completed { .. }
+    ));
+    assert!(engine.view("home").await.unwrap().pairing.is_none());
+    assert!(engine.status("home", &session).await.unwrap().complete);
+    assert_eq!(platform.connected.load(SeqCst), 1);
+}
+
+#[tokio::test(start_paused = true)]
+async fn running_continuation_is_reconciled_by_later_cloud_state_reads() {
+    let platform = Fake::new();
+    let engine = Commissioning::new(platform.clone());
+    let session = start(&engine).await;
+    platform.fail.store(true, SeqCst);
+    engine.confirm("home", &session).await.unwrap();
+    tokio::task::yield_now().await;
+    engine.update(
+        &("login-one".into(), "home".into()),
+        &session,
+        |operation| {
+            operation.view.state = "FAILED".into();
+            operation.view.hub_id = Some("hub-one".into());
+        },
+    );
+    platform.fail.store(false, SeqCst);
+    platform.offline.store(true, SeqCst);
+    *platform.operation.lock().unwrap() = Some(finalizing());
+    *platform.cloud_outcome.lock().unwrap() = "RUNNING".into();
+    assert!(matches!(
+        engine
+            .start(
+                "home",
+                api::HubSetupStartRequest {
+                    host_id: "host".into(),
+                    endpoint: None,
+                }
+            )
+            .await
+            .unwrap(),
+        api::HubSetupStartResponse::Running { .. }
+    ));
+    assert!(engine.view("home").await.unwrap().operation.is_some());
+    *platform.operation.lock().unwrap() = None;
+    platform.ready.store(true, SeqCst);
+    assert!(engine.view("home").await.unwrap().pairing.is_none());
+    assert!(engine.view("home").await.unwrap().pairing.is_none());
+    assert_eq!(platform.connected.load(SeqCst), 1);
+    assert!(engine.status("home", &session).await.unwrap().complete);
 }
