@@ -54,6 +54,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "manifest/targets.v1.json",
       "manifest/routing.v1.json",
       "manifest/authorization.v1.json",
+      "manifest/presentation-times.v1.json",
       "manifest/hub-targets.v1.json",
       "manifest/pod-targets.v1.json",
       "contract/pod-commissioning-v1.md",

@@ -101,6 +101,15 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
       }));
       assert.ok(fs.statSync(path.join(tempRoot, packed.filename)).isFile());
       const packedFiles = new Set(packed.files.map((file) => file.path));
+      if (name === "appFacade") {
+        // Cloud response presentation loads this resource directly, not through a $ref.
+        const timesPath = "manifest/presentation-times.v1.json";
+        assert.ok(packedFiles.has(timesPath), `${timesPath} missing from npm package`);
+        assert.deepEqual(
+          JSON.parse(execFileSync("tar", ["-xOf", path.join(tempRoot, packed.filename), `package/${timesPath}`], { encoding: "utf8" })),
+          JSON.parse(fs.readFileSync(new URL(`../../${config.crateDir}/${timesPath}`, import.meta.url), "utf8"))
+        );
+      }
       const manifests = fs.readdirSync(path.join(staged.stagingRoot, "manifest"), {
         recursive: true,
       }).filter((file) => file.endsWith(".json"));
