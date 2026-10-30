@@ -33,6 +33,13 @@ are never automatically replayed after an ambiguous failure.
 See `../core-api/contract/host-management-auth.md` for wire endpoints and reset
 semantics. Run `cargo test -p mhome-host-auth --features authority`.
 
+The Rust signature API uses `p256` 0.14 types. Persisted PKCS#8 keys, public
+coordinates, RFC 7638 thumbprints and 64-byte ES256 signatures remain compatible
+with 0.13; no identity rotation is required. The `elliptic-curve` minimum version
+also enforces the patched `crypto-bigint` dependency floor for downstream builds.
+`tests/crypto_compatibility.rs` uses 0.13 only as a test oracle for old keys and
+signatures; it is excluded from normal runtime dependencies.
+
 ## Host TLS and native files
 
 `tls` exports a self-signed server certificate from the existing Host P-256 identity.

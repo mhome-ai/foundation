@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use core_api::host::auth::PublicKey;
+use elliptic_curve::Generate;
 use p256::{
     ecdsa::{
         signature::{Signer, Verifier},
@@ -18,7 +19,7 @@ pub fn random_id() -> String {
     URL_SAFE_NO_PAD.encode(bytes)
 }
 pub fn new_key() -> SigningKey {
-    SigningKey::random(&mut OsRng)
+    SigningKey::generate()
 }
 pub fn encode_key(key: &SigningKey) -> Result<String> {
     Ok(URL_SAFE_NO_PAD.encode(key.to_pkcs8_der()?.as_bytes()))
@@ -27,7 +28,7 @@ pub fn decode_key(value: &str) -> Result<SigningKey> {
     Ok(SigningKey::from_pkcs8_der(&URL_SAFE_NO_PAD.decode(value)?)?)
 }
 pub fn public_key(key: &VerifyingKey) -> PublicKey {
-    let point = key.to_encoded_point(false);
+    let point = key.to_sec1_point(false);
     PublicKey {
         x: URL_SAFE_NO_PAD.encode(point.x().unwrap()),
         y: URL_SAFE_NO_PAD.encode(point.y().unwrap()),
