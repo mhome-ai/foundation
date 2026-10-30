@@ -20,6 +20,9 @@ identity. Core-to-Node routes and provider runtime models belong to
 See [resource definition, observation, history and relationship reads](contract/resource-read-v1.md)
 for shared business reads and the separate UI rendering boundary.
 
+See [Agent LLM settings](contract/agent-llm-v1.md) for active-mode reads,
+independent saved configuration and Provider Operation boundaries.
+
 ## Business DTO ownership
 
 A Facade owns the public business DTO for an operation. Native Agent tools, MCP,

@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.73.0",
+  "contractVersion": "1.74.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -14,6 +14,7 @@
     "/app/agent/llm/provider/credential/delete": "spaceWrite",
     "/app/agent/llm/provider/credential/save": "spaceWrite",
     "/app/agent/llm/provider/list": "spaceRead",
+    "/app/agent/llm/provider/get": "spaceRead",
     "/app/agent/llm/summary": "spaceRead",
     "/app/agent/llm/usage": "spaceRead",
     "/app/agent/memory/get": "spaceRead",

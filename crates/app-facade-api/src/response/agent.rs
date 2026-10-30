@@ -8,74 +8,36 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
             retain(&mut result, &["idleTimeoutMinutes", "source"]);
         }
         "/app/agent/llm/summary" | "/app/agent/llm/provider/list" => {
-            // providerModels is the authoritative, executable model catalog, including
-            // generationControls. providers.models and modelsByUseCase repeat UI data.
+            // Keep the actionable model catalog and controls; catalog metadata stays in Full.
             retain(
                 &mut result,
                 &[
                     "llmMode",
-                    "canUseLocalRuntime",
                     "providers",
                     "providerModels",
                     "effectiveMappings",
-                    "selectedProviders",
                     "defaultProviders",
                     "llmUseCases",
                 ],
             );
-            each(&mut result, "providers", |provider| {
-                retain(
-                    provider,
-                    &[
-                        "provider",
-                        "displayName",
-                        "runtime",
-                        "useCases",
-                        "allowedAgentModes",
-                        "authKind",
-                        "requiresCredential",
-                        "hasCredential",
-                        "authenticated",
-                        "ready",
-                        "status",
-                        "reason",
-                        "nodeType",
-                        "nodeBound",
-                        "nodeOnline",
-                        "supportedUseCases",
-                        "readinessByUseCase",
-                    ],
-                )
-            });
+            each(&mut result, "providers", provider);
             each(&mut result, "providerModels", |group| {
-                each(group, "models", |model| {
-                    retain(
-                        model,
-                        &[
-                            "id",
-                            "displayName",
-                            "modelType",
-                            "available",
-                            "deprecated",
-                            "successor",
-                            "supportsTools",
-                            "supportsVision",
-                            "contextWindowTokens",
-                            "inputModalities",
-                            "outputModalities",
-                            "generationControls",
-                        ],
-                    )
-                });
+                each(group, "models", model)
             });
             mappings(&mut result);
+        }
+        "/app/agent/llm/provider/get" => {
+            if let Some(value) = result.get_mut("provider") {
+                provider(value);
+            }
+            each(&mut result, "models", model);
         }
         "/app/agent/llm/mapping/list" => {
             retain(
                 &mut result,
                 &[
+                    "llmMode",
                     "effectiveMappings",
-                    "selectedProviders",
                     "defaultProviders",
                     "llmUseCases",
                 ],
@@ -126,4 +88,55 @@ fn each(value: &mut Value, key: &str, visit: impl Fn(&mut Value)) {
             visit(item);
         }
     }
+}
+
+fn provider(value: &mut Value) {
+    retain(
+        value,
+        &[
+            "provider",
+            "displayName",
+            "runtime",
+            "useCases",
+            "allowedAgentModes",
+            "authKind",
+            "configuration",
+        ],
+    );
+    if let Some(config) = value.get_mut("configuration") {
+        retain(
+            config,
+            &[
+                "requiresCredential",
+                "hasCredential",
+                "ready",
+                "status",
+                "reason",
+                "nodeType",
+                "nodeBound",
+                "nodeOnline",
+                "supportedUseCases",
+                "readinessByUseCase",
+            ],
+        );
+    }
+}
+fn model(value: &mut Value) {
+    retain(
+        value,
+        &[
+            "id",
+            "displayName",
+            "modelType",
+            "available",
+            "deprecated",
+            "successor",
+            "supportsTools",
+            "supportsVision",
+            "contextWindowTokens",
+            "inputModalities",
+            "outputModalities",
+            "generationControls",
+        ],
+    );
 }

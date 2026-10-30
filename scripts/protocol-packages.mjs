@@ -74,6 +74,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     schemas: Object.freeze({
       hostAuthorization: "schema/host-authorization.v1.schema.json",
       hostAccess: "schema/host-access.v1.schema.json",
+      agentLlm: "schema/agent-llm.v1.schema.json",
       entityPresentation: "schema/entity-presentation.v1.schema.json",
       integrationPresentation: "schema/integration-presentation.v1.schema.json",
       capabilityDescriptor: "schema/capability-descriptor.v1.schema.json",
@@ -98,6 +99,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       person: "schema/person.v1.schema.json",
     }),
     fixtures: Object.freeze({
+      agentLlm: "fixtures/agent-llm.conformance.json",
       entityPresentation: "fixtures/entity-presentation.conformance.json",
       integrationPresentation: "fixtures/integration-presentation.conformance.json",
       group: "fixtures/group.conformance.json",

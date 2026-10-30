@@ -5,6 +5,7 @@
 //! under `input`, while invocation and presentation controls live under
 //! `control`.
 
+pub mod agent_llm;
 pub mod artifact;
 pub mod call;
 pub mod entity_presentation;

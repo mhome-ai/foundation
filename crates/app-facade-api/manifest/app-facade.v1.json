@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.73.0",
+  "contractVersion": "1.74.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -270,6 +270,16 @@
       "uiRequestTargets": [
         "/app/device/view/get",
         "/app/device/history/series/get"
+      ]
+    },
+    "agentLlm": {
+      "schema": "schema/agent-llm.v1.schema.json",
+      "requestTargets": [
+        "/app/agent/llm/summary",
+        "/app/agent/llm/provider/list",
+        "/app/agent/llm/provider/get",
+        "/app/agent/llm/mapping/list",
+        "/app/agent/llm/mapping/save"
       ]
     }
   },

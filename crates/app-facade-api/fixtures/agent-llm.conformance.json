@@ -1,0 +1,340 @@
+{
+  "valid": [
+    {
+      "type": "ListProvidersInput",
+      "value": {}
+    },
+    {
+      "type": "ListProvidersInput",
+      "value": {
+        "llmMode": "local"
+      }
+    },
+    {
+      "type": "GetProviderInput",
+      "value": {
+        "llmMode": "local",
+        "provider": "local_example"
+      }
+    },
+    {
+      "type": "ProviderList",
+      "value": {
+        "llmMode": "cloud",
+        "providers": [
+          {
+            "provider": "cloud_example",
+            "displayName": "Example",
+            "runtime": "cloud",
+            "modelSource": "catalog",
+            "authKind": "none",
+            "useCases": [
+              "chat"
+            ],
+            "allowedAgentModes": {
+              "chat": [
+                "cloud"
+              ]
+            },
+            "providerMetadata": null,
+            "configuration": null
+          }
+        ],
+        "providerModels": [
+          {
+            "provider": "cloud_example",
+            "models": [
+              {
+                "id": "chat-example",
+                "displayName": "Example Chat",
+                "modelType": "llm",
+                "available": true,
+                "deprecated": false,
+                "successor": null,
+                "supportsTools": true,
+                "supportsVision": false,
+                "contextWindowTokens": 128000,
+                "inputModalities": [
+                  "text"
+                ],
+                "outputModalities": [
+                  "text"
+                ],
+                "chatConfig": {
+                  "temperatureDefault": null
+                },
+                "generationControls": {
+                  "temperature": false,
+                  "thinking": false,
+                  "fastMode": false
+                },
+                "metadata": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "ProviderList",
+      "value": {
+        "llmMode": "local",
+        "providers": [
+          {
+            "provider": "local_example",
+            "displayName": "Example",
+            "runtime": "local",
+            "modelSource": "catalog",
+            "authKind": "api_key",
+            "useCases": [
+              "chat"
+            ],
+            "allowedAgentModes": {
+              "chat": [
+                "local"
+              ]
+            },
+            "providerMetadata": null,
+            "configuration": {
+              "requiresCredential": true,
+              "hasCredential": true,
+              "ready": false,
+              "status": "unavailable",
+              "statusLabel": "Unavailable",
+              "reason": "Retry discovery",
+              "nodeType": null,
+              "nodeBound": null,
+              "nodeOnline": null,
+              "accountId": null,
+              "expiresAtMs": null,
+              "metadata": {
+                "region": "example",
+                "credentialProfile": null,
+                "workspaceId": null
+              },
+              "supportedUseCases": [],
+              "readinessByUseCase": {
+                "chat": {
+                  "ready": false,
+                  "modelCount": 0,
+                  "reason": "Retry discovery"
+                }
+              }
+            }
+          }
+        ],
+        "providerModels": [
+          {
+            "provider": "local_example",
+            "models": []
+          }
+        ]
+      }
+    },
+    {
+      "type": "Summary",
+      "value": {
+        "llmMode": "cloud",
+        "providers": [
+          {
+            "provider": "cloud_example",
+            "displayName": "Example",
+            "runtime": "cloud",
+            "modelSource": "catalog",
+            "authKind": "none",
+            "useCases": [
+              "chat"
+            ],
+            "allowedAgentModes": {
+              "chat": [
+                "cloud"
+              ]
+            },
+            "providerMetadata": null,
+            "configuration": null
+          }
+        ],
+        "providerModels": [
+          {
+            "provider": "cloud_example",
+            "models": [
+              {
+                "id": "chat-example",
+                "displayName": "Example Chat",
+                "modelType": "llm",
+                "available": true,
+                "deprecated": false,
+                "successor": null,
+                "supportsTools": true,
+                "supportsVision": false,
+                "contextWindowTokens": 128000,
+                "inputModalities": [
+                  "text"
+                ],
+                "outputModalities": [
+                  "text"
+                ],
+                "chatConfig": {
+                  "temperatureDefault": null
+                },
+                "generationControls": {
+                  "temperature": false,
+                  "thinking": false,
+                  "fastMode": false
+                },
+                "metadata": null
+              }
+            ]
+          }
+        ],
+        "effectiveMappings": [
+          {
+            "temperature": null,
+            "reasoningEffort": null,
+            "thinking": null,
+            "fastMode": null,
+            "useCase": "chat",
+            "agentModelMode": "auto",
+            "provider": "cloud_example",
+            "model": "chat-example",
+            "source": "default",
+            "configuredModel": "chat-example"
+          }
+        ],
+        "defaultProviders": [
+          {
+            "useCase": "chat",
+            "llmMode": "cloud",
+            "provider": "cloud_example",
+            "updatedAtMs": 0
+          }
+        ],
+        "llmUseCases": [
+          {
+            "useCase": "chat",
+            "displayName": "Chat",
+            "description": null,
+            "ownerType": null,
+            "ownerId": null,
+            "executionUseCase": null,
+            "configurable": true,
+            "active": true,
+            "modes": [
+              {
+                "mode": "auto",
+                "displayName": "Auto",
+                "description": null,
+                "requirements": {
+                  "modelType": "llm",
+                  "requiredInputModalities": [
+                    "text"
+                  ],
+                  "optionalInputModalities": [],
+                  "requiredOutputModalities": [
+                    "text"
+                  ],
+                  "preferredFeatures": []
+                }
+              }
+            ],
+            "updatedAtMs": null,
+            "lastSeenAtMs": null
+          }
+        ]
+      }
+    },
+    {
+      "type": "ProviderDetail",
+      "value": {
+        "llmMode": "local",
+        "provider": {
+          "provider": "local_example",
+          "displayName": "Example",
+          "runtime": "local",
+          "modelSource": "catalog",
+          "authKind": "api_key",
+          "useCases": [
+            "chat"
+          ],
+          "allowedAgentModes": {
+            "chat": [
+              "local"
+            ]
+          },
+          "providerMetadata": null,
+          "configuration": {
+            "requiresCredential": true,
+            "hasCredential": true,
+            "ready": false,
+            "status": "unavailable",
+            "statusLabel": "Unavailable",
+            "reason": "Retry discovery",
+            "nodeType": null,
+            "nodeBound": null,
+            "nodeOnline": null,
+            "accountId": null,
+            "expiresAtMs": null,
+            "metadata": {
+              "region": "example",
+              "credentialProfile": null,
+              "workspaceId": null
+            },
+            "supportedUseCases": [],
+            "readinessByUseCase": {
+              "chat": {
+                "ready": false,
+                "modelCount": 0,
+                "reason": "Retry discovery"
+              }
+            }
+          }
+        },
+        "models": []
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "type": "ListProvidersInput",
+      "value": {
+        "llmMode": "auto"
+      }
+    },
+    {
+      "type": "GetProviderInput",
+      "value": {
+        "provider": "local_example"
+      }
+    },
+    {
+      "type": "ProviderConfiguration",
+      "value": {
+        "requiresCredential": true,
+        "hasCredential": true,
+        "ready": false,
+        "status": "unavailable",
+        "statusLabel": "Unavailable",
+        "reason": "Retry discovery",
+        "nodeType": null,
+        "nodeBound": null,
+        "nodeOnline": null,
+        "accountId": null,
+        "expiresAtMs": null,
+        "metadata": {
+          "region": "example",
+          "credentialProfile": null,
+          "workspaceId": null
+        },
+        "supportedUseCases": [],
+        "readinessByUseCase": {
+          "chat": {
+            "ready": false,
+            "modelCount": 0,
+            "reason": "Retry discovery"
+          }
+        },
+        "apiKey": "must-never-cross-boundary"
+      }
+    }
+  ]
+}

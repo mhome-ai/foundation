@@ -226,3 +226,15 @@ for (const part of ["input", "output"]) {
     }
   });
 }
+
+test("Agent LLM settings shared corpus is strict and rejects credential leakage", () => {
+  const base = path.join(root, "crates/app-facade-api");
+  const schema = readJson(path.join(base, "schema/agent-llm.v1.schema.json"));
+  const corpus = readJson(path.join(base, "fixtures/agent-llm.conformance.json"));
+  for (const [group, expected] of [["valid", true], ["invalid", false]]) {
+    for (const item of corpus[group]) {
+      const validate = compiler().compile({ $defs: schema.$defs, $ref: `#/$defs/${item.type}` });
+      assert.equal(validate(item.value), expected, JSON.stringify(validate.errors));
+    }
+  }
+});

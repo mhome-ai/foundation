@@ -1,0 +1,836 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/agent-llm.v1.schema.json",
+  "$defs": {
+    "LlmMode": {
+      "type": "string",
+      "enum": [
+        "cloud",
+        "local"
+      ]
+    },
+    "ListProvidersInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "llmMode": {
+          "$ref": "#/$defs/LlmMode"
+        }
+      },
+      "required": []
+    },
+    "GetProviderInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "llmMode": {
+          "$ref": "#/$defs/LlmMode"
+        }
+      },
+      "required": [
+        "provider",
+        "llmMode"
+      ]
+    },
+    "Provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "modelSource": {
+          "type": "string"
+        },
+        "authKind": {
+          "type": "string"
+        },
+        "useCases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowedAgentModes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "providerMetadata": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "configuration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProviderConfiguration"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "displayName",
+        "runtime",
+        "modelSource",
+        "authKind",
+        "useCases",
+        "allowedAgentModes"
+      ]
+    },
+    "ProviderConfiguration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requiresCredential": {
+          "type": "boolean"
+        },
+        "hasCredential": {
+          "type": "boolean"
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string"
+        },
+        "statusLabel": {
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nodeType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nodeBound": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nodeOnline": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accountId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expiresAtMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CredentialSettings"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supportedUseCases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "readinessByUseCase": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/UseCaseReadiness"
+          }
+        }
+      },
+      "required": [
+        "requiresCredential",
+        "hasCredential",
+        "ready",
+        "status",
+        "statusLabel",
+        "supportedUseCases",
+        "readinessByUseCase"
+      ]
+    },
+    "CredentialSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "region": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "credentialProfile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workspaceId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": []
+    },
+    "UseCaseReadiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ready": {
+          "type": "boolean"
+        },
+        "modelCount": {
+          "type": "integer"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ready",
+        "modelCount"
+      ]
+    },
+    "Model": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "modelType": {
+          "type": "string"
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "successor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supportsTools": {
+          "type": "boolean"
+        },
+        "supportsVision": {
+          "type": "boolean"
+        },
+        "contextWindowTokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputModalities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outputModalities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "chatConfig": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelDefaults"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "generationControls": {
+          "$ref": "#/$defs/GenerationControls"
+        },
+        "metadata": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "displayName",
+        "modelType",
+        "available",
+        "deprecated",
+        "supportsTools",
+        "supportsVision",
+        "inputModalities",
+        "outputModalities",
+        "generationControls"
+      ]
+    },
+    "ModelDefaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "temperatureDefault": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": []
+    },
+    "ModelGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Model"
+          }
+        }
+      },
+      "required": [
+        "provider",
+        "models"
+      ]
+    },
+    "DefaultProvider": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "useCase": {
+          "type": "string"
+        },
+        "llmMode": {
+          "$ref": "#/$defs/LlmMode"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "updatedAtMs": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "useCase",
+        "llmMode",
+        "provider",
+        "updatedAtMs"
+      ]
+    },
+    "Mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "temperature": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reasoningEffort": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "thinking": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fastMode": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "useCase": {
+          "type": "string"
+        },
+        "agentModelMode": {
+          "type": "string"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "configuredModel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "useCase",
+        "agentModelMode",
+        "source",
+        "configuredModel"
+      ]
+    },
+    "ModelRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "modelType": {
+          "type": "string"
+        },
+        "requiredInputModalities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optionalInputModalities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredOutputModalities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "preferredFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "modelType",
+        "requiredInputModalities",
+        "optionalInputModalities",
+        "requiredOutputModalities",
+        "preferredFeatures"
+      ]
+    },
+    "UseCaseMode": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requirements": {
+          "$ref": "#/$defs/ModelRequirements"
+        }
+      },
+      "required": [
+        "mode",
+        "displayName",
+        "requirements"
+      ]
+    },
+    "UseCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "useCase": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ownerType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ownerId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executionUseCase": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "configurable": {
+          "type": "boolean"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "modes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UseCaseMode"
+          }
+        },
+        "updatedAtMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastSeenAtMs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "useCase",
+        "displayName",
+        "configurable",
+        "active",
+        "modes"
+      ]
+    },
+    "Summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "llmMode": {
+          "$ref": "#/$defs/LlmMode"
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provider"
+          }
+        },
+        "providerModels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ModelGroup"
+          }
+        },
+        "effectiveMappings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Mapping"
+          }
+        },
+        "defaultProviders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DefaultProvider"
+          }
+        },
+        "llmUseCases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UseCase"
+          }
+        }
+      },
+      "required": [
+        "llmMode",
+        "providers",
+        "providerModels",
+        "effectiveMappings",
+        "defaultProviders",
+        "llmUseCases"
+      ]
+    },
+    "ProviderList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "llmMode": {
+          "$ref": "#/$defs/LlmMode"
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provider"
+          }
+        },
+        "providerModels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ModelGroup"
+          }
+        }
+      },
+      "required": [
+        "llmMode",
+        "providers",
+        "providerModels"
+      ]
+    },
+    "ProviderDetail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "llmMode": {
+          "$ref": "#/$defs/LlmMode"
+        },
+        "provider": {
+          "$ref": "#/$defs/Provider"
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Model"
+          }
+        }
+      },
+      "required": [
+        "llmMode",
+        "provider",
+        "models"
+      ]
+    },
+    "MappingList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "llmMode": {
+          "$ref": "#/$defs/LlmMode"
+        },
+        "effectiveMappings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Mapping"
+          }
+        },
+        "defaultProviders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DefaultProvider"
+          }
+        },
+        "llmUseCases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UseCase"
+          }
+        }
+      },
+      "required": [
+        "llmMode",
+        "effectiveMappings",
+        "defaultProviders",
+        "llmUseCases"
+      ]
+    },
+    "GenerationControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "temperature": {
+          "type": "boolean"
+        },
+        "temperatureMax": {
+          "type": "number"
+        },
+        "thinking": {
+          "type": "boolean"
+        },
+        "reasoningEfforts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reasoningEffortDefault": {
+          "type": "string"
+        },
+        "fastMode": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "temperature",
+        "thinking",
+        "fastMode"
+      ]
+    }
+  }
+}
