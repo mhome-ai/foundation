@@ -66,6 +66,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/integration-presentation-v1.md",
       "contract/resource-read-v1.md",
       "schema/plugin-catalog.v1.schema.json",
+      "schema/plugin-install.v1.schema.json",
+      "contract/plugin-install-v1.md",
       "schema/user-profile.v1.schema.json",
       "schema/host-management.v1.schema.json",
       "schema/client-appearance.v1.schema.json",
@@ -75,6 +77,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "schema/delegated-call.v1.schema.json",
     ]),
     schemas: Object.freeze({
+      pluginInstall: "schema/plugin-install.v1.schema.json",
       hostAuthorization: "schema/host-authorization.v1.schema.json",
       hostAccess: "schema/host-access.v1.schema.json",
       agentLlm: "schema/agent-llm.v1.schema.json",

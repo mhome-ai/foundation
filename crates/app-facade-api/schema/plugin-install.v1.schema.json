@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/plugin-install.v1.schema.json",
+  "$defs": {
+    "prepare": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nodeType"
+      ],
+      "properties": {
+        "nodeType": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "start": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "hostIds"
+      ],
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hostIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId"
+      ],
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "pending",
+            "running",
+            "succeeded",
+            "failed",
+            "notRequired",
+            "notRun",
+            "unknown"
+          ]
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "hostName",
+        "action",
+        "eligible",
+        "reason",
+        "selected",
+        "state",
+        "installed",
+        "expectedVersion",
+        "installation",
+        "readiness",
+        "commissioning",
+        "operationId",
+        "enableSessionId",
+        "nodeId",
+        "warnings"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hostName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "enum": [
+            "unavailable",
+            "alreadyAdded",
+            "add",
+            "startAndAdd",
+            "installAndAdd"
+          ]
+        },
+        "eligible": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "selected": {
+          "type": "boolean"
+        },
+        "state": {
+          "enum": [
+            "pending",
+            "running",
+            "succeeded",
+            "failed",
+            "unknown"
+          ]
+        },
+        "installed": {
+          "type": "boolean"
+        },
+        "expectedVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "installation": {
+          "$ref": "#/$defs/stage"
+        },
+        "readiness": {
+          "$ref": "#/$defs/stage"
+        },
+        "commissioning": {
+          "$ref": "#/$defs/stage"
+        },
+        "operationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enableSessionId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nodeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract",
+        "sessionId",
+        "spaceId",
+        "nodeType",
+        "pluginName",
+        "bindingCardinality",
+        "state",
+        "revision",
+        "expiresAtMs",
+        "hosts",
+        "warnings",
+        "error"
+      ],
+      "properties": {
+        "contract": {
+          "const": "mhome.plugin.install.v1"
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "spaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nodeType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pluginName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bindingCardinality": {
+          "enum": [
+            "single",
+            "multiple",
+            null
+          ]
+        },
+        "state": {
+          "enum": [
+            "preparing",
+            "prepared",
+            "running",
+            "succeeded",
+            "partiallySucceeded",
+            "failed",
+            "unknown"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expiresAtMs": {
+          "type": "integer"
+        },
+        "hosts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/target"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/prepare"
+    },
+    {
+      "$ref": "#/$defs/start"
+    },
+    {
+      "$ref": "#/$defs/status"
+    },
+    {
+      "$ref": "#/$defs/response"
+    }
+  ]
+}

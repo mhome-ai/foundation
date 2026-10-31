@@ -39,3 +39,7 @@ pub struct SettingsChangedEvent {
     pub section: String,
     pub revision: u64,
 }
+
+pub const INSTALL_PREPARE_TARGET: &str = "/app/plugin/install/prepare";
+pub const INSTALL_START_TARGET: &str = "/app/plugin/install/start";
+pub const INSTALL_STATUS_TARGET: &str = "/app/plugin/install/status";

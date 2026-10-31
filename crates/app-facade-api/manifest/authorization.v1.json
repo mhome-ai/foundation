@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.83.0",
+  "contractVersion": "1.84.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -196,6 +196,9 @@
     "/app/plugin/disable": "spaceManage",
     "/app/plugin/enable/start": "spaceManage",
     "/app/plugin/enable/status": "spaceManage",
+    "/app/plugin/install/prepare": "spaceManage",
+    "/app/plugin/install/start": "spaceManage",
+    "/app/plugin/install/status": "spaceManage",
     "/app/plugin/enabled/list": "spaceRead",
     "/app/plugin/profile/update": "spaceManage",
     "/app/pod/enrollment/get": "userRead",
