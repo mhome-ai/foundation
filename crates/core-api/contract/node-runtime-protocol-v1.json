@@ -2,8 +2,17 @@
   "manifest": "mhome.node.runtime.v1",
   "version": "v1",
   "runtimeEnvelope": {
-    "requestFields": ["version", "payload"],
-    "responseFields": ["version", "data"]
+    "requestFields": [
+      "version",
+      "payload"
+    ],
+    "responseFields": [
+      "version",
+      "result"
+    ],
+    "result": "Full App invocation result: success, partial, error or cancelled; never Essential presentation",
+    "resultContract": "node-operation-result.v1",
+    "integrationResponse": "result"
   },
   "status": {
     "contract": "mhome.node.status.v1",
@@ -12,7 +21,12 @@
   },
   "settings": {
     "changedTarget": "/node/settings/changed",
-    "routes": ["settings/status", "settings/update", "settings/revert", "settings/retry"]
+    "routes": [
+      "settings/status",
+      "settings/update",
+      "settings/revert",
+      "settings/retry"
+    ]
   },
   "llm": {
     "runtimeTargetPrefix": "/llm/app/",

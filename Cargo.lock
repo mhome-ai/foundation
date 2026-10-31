@@ -1858,7 +1858,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.82.1"
+version = "1.83.0"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -1886,7 +1886,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.9.4"
+version = "0.9.5"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -1924,7 +1924,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.59.0"
+version = "1.60.0"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
@@ -1948,7 +1948,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "1.12.1"
+version = "1.12.2"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -2007,7 +2007,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "1.4.43"
+version = "1.4.44"
 dependencies = [
  "cc",
  "mhome-core-api",

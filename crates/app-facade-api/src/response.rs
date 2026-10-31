@@ -123,41 +123,6 @@ pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
             .to_owned();
         return FacadeResponse::error("OPERATION_FAILED", message).with_details(data);
     }
-    if target.starts_with("/app/plugin/audiobridge/")
-        && data.pointer("/data/ok").and_then(Value::as_bool) == Some(false)
-    {
-        return FacadeResponse::error(
-            data.pointer("/data/reason")
-                .and_then(Value::as_str)
-                .unwrap_or("PLUGIN_OPERATION_FAILED"),
-            data.pointer("/data/detail")
-                .and_then(Value::as_str)
-                .unwrap_or("AudioBridge operation did not succeed"),
-        )
-        .with_details(data);
-    }
-    // LLM mutation outcomes live inside the PluginNodeResponse envelope.
-    // Runtime readiness and installation-state reads remain resource data.
-    if matches!(
-        target,
-        "/app/plugin/llm/model/install"
-            | "/app/plugin/llm/model/install/cancel"
-            | "/app/plugin/llm/model/delete"
-            | "/app/plugin/llm/model/import/start"
-            | "/app/plugin/llm/model/import/finalize"
-            | "/app/plugin/llm/model/import/cancel"
-    ) && data.pointer("/data/ok").and_then(Value::as_bool) == Some(false)
-    {
-        let code = data
-            .pointer("/data/reason")
-            .and_then(Value::as_str)
-            .unwrap_or("PLUGIN_OPERATION_FAILED");
-        let message = data
-            .pointer("/data/detail")
-            .and_then(Value::as_str)
-            .unwrap_or("Local AI operation did not succeed");
-        return FacadeResponse::error(code, message).with_details(data);
-    }
     let incomplete = match target {
         "/app/device/enable" | "/app/device/disable" => nonempty(&data, "pendingIds"),
         "/app/room/devices/move" => nonempty(&data, "notMoved"),
@@ -478,50 +443,25 @@ pub use conversation_api::execution::tool_result_text as tool_text;
 mod tests {
     use super::*;
     #[test]
-    fn audio_failures_preserve_the_reason_but_runtime_failure_is_state() {
-        let failure = outcome(
+    fn plugin_business_fields_do_not_determine_outcome() {
+        for target in [
             "/app/plugin/audiobridge/device/settings/get",
-            json!({"data":{"ok":false,"reason":"AUDIOBRIDGE_OPERATION_FAILED","detail":"Device is not paired"}}),
-        );
-        let value = serde_json::to_value(failure).unwrap();
-        assert_eq!(value["status"], "error");
-        assert_eq!(value["error"]["message"], "Device is not paired");
-        let state = outcome(
-            "/app/plugin/audiobridge/device/snapshot",
-            json!({"data":{"devices":[{"listenRuntime":{"state":"failed"}}]}}),
-        );
-        assert_eq!(serde_json::to_value(state).unwrap()["status"], "success");
-    }
-
-    #[test]
-    fn llm_mutation_failures_preserve_details_in_full_and_essential_results() {
-        let data = json!({"nodeId":"llm-1","nodeType":"llm","version":"v1",
-            "data":{"ok":false,"reason":"MODEL_BUSY","detail":"Model installation is busy"}});
-        for route in [
-            "install",
-            "install/cancel",
-            "delete",
-            "import/start",
-            "import/finalize",
-            "import/cancel",
+            "/app/plugin/llm/model/delete",
+            "/app/plugin/matter/inventory/get",
         ] {
+            let data = json!({"data":{"ok":false,"status":"error","reason":"resource state"}});
+            assert_eq!(outcome(target, data.clone()), FacadeResponse::success(data));
             for detail in [ResponseDetail::Full, ResponseDetail::Essential] {
-                let result = present(
-                    &format!("/app/plugin/llm/model/{route}"),
-                    data.clone(),
+                let result = render(
+                    target,
+                    FacadeResponse::error("PLUGIN_BUSY", "Try later")
+                        .with_details(json!({"retryAfter":2})),
                     detail,
                 )
                 .unwrap();
-                assert!(result.is_error());
                 let value = serde_json::to_value(result).unwrap();
-                assert_eq!(value["error"]["code"], "MODEL_BUSY");
-                if detail == ResponseDetail::Full {
-                    assert_eq!(value["error"]["details"], data);
-                } else {
-                    let yaml: Value =
-                        serde_yaml::from_str(value["data"].as_str().unwrap()).unwrap();
-                    assert_eq!(yaml["error"]["details"], data);
-                }
+                assert_eq!(value["status"], "error");
+                assert_eq!(value["error"]["code"], "PLUGIN_BUSY");
             }
         }
     }
