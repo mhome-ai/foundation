@@ -16,6 +16,8 @@
         "reading_info",
         "awaiting_wifi",
         "joining_wifi",
+        "cancelling",
+        "cancelled",
         "completed",
         "failed",
         "timed_out"

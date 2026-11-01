@@ -536,7 +536,6 @@ async fn sessions_run_without_ui_renewal_and_reject_cancel() {
     for target in [
         "/local/pod/commission/cancel",
         "/local/pod/commission/renew",
-        "/local/host/provision/cancel",
         "/local/host/provision/renew",
     ] {
         assert!(!ble_commission::is_target(target));

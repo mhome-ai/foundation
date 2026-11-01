@@ -77,7 +77,7 @@ pub(crate) struct Engine {
     clock: Clock,
     pub discovery: Mutex<Discovery>,
     pub sessions: Mutex<Sessions>,
-    events: mpsc::UnboundedSender<(&'static str, String)>,
+    events: mpsc::UnboundedSender<(&'static str, String, Option<String>)>,
     discovery_changed: Notify,
     reconcile: Notify,
     radio: tokio::sync::Mutex<()>,
@@ -97,7 +97,11 @@ impl Engine {
             radio: tokio::sync::Mutex::new(()),
         });
         let tasks = vec![
-            tokio::spawn(pump_events(engine.platform.events.clone(), queue)),
+            tokio::spawn(pump_events(
+                engine.platform.events.clone(),
+                engine.platform.cloud.clone(),
+                queue,
+            )),
             tokio::spawn(publish_discovery(engine.clone())),
             tokio::spawn(reconcile_scanning(engine.clone())),
         ];
@@ -109,7 +113,7 @@ impl Engine {
     }
 
     fn emit(&self, target: &'static str, payload: String) {
-        let _ = self.events.send((target, payload));
+        let _ = self.events.send((target, payload, None));
     }
 
     pub fn emit_session(&self, live: &Live) {
@@ -117,7 +121,11 @@ impl Engine {
             DeviceKind::Pod => COMMISSION_CHANGED_EVENT,
             DeviceKind::Host => PROVISION_CHANGED_EVENT,
         };
-        self.emit(target, live.snapshot().to_string());
+        let _ = self.events.send((
+            target,
+            live.snapshot().to_string(),
+            live.account_context.clone(),
+        ));
     }
 
     pub fn discovery_changed(&self) {
@@ -258,7 +266,16 @@ impl Engine {
     }
 
     pub fn release(&self, kind: DeviceKind, id: &str) {
-        self.mutate(kind, id, |live| live.released = true);
+        let mut sessions = self.sessions.lock().unwrap();
+        if let Some(live) = sessions.current(kind, id) {
+            live.released = true;
+            if live.phase == Phase::Cancelling {
+                live.set(Phase::Cancelled, None);
+                live.revision += 1;
+                self.emit_session(live);
+            }
+        }
+        drop(sessions);
         self.reconcile();
     }
 
@@ -317,6 +334,44 @@ impl Engine {
         }
     }
 
+    /// Retire an old account's setup before exposing any token to a new login.
+    pub async fn check_host_account(&self) -> bool {
+        let expected = self
+            .sessions
+            .lock()
+            .unwrap()
+            .host
+            .as_ref()
+            .and_then(|live| live.account_context.clone());
+        let Some(expected) = expected else {
+            return true;
+        };
+        let actual = self
+            .platform
+            .cloud
+            .account()
+            .await
+            .map(|account| account.context);
+        if actual.as_deref() == Some(&expected) {
+            return true;
+        }
+        let mut sessions = self.sessions.lock().unwrap();
+        if let Some(live) = sessions
+            .host
+            .as_mut()
+            .filter(|live| live.account_context.as_ref() == Some(&expected))
+        {
+            live.claim_token = None;
+            if !live.phase.is_terminal() {
+                live.set(Phase::Cancelling, None);
+                let _ = live.cancel.send(true);
+            }
+            live.revision += 1;
+            self.emit_session(live);
+        }
+        false
+    }
+
     /// Ends sessions when their finite lifetime runs out, independently of the UI.
     pub fn spawn_watchdog(self: &Arc<Self>, kind: DeviceKind, id: String) {
         let engine = Arc::downgrade(self);
@@ -326,9 +381,12 @@ impl Engine {
                 let Some(engine) = engine.upgrade() else {
                     return;
                 };
+                if kind == DeviceKind::Host && !engine.check_host_account().await {
+                    return;
+                }
                 let now = engine.now_ms();
                 let step = engine.mutate(kind, &id, |live| {
-                    if live.phase.is_terminal() {
+                    if live.phase.is_terminal() || live.phase == Phase::Cancelling {
                         Watch::Stop
                     } else if now >= live.expires_at_ms {
                         Watch::End(
@@ -364,9 +422,35 @@ enum Watch {
 
 async fn pump_events(
     sink: Arc<dyn crate::platform::EventSink>,
-    mut queue: mpsc::UnboundedReceiver<(&'static str, String)>,
+    cloud: Arc<dyn crate::platform::Cloud>,
+    mut queue: mpsc::UnboundedReceiver<(&'static str, String, Option<String>)>,
 ) {
-    while let Some((target, payload)) = queue.recv().await {
+    while let Some((target, mut payload, context)) = queue.recv().await {
+        if let Some(context) = context {
+            if cloud
+                .account()
+                .await
+                .map(|account| account.context)
+                .as_deref()
+                != Some(&context)
+            {
+                // Native keep-alive owners must still observe a terminal event.
+                // Deliver only a redacted terminal snapshot to the replacement login.
+                let Ok(mut snapshot) = serde_json::from_str::<serde_json::Value>(&payload) else {
+                    continue;
+                };
+                if !matches!(
+                    snapshot["state"].as_str(),
+                    Some("completed" | "failed" | "timed_out" | "cancelled")
+                ) {
+                    continue;
+                }
+                if let Some(object) = snapshot.as_object_mut() {
+                    object.remove("claimToken");
+                }
+                payload = snapshot.to_string();
+            }
+        }
         let sink = sink.clone();
         if tokio::task::spawn_blocking(move || sink.publish(target, &payload))
             .await

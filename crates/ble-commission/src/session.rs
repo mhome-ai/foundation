@@ -24,6 +24,8 @@ pub(crate) enum Phase {
     Issuing,
     Delivering,
     Activating,
+    Cancelling,
+    Cancelled,
     Completed,
     Failed,
     TimedOut,
@@ -31,7 +33,10 @@ pub(crate) enum Phase {
 
 impl Phase {
     pub fn is_terminal(self) -> bool {
-        matches!(self, Self::Completed | Self::Failed | Self::TimedOut)
+        matches!(
+            self,
+            Self::Completed | Self::Failed | Self::TimedOut | Self::Cancelled
+        )
     }
 
     /// The link is idle and must stay connected.
@@ -59,6 +64,9 @@ impl Phase {
             Self::Completed => CommissionState::Completed,
             Self::Failed => CommissionState::Failed,
             Self::TimedOut => CommissionState::TimedOut,
+            Self::Cancelling | Self::Cancelled => {
+                unreachable!("only Host provisioning can be cancelled")
+            }
         }
     }
 
@@ -73,6 +81,8 @@ impl Phase {
             Self::Completed => ProvisionState::Completed,
             Self::Failed => ProvisionState::Failed,
             Self::TimedOut => ProvisionState::TimedOut,
+            Self::Cancelling => ProvisionState::Cancelling,
+            Self::Cancelled => ProvisionState::Cancelled,
             Self::DiscoveringLan
             | Self::ConnectingLan
             | Self::AwaitingAuthorization
@@ -124,6 +134,8 @@ pub(crate) struct Live {
     pub host: Option<HostDeviceInfo>,
     pub addresses: Vec<String>,
     pub claim_token: Option<String>,
+    /// Native login generation; never projected into session snapshots.
+    pub account_context: Option<String>,
     /// A code, Wi-Fi or authorization request is queued or running.
     pub busy: bool,
     /// A Wi-Fi scan is running.

@@ -1,13 +1,14 @@
 {
   "manifest": "mhome.host-provision.targets.v1",
-  "contractVersion": "1.84.1",
+  "contractVersion": "1.85.0",
   "contract": "contract/host-provisioning-v1.md",
   "localTargets": [
     "/local/host/provision/start",
     "/local/host/provision/code",
     "/local/host/provision/wifi",
     "/local/host/provision/wifi/scan",
-    "/local/host/provision/status"
+    "/local/host/provision/status",
+    "/local/host/provision/cancel"
   ],
   "eventTargets": [
     "/local/host/provision/changed"

@@ -84,6 +84,18 @@ pub(crate) async fn dispatch(
     payload: &str,
 ) -> Result<String, ErrorResponse> {
     use DeviceKind::{Host, Pod};
+    if host::LOCAL_TARGETS.contains(&target)
+        && target != host::PROVISION_START_TARGET
+        && !engine.check_host_account().await
+    {
+        if target == host::PROVISION_STATUS_TARGET {
+            let _: EmptyRequest = parse(payload)?;
+            return to_json(&ProvisionStatus { session: None });
+        }
+        return Err(
+            RequestError::rejected(Reason::NotSignedIn, "the setup account changed").into(),
+        );
+    }
     let value = match target {
         pod::DISCOVERY_START_TARGET => {
             let _: EmptyRequest = parse(payload)?;
@@ -137,6 +149,7 @@ pub(crate) async fn dispatch(
         }
         pod::COMMISSION_START_TARGET => start(engine, Pod, parse(payload)?).await,
         host::PROVISION_START_TARGET => start(engine, Host, parse(payload)?).await,
+        host::PROVISION_CANCEL_TARGET => cancel_host(engine, parse(payload)?),
         pod::COMMISSION_CODE_TARGET => code(engine, Pod, parse(payload)?).await,
         host::PROVISION_CODE_TARGET => code(engine, Host, parse(payload)?).await,
         pod::COMMISSION_WIFI_TARGET => wifi(engine, Pod, parse(payload)?).await,
@@ -152,6 +165,28 @@ pub(crate) async fn dispatch(
         }
     }?;
     Ok(value.to_string())
+}
+
+fn cancel_host(
+    engine: &Arc<Engine>,
+    request: host::ProvisionSessionRequest,
+) -> Result<Value, RequestError> {
+    let mut sessions = engine.sessions.lock().unwrap();
+    let live = sessions
+        .current(DeviceKind::Host, &request.session_id)
+        .ok_or_else(|| unknown(DeviceKind::Host))?;
+    // Wi-Fi apply and the claim-token handoff are one bounded critical section.
+    // Disconnecting in it can strand an online device without its claim token.
+    if live.phase == Phase::JoiningWifi {
+        return Err(busy());
+    }
+    if !live.phase.is_terminal() && live.phase != Phase::Cancelling {
+        live.set(Phase::Cancelling, None);
+        live.revision += 1;
+        let _ = live.cancel.send(true);
+        engine.emit_session(live);
+    }
+    Ok(live.snapshot())
 }
 
 fn discovery_lease(engine: &Engine, lease_id: String) -> DiscoveryLease {
@@ -192,10 +227,13 @@ async fn start(
     kind: DeviceKind,
     request: CommissionStartRequest,
 ) -> Result<Value, RequestError> {
+    if kind == DeviceKind::Host {
+        engine.check_host_account().await;
+    }
+    let account = engine.platform.cloud.account().await.ok_or_else(|| {
+        RequestError::rejected(Reason::NotSignedIn, "sign in before adding a device")
+    })?;
     if kind == DeviceKind::Pod {
-        let account = engine.platform.cloud.account().await.ok_or_else(|| {
-            RequestError::rejected(Reason::NotSignedIn, "sign in before adding a pod")
-        })?;
         if account.scopes.is_empty() {
             return Err(RequestError::rejected(
                 Reason::ScopeNotOffered,
@@ -265,6 +303,7 @@ async fn start(
             host: None,
             addresses: Vec::new(),
             claim_token: None,
+            account_context: (kind == DeviceKind::Host).then_some(account.context),
             busy: false,
             scanning: false,
             released: false,

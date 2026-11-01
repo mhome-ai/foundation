@@ -135,3 +135,19 @@ fn fixture_matches_type_and_schema() {
         }
     }
 }
+
+#[test]
+fn cancellation_snapshots_validate_without_success_or_failure_data() {
+    let schema = validator();
+    let raw: Value =
+        serde_json::from_str(include_str!("../fixtures/host-provision.completed.json")).unwrap();
+    for state in ["cancelling", "cancelled"] {
+        let mut value = raw.clone();
+        value["state"] = Value::from(state);
+        value.as_object_mut().unwrap().remove("claimToken");
+        let parsed: ProvisionSession = serde_json::from_value(value.clone()).unwrap();
+        parsed.validate().unwrap();
+        assert!(schema.is_valid(&value));
+        assert_eq!(parsed.state.is_terminal(), state == "cancelled");
+    }
+}

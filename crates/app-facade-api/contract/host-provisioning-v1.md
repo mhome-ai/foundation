@@ -75,11 +75,17 @@ Fallback characteristic UUIDs: the standard endpoints as for pods, `host-info`
     "productId": "camera",
     "firmwareVersion": "0.9.0",
     "fingerprint": "<hex SHA-256 of the bootstrap public key>",
-    "wifiConfigured": false
+    "wifiConfigured": false,
+    "onboardingRequired": true,
+    "networkOnline": false
   }
   ```
 
-  `productId` is optional.
+  `productId` is optional. `onboardingRequired` reports whether this Host still
+  awaits its first claim. `networkOnline` reports current LAN readiness. Both
+  are optional for older Hosts. A securely paired Host with `networkOnline: true`
+  and `onboardingRequired: true` can finish without resubmitting Wi-Fi. `finish` issues a fresh first-claim token after checking authoritative
+  Host ownership. Already claimed Hosts never issue a new first-claim token.
 - `{"op":"finish"}` → `{"ok":true,"claimToken":"…"}`. After a successful join
   during first provisioning the response carries the claim token: 32 random
   bytes as 43 unpadded base64url characters. It is created when the join
@@ -120,17 +126,26 @@ Candidates come from the shared discovery (`/local/pod/discovery/*`) with
 | `/local/host/provision/wifi` | `{"sessionId","ssid","password"?}` | session snapshot |
 | `/local/host/provision/wifi/scan` | `{"sessionId"}` | session snapshot |
 | `/local/host/provision/status` | `{}` | `{"session": snapshot or null}` |
+| `/local/host/provision/cancel` | `{"sessionId"}` | session snapshot |
 
 Event `/local/host/provision/changed` carries a session snapshot. One session
 per native Client, and none while a pod session is active; discovery scanning
 pauses during either. Rejected requests use the error envelope and the stable
 `details.reason` values of `pod-commissioning-v1.md` section 7. The session is
-owned by the native core until success, failure or the session deadline.
-There is no cancellation or renewal endpoint; leaving the UI does not end it.
+owned by the native core until success, failure or the session deadline. Host
+setup is bound to the signed-in native account context, including before a Space
+exists. An account change retires the session and its claim token; status and
+queued events cannot transfer an old handoff to the new login.
+Cancellation is explicit. It transitions through `cancelling` and reaches
+`cancelled` only after the link and radio are released. Repeated cancellation
+returns the same session; a different session ID is rejected. Cancellation during
+`joining_wifi` is rejected as busy: applying Wi-Fi and handing off the first-claim
+token form a bounded critical section. Leaving the UI does not cancel a session.
+There is no renewal endpoint.
 
 Session states, in order: `connecting`, `awaiting_code`, `securing`,
 `reading_info`, `awaiting_wifi`, `joining_wifi`, `completed`; terminal `failed`,
-`timed_out`. `completed` carries `host`, the reported `addresses`
+`timed_out`, `cancelled`; transitional `cancelling`. `completed` carries `host`, the reported `addresses`
 (IPv4 only, possibly empty) and `claimToken` from the `finish` response; the
 commissioner sends `finish` (up to 3 times while the secure session lasts)
 before reporting it. `claimToken` is absent when `finish` could not be
@@ -158,6 +173,10 @@ The schema is `schema/host-provision.v1.schema.json`.
 ## 5. Host-side entry points
 
 - First provisioning starts BLE at boot when the Host has no known network.
+  BLE-capable Hosts whose authoritative local claim is still absent also restore
+  setup after restart, keeping saved Wi-Fi. Network readiness is not ownership.
+  An existing local claim, including one awaiting cloud confirmation, must never
+  reopen first-claim authority. An unreadable ownership store refuses recovery.
 - Re-provision window: opened from the Host's local interface (display settings
   or `meowhostd provision open`). Mutating local provisioning commands (`open`,
   `close`, `factory-reset`) require root or membership in the `meow-admin`

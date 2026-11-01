@@ -150,7 +150,7 @@ impl Actor {
     fn over(&self) -> bool {
         self.engine
             .phase(self.kind, &self.id)
-            .is_none_or(Phase::is_terminal)
+            .is_none_or(|phase| phase.is_terminal() || phase == Phase::Cancelling)
     }
 
     async fn race<T>(&self, work: impl Future<Output = T>) -> Option<T> {
@@ -474,8 +474,17 @@ impl Actor {
                 let Some(host) = device::host_info(&info) else {
                     return self.fail(incomplete());
                 };
+                let recover = info.get("onboardingRequired").and_then(Value::as_bool) == Some(true)
+                    && info.get("networkOnline").and_then(Value::as_bool) == Some(true);
                 if self.update(|live| live.host = Some(host)) {
-                    self.offer_wifi(None).await;
+                    if recover {
+                        // The secure device response identifies an unfinished first claim.
+                        // Keep its saved network; a paired finish obtains a fresh claim token.
+                        self.enter(Phase::JoiningWifi, None);
+                        self.complete_host(client, String::new()).await;
+                    } else {
+                        self.offer_wifi(None).await;
+                    }
                 }
             }
         }
@@ -749,6 +758,9 @@ impl Actor {
                     }
                 }
             }
+        }
+        if !self.engine.check_host_account().await {
+            return;
         }
         let addresses: Vec<String> = Some(ip4_addr)
             .filter(|address| address.parse::<Ipv4Addr>().is_ok())

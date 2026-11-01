@@ -216,3 +216,111 @@ async fn host_without_ui_expires_only_at_its_deadline() {
         .journal()
         .contains(&"device:disconnected".to_string()));
 }
+
+#[tokio::test(start_paused = true)]
+async fn cancelling_releases_the_link_before_its_terminal_event() {
+    let harness = Harness::new();
+    harness.add_device("host-a", Script::host());
+    let id = to_wifi(&harness).await;
+    let cancelling = harness
+        .ok("/local/host/provision/cancel", json!({"sessionId": id}))
+        .await;
+    assert_eq!(cancelling["state"], "cancelling");
+    let cancelled = harness.wait_state(HOST, "cancelled").await;
+    valid(&cancelled);
+    assert!(harness.position("device:disconnected") < harness.position("event:cancelled"));
+    // A new operation can acquire the radio immediately after the terminal event.
+    start(&harness).await;
+    harness.wait_state(HOST, "awaiting_code").await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn cancellation_cannot_interrupt_the_network_and_token_handoff() {
+    let harness = Harness::new();
+    let mut script = Script::host();
+    script.join = Join::Never;
+    harness.add_device("host-a", script);
+    let id = to_wifi(&harness).await;
+    join(&harness, &id).await;
+    assert_eq!(
+        harness
+            .reason("/local/host/provision/cancel", json!({"sessionId":id}))
+            .await,
+        "busy"
+    );
+}
+
+#[tokio::test(start_paused = true)]
+async fn unclaimed_host_with_a_live_saved_network_recovers_without_wifi_input() {
+    let harness = Harness::new();
+    let mut script = Script::host();
+    script.wifi_configured = true;
+    script.onboarding_required = true;
+    script.network_online = true;
+    harness.add_device("host-a", script);
+    let id = start(&harness).await;
+    harness.wait_state(HOST, "awaiting_code").await;
+    harness
+        .ok(
+            "/local/host/provision/code",
+            json!({"sessionId":id, "code":CODE}),
+        )
+        .await;
+    let done = harness.wait_state(HOST, "completed").await;
+    assert_eq!(done["claimToken"], CLAIM_TOKEN);
+    assert!(!harness
+        .journal()
+        .iter()
+        .any(|entry| entry == "device:set_config"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn an_offline_saved_network_still_offers_wifi() {
+    let harness = Harness::new();
+    let mut script = Script::host();
+    script.wifi_configured = true;
+    script.onboarding_required = true;
+    harness.add_device("host-a", script);
+    to_wifi(&harness).await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_completed_handoff_is_not_exposed_to_another_account() {
+    let harness = Harness::new();
+    harness.add_device("host-a", Script::host());
+    let id = to_wifi(&harness).await;
+    join(&harness, &id).await;
+    harness.wait_state(HOST, "completed").await;
+    *harness.cloud.account.lock().unwrap() = None;
+    let status = harness.ok("/local/host/provision/status", json!({})).await;
+    assert!(status["session"].is_null());
+    assert_eq!(
+        harness
+            .reason(
+                "/local/host/provision/code",
+                json!({"sessionId":id, "code":CODE})
+            )
+            .await,
+        "not_signed_in"
+    );
+}
+
+#[tokio::test(start_paused = true)]
+async fn logout_still_notifies_native_keepalive_after_releasing_the_old_session() {
+    let harness = Harness::new();
+    harness.add_device("host-a", Script::host());
+    to_wifi(&harness).await;
+    *harness.cloud.account.lock().unwrap() = None;
+    for _ in 0..20_000 {
+        if harness
+            .events(PROVISION_CHANGED_EVENT)
+            .iter()
+            .any(|session| session["state"] == "cancelled")
+        {
+            assert!(harness.journal().contains(&"device:disconnected".into()));
+            return;
+        }
+        tokio::time::sleep(Duration::from_millis(200)).await;
+    }
+    panic!("native keep-alive was never released");
+}
