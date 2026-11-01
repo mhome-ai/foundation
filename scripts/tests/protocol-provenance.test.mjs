@@ -139,6 +139,16 @@ for (const failProof of [false, true]) {
 const fs = require('node:fs'), path = require('node:path');
 const tool = path.basename(process.argv[1]), args = process.argv.slice(2);
 fs.appendFileSync(process.env.CALL_LOG, JSON.stringify([tool, ...args]) + '\\n');
+if (tool === 'cargo' && args[0] === 'metadata') console.log(JSON.stringify({target_directory: process.env.FAKE_TARGET}));
+if (tool === 'cargo' && args[0] === 'publish' && args.includes('--dry-run')) {
+  fs.mkdirSync(path.join(process.env.FAKE_TARGET, 'package'), {recursive:true});
+  fs.writeFileSync(path.join(process.env.FAKE_TARGET, 'package', 'mhome-core-api-${version}.crate'), 'prepared archive');
+}
+if (tool === 'python3') {
+  if (args[0] === '-c') console.log(process.env.FAKE_TARGET);
+  if (args.includes('exists')) process.exit(3);
+  process.exit(0);
+}
 if (tool === 'npm' && args[0] === '--version') console.log('12.2.1');
 if (tool === 'npm' && args[0] === 'pack') fs.writeFileSync(path.join(args[args.indexOf('--pack-destination')+1], 'protocol.tgz'), 'tarball');
 if ((tool === 'npm' && args[0] === 'view') || tool === 'curl') process.exit(1);
@@ -151,11 +161,11 @@ if (tool === 'npm' && args[0] === 'publish' && !args.includes('--dry-run')) {
   if (fs.readFileSync(args[args.indexOf('--provenance-file')+1], 'utf8') !== 'verified bundle') process.exit(3);
 }
 `;
-    for (const tool of ["cargo", "curl", "node", "npm"]) fs.writeFileSync(path.join(bin, tool), mock, { mode: 0o755 });
+    for (const tool of ["cargo", "curl", "node", "npm", "python3"]) fs.writeFileSync(path.join(bin, tool), mock, { mode: 0o755 });
     const callLog = path.join(root, "calls.jsonl");
     try {
       const result = spawnSync("bash", [fileURLToPath(new URL("../publish-tag.sh", import.meta.url)), `mhome-core-api-v${version}`, "--publish"], {
-        cwd: root, encoding: "utf8", env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof) },
+        cwd: root, encoding: "utf8", env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof), FAKE_TARGET: path.join(root, 'target') },
       });
       const calls = fs.readFileSync(callLog, "utf8").trim().split("\n").map(JSON.parse);
       const proof = calls.findIndex(([tool, arg]) => tool === "node" && arg === "scripts/protocol-provenance.mjs");

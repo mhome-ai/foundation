@@ -136,7 +136,15 @@ if [[ "${publish}" == "--publish" && -n "${protocol}" && "${RUNNER_ENVIRONMENT:-
   exit 1
 fi
 
-readiness_script="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/wait-for-crates.mjs"
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+readiness_script="$script_dir/wait-for-crates.mjs"
+registry_script="$script_dir/release-registry.py"
+registry_exists() {
+  local status=0
+  python3 -B "$registry_script" exists "$@" || status=$?
+  # A shell conditional must never turn an unavailable registry into absence.
+  case "$status" in 0) return 0 ;; 3) return 1 ;; *) exit "$status" ;; esac
+}
 # Check from this runner before registry-based packaging. Local path dependencies
 # can compile successfully while the registry index still lacks their versions.
 node "$readiness_script" --dependencies-of "$package"
@@ -145,6 +153,10 @@ cargo fmt --all -- --check
 cargo clippy -p "${package}" --all-targets --locked -- -D warnings
 cargo test -p "${package}" --locked
 cargo publish -p "${package}" --locked --dry-run --allow-dirty
+cargo_target="$(cargo metadata --locked --offline --no-deps --format-version 1 \
+  --manifest-path "$manifest" | python3 -c 'import json,sys; print(json.load(sys.stdin)["target_directory"])')"
+crate_archive="$cargo_target/package/${package}-${version}.crate"
+[[ -f "$crate_archive" ]] || { echo "Missing prepared package archive: $crate_archive" >&2; exit 1; }
 
 staging_root=""
 protocol_tarball=""
@@ -183,53 +195,33 @@ if [[ -n "${npm_package}" ]]; then
   node scripts/protocol-provenance.mjs "${npm_package}" "${version}" "${protocol_tarball}" "${protocol_provenance}"
 fi
 
-crate_url="https://crates.io/api/v1/crates/${package}/${version}"
-is_published() {
-  # `cargo info` may resolve the package from this workspace and report success
-  # even when the exact version has not reached crates.io. Query the registry
-  # API directly so an unpublished local version cannot be mistaken for a
-  # completed immutable upload.
-  curl \
-    --fail \
-    --silent \
-    --show-error \
-    --location \
-    --user-agent "mhome-foundation-release/1.0" \
-    "${crate_url}" >/dev/null 2>&1
-}
-
-if is_published; then
+if registry_exists crate "$package" "$version"; then
+  python3 -B "$registry_script" verify crate "$package" "$version" "$crate_archive"
   echo "${package} ${version} is already published"
 else
-  cargo_publish_failed="false"
-  cargo publish -p "${package}" --locked || cargo_publish_failed="true"
-  if [[ "${cargo_publish_failed}" == "true" ]]; then
-    # Cargo can time out while waiting for the index after a successful immutable upload.
-    published_after_retry="false"
-    for attempt in 1 2 3 4 5 6; do
-      if is_published; then
-        published_after_retry="true"
-        break
-      fi
-      sleep $((attempt * 5))
-    done
-    if [[ "${published_after_retry}" != "true" ]]; then
-      echo "publishing ${package} ${version} failed" >&2
-      exit 1
-    fi
+  if ! cargo publish -p "${package}" --locked; then
+    # An upload response can be lost. Read-only readiness/content checks below
+    # resolve the uncertainty; never upload again in this attempt.
+    echo "Cargo publication returned an error; checking exact registry contents without another upload" >&2
   fi
 fi
 
 # Cargo may return success after uploading even when its index wait times out.
 # A green release job must also establish that consumers can resolve this version.
 node "$readiness_script" "$package" "$version"
+python3 -B "$registry_script" verify crate "$package" "$version" "$crate_archive"
 
 if [[ -n "${npm_package}" ]]; then
-  if npm view "${npm_package}@${version}" version >/dev/null 2>&1; then
+  if registry_exists npm "$npm_package" "$version"; then
+    python3 -B "$registry_script" verify npm "$npm_package" "$version" "$protocol_tarball"
     echo "${npm_package} ${version} is already published"
   else
     # Always make the current canonical release the default, including when a
     # previously published erroneous version has a numerically higher semver.
-    npm publish "${protocol_tarball}" --access public --provenance-file "${protocol_provenance}" --tag latest
+    if ! npm publish "${protocol_tarball}" --access public --provenance-file "${protocol_provenance}" --tag latest; then
+      echo "npm publication returned an error; checking exact registry contents without another upload" >&2
+    fi
+    python3 -B "$registry_script" wait npm "$npm_package" "$version"
+    python3 -B "$registry_script" verify npm "$npm_package" "$version" "$protocol_tarball"
   fi
 fi

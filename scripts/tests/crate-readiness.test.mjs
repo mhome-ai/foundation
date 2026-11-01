@@ -161,10 +161,21 @@ exit "$READINESS_STATUS"`);
     executable('cargo', `
 printf 'cargo %s\\n' "$*" >> "$AUDIT"
 if [[ "$1" == "$CARGO_FAILURE" ]]; then exit 101; fi
+if [[ "$1" == metadata ]]; then printf '{"target_directory":"%s/target"}\n' "$PWD"; fi
+if [[ "$1" == publish && "$*" == *--dry-run* ]]; then
+  mkdir -p target/package
+  printf prepared > target/package/mhome-os-permissions-1.4.30.crate
+fi
 if [[ "$1" == publish && "$*" != *--dry-run* ]]; then
   echo 'warning: timed out waiting for registry index' >&2
 fi`);
     executable('curl', 'exit "$UPLOAD_API_STATUS"');
+    executable('python3', `
+if [[ "$1" == -c ]]; then printf '%s/target\n' "$PWD"; exit 0; fi
+printf 'registry %s\n' "$*" >> "$AUDIT"
+if [[ "$3" == exists ]]; then
+  if [[ "$UPLOAD_API_STATUS" == 0 ]]; then exit 0; else exit 3; fi
+fi`);
     const args = [fileURLToPath(new URL('../publish-tag.sh', import.meta.url)), 'mhome-os-permissions-v1.4.30'];
     if (!dryRun) args.push('--publish');
     const result = spawnSync('bash', args, {
@@ -184,7 +195,9 @@ test('publishing waits for dependencies before Cargo and checks its own index af
   const result = publishFixture();
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.commands[0], /wait-for-crates.mjs --dependencies-of mhome-os-permissions$/);
-  assert.match(result.commands.at(-1), /wait-for-crates.mjs mhome-os-permissions 1.4.30$/);
+  const index = result.commands.findIndex((line) => /wait-for-crates.mjs mhome-os-permissions 1.4.30$/.test(line));
+  const verified = result.commands.findIndex((line) => /registry .* verify crate mhome-os-permissions 1.4.30 /.test(line));
+  assert.ok(index >= 0 && verified > index);
   assert.equal(result.commands.filter((line) => line.startsWith('cargo publish') && !line.includes('--dry-run')).length, 1);
 });
 
