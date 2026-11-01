@@ -140,7 +140,7 @@ const fs = require('node:fs'), path = require('node:path');
 const tool = path.basename(process.argv[1]), args = process.argv.slice(2);
 fs.appendFileSync(process.env.CALL_LOG, JSON.stringify([tool, ...args]) + '\\n');
 if (tool === 'cargo' && args[0] === 'metadata') console.log(JSON.stringify({target_directory: process.env.FAKE_TARGET}));
-if (tool === 'cargo' && args[0] === 'publish' && args.includes('--dry-run')) {
+if (tool === 'cargo' && args[0] === 'package') {
   fs.mkdirSync(path.join(process.env.FAKE_TARGET, 'package'), {recursive:true});
   fs.writeFileSync(path.join(process.env.FAKE_TARGET, 'package', 'mhome-core-api-${version}.crate'), 'prepared archive');
 }

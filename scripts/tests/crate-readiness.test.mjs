@@ -163,6 +163,10 @@ printf 'cargo %s\\n' "$*" >> "$AUDIT"
 if [[ "$1" == "$CARGO_FAILURE" ]]; then exit 101; fi
 if [[ "$1" == metadata ]]; then printf '{"target_directory":"%s/target"}\n' "$PWD"; fi
 if [[ "$1" == publish && "$*" == *--dry-run* ]]; then
+  mkdir -p target/package/tmp-crate
+  printf temporary > target/package/tmp-crate/mhome-os-permissions-1.4.30.crate
+fi
+if [[ "$1" == package ]]; then
   mkdir -p target/package
   printf prepared > target/package/mhome-os-permissions-1.4.30.crate
 fi
@@ -226,6 +230,14 @@ test('deterministic Cargo failures are not retried or treated as propagation del
   assert.equal(result.status, 101);
   assert.equal(result.commands.filter((line) => line.startsWith('cargo clippy')).length, 1);
   assert.equal(result.commands.some((line) => line.startsWith('cargo publish')), false);
+});
+
+test('reference archive packaging failure blocks both uploads without retrying', () => {
+  const result = publishFixture({cargoFailure: 'package'});
+  assert.equal(result.status, 101);
+  assert.equal(result.commands.filter((line) => line.startsWith('cargo package')).length, 1);
+  assert.equal(result.commands.some((line) => line.startsWith('cargo publish') && !line.includes('--dry-run')), false);
+  assert.equal(result.commands.some((line) => /registry .* (exists|verify) /.test(line)), false);
 });
 
 test('verification-only publication checks dependencies without uploading or waiting for its own unpublished version', () => {

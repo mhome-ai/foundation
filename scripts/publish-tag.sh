@@ -153,6 +153,10 @@ cargo fmt --all -- --check
 cargo clippy -p "${package}" --all-targets --locked -- -D warnings
 cargo test -p "${package}" --locked
 cargo publish -p "${package}" --locked --dry-run --allow-dirty
+# A publish dry-run verifies a temporary archive but does not retain the final
+# target/package/*.crate path. Create the reference explicitly without another
+# compilation; the same locked package was verified immediately above.
+cargo package -p "${package}" --locked --no-verify --allow-dirty --offline
 cargo_target="$(cargo metadata --locked --offline --no-deps --format-version 1 \
   --manifest-path "$manifest" | python3 -c 'import json,sys; print(json.load(sys.stdin)["target_directory"])')"
 crate_archive="$cargo_target/package/${package}-${version}.crate"
