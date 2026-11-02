@@ -1,6 +1,6 @@
 [package]
 name = "mhome-script-runtime"
-version = "0.1.0"
+version = "0.1.1"
 rust-version = "1.95"
 edition.workspace = true
 license.workspace = true
@@ -10,7 +10,7 @@ description = "Shared bounded native QuickJS execution for MeowCore scripts"
 readme = "README.md"
 
 [dependencies]
-mhome-script-api = { version = "=0.1.0", path = "../script-api" }
+mhome-script-api = { version = "=0.1.1", path = "../script-api" }
 rquickjs = { version = "=0.14.0", features = ["futures", "loader"] }
 tokio = { version = "1", features = ["rt", "sync", "time", "macros"] }
 tokio-util = { version = "0.7", features = ["rt"] }
