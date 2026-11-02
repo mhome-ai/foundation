@@ -77,6 +77,53 @@ export async function readArtifact(reference: Image | string, maxBytes = 8 * 102
   return await call("artifact.read", [{ uri: typeof reference === "string" ? reference : reference.uri, maxBytes }]) as Uint8Array;
 }
 
+/** Storage identity and retention use the platform Artifact policy. */
+export interface ArtifactPolicy {
+  identity?: "auto" | "man";
+  retention?: "std" | "tmp";
+  creationId?: string;
+}
+export interface StoredArtifact extends Image {
+  identity: "auto" | "man";
+  retention: "std" | "tmp";
+  kind: "IMAGE" | "AUDIO" | "FILE";
+  mimeType: string;
+  sizeBytes: number;
+  expiresAtUnixMs?: number;
+  width?: number;
+  height?: number;
+  durationMillis?: number;
+}
+export interface PutArtifact extends ArtifactPolicy {
+  kind: "IMAGE" | "AUDIO" | "FILE";
+  mimeType: string;
+  data: Uint8Array;
+  durationMillis?: number;
+}
+export async function putArtifact(request: PutArtifact): Promise<StoredArtifact> {
+  return await call("artifact.put", [request as unknown as Value]) as unknown as StoredArtifact;
+}
+export interface ImportArtifact extends ArtifactPolicy {
+  kind: "IMAGE" | "AUDIO" | "FILE";
+  sourceUrl: string;
+  mimeType?: string;
+}
+export async function importArtifact(request: ImportArtifact): Promise<StoredArtifact> {
+  return await call("artifact.import", [request as unknown as Value]) as unknown as StoredArtifact;
+}
+/** Resolve a scoped reference to a temporary delivery URL; no storage credentials or local paths. */
+export async function resolveArtifact(request: Image & { destination?: "thirdParty" }): Promise<{
+  uri: string; mimeType: string; url: string; expiresAtUnixMs: number; hostIdentity: Value;
+}> {
+  return await call("artifact.resolve", [{ uri: request.uri, ...(request.destination === undefined ? {} : { destination: request.destination }) }]) as {
+    uri: string; mimeType: string; url: string; expiresAtUnixMs: number; hostIdentity: Value;
+  };
+}
+/** Explicit deletion only. A failed script does not roll back committed artifacts. */
+export async function deleteArtifact(reference: Image | string): Promise<void> {
+  await call("artifact.delete", [{ uri: typeof reference === "string" ? reference : reference.uri }]);
+}
+
 /** Per-call limits can shorten, but never extend, the invocation deadline. */
 export interface HttpRequest {
   method: string;
@@ -121,7 +168,7 @@ export async function requestNode(request: NodeRequest): Promise<Value> {
   return await call("node.request", [request as unknown as Value]);
 }
 
-/** IDs come from the connection's runtime data, not schema-local channel names. */
+/** Connect-scoped IDs come from runtime data; entity targets also supply their entity ID. */
 export interface ChannelTarget { id: string; entityId?: string }
 export interface ChannelRequest extends ChannelTarget { payload: Value }
 /** The host enforces the current tenant, Space, Integration and connection. */
@@ -243,6 +290,58 @@ export type QrCodeResult = { mime: "image/svg+xml"; width: number; height: numbe
   & ({ output: "svg"; svg: string } | { output: "svgDataUrl"; dataUrl: string });
 export async function renderQrCode(request: QrCodeRequest): Promise<QrCodeResult> {
   return await call("qr.render", [request as unknown as Value]) as unknown as QrCodeResult;
+}
+
+/** Temporary transport handles belong to this invocation, never a later call. */
+export interface TransportSession { sessionId: string }
+export interface WebSocketOpen {
+  url: string;
+  headers?: Record<string, string>;
+  protocols?: string[];
+  connectTimeoutMillis?: number;
+  /** Hard receive allocation limit, set when opening (1 KiB–16 MiB). */
+  maxMessageBytes?: number;
+  tls?: { verify?: boolean };
+}
+export interface WebSocketOpened extends TransportSession {
+  status: number;
+  headers: Record<string, string>;
+  protocol: string;
+}
+export type WebSocketMessage = { type: "text" | "base64"; value: string }
+  | { type: "json"; value: Value };
+export async function openWebSocket(request: WebSocketOpen): Promise<WebSocketOpened> {
+  return await call("websocket.open", [request as unknown as Value]) as unknown as WebSocketOpened;
+}
+/** Await operations on each handle sequentially. Concurrent use rejects. */
+export async function sendWebSocket(request: TransportSession & { message: WebSocketMessage; timeoutMillis?: number }): Promise<void> {
+  await call("websocket.send", [request as unknown as Value]);
+}
+export async function receiveWebSocket(request: TransportSession & { timeoutMillis?: number }): Promise<{ sessionId: string; message: { type: "text" | "base64"; value: string } }> {
+  return await call("websocket.receive", [request as unknown as Value]) as { sessionId: string; message: { type: "text" | "base64"; value: string } };
+}
+export async function closeWebSocket(request: TransportSession & { code?: number; reason?: string }): Promise<void> {
+  await call("websocket.close", [request as unknown as Value]);
+}
+export interface TlsLineOpen {
+  host: string;
+  port: number;
+  connectTimeoutMillis?: number;
+  /** Private-CA TLS 1.2 for devices; address/name matching is not required. */
+  tls: { caPem: string; certPem?: string; keyPem?: string };
+}
+export async function openTlsLine(request: TlsLineOpen): Promise<TransportSession> {
+  return await call("tlsLine.open", [request as unknown as Value]) as unknown as TransportSession;
+}
+export async function sendTlsLine(request: TransportSession & { line: string; timeoutMillis?: number }): Promise<void> {
+  await call("tlsLine.send", [request as unknown as Value]);
+}
+/** A local read timeout preserves partial lines for polling; the caller deadline still applies. */
+export async function receiveTlsLine(request: TransportSession & { timeoutMillis?: number }): Promise<{ sessionId: string; line: string }> {
+  return await call("tlsLine.receive", [request as unknown as Value]) as { sessionId: string; line: string };
+}
+export async function closeTlsLine(request: TransportSession): Promise<void> {
+  await call("tlsLine.close", [request as unknown as Value]);
 }
 
 export interface ScalarValues {

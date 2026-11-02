@@ -1,10 +1,10 @@
 {
   "function": "lighting",
-  "sourceHash": "f2efe7a7d5e72c4f1bde058d9a4163cec25b4c0f6b9cb784deaf46fe6c695ef8",
+  "sourceHash": "afc286e493c3524a248d8e59ca02a6a94a9e3efe126129abadf08d80aa685686",
   "build": {
     "profile": "automation-es2022-v1",
     "sdkVersion": "0.1.0",
-    "sdkHash": "b100e4896d8778aab109f1ae1f449924079ae66c95c8265fe621a4a5ee164f2a",
+    "sdkHash": "e6c70cf050f1a2950d25b9e850e0f2c5bbbbfa7ab0fe38c0ae02fc50d9abb067",
     "typescript": "6.0.3",
     "esbuild": "0.28.2"
   },

@@ -257,3 +257,53 @@ fn runtime_domain_contracts_validate_units_and_integral_timestamps() {
         assert_eq!(contract.validate_output(&wrap(timestamp)).is_ok(), expected);
     }
 }
+
+#[test]
+fn number_outputs_reject_bigint_recursively_but_inputs_accept_safe_core_integers() {
+    let wrap = |value| ScriptValue::Object([("result".into(), value)].into_iter().collect());
+    for (ty, value) in [
+        (FieldType::Scalar(ScalarType::Number), ScriptValue::I64(1)),
+        (
+            FieldType::list(FieldType::list(FieldType::Scalar(ScalarType::Number))),
+            ScriptValue::List(vec![ScriptValue::List(vec![ScriptValue::I64(1)])]),
+        ),
+        (
+            FieldType::Scalar(ScalarType::Temperature),
+            ScriptValue::Object(
+                [
+                    ("_type".into(), ScriptValue::String("Temperature".into())),
+                    ("unit".into(), ScriptValue::String("C".into())),
+                    ("value".into(), ScriptValue::I64(20)),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+        ),
+        (
+            FieldType::Scalar(ScalarType::Duration),
+            ScriptValue::Object(
+                [
+                    ("_type".into(), ScriptValue::String("Duration".into())),
+                    ("unit".into(), ScriptValue::String("ms".into())),
+                    ("value".into(), ScriptValue::I64(1)),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+        ),
+    ] {
+        let field = Field {
+            name: "result".into(),
+            ty,
+        };
+        let contract = ScriptContract {
+            version: 1,
+            sdk_version: "0.1.0".into(),
+            input: vec![field.clone()],
+            output: vec![field],
+        };
+        let value = wrap(value);
+        contract.validate_input(&value).unwrap();
+        assert!(contract.validate_output(&value).is_err());
+    }
+}

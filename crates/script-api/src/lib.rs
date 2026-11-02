@@ -202,12 +202,12 @@ pub struct ScriptContract {
 impl ScriptContract {
     pub fn validate_input(&self, value: &ScriptValue) -> Result<(), ContractError> {
         self.validate()?;
-        validate_fields(&self.input, value)
+        validate_fields(&self.input, value, NumberRepresentation::CoreInput)
     }
 
     pub fn validate_output(&self, value: &ScriptValue) -> Result<(), ContractError> {
         self.validate()?;
-        validate_fields(&self.output, value)
+        validate_fields(&self.output, value, NumberRepresentation::JavaScriptOutput)
     }
 
     pub fn validate(&self) -> Result<(), ContractError> {
@@ -233,7 +233,19 @@ impl ScriptContract {
     }
 }
 
-fn validate_fields(fields: &[Field], value: &ScriptValue) -> Result<(), ContractError> {
+// Core's safe i64 input becomes a JS Number. On output, I64/U64 came from
+// JS BigInt, even when small: accepting it as t.number would hide a type error.
+#[derive(Clone, Copy)]
+enum NumberRepresentation {
+    CoreInput,
+    JavaScriptOutput,
+}
+
+fn validate_fields(
+    fields: &[Field],
+    value: &ScriptValue,
+    numbers: NumberRepresentation,
+) -> Result<(), ContractError> {
     let ScriptValue::Object(values) = value else {
         return Err(invalid("script input/output root must be an object"));
     };
@@ -246,7 +258,7 @@ fn validate_fields(fields: &[Field], value: &ScriptValue) -> Result<(), Contract
         let value = values
             .get(&field.name)
             .ok_or_else(|| invalid(format!("missing script field: {}", field.name)))?;
-        if !matches_type(&field.ty, value) {
+        if !matches_type(&field.ty, value, numbers) {
             return Err(invalid(format!(
                 "script field does not match its contract: {}",
                 field.name
@@ -256,13 +268,13 @@ fn validate_fields(fields: &[Field], value: &ScriptValue) -> Result<(), Contract
     Ok(())
 }
 
-fn matches_type(ty: &FieldType, value: &ScriptValue) -> bool {
+fn matches_type(ty: &FieldType, value: &ScriptValue, numbers: NumberRepresentation) -> bool {
     use ScriptValue as V;
     match ty {
         FieldType::List(element) => match value {
             V::List(values) => values
                 .iter()
-                .all(|value| matches_type(&element.list, value)),
+                .all(|value| matches_type(&element.list, value, numbers)),
             _ => false,
         },
         FieldType::Scalar(ty) => match ty {
@@ -271,7 +283,10 @@ fn matches_type(ty: &FieldType, value: &ScriptValue) -> bool {
             // t.number is JS Number. Exact integers needing BigInt require t.value.
             ScalarType::Number => match value {
                 V::Number(n) => n.is_finite(),
-                V::I64(n) => n.unsigned_abs() <= MAX_SAFE_VERSION,
+                V::I64(n) => {
+                    matches!(numbers, NumberRepresentation::CoreInput)
+                        && n.unsigned_abs() <= MAX_SAFE_VERSION
+                }
                 _ => false,
             },
             ScalarType::String => matches!(value, V::String(_)),
@@ -301,7 +316,7 @@ fn matches_type(ty: &FieldType, value: &ScriptValue) -> bool {
                 } else {
                     matches!(fields.get("unit"), Some(V::String(unit)) if units.contains(&unit.as_str()))
                         && fields.get("value").is_some_and(|v| {
-                            matches_type(&FieldType::Scalar(ScalarType::Number), v)
+                            matches_type(&FieldType::Scalar(ScalarType::Number), v, numbers)
                         })
                 }
             }

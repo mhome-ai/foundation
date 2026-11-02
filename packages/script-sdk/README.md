@@ -38,6 +38,21 @@ an explicit number array when a small binary result must enter the engine. Core
 results also require integers to fit signed 64-bit range. Never silently convert
 an out-of-range BigInt to Number.
 
+`putArtifact` accepts Uint8Array, `importArtifact` ingests an HTTP resource,
+`resolveArtifact` obtains a bounded-lifetime delivery URL, and `deleteArtifact`
+explicitly deletes a current-Space artifact. Identity/retention follow the existing
+Artifact policy (`auto`/`man`, `std`/`tmp`). Completed writes survive a later script
+failure. The current native put adapter translates bytes to the application
+service's Base64 ingress DTO; JS values themselves do not use a JSON codec.
+
+`openWebSocket`/`sendWebSocket`/`receiveWebSocket`/`closeWebSocket` and the matching
+`TlsLine` helpers provide temporary invocation-owned connections. Use each handle
+sequentially. WebSocket memory limits are fixed at open time; TLS lines have a
+256 KiB ceiling. Local receive timeouts preserve partial reads for polling, while
+the invocation deadline/cancellation releases its temporary sockets. Handles are
+not valid in another invocation. These helpers do not manage persistent business
+Channels or run detached receive loops.
+
 ```sh
 npm ci
 npm test

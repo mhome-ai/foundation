@@ -86,3 +86,25 @@ defineScript({ input: {}, output: { items: t.list(t.number) },
 process.env.SECRET;
 // @ts-expect-error browser DOM APIs are not part of the script environment
 document.cookie;
+
+async function temporaryTransportsAndArtifacts() {
+  const sdk = await import("../src/index.js");
+  const ws = await sdk.openWebSocket({url: "ws://example.test", maxMessageBytes: 1024});
+  await sdk.sendWebSocket({...ws, message: {type: "text", value: "hello"}});
+  const received: string = (await sdk.receiveWebSocket(ws)).message.value;
+  await sdk.closeWebSocket(ws);
+  const tls = await sdk.openTlsLine({host: "example.test", port: 8081, tls: {caPem: "test"}});
+  await sdk.sendTlsLine({...tls, line: "hello"});
+  const line: string = (await sdk.receiveTlsLine(tls)).line;
+  await sdk.closeTlsLine(tls);
+  const saved = await sdk.putArtifact({kind: "FILE", mimeType: "text/plain", data: new Uint8Array([1]), retention: "tmp"});
+  await sdk.resolveArtifact({...saved, destination: "thirdParty"});
+  await sdk.deleteArtifact(saved);
+  void [received, line];
+  // @ts-expect-error byte data stays binary at the JS boundary
+  await sdk.putArtifact({kind: "FILE", mimeType: "text/plain", data: "base64"});
+  // @ts-expect-error caller cannot supply a different Space
+  await sdk.importArtifact({kind: "FILE", sourceUrl: "https://example.test", scopeId: "foreign"});
+  // @ts-expect-error set the hard receive allocation limit when opening
+  await sdk.receiveWebSocket({sessionId: "x", maxMessageBytes: 1});
+}

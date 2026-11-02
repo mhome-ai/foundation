@@ -66,3 +66,43 @@ async fn actual_typescript_build_executes_in_quickjs_with_its_declared_contract(
     );
     pool.shutdown().await;
 }
+
+#[tokio::test(flavor = "current_thread")]
+async fn javascript_number_and_bigint_outputs_remain_distinct_for_contract_validation() {
+    use mhome_script_api::{Field, FieldType, ScalarType, ScriptContract};
+    let mut contract = ScriptContract {
+        version: 1,
+        sdk_version: "0.1.0".into(),
+        input: vec![],
+        output: vec![Field {
+            name: "n".into(),
+            ty: FieldType::Scalar(ScalarType::Number),
+        }],
+    };
+    for (source, valid_number) in [
+        ("export default () => ({ n: 1 })", true),
+        ("export default () => ({ n: 1n })", false),
+        ("export default () => ({ n: 18446744073709551615n })", false),
+    ] {
+        let value = mhome_script_runtime::invoke(
+            source,
+            vec![],
+            Arc::new(NoHost),
+            InvocationControl::new(
+                Instant::now() + Duration::from_secs(2),
+                CancellationToken::new(),
+            ),
+            ScriptLimits::default(),
+        )
+        .await
+        .unwrap();
+        contract.output[0].ty = FieldType::Scalar(ScalarType::Number);
+        assert_eq!(
+            contract.validate_output(&value).is_ok(),
+            valid_number,
+            "{value:?}"
+        );
+        contract.output[0].ty = FieldType::Scalar(ScalarType::Value);
+        contract.validate_output(&value).unwrap();
+    }
+}
