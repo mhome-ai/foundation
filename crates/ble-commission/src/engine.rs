@@ -212,14 +212,14 @@ impl Engine {
         self.discovery_changed();
     }
 
-    /// Applies `change` to the session while it is current and not terminal,
-    /// then publishes it. `false` means the session ended or was replaced and
-    /// the caller must stop.
+    /// Applies `change` while the session is current and still accepting work.
+    /// Cancellation can only advance through link cleanup to `cancelled`;
+    /// late device replies must not replace it with a normal phase or failure.
     pub fn update(&self, kind: DeviceKind, id: &str, change: impl FnOnce(&mut Live)) -> bool {
         let mut sessions = self.sessions.lock().unwrap();
         let Some(live) = sessions
             .current(kind, id)
-            .filter(|live| !live.phase.is_terminal())
+            .filter(|live| !live.phase.is_terminal() && live.phase != Phase::Cancelling)
         else {
             return false;
         };
@@ -254,7 +254,7 @@ impl Engine {
         let mut sessions = self.sessions.lock().unwrap();
         let Some(live) = sessions
             .current(kind, id)
-            .filter(|live| !live.phase.is_terminal())
+            .filter(|live| !live.phase.is_terminal() && live.phase != Phase::Cancelling)
         else {
             return false;
         };

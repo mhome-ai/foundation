@@ -245,6 +245,33 @@ async fn cancelling_releases_the_link_before_its_terminal_event() {
 }
 
 #[tokio::test(start_paused = true)]
+async fn cancellation_during_connect_closes_the_late_link_without_reopening_setup() {
+    let harness = Harness::new();
+    let device = harness.add_device("host-a", Script::host());
+    let id = start(&harness).await;
+    // The fake central takes 50 ms to connect. Cancel while it still owns that work.
+    tokio::time::sleep(Duration::from_millis(10)).await;
+    let response = harness
+        .ok("/local/host/provision/cancel", json!({"sessionId": id}))
+        .await;
+    assert_eq!(response["state"], "cancelling");
+    valid(&harness.wait_state(HOST, "cancelled").await);
+    harness
+        .wait_event(PROVISION_CHANGED_EVENT, |event| {
+            event["sessionId"] == id && event["state"] == "cancelled"
+        })
+        .await;
+    assert!(!device.connected.load(Ordering::SeqCst));
+    assert!(harness.position("device:disconnected") < harness.position("event:cancelled"));
+    assert!(!harness
+        .events(PROVISION_CHANGED_EVENT)
+        .iter()
+        .any(|event| { event["sessionId"] == id && event["state"] == "awaiting_code" }));
+    start(&harness).await;
+    harness.wait_state(HOST, "awaiting_code").await;
+}
+
+#[tokio::test(start_paused = true)]
 async fn cancellation_cannot_interrupt_the_network_and_token_handoff() {
     let harness = Harness::new();
     let mut script = Script::host();

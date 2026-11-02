@@ -94,13 +94,25 @@ trait EventSink {
 
 At most one pod session and one Host session are kept, and only one of them
 may hold the radio: starting either while the other is still running (or still
-disconnecting) is refused with `session_active` or `busy`. The native core owns a session until success, failure or its finite deadline;
-leaving a page does not cancel it and callers do not renew it. There is no
-user cancellation endpoint. Only the device's `commissioned` response confirms
-success. Lost delivery/activation confirmation fails and releases the link.
-There is no cloud revocation call; unused pending credentials expire. Select the LAN candidate again to retry activation; the device retains a saved
-network. The secure channel verifies the full device ID, environment and (after
-BLE handoff) identity key. A fresh handshake uses new cipher state, while the
+disconnecting) is refused with `session_active` or `busy`. The native core owns a
+session until success, failure, explicit Host cancellation or its finite deadline;
+leaving a page does not cancel it and callers do not renew it.
+
+Host provisioning supports `/local/host/provision/cancel`. Cancellation remains
+`cancelling` until the native link is closed, including a connection that completes
+after cancellation was requested; late work cannot reopen the setup state.
+Wi-Fi join/token handoff cannot be cancelled. Host sessions belong to the signed-in
+account context, and an account change retires their handoff. A completed Host
+session hands network information and an optional first-claim token to the App;
+explicit LAN claim and cloud confirmation still establish ownership. An unclaimed
+Host with a working saved network can finish secure recovery without new Wi-Fi.
+
+Pod sessions have no user cancellation endpoint. Only the pod's `commissioned`
+response confirms success. Lost delivery/activation confirmation fails and releases
+the link. There is no cloud revocation call; unused pending credentials expire.
+Select the LAN candidate again to retry activation; the device retains a saved
+network. The pod's secure channel verifies the full device ID, environment and
+(after BLE handoff) identity key. A fresh handshake uses new cipher state, while the
 entered code is held temporarily to avoid prompting twice. Completed or in-flight
 activation is read before any new credential issuance. Completed enrollment
 snapshots contain `podId` and `clientMode` (`user` or `space`), including after

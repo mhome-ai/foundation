@@ -131,7 +131,7 @@ impl Actor {
                     self.ack();
                 }
                 _ = tokio::time::sleep(TICK) => self.check_link().await,
-                _ = cancelled(&mut cancel) => {}
+                _ = cancelled(&mut cancel) => break,
             }
         }
         commands.close();

@@ -1,8 +1,9 @@
 # Host provisioning v1
 
-Embedded Linux Hosts without a working network get Wi-Fi over BLE from a native
-Client (desktop/CLI Clientd, Android, iOS). Desktop, Docker and Android Hosts are
-already online and never advertise. Provisioning connects the Host to the LAN
+BLE-capable embedded Linux Hosts get Wi-Fi or recover an unfinished first claim
+over BLE from a native Client (desktop/CLI Clientd, Android, iOS). Desktop, Docker
+and Android Hosts use LAN discovery rather than advertising BLE setup.
+Provisioning connects the Host to the LAN
 and hands the provisioner a one-time claim token; ownership is then established
 by the existing Host claim over the LAN, which requires that token (section 4).
 
@@ -13,14 +14,16 @@ same characteristic UUID fallback.
 
 ## 1. Advertising
 
-- The Host advertises only in first provisioning, inside a re-provision window,
-  or after a factory reset. A Host on a working network does not advertise.
+- A BLE-capable Host advertises during first network provisioning, while awaiting
+  its first claim (including with a working network), or inside an explicit
+  re-provision window. Restart never reopens first-claim authority on an already
+  claimed Host.
 - Flags: bit 0 commissionable (set while advertising, except during a code
-  lockout), bit 1 set when the Host still has a saved network (re-provision
-  window).
+  lockout), bit 1 set when the Host has a saved network, including unclaimed
+  recovery and re-provision windows.
 - `shortId`: the first 4 bytes of the SHA-256 of the Host bootstrap public key,
-  which survives factory reset. The bootstrap key only names the Host (`shortId`,
-  `fingerprint`); it signs nothing in provisioning or claim.
+  which is replaced after factory reset. The bootstrap key only names the Host
+  (`shortId`, `fingerprint`); it signs nothing in provisioning or claim.
 - Local name: the Host name, at most 20 bytes.
 
 ## 2. Pairing code
@@ -84,18 +87,23 @@ Fallback characteristic UUIDs: the standard endpoints as for pods, `host-info`
   `productId` is optional. `onboardingRequired` reports whether this Host still
   awaits its first claim. `networkOnline` reports current LAN readiness. Both
   are optional for older Hosts. A securely paired Host with `networkOnline: true`
-  and `onboardingRequired: true` can finish without resubmitting Wi-Fi. `finish` issues a fresh first-claim token after checking authoritative
-  Host ownership. Already claimed Hosts never issue a new first-claim token.
-- `{"op":"finish"}` → `{"ok":true,"claimToken":"…"}`. After a successful join
-  during first provisioning the response carries the claim token: 32 random
-  bytes as 43 unpadded base64url characters. It is created when the join
-  succeeds, the same token is returned by every `finish` until the Host closes
-  BLE, and it is absent when no join succeeded and in a re-provision window
-  (the Host already has an owner). The Host then closes
-  BLE and continues its lifecycle (starts managed services, announces itself
-  over mDNS). Without `finish` the Host closes BLE 30 seconds after a successful
-  join, or when the central disconnects; the commissioner retries `finish`
-  within that window.
+  and `onboardingRequired: true` can finish without resubmitting Wi-Fi. `finish`
+  issues a fresh first-claim token after checking authoritative Host ownership.
+  Already claimed Hosts never issue a new first-claim token.
+- `{"op":"finish"}` → `{"ok":true,"claimToken":"…"}`. After a successful
+  first-provisioning join, or secure recovery with an already working network,
+  the response carries a claim token: 32 random bytes as 43 unpadded base64url
+  characters. A new join persists its token hash before applying Wi-Fi and
+  exposes the token only after success. Recovery issues a fresh token after
+  checking that the Host is still unclaimed. Repeated `finish` requests in the
+  same session return the same token. A claimed Host's re-provision window
+  carries no first-claim token.
+  `finish` ends the central's setup session. Without it, the Host disconnects the
+  central 30 seconds after a successful join; the commissioner retries `finish`
+  within that window. Network readiness and mDNS announcement do not establish
+  ownership. An unclaimed Host keeps its BLE recovery surface available;
+  a claimed Host closes a re-provision window
+  after the join.
 
 Every request and every encrypted response is at most 512 bytes; the response
 is read with offset reads. `prov-scan` start blocks while the Host scans and
@@ -157,9 +165,13 @@ Native `host.claim` passes it to `POST /v1/auth/claim`, alongside the environmen
 cloud proof and direct Client exchange secret (`core-api::host::access::ClaimRequest`).
 There is no Core-proxied first-claim route. The Host rejects a missing or incorrect
 provisioning token with 403 `HOST_CLAIM_TOKEN_REQUIRED`. The token remains valid
-until claim succeeds or factory reset. The App claims automatically after
-`completed`. Hosts that were not provisioned over BLE use the ordinary direct
-LAN claim flow. See the Foundation Host management authorization contract.
+until claim succeeds, another setup issues a replacement token, or factory reset.
+BLE `completed` confirms the network/handoff step, not Host ownership. The App's
+Host onboarding operation waits for explicit ownership confirmation, then claims
+over the LAN. It completes only after the existing claim API confirms cloud
+registration. It does not install Core or Plugins. Hosts that were not provisioned
+over BLE use the ordinary direct LAN claim flow. See the Foundation Host
+management authorization contract.
 
 Error codes are the pod session codes without the credential ones:
 `bluetooth_unavailable`, `device_busy`, `disconnected`, `code_rejected` (retry
@@ -185,5 +197,6 @@ The schema is `schema/host-provision.v1.schema.json`.
   are kept. Closes after a successful join, on `meowhostd provision close`, or
   after 10 minutes.
 - Factory reset: from the local interface (`meowhostd factory-reset`). Stops
-  services, forgets saved Wi-Fi, erases owners and the Host security store, keeps
-  the bootstrap key, and returns to first provisioning.
+  services, forgets saved Wi-Fi on BLE provisioning appliances, erases owners,
+  the Host security store and bootstrap key, and returns to first provisioning.
+  Machine identity and installed software are retained.
