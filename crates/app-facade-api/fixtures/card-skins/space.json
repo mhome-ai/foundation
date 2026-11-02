@@ -32,7 +32,7 @@
           "version": "1.0.0",
           "name": "Evening cards",
           "description": "Full-card skins for a color light, a playable speaker and a thermostat.",
-          "apiVersion": 2,
+          "apiVersion": 1,
           "entry": "skin.test.mjs",
           "renderers": [
             {

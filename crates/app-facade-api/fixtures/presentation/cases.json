@@ -1654,7 +1654,7 @@
         "version": "1.0.0",
         "name": "Example Skin",
         "description": "Demo",
-        "apiVersion": 2,
+        "apiVersion": 1,
         "entry": "main.mjs",
         "files": [
           {
@@ -1702,7 +1702,7 @@
         "version": "1.0.0",
         "name": "Example Skin",
         "description": "Demo",
-        "apiVersion": 2,
+        "apiVersion": 1,
         "renderers": [
           {
             "id": "switch",
@@ -1747,7 +1747,7 @@
             "version": "1.0.0",
             "name": "Example Skin",
             "description": "Demo",
-            "apiVersion": 2,
+            "apiVersion": 1,
             "entry": "main.mjs",
             "files": [
               {
@@ -1799,7 +1799,7 @@
             "version": "1.0.0",
             "name": "Example Skin",
             "description": "Demo",
-            "apiVersion": 2,
+            "apiVersion": 1,
             "renderers": [
               {
                 "id": "switch",
@@ -1859,7 +1859,7 @@
               "version": "1.0.0",
               "name": "Example Skin",
               "description": "Demo",
-              "apiVersion": 2,
+              "apiVersion": 1,
               "entry": "main.mjs",
               "files": [
                 {
@@ -1934,7 +1934,7 @@
               "version": "1.0.0",
               "name": "Example Skin",
               "description": "Demo",
-              "apiVersion": 2,
+              "apiVersion": 1,
               "renderers": [
                 {
                   "id": "switch",

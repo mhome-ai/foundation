@@ -35,12 +35,46 @@ test("card skin routes share one policy and schema inventory", () => {
     assert.ok(policies[target], target);
   }
 });
-test("the v2 package protocol bounds binary uploads", () => {
+test("renderer API 1 bounds binary uploads", () => {
   const schema = read("schema/card-skin-package.v1.schema.json");
-  assert.equal(schema.properties.apiVersion.const, 2);
+  assert.equal(schema.properties.apiVersion.const, 1);
+  assert.equal(schema.definitions.project.properties.apiVersion.const, 1);
   assert.equal(schema.properties.files.maxItems, 128);
   assert.equal(schema.definitions.file.properties.sizeBytes.maximum, 8 * 1024 * 1024);
   assert.ok(ajv.validateSchema(schema));
+});
+
+test("every base-scoped edit rejects an omitted UI base without inferring Default", () => {
+  for (const [definition, input] of [
+    ["install", { expectedRevision: null, baseUi: "default", packageId: "example.evening", version: "1.0.0" }],
+    ["overrideSet", { expectedRevision: "r1", baseUi: "default", patternId: "basic.device.onOff", installationId: "install", rendererId: "evening-light", config: {} }],
+    ["overrideReset", { expectedRevision: "r1", baseUi: "default", patternId: "basic.device.onOff" }],
+  ]) {
+    assert.ok(valid(definition, input), definition);
+    for (const field of ["baseUi", "expectedRevision"]) {
+      const incomplete = { ...input };
+      delete incomplete[field];
+      assert.equal(valid(definition, incomplete), false, `${definition} requires ${field}`);
+    }
+    assert.equal(valid(definition, { ...input, baseUi: "default_pod" }), false, definition);
+  }
+});
+
+test("renderer API 1 requires the current package shape and rejects other API versions", () => {
+  const manifest = read("fixtures/card-skins/space.json").selection.releases[0].manifest;
+  const packageSchema = read("schema/card-skin-package.v1.schema.json");
+  const { files, ...project } = manifest;
+  for (const [reference, value] of [[packageSchema.$id, manifest], [`${packageSchema.$id}#/definitions/project`, project]]) {
+    const accepts = (value) => ajv.validate({ $ref: reference }, value);
+    assert.ok(accepts(value), JSON.stringify(ajv.errors));
+    for (const apiVersion of [0, 2, "1", null])
+      assert.equal(accepts({ ...value, apiVersion }), false, `reject apiVersion ${JSON.stringify(apiVersion)}`);
+    for (const field of ["apiVersion", "baseUi"]) {
+      const incomplete = { ...value };
+      delete incomplete[field];
+      assert.equal(accepts(incomplete), false, `require ${field}`);
+    }
+  }
 });
 
 test("persisted Space selection and immutable release match the public response schema", () => {

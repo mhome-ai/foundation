@@ -61,6 +61,8 @@ that release's executable bytes, without granting catalog or upload permissions.
 Do not put secrets in skins. Config values stay in the Space selection.
 
 The publication service validates metadata and bytes, not JavaScript behavior.
+The renderer contract remains `apiVersion: 1` during development and changes in
+place. Hosts and skins use that current contract without a compatibility layer.
 The authoring build verifies the bundled ESM structure; the browser host verifies
 renderer exports against the manifest before using them. Each base owns its
 presentation adapter and renderer host; common card state and actions do not

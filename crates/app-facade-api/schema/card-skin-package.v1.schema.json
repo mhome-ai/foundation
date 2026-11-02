@@ -40,7 +40,7 @@
       "maxLength": 2000
     },
     "apiVersion": {
-      "const": 2
+      "const": 1
     },
     "renderers": {
       "type": "array",
@@ -225,7 +225,7 @@
           "maxLength": 2000
         },
         "apiVersion": {
-          "const": 2
+          "const": 1
         },
         "renderers": {
           "type": "array",
