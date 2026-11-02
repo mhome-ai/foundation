@@ -264,3 +264,6 @@ Cloud-owned content uses an object-store signed URL; local content is read from 
 owning Hub on demand. External resolution creates no cloud replica and cannot
 make an offline local owner readable. The current inline Hub bridge size limit
 still applies. Local file download remains a client workflow over ordinary resolve.
+
+Agent Profile Markdown image ownership and canonical read-back are specified in
+[Agent Profile media](contract/agent-profile-media-v1.md).
