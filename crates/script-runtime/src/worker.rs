@@ -106,7 +106,11 @@ impl ScriptWorkers {
                 .name(format!("script-{index}"))
                 .spawn(move || {
                     let _finished = Finished(finished_tx);
-                    runtime.block_on(LocalSet::new().run_until(worker(receiver, shutdown)));
+                    // Drop the Tokio runtime (including its native blocking jobs)
+                    // before announcing completion. Otherwise shutdown's join can
+                    // block the caller executor after the JS tasks have exited.
+                    let worker_runtime = runtime;
+                    worker_runtime.block_on(LocalSet::new().run_until(worker(receiver, shutdown)));
                 })
                 .map_err(|e| ScriptError::new("WORKER_START_FAILED", e.to_string()))?;
             inner.workers.push(Worker {

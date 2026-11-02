@@ -12,6 +12,74 @@ use std::{
 };
 use tokio::sync::Notify;
 
+struct BlockingHost {
+    started: Arc<Notify>,
+    release: std::sync::Mutex<Option<std::sync::mpsc::Receiver<()>>>,
+    released: Arc<std::sync::atomic::AtomicBool>,
+}
+impl ScriptHost for BlockingHost {
+    fn call<'a>(&'a self, _: &'a str, _: Vec<V>, _: InvocationControl) -> HostFuture<'a> {
+        Box::pin(async move {
+            let release = self.release.lock().unwrap().take().unwrap();
+            let started = self.started.clone();
+            let released = self.released.clone();
+            tokio::task::spawn_blocking(move || {
+                started.notify_one();
+                // A finite fallback makes the regression fail rather than hang
+                // forever if shutdown blocks the caller's executor thread.
+                released.store(
+                    release.recv_timeout(Duration::from_secs(3)).is_ok(),
+                    Ordering::SeqCst,
+                );
+            })
+            .await
+            .unwrap();
+            Ok(V::Null)
+        })
+    }
+}
+
+#[tokio::test(flavor = "current_thread")]
+async fn shutdown_waits_for_native_jobs_without_blocking_the_caller_executor() {
+    let pool = workers();
+    let (release, receiver) = std::sync::mpsc::channel();
+    let host = Arc::new(BlockingHost {
+        started: Arc::new(Notify::new()),
+        release: std::sync::Mutex::new(Some(receiver)),
+        released: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+    });
+    let call = tokio::spawn({
+        let pool = pool.clone();
+        let host = host.clone();
+        async move {
+            pool.invoke(
+                "import {call} from '@meowlink/script/host';export default () => call('cpu',[])"
+                    .into(),
+                vec![],
+                host,
+                control(),
+                ScriptLimits::default(),
+                Admission::Request,
+            )
+            .await
+        }
+    });
+    tokio::time::timeout(Duration::from_secs(1), host.started.notified())
+        .await
+        .unwrap();
+    let close = pool.shutdown();
+    let other_request = async {
+        tokio::time::sleep(Duration::from_millis(30)).await;
+        let _ = release.send(());
+    };
+    tokio::join!(close, other_request);
+    assert!(
+        host.released.load(Ordering::SeqCst),
+        "shutdown blocked unrelated request work until the native fallback timeout"
+    );
+    assert_eq!(call.await.unwrap().unwrap_err().code, "CANCELLED");
+}
+
 fn control() -> InvocationControl {
     InvocationControl::new(
         Instant::now() + Duration::from_secs(3),

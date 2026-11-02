@@ -12,6 +12,17 @@ implement privileged IO itself. `getRuntimeContext`, `sleep`, `randomU64` and
 ESM. Calling these helpers in ordinary Node author tooling fails explicitly.
 The package remains private until coordinated publication and consumer cutover.
 
+Network helpers include `httpRequest`, `httpReadBatch`, `dnsLookup`, `resolveMdns`,
+`probeTcp` and `probeRtsp`. HTTP error status remains a response. Device probes
+return an explicit success/failure outcome with diagnostic data; invocation
+timeout/cancellation still rejects. Read batches preserve input order and use the
+existing Space/connection cache. `requestNode` resolves the Node bound to the
+current Integration connection; it cannot select an arbitrary client or Space.
+`cryptoRequest` and `renderQrCode` use bounded native computation. Every helper
+returns a Promise that must be awaited; internal timeouts cannot extend the caller
+deadline. Core keeps native CPU capacity occupied until the work actually exits
+even if the caller has timed out. No detached-task API is exposed.
+
 `readArtifact(image)` accepts an Image/URI in the current Space and returns a
 `Uint8Array`, with an 8 MiB default read limit. Use it inside a script with a bundled
 image decoder, then return computed business fields or an artifact URI. Binary

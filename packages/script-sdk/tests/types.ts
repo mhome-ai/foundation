@@ -1,4 +1,26 @@
-import { defineScript, t, type Value, type Temperature } from "../src/index.js";
+import { defineScript, t, cryptoRequest, probeTcp, renderQrCode, httpRequest, type Value, type Temperature } from "../src/index.js";
+
+async function typedHostResults() {
+  const tcp = await probeTcp({host: "127.0.0.1", port: 80});
+  if (tcp.ok) {
+    const banner: string | null = tcp.data.banner;
+    void banner;
+  } else {
+    const code: string = tcp.error.code;
+    void code;
+    // @ts-expect-error failed probes do not promise a banner
+    tcp.data.banner;
+  }
+  const qr = await renderQrCode({value: "fixture"});
+  if (qr.output === "svg") { const svg: string = qr.svg; void svg; }
+  const digest = await cryptoRequest({op: "digest", algorithm: "sha256", input: {value: "abc"}});
+  const value: string = digest.value;
+  void value;
+  // @ts-expect-error host network ports are numbers
+  await probeTcp({host: "example.invalid", port: "80"});
+  // @ts-expect-error requests cannot replace trusted host identity
+  await httpRequest({method: "GET", url: "https://example.invalid", tenantId: "foreign"});
+}
 
 const script = defineScript({
   input: {

@@ -77,6 +77,152 @@ export async function readArtifact(reference: Image | string, maxBytes = 8 * 102
   return await call("artifact.read", [{ uri: typeof reference === "string" ? reference : reference.uri, maxBytes }]) as Uint8Array;
 }
 
+/** Per-call limits can shorten, but never extend, the invocation deadline. */
+export interface HttpRequest {
+  method: string;
+  url: string;
+  headers?: Record<string, string>;
+  body?: { kind: "text" | "json" | "base64"; value: string };
+  timeoutMillis?: number;
+  connectTimeoutMillis?: number;
+  followRedirects?: boolean;
+  maxBodyBytes?: number;
+  tls?: { verify?: boolean };
+}
+export interface HttpResponse {
+  status: number;
+  headers: Record<string, string>;
+  body: { kind: "text" | "json" | "base64"; value: string };
+  truncated: boolean;
+}
+/** HTTP error status is a response; connection/host failure rejects the Promise. */
+export async function httpRequest(request: HttpRequest): Promise<HttpResponse> {
+  return await call("http.request", [request as unknown as Value]) as unknown as HttpResponse;
+}
+export interface HttpReadBatch {
+  requests: (Omit<HttpRequest, "method" | "body" | "maxBodyBytes"> & { method: "GET"; maxBodyBytes: number })[];
+  concurrency?: number;
+  cacheTtlMillis?: number;
+}
+export type HttpReadResult = ({ ok: true } & HttpResponse) | { ok: false; error: HostError };
+/** Ordered read results; bounded cache belongs to the current Space/connection. */
+export async function httpReadBatch(request: HttpReadBatch): Promise<HttpReadResult[]> {
+  return await call("http.batch", [request as unknown as Value]) as unknown as HttpReadResult[];
+}
+
+export interface NodeRequest {
+  nodeType: string;
+  target: string;
+  payload?: Value;
+  timeoutMillis?: number;
+}
+/** Routes only to the Node bound to this Integration connection. */
+export async function requestNode(request: NodeRequest): Promise<Value> {
+  return await call("node.request", [request as unknown as Value]);
+}
+
+export interface DnsRequest {
+  host: string;
+  port?: number;
+  family?: "any" | "ipv4" | "ipv6";
+  maxResults?: number;
+}
+export interface DnsResult {
+  host: string;
+  addresses: { ip: string; family: "ipv4" | "ipv6" }[];
+}
+export async function dnsLookup(request: DnsRequest): Promise<DnsResult> {
+  return await call("dns.lookup", [request as unknown as Value]) as unknown as DnsResult;
+}
+export async function resolveMdns(request: Omit<DnsRequest, "port"> & { timeoutMillis?: number }): Promise<DnsResult> {
+  return await call("mdns.resolve", [request as unknown as Value]) as unknown as DnsResult;
+}
+
+export interface HostError { code: string; message: string }
+export type ProbeResult<T, F> = { ok: true; data: T }
+  | { ok: false; error: HostError; data: F };
+export interface TcpProbeRequest {
+  host: string;
+  port: number;
+  timeoutMillis?: number;
+  readBanner?: boolean;
+  bannerBytes?: number;
+}
+export interface TcpProbeData {
+  host: string;
+  port: number;
+  remoteAddr: string;
+  reachable: true;
+  connectMillis: number;
+  banner: string | null;
+}
+export interface TcpProbeFailure {
+  host: string;
+  port: number;
+  reachable: false;
+  remoteAddr?: string;
+  connectMillis?: number;
+}
+/** Unreachable devices return diagnostics; request cancellation still rejects. */
+export async function probeTcp(request: TcpProbeRequest): Promise<ProbeResult<TcpProbeData, TcpProbeFailure>> {
+  return await call("tcp.probe", [request as unknown as Value]) as unknown as ProbeResult<TcpProbeData, TcpProbeFailure>;
+}
+export interface RtspProbeRequest {
+  url?: string;
+  urls?: string[];
+  username?: string;
+  password?: string;
+  timeoutMillis?: number;
+  concurrency?: number;
+}
+export interface RtspProbeData {
+  url: string;
+  streamCount: number;
+  videoCodecs: string[];
+  audioCodecs: string[];
+}
+export type RtspProbeResult = ProbeResult<RtspProbeData, { url: string }>;
+/** A single distinct URL returns one outcome; multiple URLs return data.results. */
+export async function probeRtsp(request: RtspProbeRequest): Promise<RtspProbeResult | { ok: true; data: { results: RtspProbeResult[] } }> {
+  return await call("rtsp.probe", [request as unknown as Value]) as unknown as RtspProbeResult | { ok: true; data: { results: RtspProbeResult[] } };
+}
+
+export interface EncodedBytes { encoding?: "utf8" | "text" | "hex" | "base64"; value: string }
+export interface CryptoRequest {
+  op: "digest" | "hmac" | "aeadEncrypt" | "aeadDecrypt" | "cipherEncrypt" | "cipherDecrypt" | "generateRsaKey" | "certificateSigningRequest";
+  algorithm?: string;
+  input?: EncodedBytes;
+  key?: EncodedBytes;
+  nonce?: EncodedBytes;
+  iv?: EncodedBytes;
+  output?: "utf8" | "text" | "hex" | "base64";
+  combinedInput?: string;
+  combinedOutput?: string;
+  nonceLengthBytes?: number;
+  ivLengthBytes?: number;
+  padding?: string;
+  commonName?: string;
+}
+/** Bounded native computation, awaited within the caller's deadline. */
+export async function cryptoRequest(request: CryptoRequest): Promise<{ encoding: string; value: string }> {
+  return await call("crypto.request", [request as unknown as Value]) as { encoding: string; value: string };
+}
+export interface QrCodeRequest {
+  value: string;
+  encoding?: "text";
+  output?: "svg" | "svgDataUrl";
+  ecc?: "low" | "medium" | "quartile" | "high";
+  size?: number;
+  margin?: number;
+  darkColor?: string;
+  lightColor?: string;
+}
+export type QrCodeResult = { mime: "image/svg+xml"; width: number; height: number }
+  & ({ output: "svg"; svg: string } | { output: "svgDataUrl"; dataUrl: string });
+export async function renderQrCode(request: QrCodeRequest): Promise<QrCodeResult> {
+  return await call("qr.render", [request as unknown as Value]) as unknown as QrCodeResult;
+}
+
 export interface ScalarValues {
   bool: boolean;
   number: number;
