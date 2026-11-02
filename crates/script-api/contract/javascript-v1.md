@@ -142,6 +142,15 @@ interrupt callbacks can preempt every native operation.
 
 ## Storage and cutover
 
+One Automation revision has one total `manifest.json`. Each function entry contains
+its complete build-generated Input/Output contract alongside the JS digest, byte
+size, format and SDK version. JS files are stored separately; there are no separate
+per-function metadata objects. The total manifest is limited to 1 MiB (1,048,576
+UTF-8 bytes), including all function contracts and JSON syntax. Check the encoded
+size before publication, and bound raw manifest reads before JSON parsing. Reject
+an oversized manifest before accepting the new Automation revision. This is one
+aggregate manifest limit, not a per-function contract allowance.
+
 Build-generated contracts and JavaScript are bound by the same verified manifest.
 Source/build identity includes the SDK, build profile and locked dependencies.
 Resolve exact immutable versions, verify SHA/size, and retain artifacts referenced
