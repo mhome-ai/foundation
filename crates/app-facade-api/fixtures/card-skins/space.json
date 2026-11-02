@@ -6,7 +6,8 @@
       {
         "id": "evening",
         "spaceId": "space-a",
-        "releaseId": "mlink:example.evening@1.0.0"
+        "releaseId": "mlink:example.evening@1.0.0",
+        "baseUi": "default"
       }
     ],
     "overrides": [
@@ -17,7 +18,8 @@
         "rendererId": "evening-light",
         "config": {
           "accent": "#c04040"
-        }
+        },
+        "baseUi": "default"
       }
     ],
     "releases": [
@@ -30,7 +32,7 @@
           "version": "1.0.0",
           "name": "Evening cards",
           "description": "Full-card skins for a color light, a playable speaker and a thermostat.",
-          "apiVersion": 1,
+          "apiVersion": 2,
           "entry": "skin.test.mjs",
           "renderers": [
             {
@@ -71,7 +73,8 @@
               "sizeBytes": 1,
               "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
             }
-          ]
+          ],
+          "baseUi": "default"
         }
       }
     ]

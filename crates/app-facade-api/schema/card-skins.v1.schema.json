@@ -39,12 +39,18 @@
         "description": {
           "type": "string",
           "maxLength": 2000
+        },
+        "baseUi": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 128
         }
       },
       "required": [
         "packageId",
         "name",
-        "description"
+        "description",
+        "baseUi"
       ]
     },
     "packageUpdate": {
@@ -144,12 +150,18 @@
           "type": "string",
           "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\\.(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$",
           "maxLength": 128
+        },
+        "baseUi": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 128
         }
       },
       "required": [
         "expectedRevision",
         "packageId",
-        "version"
+        "version",
+        "baseUi"
       ]
     },
     "uninstall": {
@@ -233,6 +245,11 @@
         },
         "config": {
           "type": "object"
+        },
+        "baseUi": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 128
         }
       },
       "required": [
@@ -240,7 +257,8 @@
         "patternId",
         "installationId",
         "rendererId",
-        "config"
+        "config",
+        "baseUi"
       ]
     },
     "overrideReset": {
@@ -259,11 +277,17 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 512
+        },
+        "baseUi": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 128
         }
       },
       "required": [
         "expectedRevision",
-        "patternId"
+        "patternId",
+        "baseUi"
       ]
     },
     "packageInfo": {
@@ -274,7 +298,8 @@
         "authorUserId",
         "name",
         "description",
-        "createdAt"
+        "createdAt",
+        "baseUi"
       ],
       "properties": {
         "packageId": {
@@ -299,6 +324,11 @@
         "createdAt": {
           "type": "integer",
           "minimum": 0
+        },
+        "baseUi": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 128
         }
       }
     },
@@ -365,7 +395,8 @@
       "required": [
         "id",
         "spaceId",
-        "releaseId"
+        "releaseId",
+        "baseUi"
       ],
       "properties": {
         "id": {
@@ -382,6 +413,11 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 512
+        },
+        "baseUi": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 128
         }
       }
     },
@@ -393,7 +429,8 @@
         "patternId",
         "installationId",
         "rendererId",
-        "config"
+        "config",
+        "baseUi"
       ],
       "properties": {
         "spaceId": {
@@ -418,6 +455,11 @@
         },
         "config": {
           "type": "object"
+        },
+        "baseUi": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 128
         }
       }
     },

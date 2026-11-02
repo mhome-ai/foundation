@@ -7,6 +7,7 @@
   "required": [
     "schemaVersion",
     "packageId",
+    "baseUi",
     "version",
     "name",
     "description",
@@ -39,7 +40,7 @@
       "maxLength": 2000
     },
     "apiVersion": {
-      "const": 1
+      "const": 2
     },
     "renderers": {
       "type": "array",
@@ -60,6 +61,11 @@
         "$ref": "#/definitions/file"
       },
       "maxItems": 128
+    },
+    "baseUi": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 128
     }
   },
   "definitions": {
@@ -192,7 +198,8 @@
         "description",
         "apiVersion",
         "renderers",
-        "entry"
+        "entry",
+        "baseUi"
       ],
       "properties": {
         "schemaVersion": {
@@ -218,7 +225,7 @@
           "maxLength": 2000
         },
         "apiVersion": {
-          "const": 1
+          "const": 2
         },
         "renderers": {
           "type": "array",
@@ -231,6 +238,11 @@
         "entry": {
           "type": "string",
           "minLength": 1
+        },
+        "baseUi": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 128
         }
       }
     }

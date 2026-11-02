@@ -1654,7 +1654,7 @@
         "version": "1.0.0",
         "name": "Example Skin",
         "description": "Demo",
-        "apiVersion": 1,
+        "apiVersion": 2,
         "entry": "main.mjs",
         "files": [
           {
@@ -1689,7 +1689,8 @@
               }
             }
           }
-        ]
+        ],
+        "baseUi": "default"
       }
     },
     "status": "success",
@@ -1701,7 +1702,7 @@
         "version": "1.0.0",
         "name": "Example Skin",
         "description": "Demo",
-        "apiVersion": 1,
+        "apiVersion": 2,
         "renderers": [
           {
             "id": "switch",
@@ -1727,7 +1728,8 @@
               }
             }
           }
-        ]
+        ],
+        "baseUi": "default"
       }
     }
   },
@@ -1745,7 +1747,7 @@
             "version": "1.0.0",
             "name": "Example Skin",
             "description": "Demo",
-            "apiVersion": 1,
+            "apiVersion": 2,
             "entry": "main.mjs",
             "files": [
               {
@@ -1780,7 +1782,8 @@
                   }
                 }
               }
-            ]
+            ],
+            "baseUi": "default"
           }
         }
       ]
@@ -1796,7 +1799,7 @@
             "version": "1.0.0",
             "name": "Example Skin",
             "description": "Demo",
-            "apiVersion": 1,
+            "apiVersion": 2,
             "renderers": [
               {
                 "id": "switch",
@@ -1813,7 +1816,8 @@
                   "mode": "builtin"
                 }
               }
-            ]
+            ],
+            "baseUi": "default"
           }
         }
       ]
@@ -1829,7 +1833,8 @@
           {
             "id": "installation-demo",
             "spaceId": "space-demo",
-            "releaseId": "release-demo"
+            "releaseId": "release-demo",
+            "baseUi": "default"
           }
         ],
         "overrides": [
@@ -1840,7 +1845,8 @@
             "rendererId": "switch",
             "config": {
               "color": "red"
-            }
+            },
+            "baseUi": "default"
           }
         ],
         "releases": [
@@ -1853,7 +1859,7 @@
               "version": "1.0.0",
               "name": "Example Skin",
               "description": "Demo",
-              "apiVersion": 1,
+              "apiVersion": 2,
               "entry": "main.mjs",
               "files": [
                 {
@@ -1888,7 +1894,8 @@
                     }
                   }
                 }
-              ]
+              ],
+              "baseUi": "default"
             }
           }
         ]
@@ -1902,7 +1909,8 @@
           {
             "id": "installation-demo",
             "spaceId": "space-demo",
-            "releaseId": "release-demo"
+            "releaseId": "release-demo",
+            "baseUi": "default"
           }
         ],
         "overrides": [
@@ -1913,7 +1921,8 @@
             "rendererId": "switch",
             "config": {
               "color": "red"
-            }
+            },
+            "baseUi": "default"
           }
         ],
         "releases": [
@@ -1925,7 +1934,7 @@
               "version": "1.0.0",
               "name": "Example Skin",
               "description": "Demo",
-              "apiVersion": 1,
+              "apiVersion": 2,
               "renderers": [
                 {
                   "id": "switch",
@@ -1942,7 +1951,8 @@
                     "mode": "builtin"
                   }
                 }
-              ]
+              ],
+              "baseUi": "default"
             }
           }
         ]
@@ -2001,7 +2011,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2011,7 +2021,7 @@
           "modes": [
             {
               "mode": "auto",
-              "displayName": "自动",
+              "displayName": "\u81ea\u52a8",
               "description": null,
               "requirements": {
                 "modelType": "chat",
@@ -2036,7 +2046,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2072,7 +2082,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2140,13 +2150,13 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "configurable": true,
           "active": true,
           "modes": [
             {
               "mode": "auto",
-              "displayName": "自动",
+              "displayName": "\u81ea\u52a8",
               "requirements": {
                 "modelType": "chat",
                 "requiredInputModalities": [
@@ -2168,7 +2178,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2199,7 +2209,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2239,7 +2249,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2267,7 +2277,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2300,7 +2310,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2325,7 +2335,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2370,7 +2380,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2428,7 +2438,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2480,7 +2490,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2490,7 +2500,7 @@
           "modes": [
             {
               "mode": "auto",
-              "displayName": "自动",
+              "displayName": "\u81ea\u52a8",
               "description": null,
               "requirements": {
                 "modelType": "chat",
@@ -2526,13 +2536,13 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "configurable": true,
           "active": true,
           "modes": [
             {
               "mode": "auto",
-              "displayName": "自动",
+              "displayName": "\u81ea\u52a8",
               "requirements": {
                 "modelType": "chat",
                 "requiredInputModalities": [
@@ -2588,22 +2598,22 @@
     "name": "agent-memory-text",
     "target": "/app/agent/memory/get",
     "data": {
-      "content": "客厅空调设定为 26°C 前先征求用户同意。"
+      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
     },
     "status": "success",
     "essential": {
-      "content": "客厅空调设定为 26°C 前先征求用户同意。"
+      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
     }
   },
   {
     "name": "agent-identity-text",
     "target": "/app/agent/identity/get",
     "data": {
-      "content": "使用中文，回答简洁。"
+      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
     },
     "status": "success",
     "essential": {
-      "content": "使用中文，回答简洁。"
+      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
     }
   },
   {

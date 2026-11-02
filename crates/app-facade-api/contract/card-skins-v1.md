@@ -11,12 +11,14 @@ identity come exclusively from authenticated ingress, never from domain input.
 `/app/card-skins/catalog/*` always executes in Cloud. Catalog reads require a
 User principal. Package creation reserves `packageId` in that tenant. Only the
 stored author may edit its display metadata or publish versions. Authorship is
-immutable. Package lookup is by known package ID; this is not a public marketplace
+immutable. Creation requires `baseUi` (for example `default` or `default-pod`).
+The package keeps this base across all versions; prepare and complete reject a
+manifest with another base. Package lookup is by known package ID; this is not a public marketplace
 or a searchable cross-tenant catalog.
 
 | Target suffix | Input definition | Output |
 | --- | --- | --- |
-| `catalog/package/get` | `packageGet` | `{revision, value: {packageId, authorUserId, name, description, createdAt}}` |
+| `catalog/package/get` | `packageGet` | `{revision, value: {packageId, baseUi, authorUserId, name, description, createdAt}}` |
 | `catalog/package/create` | `packageCreate` | `{}` |
 | `catalog/package/update` | `packageUpdate` | `{}` |
 | `catalog/release/get` | `releaseGet` | `{id, baseUrl, manifest}` |
@@ -60,9 +62,12 @@ Do not put secrets in skins. Config values stay in the Space selection.
 
 The publication service validates metadata and bytes, not JavaScript behavior.
 The authoring build verifies the bundled ESM structure; the browser host verifies
-renderer exports against the manifest before using them. Skins run in the host's
-JavaScript realm and are not sandboxed by the UI interface. Publication is not a
-claim of a malicious-code audit or cryptographic browser SRI enforcement.
+renderer exports against the manifest before using them. Each base owns its
+presentation adapter and renderer host; common card state and actions do not
+require a common rendering technology. Hosts must enforce their execution
+boundary before enabling external code. A manifest or publication grants no
+general App privileges, SDK access or native bridge access. Publication is not a
+claim of runtime isolation, a malicious-code audit or browser SRI enforcement.
 
 ## Space selection
 
@@ -86,19 +91,23 @@ been created; otherwise it must equal the latest read token. A stale token retur
 non-null revision. Mutation responses acknowledge the write; read the selection
 again for its latest state/revision, which may include another writer's edit.
 
-Install takes a known package ID and exact version; the service resolves the
+Install requires the target `baseUi`, a known package ID and exact version; the service resolves the
 published release from the tenant catalog. Core uses its authenticated cloud
 bridge for that read. Neither accepts client-provided release IDs, manifests or
-URLs. Installation does not automatically enable pattern overrides. Each package
+URLs. The release base must equal the requested base. Installation records include
+that base and must match their pinned release. Installation does not
+automatically enable pattern overrides. Each package
 has one installation per Space; installing another version uses `upgrade`.
 
-Set override selects an installed renderer declaring that pattern and validates
-the supplied config against its schema. Reset removes just that pattern's
-override. Uninstall removes the installation, its pinned descriptor and every
+Set override requires `baseUi` and selects an installation of that base with a renderer declaring that pattern and validates
+the supplied config against its schema. Reset requires `baseUi` and removes only that base and pattern's override.
+The unique selection key is `(Space, baseUi, patternId)`; the same pattern can
+have independent overrides in different bases. Uninstall removes the installation, its pinned descriptor and every
 override referencing it in one commit. Reset/uninstall/config edits use local
 pinned metadata; they do not need a live catalog connection.
 
-Upgrade keeps the installation ID and all existing overrides. Every affected
+Upgrade keeps the installation ID, UI base and all existing overrides. A release
+with another base is rejected before any mutation. Every affected
 renderer must still exist, declare exactly the same pattern/contract ID/version,
 and accept the existing config. A different catalog identity is never silently
 substituted after Space transfer. Any incompatibility rejects the entire write;
@@ -136,3 +145,7 @@ a future local execution node. These source capabilities require their matching
 published artifacts and deployed services. See the frontend's
 [card guide](../../../../pallas-cat/docs/cards/README.md) for the authoring tools
 and management flow.
+
+The UI-base fields are mandatory. There is no legacy-base inference or automatic
+startup conversion. Existing incompatible development documents require explicit
+recreation; ordinary reads and startup must not rewrite them.

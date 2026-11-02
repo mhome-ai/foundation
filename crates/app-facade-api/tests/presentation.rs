@@ -123,3 +123,49 @@ fn plugin_business_fields_do_not_determine_facade_outcome() {
         assert_eq!(response["error"]["code"], "PRECONDITION_FAIL");
     }
 }
+
+#[test]
+fn card_skin_edits_require_an_explicit_ui_base() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/card-skins.v1.schema.json")).unwrap();
+    for (definition, input) in [
+        (
+            "install",
+            serde_json::json!({"baseUi":"default-pod","packageId":"cards.pod","version":"1.0.0","expectedRevision":null}),
+        ),
+        (
+            "overrideSet",
+            serde_json::json!({"baseUi":"default-pod","patternId":"basic.device.onOff","installationId":"installed","rendererId":"switch","config":{},"expectedRevision":"revision"}),
+        ),
+        (
+            "overrideReset",
+            serde_json::json!({"baseUi":"default-pod","patternId":"basic.device.onOff","expectedRevision":"revision"}),
+        ),
+    ] {
+        let entry = serde_json::json!({"$ref":format!("{}#/definitions/{definition}",schema["$id"].as_str().unwrap())});
+        let package: Value =
+            serde_json::from_str(include_str!("../schema/card-skin-package.v1.schema.json"))
+                .unwrap();
+        let validator = jsonschema::options()
+            .with_resource(
+                package["$id"].as_str().unwrap(),
+                jsonschema::Resource::from_contents(package.clone()).unwrap(),
+            )
+            .with_resource(
+                schema["$id"].as_str().unwrap(),
+                jsonschema::Resource::from_contents(schema.clone()).unwrap(),
+            )
+            .build(&entry)
+            .unwrap();
+        validator.validate(&input).unwrap();
+        let mut absent = input.clone();
+        absent.as_object_mut().unwrap().remove("baseUi");
+        assert!(
+            !validator.is_valid(&absent),
+            "{definition} must not infer Default"
+        );
+        let mut invalid = input.clone();
+        invalid["baseUi"] = serde_json::json!("default_pod");
+        assert!(!validator.is_valid(&invalid));
+    }
+}
