@@ -50,6 +50,11 @@ Crates are versioned independently. A tag named `<package>-v<version>` publishes
 for example `mhome-runtime-paths-v0.1.0`. The tag version must equal that package's manifest version.
 Publication is immutable and restricted to the allowlist in `scripts/publish-tag.sh`.
 
+The JavaScript contract and native runtime publish as `mhome-script-api-v<version>`
+and `mhome-script-runtime-v<version>`. Publish the API's exact pinned version
+before the runtime. The TypeScript packages `@meowlink/script` and
+`@meowlink/script-build` remain private and are not published by these tags.
+
 Registry upload acceptance does not imply Cargo index availability. Tagged
 publication waits for exact internal dependency versions in the crates.io sparse
 index before packaging, and for the uploaded version before completing CI.

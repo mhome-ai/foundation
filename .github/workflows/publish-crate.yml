@@ -3,6 +3,8 @@ name: Publish tagged crate
 on:
   push:
     tags:
+      - "mhome-script-api-v*"
+      - "mhome-script-runtime-v*"
       - "mhome-script-sdk-macros-v*"
       - "mhome-script-sdk-v*"
       - "mhome-wasm-runtime-v*"

@@ -23,6 +23,20 @@ const fixture = (fetchImpl, timeoutMs = 30) => {
   };
 };
 
+test('every Foundation workspace crate has a tag trigger and publisher route', () => {
+  const workspace = readFileSync(new URL('../../Cargo.toml', import.meta.url), 'utf8');
+  const workflow = readFileSync(new URL('../../.github/workflows/publish-crate.yml', import.meta.url), 'utf8');
+  const publisher = readFileSync(new URL('../publish-tag.sh', import.meta.url), 'utf8');
+  const members = workspace.match(/members\s*=\s*\[([^\]]+)\]/)[1];
+  for (const [, directory] of members.matchAll(/"([^"]+)"/g)) {
+    const manifest = readFileSync(new URL(`../../${directory}/Cargo.toml`, import.meta.url), 'utf8');
+    const packageName = manifest.match(/^name\s*=\s*"([^"]+)"/m)[1];
+    assert.ok(workflow.includes(`"${packageName}-v*"`), `${packageName} tag must trigger CI`);
+    assert.ok(publisher.includes(`  ${packageName}-v*)`), `${packageName} tag must select a package`);
+    assert.ok(publisher.includes(`manifest="${directory}/Cargo.toml"`));
+  }
+});
+
 test('Cargo index paths follow the registry layout', () => {
   for (const [crate, suffix] of [['A', '1/a'], ['ab', '2/ab'], ['Abc', '3/a/abc'], [name, 'mh/om/mhome-core-api']]) {
     assert.equal(indexUrl(crate), `https://index.crates.io/${suffix}`);
@@ -145,13 +159,13 @@ test('dependency selection uses Cargo package names and declared pins across dep
   assert.throws(() => dependencyRequirements(metadata, 'consumer'), /unsupported release dependency/);
 });
 
-function publishFixture({dependencyFailure = false, readinessFailure = false, cargoFailure = '', published = false, dryRun = false} = {}) {
+function publishFixture({packageName = 'mhome-os-permissions', packageVersion = '1.4.30', directory = 'os-permissions', dependencyFailure = false, readinessFailure = false, cargoFailure = '', published = false, dryRun = false} = {}) {
   const root = mkdtempSync(join(tmpdir(), 'foundation-publish-index-'));
   try {
     const bin = join(root, 'bin');
     mkdirSync(bin);
-    mkdirSync(join(root, 'crates/os-permissions'), {recursive: true});
-    writeFileSync(join(root, 'crates/os-permissions/Cargo.toml'), 'version = "1.4.30"\n');
+    mkdirSync(join(root, 'crates', directory), {recursive: true});
+    writeFileSync(join(root, 'crates', directory, 'Cargo.toml'), `version = "${packageVersion}"\n`);
     const audit = join(root, 'commands');
     const executable = (name, body) => writeFileSync(join(bin, name), `#!/usr/bin/env bash\nset -eu\n${body}\n`, {mode: 0o755});
     executable('node', `
@@ -164,35 +178,57 @@ if [[ "$1" == "$CARGO_FAILURE" ]]; then exit 101; fi
 if [[ "$1" == metadata ]]; then printf '{"target_directory":"%s/target"}\n' "$PWD"; fi
 if [[ "$1" == publish && "$*" == *--dry-run* ]]; then
   mkdir -p target/package/tmp-crate
-  printf temporary > target/package/tmp-crate/mhome-os-permissions-1.4.30.crate
+  printf temporary > "target/package/tmp-crate/$PACKAGE_NAME-$PACKAGE_VERSION.crate"
 fi
 if [[ "$1" == package ]]; then
   mkdir -p target/package
-  printf prepared > target/package/mhome-os-permissions-1.4.30.crate
+  printf prepared > "target/package/$PACKAGE_NAME-$PACKAGE_VERSION.crate"
 fi
 if [[ "$1" == publish && "$*" != *--dry-run* ]]; then
   echo 'warning: timed out waiting for registry index' >&2
 fi`);
     executable('curl', 'exit "$UPLOAD_API_STATUS"');
+    executable('npm', 'printf \'npm %s\\n\' "$*" >> "$AUDIT"; exit 99');
     executable('python3', `
 if [[ "$1" == -c ]]; then printf '%s/target\n' "$PWD"; exit 0; fi
 printf 'registry %s\n' "$*" >> "$AUDIT"
 if [[ "$3" == exists ]]; then
   if [[ "$UPLOAD_API_STATUS" == 0 ]]; then exit 0; else exit 3; fi
 fi`);
-    const args = [fileURLToPath(new URL('../publish-tag.sh', import.meta.url)), 'mhome-os-permissions-v1.4.30'];
+    const args = [fileURLToPath(new URL('../publish-tag.sh', import.meta.url)), `${packageName}-v${packageVersion}`];
     if (!dryRun) args.push('--publish');
     const result = spawnSync('bash', args, {
       cwd: root, encoding: 'utf8', env: {
         ...process.env, PATH: `${bin}:${process.env.PATH}`, AUDIT: audit,
         DEPENDENCY_STATUS: dependencyFailure ? '1' : '0', READINESS_STATUS: readinessFailure ? '1' : '0',
         CARGO_FAILURE: cargoFailure, UPLOAD_API_STATUS: published ? '0' : '22',
+        PACKAGE_NAME: packageName, PACKAGE_VERSION: packageVersion,
       },
     });
     return {...result, commands: readFileSync(audit, 'utf8').trim().split('\n')};
   } finally {
     rmSync(root, {recursive: true, force: true});
   }
+}
+
+for (const directory of ['script-api', 'script-runtime']) {
+  const packageName = `mhome-${directory}`;
+  test(`${packageName} tags run the crate release gates without npm publication`, () => {
+    const options = {packageName, packageVersion: '0.1.0', directory};
+    const result = publishFixture(options);
+    assert.equal(result.status, 0, result.stderr);
+    assert.ok(result.commands[0].endsWith(`--dependencies-of ${packageName}`));
+    for (const command of ['clippy', 'test', 'publish', 'package']) {
+      assert.ok(result.commands.some((line) => line.startsWith(`cargo ${command} -p ${packageName} `)));
+    }
+    assert.ok(result.commands.some((line) => line.endsWith(`${packageName} 0.1.0`)));
+    assert.ok(result.commands.some((line) => line.includes(`verify crate ${packageName} 0.1.0 `)));
+    assert.equal(result.commands.some((line) => line.includes('stage-protocol-package')), false);
+    assert.equal(result.commands.some((line) => line.startsWith('npm ')), false);
+    const blocked = publishFixture({...options, dependencyFailure: true});
+    assert.equal(blocked.status, 1);
+    assert.equal(blocked.commands.length, 1);
+  });
 }
 
 test('publishing waits for dependencies before Cargo and checks its own index after upload', () => {
