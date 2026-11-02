@@ -1,0 +1,17 @@
+[package]
+name = "mhome-script-api"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Shared JavaScript resource identity and typed Automation script contracts"
+readme = "README.md"
+include = ["src/**", "tests/**", "fixtures/**", "contract/**", "Cargo.toml", "README.md"]
+
+[dependencies]
+base64 = "0.22"
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"

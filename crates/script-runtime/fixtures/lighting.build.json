@@ -1,0 +1,59 @@
+{
+  "function": "lighting",
+  "sourceHash": "75ba8554f02a36d35c3a234a2ab9c184a0cbe4b83f1c639eb0be837a0c01180f",
+  "build": {
+    "profile": "automation-es2022-v1",
+    "sdkVersion": "0.1.0",
+    "sdkHash": "c0ea55b0e0755c44f8adffec2b835b5787b37e68ac6f66a1e301b3cc9d7bc137",
+    "typescript": "6.0.3",
+    "esbuild": "0.28.2"
+  },
+  "artifact": {
+    "format": "javascript-esm",
+    "sha256": "088f077d6b30b2b5313ae4227dc48795bb4733571d63749b8fc1662330e0333a",
+    "size": 839,
+    "sdkVersion": "0.1.0",
+    "contract": {
+      "version": 1,
+      "sdkVersion": "0.1.0",
+      "input": [
+        {
+          "name": "samples",
+          "type": {
+            "list": "number"
+          }
+        },
+        {
+          "name": "delay",
+          "type": "duration"
+        },
+        {
+          "name": "image",
+          "type": "image"
+        },
+        {
+          "name": "settings",
+          "type": "object"
+        }
+      ],
+      "output": [
+        {
+          "name": "average",
+          "type": "number"
+        },
+        {
+          "name": "delay",
+          "type": "duration"
+        },
+        {
+          "name": "image",
+          "type": "image"
+        },
+        {
+          "name": "settings",
+          "type": "object"
+        }
+      ]
+    }
+  }
+}

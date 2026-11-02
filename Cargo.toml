@@ -1,6 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
+  "crates/script-api",
+  "crates/script-runtime",
   "crates/script-sdk-macros",
   "crates/script-sdk",
   "crates/wasm-runtime",

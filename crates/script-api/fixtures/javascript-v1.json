@@ -1,0 +1,57 @@
+{
+  "protocol": "meow.script.javascript.v1",
+  "instruction": {
+    "opcode": 29,
+    "operands": ["scriptRef", "argumentsArray", "successTask", "errorTask"],
+    "rejectedLegacyOpcodes": [19, 28]
+  },
+  "validContracts": [
+    {
+      "version": 1,
+      "sdkVersion": "0.1.0",
+      "input": [
+        {"name": "samples", "type": {"list": "number"}},
+        {"name": "settings", "type": "object"},
+        {"name": "optionalValue", "type": "value"},
+        {"name": "matrix", "type": {"list": {"list": "number"}}},
+        {"name": "temperature", "type": "temperature"},
+        {"name": "delay", "type": "duration"},
+        {"name": "at", "type": "timestamp"},
+        {"name": "photo", "type": "image"}
+      ],
+      "output": [
+        {"name": "average", "type": "number"},
+        {"name": "enabled", "type": "bool"},
+        {"name": "label", "type": "string"}
+      ]
+    },
+    {"version": 1, "sdkVersion": "0.1.0", "input": [], "output": []}
+  ],
+  "invalidContracts": [
+    {"version": 2, "sdkVersion": "0.1.0", "input": [], "output": []},
+    {"version": 1, "sdkVersion": "latest", "input": [], "output": []},
+    {"version": 1, "sdkVersion": "01.0.0", "input": [], "output": []},
+    {"version": 1, "sdkVersion": "0.1.0", "input": {}, "output": []},
+    {"version": 1, "sdkVersion": "0.1.0", "input": [], "output": {"list": "number"}},
+    {"version": 1, "sdkVersion": "0.1.0", "input": [{"name": "x", "type": "number"}, {"name": "x", "type": "string"}], "output": []},
+    {"version": 1, "sdkVersion": "0.1.0", "input": [{"name": "bad.key", "type": "number"}], "output": []},
+    {"version": 1, "sdkVersion": "0.1.0", "input": [{"name": "x", "type": {"list": "number", "optional": true}}], "output": []},
+    {"version": 1, "sdkVersion": "0.1.0", "input": [{"name": "x", "type": "any"}], "output": []},
+    {"version": 1, "sdkVersion": "0.1.0", "input": [{"name": "x", "type": "number", "optional": true}], "output": []},
+    {"version": 1, "sdkVersion": "0.1.0", "input": [], "output": [], "source": "user code is not metadata"}
+  ],
+  "validReferences": [
+    {"kind": "integration", "packageId": "demo.device", "version": 7, "function": "sendCommand", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"kind": "automation", "automationId": "demo-automation", "revision": 23, "function": "lighting", "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+  ],
+  "invalidReferences": [
+    {"kind": "integration", "packageId": "demo.device", "version": 0, "function": "sendCommand", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"kind": "integration", "packageId": "demo.device", "version": 1, "function": "../run", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"kind": "integration", "packageId": "demo.device", "version": 1, "function": "run.ts", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"kind": "integration", "packageId": "demo.device", "version": 1, "function": "run", "sha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},
+    {"kind": "integration", "packageId": "demo.device", "version": 1, "function": "run", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "spaceId": "other-space"},
+    {"kind": "automation", "automationId": "demo", "revision": 9007199254740992, "function": "run", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"kind": "automation", "automationId": "", "revision": 1, "function": "run", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"kind": "wasm", "wasmId": "demo.device.run-v1"}
+  ]
+}

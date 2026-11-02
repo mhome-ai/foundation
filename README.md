@@ -4,6 +4,8 @@ Small, stable Rust leaf libraries shared across mHome repositories.
 
 ## Crates
 
+- `mhome-script-api`: JavaScript resource identities, artifacts and Automation contracts; the new script migration's shared leaf protocol.
+- `mhome-script-runtime`: native QuickJS execution, bounded host calls and shared JS workers; Core/cloud consumer cutover is still pending.
 - `mhome-script-sdk`: Automation values, Rust Input/Output contracts, bounded binary codec and guest ABI.
 - `mhome-script-sdk-macros`: Input/Output derives, re-exported by the Script SDK.
 - `mhome-wasm-runtime`: shared Wasmtime engine, per-call execution policies and Script ABI adapter.
@@ -30,6 +32,8 @@ remain leaf libraries. A crate belongs here only when it has multiple repository
 defines a genuinely shared leaf contract.
 
 The script contract and validation commands are in [the Script SDK contract](crates/script-sdk/README.md).
+The replacement TS/JS contract is in [JavaScript script v1](crates/script-api/contract/javascript-v1.md).
+Its models are implemented; consumer runtime cutover is separate work.
 
 ## Development
 
