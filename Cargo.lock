@@ -2168,7 +2168,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-script-api"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "base64 0.22.1",
  "serde",
@@ -2177,7 +2177,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-script-runtime"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "mhome-script-api",
  "rquickjs",
