@@ -23,6 +23,13 @@ returns a Promise that must be awaited; internal timeouts cannot extend the call
 deadline. Core keeps native CPU capacity occupied until the work actually exits
 even if the caller has timed out. No detached-task API is exposed.
 
+`requestChannel`, `sendChannel`, `isChannelReady` and `disconnectChannel` use
+Core-owned channels scoped to the current Integration connection. Use the channel
+IDs from runtime connection data; entity channels additionally require `entityId`.
+Requests preserve native values, including BigInt; sends use the channel's JSON
+transport. `getChannelContext` reads the trusted context inside a channel hook.
+Only an explicit disconnect stops the business channel; a script timeout does not.
+
 `readArtifact(image)` accepts an Image/URI in the current Space and returns a
 `Uint8Array`, with an 8 MiB default read limit. Use it inside a script with a bundled
 image decoder, then return computed business fields or an artifact URI. Binary

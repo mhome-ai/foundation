@@ -1,4 +1,6 @@
-import { defineScript, t, cryptoRequest, probeTcp, renderQrCode, httpRequest, type Value, type Temperature } from "../src/index.js";
+import { defineScript, t, cryptoRequest, probeTcp, renderQrCode, httpRequest,
+  requestChannel, sendChannel, isChannelReady, disconnectChannel, getChannelContext,
+  type Value, type Temperature } from "../src/index.js";
 
 async function typedHostResults() {
   const tcp = await probeTcp({host: "127.0.0.1", port: 80});
@@ -20,6 +22,16 @@ async function typedHostResults() {
   await probeTcp({host: "example.invalid", port: "80"});
   // @ts-expect-error requests cannot replace trusted host identity
   await httpRequest({method: "GET", url: "https://example.invalid", tenantId: "foreign"});
+  const reply: Value = await requestChannel({id: "runtime-id", payload: 9007199254740993n});
+  const ready: boolean = await isChannelReady({id: "runtime-id"});
+  const context: Value = await getChannelContext();
+  await sendChannel({id: "runtime-id", entityId: "device", payload: {power: true}});
+  await disconnectChannel({id: "runtime-id"});
+  void [reply, ready, context];
+  // @ts-expect-error ownership comes from the host, never from guest parameters
+  await requestChannel({id: "runtime-id", payload: null, connectId: "foreign"});
+  // @ts-expect-error an explicit payload, including null, is required
+  await sendChannel({id: "runtime-id"});
 }
 
 const script = defineScript({

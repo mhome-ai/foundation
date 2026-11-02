@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { defineScript, t, ScriptError, SDK_VERSION, readArtifact, getRuntimeContext } from "../dist/index.js";
+import { defineScript, t, ScriptError, SDK_VERSION, readArtifact, getRuntimeContext,
+  requestChannel, sendChannel, isChannelReady, disconnectChannel, getChannelContext } from "../dist/index.js";
 
 test("declaration is lazy and invocation returns unwrapped business data", async () => {
   let calls = 0;
@@ -38,4 +39,8 @@ test("SDK descriptors match canonical metadata, including nested lists", async (
 test("author tooling cannot accidentally execute privileged host operations", async () => {
   await assert.rejects(readArtifact("artifact://fictional/image"), /host bindings are unavailable/);
   await assert.rejects(getRuntimeContext(), /host bindings are unavailable/);
+  for (const operation of [requestChannel, sendChannel, isChannelReady, disconnectChannel]) {
+    await assert.rejects(operation({id: "runtime-id", payload: null}), /host bindings are unavailable/);
+  }
+  await assert.rejects(getChannelContext(), /host bindings are unavailable/);
 });

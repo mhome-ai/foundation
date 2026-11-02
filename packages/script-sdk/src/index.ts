@@ -121,6 +121,28 @@ export async function requestNode(request: NodeRequest): Promise<Value> {
   return await call("node.request", [request as unknown as Value]);
 }
 
+/** IDs come from the connection's runtime data, not schema-local channel names. */
+export interface ChannelTarget { id: string; entityId?: string }
+export interface ChannelRequest extends ChannelTarget { payload: Value }
+/** The host enforces the current tenant, Space, Integration and connection. */
+export async function requestChannel(request: ChannelRequest): Promise<Value> {
+  return await call("channel.request", [request as unknown as Value]);
+}
+export async function sendChannel(request: ChannelRequest): Promise<void> {
+  await call("channel.send", [request as unknown as Value]);
+}
+export async function isChannelReady(target: ChannelTarget): Promise<boolean> {
+  return await call("channel.status", [target as unknown as Value]) as boolean;
+}
+/** Explicit business action. A timeout never implicitly disconnects a channel. */
+export async function disconnectChannel(target: ChannelTarget): Promise<void> {
+  await call("channel.disconnect", [target as unknown as Value]);
+}
+/** Available only when Core invokes a channel hook. */
+export async function getChannelContext(): Promise<Value> {
+  return await call("channel.context", []);
+}
+
 export interface DnsRequest {
   host: string;
   port?: number;
