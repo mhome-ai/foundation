@@ -7,6 +7,7 @@ import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import test from 'node:test';
 import {dependencyRequirements, indexUrl, waitForCrates} from '../wait-for-crates.mjs';
+import {registryPythonFixture} from './helpers/registry-python-fixture.mjs';
 
 const name = 'mhome-core-api';
 const version = '1.49.0';
@@ -159,7 +160,7 @@ test('dependency selection uses Cargo package names and declared pins across dep
   assert.throws(() => dependencyRequirements(metadata, 'consumer'), /unsupported release dependency/);
 });
 
-function publishFixture({packageName = 'mhome-os-permissions', packageVersion = '1.4.30', directory = 'os-permissions', dependencyFailure = false, readinessFailure = false, cargoFailure = '', published = false, dryRun = false, slowMetadata = false} = {}) {
+function publishFixture({packageName = 'mhome-os-permissions', packageVersion = '1.4.30', directory = 'os-permissions', dependencyFailure = false, readinessFailure = false, cargoFailure = '', published = false, dryRun = false, metadataJson, targetDirectory = 'target', largeMetadata = false, metadataStatus = 0} = {}) {
   const root = mkdtempSync(join(tmpdir(), 'foundation-publish-index-'));
   try {
     const bin = join(root, 'bin');
@@ -167,6 +168,9 @@ function publishFixture({packageName = 'mhome-os-permissions', packageVersion = 
     mkdirSync(join(root, 'crates', directory), {recursive: true});
     writeFileSync(join(root, 'crates', directory, 'Cargo.toml'), `version = "${packageVersion}"\n`);
     const audit = join(root, 'commands');
+    const target = join(root, targetDirectory);
+    const metadata = join(root, 'metadata.json');
+    writeFileSync(metadata, metadataJson ?? JSON.stringify({target_directory: target, padding: largeMetadata ? 'x'.repeat(256 * 1024) : ''}));
     const executable = (name, body) => writeFileSync(join(bin, name), `#!/usr/bin/env bash\nset -eu\n${body}\n`, {mode: 0o755});
     executable('node', `
 printf 'node %s\\n' "$*" >> "$AUDIT"
@@ -176,44 +180,38 @@ exit "$READINESS_STATUS"`);
 printf 'cargo %s\\n' "$*" >> "$AUDIT"
 if [[ "$1" == "$CARGO_FAILURE" ]]; then exit 101; fi
 if [[ "$1" == metadata ]]; then
-  if [[ "$SLOW_METADATA" == 1 ]]; then sleep 0.1; fi
-  printf '{"target_directory":"%s/target"}\n' "$PWD"
+  cat "$METADATA_FILE"
+  exit "$METADATA_STATUS"
 fi
 if [[ "$1" == publish && "$*" == *--dry-run* ]]; then
-  mkdir -p target/package/tmp-crate
-  printf temporary > "target/package/tmp-crate/$PACKAGE_NAME-$PACKAGE_VERSION.crate"
+  mkdir -p "$FAKE_TARGET/package/tmp-crate"
+  printf temporary > "$FAKE_TARGET/package/tmp-crate/$PACKAGE_NAME-$PACKAGE_VERSION.crate"
 fi
 if [[ "$1" == package ]]; then
-  mkdir -p target/package
-  printf prepared > "target/package/$PACKAGE_NAME-$PACKAGE_VERSION.crate"
+  mkdir -p "$FAKE_TARGET/package"
+  printf prepared > "$FAKE_TARGET/package/$PACKAGE_NAME-$PACKAGE_VERSION.crate"
 fi
 if [[ "$1" == publish && "$*" != *--dry-run* ]]; then
   echo 'warning: timed out waiting for registry index' >&2
 fi`);
     executable('curl', 'exit "$UPLOAD_API_STATUS"');
     executable('npm', 'printf \'npm %s\\n\' "$*" >> "$AUDIT"; exit 99');
-    executable('python3', `
-if [[ "$1" == -c ]]; then
-  cat >/dev/null
-  printf '%s/target\n' "$PWD"
-  exit 0
-fi
-printf 'registry %s\n' "$*" >> "$AUDIT"
-if [[ "$3" == exists ]]; then
-  if [[ "$UPLOAD_API_STATUS" == 0 ]]; then exit 0; else exit 3; fi
-fi`);
+    writeFileSync(join(bin, 'python3'), registryPythonFixture(`
+require('node:fs').appendFileSync(process.env.AUDIT, 'registry ' + args.join(' ') + '\\n');
+if (operation === 'exists') process.exit(process.env.UPLOAD_API_STATUS === '0' ? 0 : 3);
+`), {mode: 0o755});
     const args = [fileURLToPath(new URL('../publish-tag.sh', import.meta.url)), `${packageName}-v${packageVersion}`];
     if (!dryRun) args.push('--publish');
     const result = spawnSync('bash', args, {
-      cwd: root, encoding: 'utf8', env: {
+      cwd: root, encoding: 'utf8', timeout: 15000, env: {
         ...process.env, PATH: `${bin}:${process.env.PATH}`, AUDIT: audit,
         DEPENDENCY_STATUS: dependencyFailure ? '1' : '0', READINESS_STATUS: readinessFailure ? '1' : '0',
         CARGO_FAILURE: cargoFailure, UPLOAD_API_STATUS: published ? '0' : '22',
         PACKAGE_NAME: packageName, PACKAGE_VERSION: packageVersion,
-        SLOW_METADATA: slowMetadata ? '1' : '0',
+        FAKE_TARGET: target, METADATA_FILE: metadata, METADATA_STATUS: String(metadataStatus),
       },
     });
-    return {...result, commands: readFileSync(audit, 'utf8').trim().split('\n')};
+    return {...result, target, commands: readFileSync(audit, 'utf8').trim().split('\n')};
   } finally {
     rmSync(root, {recursive: true, force: true});
   }
@@ -249,9 +247,40 @@ test('publishing waits for dependencies before Cargo and checks its own index af
   assert.equal(result.commands.filter((line) => line.startsWith('cargo publish') && !line.includes('--dry-run')).length, 1);
 });
 
-test('metadata parsing consumes delayed Cargo output without closing its pipe early', () => {
-  const result = publishFixture({slowMetadata: true});
+test('real Python consumes large metadata and preserves a nondefault target containing spaces', () => {
+  const result = publishFixture({largeMetadata: true, targetDirectory: 'build cache/custom target'});
   assert.equal(result.status, 0, result.stderr);
+  assert.ok(result.commands.some((line) => line.includes(`verify crate mhome-os-permissions 1.4.30 ${result.target}/package/`)));
+});
+
+for (const [metadataJson, error] of [['not-json', /JSONDecodeError/], ['{}', /KeyError.*target_directory/]]) {
+  test(`invalid Cargo metadata blocks upload: ${metadataJson}`, () => {
+    const result = publishFixture({metadataJson});
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, error);
+    assert.equal(result.commands.some((line) => line.startsWith('cargo publish') && !line.includes('--dry-run')), false);
+    assert.equal(result.commands.some((line) => line.startsWith('registry ')), false);
+  });
+}
+
+test('Cargo metadata failure is preserved even when it writes valid JSON', () => {
+  const result = publishFixture({metadataStatus: 101});
+  assert.equal(result.status, 101, result.stderr);
+  assert.equal(result.commands.some((line) => line.startsWith('cargo publish') && !line.includes('--dry-run')), false);
+  assert.equal(result.commands.some((line) => line.startsWith('registry ')), false);
+});
+
+test('unrecognized Python calls cannot silently succeed in publication fixtures', () => {
+  const root = mkdtempSync(join(tmpdir(), 'foundation-python-boundary-'));
+  try {
+    const script = join(root, 'python3');
+    writeFileSync(script, registryPythonFixture("throw new Error('Unexpected registry handler call');"), {mode: 0o755});
+    const result = spawnSync(script, ['-B', '/unexpected-script.py', 'exists', 'crate', name, version], {encoding: 'utf8', timeout: 5000});
+    assert.equal(result.status, 2, result.stderr);
+    assert.match(result.stderr, /Unexpected Python invocation/);
+  } finally {
+    rmSync(root, {recursive: true, force: true});
+  }
 });
 
 test('unavailable dependency blocks packaging and upload', () => {

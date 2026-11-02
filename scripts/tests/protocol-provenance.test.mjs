@@ -9,6 +9,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { protocolBundleBuilder, protocolProvenance, protocolStatement } from "../protocol-provenance.mjs";
+import { registryPythonFixture } from "./helpers/registry-python-fixture.mjs";
 
 const env = {
   GITHUB_ACTIONS: "true",
@@ -144,14 +145,6 @@ if (tool === 'cargo' && args[0] === 'package') {
   fs.mkdirSync(path.join(process.env.FAKE_TARGET, 'package'), {recursive:true});
   fs.writeFileSync(path.join(process.env.FAKE_TARGET, 'package', 'mhome-core-api-${version}.crate'), 'prepared archive');
 }
-if (tool === 'python3') {
-  if (args[0] === '-c') {
-    fs.readFileSync(0);
-    console.log(process.env.FAKE_TARGET);
-  }
-  if (args.includes('exists')) process.exit(3);
-  process.exit(0);
-}
 if (tool === 'npm' && args[0] === '--version') console.log('12.2.1');
 if (tool === 'npm' && args[0] === 'pack') fs.writeFileSync(path.join(args[args.indexOf('--pack-destination')+1], 'protocol.tgz'), 'tarball');
 if ((tool === 'npm' && args[0] === 'view') || tool === 'curl') process.exit(1);
@@ -164,11 +157,15 @@ if (tool === 'npm' && args[0] === 'publish' && !args.includes('--dry-run')) {
   if (fs.readFileSync(args[args.indexOf('--provenance-file')+1], 'utf8') !== 'verified bundle') process.exit(3);
 }
 `;
-    for (const tool of ["cargo", "curl", "node", "npm", "python3"]) fs.writeFileSync(path.join(bin, tool), mock, { mode: 0o755 });
+    for (const tool of ["cargo", "curl", "node", "npm"]) fs.writeFileSync(path.join(bin, tool), mock, { mode: 0o755 });
+    fs.writeFileSync(path.join(bin, "python3"), registryPythonFixture(`
+require('node:fs').appendFileSync(process.env.CALL_LOG, JSON.stringify(['python3', ...args]) + '\\n');
+if (operation === 'exists') process.exit(3);
+`), { mode: 0o755 });
     const callLog = path.join(root, "calls.jsonl");
     try {
       const result = spawnSync("bash", [fileURLToPath(new URL("../publish-tag.sh", import.meta.url)), `mhome-core-api-v${version}`, "--publish"], {
-        cwd: root, encoding: "utf8", env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof), FAKE_TARGET: path.join(root, 'target') },
+        cwd: root, encoding: "utf8", timeout: 15000, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof), FAKE_TARGET: path.join(root, 'target') },
       });
       const calls = fs.readFileSync(callLog, "utf8").trim().split("\n").map(JSON.parse);
       const proof = calls.findIndex(([tool, arg]) => tool === "node" && arg === "scripts/protocol-provenance.mjs");

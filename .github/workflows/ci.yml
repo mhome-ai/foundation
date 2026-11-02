@@ -9,6 +9,23 @@ permissions:
   contents: read
 
 jobs:
+  release-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.22.1
+          package-manager-cache: false
+      - name: Install publication client
+        run: npm install --global npm@12.2.1 --ignore-scripts --no-audit --no-fund
+      - name: Install protocol verification tools
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify publication tools on Linux
+        run: npm run test:protocol-packages
   rust:
     runs-on: [self-hosted, macOS, ARM64, release-macos-primary]
     steps:

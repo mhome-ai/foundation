@@ -86,6 +86,11 @@ node scripts/stage-protocol-package.mjs appFacade "${staging}"
 npm pack "${staging}"
 ```
 
+Publication process tests execute the real inline Python parser and simulate
+only the Python registry CLI boundary. The ordinary CI also runs the protocol
+and publication tool tests on Linux with the release Node/npm versions, alongside
+the existing macOS CI.
+
 The published protocol packages trust GitHub Actions for organization `mhome-ai`, repository
 `foundation`, and workflow `publish-crate.yml`. That workflow runs on `ubuntu-latest`, grants
 `id-token: write`, and publishes with provenance. No npm token is required.
