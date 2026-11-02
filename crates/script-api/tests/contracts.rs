@@ -6,6 +6,36 @@ fn corpus() -> Value {
 }
 
 #[test]
+fn shared_tagged_value_corpus() {
+    let fixture = corpus();
+    for value in fixture["validValues"].as_array().unwrap() {
+        let decoded: ScriptValue = serde_json::from_value(value.clone()).unwrap();
+        decoded.validate(ValueLimits::default()).unwrap();
+        assert_eq!(serde_json::to_value(decoded).unwrap(), *value);
+    }
+    for value in fixture["invalidValues"].as_array().unwrap() {
+        let result = serde_json::from_value::<ScriptValue>(value.clone())
+            .map_err(|e| e.to_string())
+            .and_then(|value| {
+                value
+                    .validate(ValueLimits::default())
+                    .map_err(|e| e.to_string())
+            });
+        assert!(result.is_err(), "accepted invalid value: {value}");
+    }
+}
+
+#[test]
+fn shared_artifact_corpus() {
+    for entry in corpus()["validArtifacts"].as_array().unwrap() {
+        let reference: ScriptRef = serde_json::from_value(entry["reference"].clone()).unwrap();
+        let artifact: ScriptArtifact = serde_json::from_value(entry["artifact"].clone()).unwrap();
+        artifact.validate_for(&reference).unwrap();
+        assert_eq!(serde_json::to_value(artifact).unwrap(), entry["artifact"]);
+    }
+}
+
+#[test]
 fn shared_contract_corpus() {
     let fixture = corpus();
     for value in fixture["validContracts"].as_array().unwrap() {

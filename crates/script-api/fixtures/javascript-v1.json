@@ -53,5 +53,295 @@
     {"kind": "automation", "automationId": "demo", "revision": 9007199254740992, "function": "run", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
     {"kind": "automation", "automationId": "", "revision": 1, "function": "run", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
     {"kind": "wasm", "wasmId": "demo.device.run-v1"}
+  ],
+  "validValues": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "bool",
+      "value": true
+    },
+    {
+      "type": "number",
+      "value": 1.25
+    },
+    {
+      "type": "i64",
+      "value": "-9223372036854775808"
+    },
+    {
+      "type": "i64",
+      "value": "9223372036854775807"
+    },
+    {
+      "type": "u64",
+      "value": "18446744073709551615"
+    },
+    {
+      "type": "string",
+      "value": "灯💡"
+    },
+    {
+      "type": "bytes",
+      "value": "AAH/"
+    },
+    {
+      "type": "list",
+      "value": [
+        {
+          "type": "list",
+          "value": [
+            {
+              "type": "number",
+              "value": 2.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "value": {
+        "temperature": {
+          "type": "object",
+          "value": {
+            "_type": {
+              "type": "string",
+              "value": "Temperature"
+            },
+            "unit": {
+              "type": "string",
+              "value": "C"
+            },
+            "value": {
+              "type": "number",
+              "value": 23.125
+            }
+          }
+        },
+        "duration": {
+          "type": "object",
+          "value": {
+            "_type": {
+              "type": "string",
+              "value": "Duration"
+            },
+            "unit": {
+              "type": "string",
+              "value": "ms"
+            },
+            "value": {
+              "type": "number",
+              "value": 1.125
+            }
+          }
+        },
+        "timestamp": {
+          "type": "object",
+          "value": {
+            "_type": {
+              "type": "string",
+              "value": "Timestamp"
+            },
+            "value": {
+              "type": "i64",
+              "value": "1700000000000"
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "value": {
+            "_type": {
+              "type": "string",
+              "value": "Image"
+            },
+            "uri": {
+              "type": "string",
+              "value": "artifact://example/image"
+            }
+          }
+        },
+        "dynamic": {
+          "type": "object",
+          "value": {
+            "arbitrary": {
+              "type": "list",
+              "value": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "u64",
+                  "value": "18446744073709551615"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "invalidValues": [
+    {
+      "type": "i64",
+      "value": 1
+    },
+    {
+      "type": "i64",
+      "value": "01"
+    },
+    {
+      "type": "i64",
+      "value": "+1"
+    },
+    {
+      "type": "i64",
+      "value": "-0"
+    },
+    {
+      "type": "i64",
+      "value": "9223372036854775808"
+    },
+    {
+      "type": "u64",
+      "value": "-1"
+    },
+    {
+      "type": "u64",
+      "value": "18446744073709551616"
+    },
+    {
+      "type": "bytes",
+      "value": "AB=="
+    },
+    {
+      "type": "bytes",
+      "value": "AA"
+    },
+    {
+      "type": "bool",
+      "value": 1
+    },
+    {
+      "type": "number",
+      "value": "1"
+    },
+    {
+      "type": "string",
+      "value": null
+    },
+    {
+      "type": "list",
+      "value": {}
+    },
+    {
+      "type": "object",
+      "value": []
+    },
+    {
+      "type": "null",
+      "extra": true
+    },
+    {
+      "type": "bool",
+      "value": true,
+      "extra": false
+    },
+    {
+      "type": "float",
+      "value": 1
+    }
+  ],
+  "validArtifacts": [
+    {
+      "reference": {
+        "kind": "integration",
+        "packageId": "demo.device",
+        "version": 7,
+        "function": "sendCommand",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "artifact": {
+        "format": "javascript-esm",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "size": 512,
+        "sdkVersion": "0.1.0"
+      }
+    },
+    {
+      "reference": {
+        "kind": "automation",
+        "automationId": "demo-automation",
+        "revision": 23,
+        "function": "lighting",
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "artifact": {
+        "format": "javascript-esm",
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "size": 512,
+        "sdkVersion": "0.1.0",
+        "contract": {
+          "version": 1,
+          "sdkVersion": "0.1.0",
+          "input": [
+            {
+              "name": "samples",
+              "type": {
+                "list": "number"
+              }
+            },
+            {
+              "name": "settings",
+              "type": "object"
+            },
+            {
+              "name": "optionalValue",
+              "type": "value"
+            },
+            {
+              "name": "matrix",
+              "type": {
+                "list": {
+                  "list": "number"
+                }
+              }
+            },
+            {
+              "name": "temperature",
+              "type": "temperature"
+            },
+            {
+              "name": "delay",
+              "type": "duration"
+            },
+            {
+              "name": "at",
+              "type": "timestamp"
+            },
+            {
+              "name": "photo",
+              "type": "image"
+            }
+          ],
+          "output": [
+            {
+              "name": "average",
+              "type": "number"
+            },
+            {
+              "name": "enabled",
+              "type": "bool"
+            },
+            {
+              "name": "label",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
   ]
 }
