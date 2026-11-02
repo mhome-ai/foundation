@@ -1023,6 +1023,18 @@ impl Harness {
         self.wait(kind, |session| session["state"] == state).await
     }
 
+    /// Waits for a snapshot delivered to the platform event sink. Session status
+    /// can advance before the asynchronous event pump publishes that snapshot.
+    pub async fn wait_event(&self, target: &str, done: impl Fn(&Value) -> bool) -> Value {
+        for _ in 0..20_000 {
+            if let Some(event) = self.events(target).into_iter().find(|event| done(event)) {
+                return event;
+            }
+            tokio::time::sleep(Duration::from_millis(200)).await;
+        }
+        panic!("{target} never delivered the expected event");
+    }
+
     pub fn journal(&self) -> Vec<String> {
         self.journal.lock().unwrap().clone()
     }

@@ -65,6 +65,11 @@ async fn provisions_a_host_and_hands_back_its_claim_token() {
     assert_eq!(done["addresses"], json!(["192.168.0.50"]));
     assert_eq!(done["claimToken"], CLAIM_TOKEN);
     valid(&done);
+    harness
+        .wait_event(PROVISION_CHANGED_EVENT, |event| {
+            event["sessionId"] == id && event["state"] == "completed"
+        })
+        .await;
     assert!(harness.position("device:host-info:finish") < harness.position("event:completed"));
     assert!(harness.cloud.calls.lock().unwrap().is_empty());
     harness
@@ -228,6 +233,11 @@ async fn cancelling_releases_the_link_before_its_terminal_event() {
     assert_eq!(cancelling["state"], "cancelling");
     let cancelled = harness.wait_state(HOST, "cancelled").await;
     valid(&cancelled);
+    harness
+        .wait_event(PROVISION_CHANGED_EVENT, |event| {
+            event["sessionId"] == id && event["state"] == "cancelled"
+        })
+        .await;
     assert!(harness.position("device:disconnected") < harness.position("event:cancelled"));
     // A new operation can acquire the radio immediately after the terminal event.
     start(&harness).await;
@@ -309,18 +319,12 @@ async fn a_completed_handoff_is_not_exposed_to_another_account() {
 async fn logout_still_notifies_native_keepalive_after_releasing_the_old_session() {
     let harness = Harness::new();
     harness.add_device("host-a", Script::host());
-    to_wifi(&harness).await;
+    let id = to_wifi(&harness).await;
     *harness.cloud.account.lock().unwrap() = None;
-    for _ in 0..20_000 {
-        if harness
-            .events(PROVISION_CHANGED_EVENT)
-            .iter()
-            .any(|session| session["state"] == "cancelled")
-        {
-            assert!(harness.journal().contains(&"device:disconnected".into()));
-            return;
-        }
-        tokio::time::sleep(Duration::from_millis(200)).await;
-    }
-    panic!("native keep-alive was never released");
+    harness
+        .wait_event(PROVISION_CHANGED_EVENT, |event| {
+            event["sessionId"] == id && event["state"] == "cancelled"
+        })
+        .await;
+    assert!(harness.journal().contains(&"device:disconnected".into()));
 }
