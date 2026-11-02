@@ -145,7 +145,10 @@ if (tool === 'cargo' && args[0] === 'package') {
   fs.writeFileSync(path.join(process.env.FAKE_TARGET, 'package', 'mhome-core-api-${version}.crate'), 'prepared archive');
 }
 if (tool === 'python3') {
-  if (args[0] === '-c') console.log(process.env.FAKE_TARGET);
+  if (args[0] === '-c') {
+    fs.readFileSync(0);
+    console.log(process.env.FAKE_TARGET);
+  }
   if (args.includes('exists')) process.exit(3);
   process.exit(0);
 }

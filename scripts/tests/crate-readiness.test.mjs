@@ -159,7 +159,7 @@ test('dependency selection uses Cargo package names and declared pins across dep
   assert.throws(() => dependencyRequirements(metadata, 'consumer'), /unsupported release dependency/);
 });
 
-function publishFixture({packageName = 'mhome-os-permissions', packageVersion = '1.4.30', directory = 'os-permissions', dependencyFailure = false, readinessFailure = false, cargoFailure = '', published = false, dryRun = false} = {}) {
+function publishFixture({packageName = 'mhome-os-permissions', packageVersion = '1.4.30', directory = 'os-permissions', dependencyFailure = false, readinessFailure = false, cargoFailure = '', published = false, dryRun = false, slowMetadata = false} = {}) {
   const root = mkdtempSync(join(tmpdir(), 'foundation-publish-index-'));
   try {
     const bin = join(root, 'bin');
@@ -175,7 +175,10 @@ exit "$READINESS_STATUS"`);
     executable('cargo', `
 printf 'cargo %s\\n' "$*" >> "$AUDIT"
 if [[ "$1" == "$CARGO_FAILURE" ]]; then exit 101; fi
-if [[ "$1" == metadata ]]; then printf '{"target_directory":"%s/target"}\n' "$PWD"; fi
+if [[ "$1" == metadata ]]; then
+  if [[ "$SLOW_METADATA" == 1 ]]; then sleep 0.1; fi
+  printf '{"target_directory":"%s/target"}\n' "$PWD"
+fi
 if [[ "$1" == publish && "$*" == *--dry-run* ]]; then
   mkdir -p target/package/tmp-crate
   printf temporary > "target/package/tmp-crate/$PACKAGE_NAME-$PACKAGE_VERSION.crate"
@@ -190,7 +193,11 @@ fi`);
     executable('curl', 'exit "$UPLOAD_API_STATUS"');
     executable('npm', 'printf \'npm %s\\n\' "$*" >> "$AUDIT"; exit 99');
     executable('python3', `
-if [[ "$1" == -c ]]; then printf '%s/target\n' "$PWD"; exit 0; fi
+if [[ "$1" == -c ]]; then
+  cat >/dev/null
+  printf '%s/target\n' "$PWD"
+  exit 0
+fi
 printf 'registry %s\n' "$*" >> "$AUDIT"
 if [[ "$3" == exists ]]; then
   if [[ "$UPLOAD_API_STATUS" == 0 ]]; then exit 0; else exit 3; fi
@@ -203,6 +210,7 @@ fi`);
         DEPENDENCY_STATUS: dependencyFailure ? '1' : '0', READINESS_STATUS: readinessFailure ? '1' : '0',
         CARGO_FAILURE: cargoFailure, UPLOAD_API_STATUS: published ? '0' : '22',
         PACKAGE_NAME: packageName, PACKAGE_VERSION: packageVersion,
+        SLOW_METADATA: slowMetadata ? '1' : '0',
       },
     });
     return {...result, commands: readFileSync(audit, 'utf8').trim().split('\n')};
@@ -239,6 +247,11 @@ test('publishing waits for dependencies before Cargo and checks its own index af
   const verified = result.commands.findIndex((line) => /registry .* verify crate mhome-os-permissions 1.4.30 /.test(line));
   assert.ok(index >= 0 && verified > index);
   assert.equal(result.commands.filter((line) => line.startsWith('cargo publish') && !line.includes('--dry-run')).length, 1);
+});
+
+test('metadata parsing consumes delayed Cargo output without closing its pipe early', () => {
+  const result = publishFixture({slowMetadata: true});
+  assert.equal(result.status, 0, result.stderr);
 });
 
 test('unavailable dependency blocks packaging and upload', () => {

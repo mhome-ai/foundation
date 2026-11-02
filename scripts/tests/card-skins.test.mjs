@@ -14,13 +14,15 @@ ajv.addSchema(read("schema/card-skin-package.v1.schema.json"));
 ajv.addSchema(wire);
 const valid = (definition, value) => ajv.validate({ $ref: `${wire.$id}#/definitions/${definition}` }, value);
 test("Space edits require an explicit revision and cannot supply release data", () => {
-  const input = { expectedRevision: null, packageId: "example.evening", version: "1.0.0" };
+  const input = { expectedRevision: null, packageId: "example.evening", version: "1.0.0", baseUi: "default" };
   assert.ok(valid("install", input));
   for (const extra of ["releaseId", "manifest", "baseUrl", "spaceId", "tenantId", "authorUserId"])
     assert.equal(valid("install", { ...input, [extra]: "forged" }), false);
   assert.equal(valid("install", { packageId: input.packageId, version: input.version }), false);
   assert.equal(valid("install", { ...input, expectedRevision: false }), false);
-  assert.ok(valid("overrideSet", { expectedRevision: "r1", patternId: "basic.device.onoff_brightness_color", installationId: "install", rendererId: "evening-light", config: {} }));
+  const { baseUi, ...withoutBaseUi } = input;
+  assert.equal(valid("install", withoutBaseUi), false);
+  assert.ok(valid("overrideSet", { expectedRevision: "r1", patternId: "basic.device.onoff_brightness_color", installationId: "install", rendererId: "evening-light", config: {}, baseUi }));
 });
 test("card skin routes share one policy and schema inventory", () => {
   const requests = read("manifest/app-facade.v1.json").domains.cardSkins.requests;
@@ -33,9 +35,9 @@ test("card skin routes share one policy and schema inventory", () => {
     assert.ok(policies[target], target);
   }
 });
-test("the package protocol bounds binary uploads without changing skin interfaces", () => {
+test("the v2 package protocol bounds binary uploads", () => {
   const schema = read("schema/card-skin-package.v1.schema.json");
-  assert.equal(schema.properties.apiVersion.const, 1);
+  assert.equal(schema.properties.apiVersion.const, 2);
   assert.equal(schema.properties.files.maxItems, 128);
   assert.equal(schema.definitions.file.properties.sizeBytes.maximum, 8 * 1024 * 1024);
   assert.ok(ajv.validateSchema(schema));
