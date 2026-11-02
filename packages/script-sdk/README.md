@@ -30,6 +30,20 @@ Requests preserve native values, including BigInt; sends use the channel's JSON
 transport. `getChannelContext` reads the trusted context inside a channel hook.
 Only an explicit disconnect stops the business channel; a script timeout does not.
 
+`mapEndpoint`, `getEndpoint` and `unmapEndpoint` manage subscription routing in the
+current Space. Store the opaque endpoint supplied by Core unchanged; the mapping
+is not general-purpose provider storage. Core validates route syntax and Space
+ownership. `webhookUrl` constructs the callback URL from that endpoint and Core's
+trusted callback origin. Missing mappings return `null`; successful writes are
+not rolled back if a later script step fails.
+
+`nextSequence(namespace)` returns a process-local Number starting at 1, scoped to
+the current tenant, Space, Integration and connection. Reuse stable namespaces;
+this is a request counter, not a durable or distributed ID. Counters reset when
+the process restarts and fail rather than wrap at 899,999,999. Core bounds the
+registry to 16,384 namespaces and each namespace to 1,024 UTF-8 bytes; saturation
+does not evict live counters.
+
 `readArtifact(image)` accepts an Image/URI in the current Space and returns a
 `Uint8Array`, with an 8 MiB default read limit. Use it inside a script with a bundled
 image decoder, then return computed business fields or an artifact URI. Binary

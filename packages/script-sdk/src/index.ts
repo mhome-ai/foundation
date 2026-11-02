@@ -72,6 +72,30 @@ export async function randomU64(): Promise<bigint> {
   return await call("random.u64", []) as bigint;
 }
 
+/** Process-local request IDs, isolated by the current Space/Integration/connection.
+ * Reuse a stable namespace; counters reset on process restart, not per invocation.
+ */
+export async function nextSequence(namespace: string): Promise<number> {
+  return await call("sequence.next", [namespace]) as number;
+}
+
+export interface EndpointKey { category: string; subscriptionId: string }
+/** Store the opaque endpoint supplied by Core when subscribing. This is not a cache. */
+export async function mapEndpoint(request: EndpointKey & { endpoint: string }): Promise<void> {
+  await call("endpoint.map", [request as unknown as Value]);
+}
+export async function getEndpoint(key: EndpointKey): Promise<string | null> {
+  return await call("endpoint.get", [key as unknown as Value]) as string | null;
+}
+/** Explicitly remove a mapping and return its previous endpoint, or null. */
+export async function unmapEndpoint(key: EndpointKey): Promise<string | null> {
+  return await call("endpoint.unmap", [key as unknown as Value]) as string | null;
+}
+/** The callback origin comes from Core; scripts cannot select another Host. */
+export async function webhookUrl(endpoint: string): Promise<string> {
+  return await call("webhook.url", [{ endpoint }]) as string;
+}
+
 /** Read an artifact owned by the invocation's current Space into Uint8Array. */
 export async function readArtifact(reference: Image | string, maxBytes = 8 * 1024 * 1024): Promise<Uint8Array> {
   return await call("artifact.read", [{ uri: typeof reference === "string" ? reference : reference.uri, maxBytes }]) as Uint8Array;

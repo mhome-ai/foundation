@@ -34,6 +34,23 @@ async function typedHostResults() {
   await sendChannel({id: "runtime-id"});
 }
 
+async function subscriptionRouting() {
+  const sdk = await import("../src/index.js");
+  const key = {category: "provider.events", subscriptionId: "device|state"};
+  await sdk.mapEndpoint({...key, endpoint: "core-provided-route"});
+  const endpoint: string | null = await sdk.getEndpoint(key);
+  if (endpoint !== null) { const url: string = await sdk.webhookUrl(endpoint); void url; }
+  const removed: string | null = await sdk.unmapEndpoint(key);
+  const sequence: number = await sdk.nextSequence("device-requests");
+  void [removed, sequence];
+  // @ts-expect-error mapping values are opaque routes, not arbitrary provider cache objects
+  await sdk.mapEndpoint({...key, endpoint: {sleepy: true}});
+  // @ts-expect-error Space identity comes from Core
+  await sdk.getEndpoint({...key, scopeId: "foreign"});
+  // @ts-expect-error webhook origins cannot be selected by a script
+  await sdk.webhookUrl({endpoint: "route", callbackBase: "http://foreign.test"});
+}
+
 const script = defineScript({
   input: {
     samples: t.list(t.number),
