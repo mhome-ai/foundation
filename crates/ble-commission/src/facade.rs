@@ -399,6 +399,12 @@ async fn wifi(
             return Err(busy());
         }
         live.busy = true;
+        if kind == DeviceKind::Host {
+            // The device may apply the settings before its BLE reply arrives.
+            // Reserve the critical section atomically with accepting the command.
+            live.set(Phase::JoiningWifi, None);
+            live.revision += 1;
+        }
         Ok(Some(Op::Wifi { ssid, password }))
     })
     .await

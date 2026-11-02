@@ -55,6 +55,55 @@ fn valid(session: &Value) {
 }
 
 #[tokio::test(start_paused = true)]
+async fn wifi_submission_reserves_the_critical_section_before_the_device_reply() {
+    let harness = Harness::new();
+    let device = harness.add_device("host-a", Script::host());
+    let id = to_wifi(&harness).await;
+    *device.response_delay.lock().unwrap() = Duration::from_secs(2);
+    let cancellation = async {
+        loop {
+            if harness
+                .journal()
+                .iter()
+                .any(|entry| entry == "device:apply")
+            {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(1)).await;
+        }
+        assert_eq!(
+            harness
+                .reason("/local/host/provision/cancel", json!({"sessionId": id}))
+                .await,
+            "busy"
+        );
+        let status = harness.ok("/local/host/provision/status", json!({})).await;
+        assert_eq!(status["session"]["state"], "joining_wifi");
+    };
+    tokio::join!(join(&harness, &id), cancellation);
+    let done = harness.wait_state(HOST, "completed").await;
+    assert_eq!(done["claimToken"], CLAIM_TOKEN);
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_rejected_wifi_apply_releases_the_critical_section_for_an_explicit_retry() {
+    let harness = Harness::new();
+    let mut script = Script::host();
+    script.reject_wifi_apply = true;
+    let device = harness.add_device("host-a", script);
+    let id = to_wifi(&harness).await;
+    let rejected = join(&harness, &id).await;
+    assert_eq!(rejected["state"], "awaiting_wifi");
+    assert_eq!(rejected["error"]["code"], "wifi_failed");
+    valid(&rejected);
+    device.script.lock().unwrap().reject_wifi_apply = false;
+    join(&harness, &id).await;
+    let done = harness.wait_state(HOST, "completed").await;
+    assert_eq!(done["claimToken"], CLAIM_TOKEN);
+    assert!(harness.position("device:reset") > harness.position("device:apply"));
+}
+
+#[tokio::test(start_paused = true)]
 async fn provisions_a_host_and_hands_back_its_claim_token() {
     let harness = Harness::new();
     harness.add_device("host-a", Script::host());

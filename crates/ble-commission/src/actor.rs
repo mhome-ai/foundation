@@ -569,7 +569,11 @@ impl Actor {
     }
 
     async fn wifi(&mut self, ssid: String, password: String) {
-        if self.engine.phase(self.kind, &self.id) != Some(Phase::AwaitingWifi) {
+        let accepted_phase = match self.kind {
+            DeviceKind::Host => Phase::JoiningWifi,
+            DeviceKind::Pod => Phase::AwaitingWifi,
+        };
+        if self.engine.phase(self.kind, &self.id) != Some(accepted_phase) {
             return;
         }
         let Some(client) = self.client() else {
@@ -606,13 +610,14 @@ impl Actor {
                     ));
                 }
                 self.join_failed = true;
-                self.update(|live| {
-                    live.error = Some(error(
+                self.enter(
+                    Phase::AwaitingWifi,
+                    Some(error(
                         CommissionErrorCode::WifiFailed,
                         &format!("The {} could not use this Wi-Fi network.", noun(self.kind)),
                         Some(failure.to_string()),
-                    ))
-                });
+                    )),
+                );
             }
         }
     }

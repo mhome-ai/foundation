@@ -101,7 +101,9 @@ leaving a page does not cancel it and callers do not renew it.
 Host provisioning supports `/local/host/provision/cancel`. Cancellation remains
 `cancelling` until the native link is closed, including a connection that completes
 after cancellation was requested; late work cannot reopen the setup state.
-Wi-Fi join/token handoff cannot be cancelled. Host sessions belong to the signed-in
+Accepting a Host Wi-Fi submission reserves the uncancellable join/token handoff
+before any device write; a rejected apply returns to retryable Wi-Fi input.
+Host sessions belong to the signed-in
 account context, and an account change retires their handoff. A completed Host
 session hands network information and an optional first-claim token to the App;
 explicit LAN claim and cloud confirmation still establish ownership. An unclaimed

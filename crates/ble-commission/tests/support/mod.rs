@@ -76,6 +76,7 @@ pub struct Script {
     pub kept_wifi_connecting_polls: u32,
     pub join: Join,
     pub join_connecting_polls: u32,
+    pub reject_wifi_apply: bool,
     pub wifi_save_pending_polls: u32,
     pub activation: Activation,
     pub deliver_ok: bool,
@@ -109,6 +110,7 @@ impl Script {
             kept_wifi_connecting_polls: 0,
             join: Join::Connected("192.168.0.50"),
             join_connecting_polls: 2,
+            reject_wifi_apply: false,
             wifi_save_pending_polls: 0,
             activation: Activation::Commissioned { after_polls: 2 },
             deliver_ok: true,
@@ -176,6 +178,8 @@ struct DeviceState {
 }
 
 pub struct FakeDevice {
+    /// Simulate a device processing a request before its reply reaches the Client.
+    pub response_delay: Mutex<Duration>,
     pub script: Mutex<Script>,
     pub deliveries: Mutex<Vec<Value>>,
     state: Mutex<DeviceState>,
@@ -195,6 +199,7 @@ impl FakeDevice {
             Sta::Idle
         };
         Arc::new(Self {
+            response_delay: Mutex::new(Duration::ZERO),
             state: Mutex::new(DeviceState {
                 responder: SessionResponder::new("meow", salt, verifier),
                 sta,
@@ -389,9 +394,15 @@ impl FakeDevice {
             }
             _ => {
                 note(&self.journal, "device:apply");
-                state.sta = Sta::Joining { polls: 0 };
+                if !script.reject_wifi_apply {
+                    state.sta = Sta::Joining { polls: 0 };
+                }
                 Payload::RespApplyConfig(proto::RespApplyConfig {
-                    status: Status::Success as i32,
+                    status: if script.reject_wifi_apply {
+                        Status::InternalError as i32
+                    } else {
+                        Status::Success as i32
+                    },
                 })
             }
         };
@@ -582,11 +593,14 @@ impl Link for FakeDevice {
         if !self.connected.load(Ordering::SeqCst) {
             return Err(LinkError::Disconnected("not connected".into()));
         }
-        match endpoint {
+        let response = match endpoint {
             "proto-ver" => Ok(self.version().to_string().into_bytes()),
             "prov-session" => self.session(request),
             _ => self.encrypted(endpoint, request),
-        }
+        };
+        let delay = *self.response_delay.lock().unwrap();
+        tokio::time::sleep(delay).await;
+        response
     }
 
     async fn is_connected(&self) -> bool {
