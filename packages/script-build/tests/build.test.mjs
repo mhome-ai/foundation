@@ -22,6 +22,7 @@ test("one declaration produces exact contract, deterministic JavaScript and hash
   assert.deepEqual(a.artifact.contract.input, [{name:"samples", type:{list:"number"}}, {name:"settings",type:"object"}, {name:"anything",type:"value"}]);
   assert.ok(!a.javascript.includes("from\"@meowlink/script\""));
   assert.ok(!a.javascript.includes("/Users/"));
+  assert.ok(!a.javascript.includes("@meowlink/script/host"));
   // Test the built pure result, never run untrusted source inside the build path.
   const module = await import(`data:text/javascript;base64,${Buffer.from(a.javascript).toString("base64")}`);
   assert.deepEqual(await module.default({samples:[2,4],settings:{},anything:null}), {average:3,labels:["ready"]});
@@ -75,6 +76,16 @@ test("validates source identity, exact SDK, UTF-8 size and cancellation", async 
   await assert.rejects(buildAutomation({function:"bad",source:"猫".repeat(100_000)}), (e)=>e.code === "INVALID_SOURCE");
   const abort = new AbortController(); abort.abort();
   await assert.rejects(buildAutomation({function:"bad",source:sample,signal:abort.signal}), (e)=>e.name === "AbortError");
+});
+
+test("SDK host helper keeps native import and never bundles the Node fallback", async () => {
+  const source = `import {defineScript,t,readArtifact} from '@meowlink/script';
+  export default defineScript({input:{uri:t.string},output:{size:t.number},
+    async run({uri}){return {size:(await readArtifact(uri)).byteLength}}});`;
+  const {javascript} = await buildAutomation({function:"read",source});
+  assert.ok(javascript.includes("@meowlink/script/host"));
+  assert.ok(javascript.includes("artifact.read"));
+  assert.ok(!javascript.includes("bindings are unavailable"));
 });
 
 test("Rust execution fixture matches the actual managed build", async () => {

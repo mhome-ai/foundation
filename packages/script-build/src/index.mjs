@@ -105,7 +105,9 @@ export async function buildAutomation({ function: name, source, sdkVersion = SDK
       keepNames: true,
       plugins: [{ name: "managed-script-imports", setup(build) {
         build.onResolve({ filter: /.*/ }, (args) => {
-          if (args.path === HOST_MODULE) return { path: args.path, external: true };
+          // Native module evaluation only declares bindings. Drop unused imports
+          // so pure scripts do not require host bindings for side effects.
+          if (args.path === HOST_MODULE) return { path: args.path, external: true, sideEffects: false };
           if (args.path === "@meowlink/script") return { path: sdkEntry };
           return { errors: [{ text: `Unsupported Automation import: ${args.path}` }] };
         });

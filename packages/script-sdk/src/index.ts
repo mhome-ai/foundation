@@ -1,4 +1,5 @@
 /** Authoring helpers only. Privileged host modules are installed by the runtime. */
+import { call } from "@meowlink/script/host";
 export const SDK_VERSION = "0.1.0";
 
 // Preserve the existing platform's explicit domain-object shape. Values are in
@@ -24,13 +25,57 @@ export interface Image {
   readonly uri: string;
 }
 
+export interface CalendarDate {
+  readonly _type: "DateGeneral";
+  readonly value: string;
+}
+
+export interface ClockTime {
+  readonly _type: "TimeGeneral";
+  readonly value: string;
+}
+
+export interface LocalDateTime {
+  readonly _type: "LocalDateTime";
+  readonly value: string;
+}
+
 /** Dynamic business objects remain objects; no generated nested struct is required. */
 export interface ScriptObject {
   [key: string]: Value;
 }
 
 export type Value = null | boolean | number | bigint | string
-  | Temperature | Duration | Timestamp | Image | Uint8Array | ScriptObject | Value[];
+  | Temperature | Duration | Timestamp | Image | CalendarDate | ClockTime | LocalDateTime
+  | Uint8Array | ScriptObject | Value[];
+
+export interface RuntimeContext {
+  readonly tenantId: string;
+  readonly scopeId: string;
+  readonly integrationId: string | null;
+  readonly connectId: string | null;
+  readonly operationId: string | null;
+  readonly stableId: string;
+}
+
+/** Identity is supplied by the host. Arguments cannot replace tenant or Space. */
+export async function getRuntimeContext(): Promise<RuntimeContext> {
+  return await call("runtime.context", []) as unknown as RuntimeContext;
+}
+
+/** Awaited request work: this never obtains a new deadline or launches a timer task. */
+export async function sleep(milliseconds: number): Promise<void> {
+  await call("time.sleep", [milliseconds]);
+}
+
+export async function randomU64(): Promise<bigint> {
+  return await call("random.u64", []) as bigint;
+}
+
+/** Read an artifact owned by the invocation's current Space into Uint8Array. */
+export async function readArtifact(reference: Image | string, maxBytes = 8 * 1024 * 1024): Promise<Uint8Array> {
+  return await call("artifact.read", [{ uri: typeof reference === "string" ? reference : reference.uri, maxBytes }]) as Uint8Array;
+}
 
 export interface ScalarValues {
   bool: boolean;

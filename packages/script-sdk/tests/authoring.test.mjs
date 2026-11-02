@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { defineScript, t, ScriptError, SDK_VERSION } from "../dist/index.js";
+import { defineScript, t, ScriptError, SDK_VERSION, readArtifact, getRuntimeContext } from "../dist/index.js";
 
 test("declaration is lazy and invocation returns unwrapped business data", async () => {
   let calls = 0;
@@ -33,4 +33,9 @@ test("SDK descriptors match canonical metadata, including nested lists", async (
   assert.deepEqual(Object.entries(input).map(([name, type]) => ({ name, type })), contract.input);
   assert.equal(Object.isFrozen(t), true);
   assert.equal(Object.isFrozen(input.matrix), true);
+});
+
+test("author tooling cannot accidentally execute privileged host operations", async () => {
+  await assert.rejects(readArtifact("artifact://fictional/image"), /host bindings are unavailable/);
+  await assert.rejects(getRuntimeContext(), /host bindings are unavailable/);
 });

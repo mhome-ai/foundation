@@ -96,12 +96,26 @@ when translating domain values; do not reuse the old f32 quantity encoding or
 truncate fractional milliseconds. Other Core domain kinds remain part of dynamic
 Value transport and must not be silently coerced to ordinary strings or numbers.
 
+Calendar/recurring dates use `{_type: "DateGeneral", value: string}` and clock/solar
+times use `{_type: "TimeGeneral", value: string}`. Solar offsets remain explicit,
+including zero offsets, to retain their units. Local date-times use
+`{_type: "LocalDateTime", value: ISO-local-string}` without timezone conversion.
+Clock/local date-time values retain fractional seconds. Core engine results have
+signed 64-bit integers and no binary-buffer variant: out-of-range u64 results and
+Uint8Array results fail explicitly. Binary buffers remain usable between JS and
+host APIs; return an artifact URI or an explicit number array to the engine.
+
 Host APIs expose capabilities through platform modules. Pure helpers may be bundled;
 privileged implementations are Rust/native bindings. No filesystem module loader,
 Node process/require API or native dynamic module loader is provided. This is not
 a complete Node or browser environment. Runtime context cannot be supplied or
 replaced by script arguments. IO and return conversion have explicit byte/depth
 limits in addition to the JS heap limit.
+
+The SDK does not expose the former generic client-request capability (arbitrary
+clientId plus target). Core's internal client communication remains internal.
+Future client-facing capabilities require a concrete purpose and authorization
+against the trusted invocation's tenant/Space; an arbitrary target is not a scope.
 
 Core/Lion retain installation, connections, Flow, endpoints, subscriptions and
 long-lived transports. Scripts are bounded functions and channel hooks, not service
