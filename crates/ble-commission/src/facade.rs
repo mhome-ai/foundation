@@ -233,13 +233,11 @@ async fn start(
     let account = engine.platform.cloud.account().await.ok_or_else(|| {
         RequestError::rejected(Reason::NotSignedIn, "sign in before adding a device")
     })?;
-    if kind == DeviceKind::Pod {
-        if account.scopes.is_empty() {
-            return Err(RequestError::rejected(
-                Reason::ScopeNotOffered,
-                "the account has no Space",
-            ));
-        }
+    if kind == DeviceKind::Pod && account.scopes.is_empty() {
+        return Err(RequestError::rejected(
+            Reason::ScopeNotOffered,
+            "the account has no Space",
+        ));
     }
     let now = engine.now_ms();
     let (snapshot, id, peripheral_id, commands, cancel) = {
