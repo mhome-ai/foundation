@@ -202,8 +202,8 @@ Callers supply the known `ResponseDetail`; the renderer preserves Full JSON and 
 Essential YAML with partial outcomes, warnings and late error observations intact.
 It does not change the stored result or choose domain business fields.
 
-`execution::essential_yaml` is the common Essential serializer: it omits
-null-valued object fields recursively while preserving array positions, root null,
-empty collections, false, zero and all string content. App Facade projections,
-Agent workflow results and provider-visible diagnostics use the same rule; Full
-business values and persisted execution state are unchanged.
+`execution::essential_yaml` serializes an already selected Essential projection without
+removing null or other business values. Domain projections own optional field omission;
+the serializer preserves explicit null, array positions, empty collections, false, zero
+and string content. Late warnings and errors use the same lossless rule. Full business
+values and persisted execution state are unchanged.

@@ -167,6 +167,8 @@ pub fn essential(target: &str, data: &Value) -> Value {
         result
     } else if let Some(result) = runtime::project(target, data) {
         result
+    } else if target == "/app/widget/list" {
+        widget_list(data)
     } else if target == "/app/widget/detail/get" {
         widget_definition(data)
     } else if target == "/app/device/list" {
@@ -184,6 +186,23 @@ pub fn essential(target: &str, data: &Value) -> Value {
     }
 }
 
+// Omit only absent optional definition metadata, never runtime values or user objects.
+fn widget_list(data: &Value) -> Value {
+    let mut result = data.clone();
+    if let Some(widgets) = result.get_mut("widgets").and_then(Value::as_array_mut) {
+        for widget in widgets {
+            if let Some(fields) = widget.as_object_mut() {
+                for key in ["name", "description", "tag", "dataType", "repeated"] {
+                    if fields.get(key).is_some_and(Value::is_null) {
+                        fields.remove(key);
+                    }
+                }
+            }
+        }
+    }
+    result
+}
+
 // Keep editable configuration and identity; UI rendering helpers are not model context.
 fn widget_definition(data: &Value) -> Value {
     let mut result = data.clone();
@@ -192,6 +211,26 @@ fn widget_definition(data: &Value) -> Value {
             if let Some(widget) = item.get_mut("widget").and_then(Value::as_object_mut) {
                 for field in ["displayName", "global", "baseId", "steps", "stepUnits"] {
                     widget.remove(field);
+                }
+                for field in [
+                    "description",
+                    "tag",
+                    "dataType",
+                    "repeated",
+                    "options",
+                    "min",
+                    "max",
+                    "step",
+                    "label",
+                    "location",
+                    "schedules",
+                    "curve",
+                    "offset",
+                    "multiplier",
+                ] {
+                    if widget.get(field).is_some_and(Value::is_null) {
+                        widget.remove(field);
+                    }
                 }
             }
         }

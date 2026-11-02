@@ -169,3 +169,41 @@ fn card_skin_edits_require_an_explicit_ui_base() {
         assert!(!validator.is_valid(&invalid));
     }
 }
+
+#[test]
+fn unset_widget_values_and_history_survive_final_warning_rendering() {
+    use serde_json::json;
+    for (target, data) in [
+        (
+            "/app/widget/value/get",
+            json!({"items":[{"requestedId":"value-d","found":true,"resource":{"widgetId":"value-d","revision":1,"value":null}}]}),
+        ),
+        (
+            "/app/widget/history/list",
+            json!({"history":[{"timestamp":1767225600,"value":null}]}),
+        ),
+        (
+            "/app/widget/value/get",
+            json!({"items":[{"requestedId":"value-d","found":true,"resource":{"widgetId":"value-d","revision":1,"value":{"custom":null}}}]}),
+        ),
+    ] {
+        let settled = app_facade_api::FacadeResponse::success(data.clone()).with_warning(
+            app_facade_api::FacadeProblem {
+                code: "OBSERVATION".into(),
+                message: "Read completed".into(),
+                details: None,
+            },
+        );
+        let essential =
+            response::render(target, settled.clone(), ResponseDetail::Essential).unwrap();
+        let full = response::render(target, settled.clone(), ResponseDetail::Full).unwrap();
+        assert_eq!(full, settled);
+        let envelope = serde_json::to_value(essential).unwrap();
+        let visible: Value =
+            serde_yaml::from_str(&response::tool_text(&envelope, ResponseDetail::Essential))
+                .unwrap();
+        let mut expected = data;
+        response::time::localize(target, &mut expected, "UTC");
+        assert_eq!(visible["result"], expected);
+    }
+}

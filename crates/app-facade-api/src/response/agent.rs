@@ -78,7 +78,8 @@ fn mappings(value: &mut Value) {
 
 fn retain(value: &mut Value, keys: &[&str]) {
     if let Some(fields) = value.as_object_mut() {
-        fields.retain(|key, _| keys.contains(&key.as_str()));
+        // These selected settings fields are optional metadata, never arbitrary state values.
+        fields.retain(|key, value| keys.contains(&key.as_str()) && !value.is_null());
     }
 }
 

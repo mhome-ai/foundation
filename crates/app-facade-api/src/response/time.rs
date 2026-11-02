@@ -38,7 +38,13 @@ pub fn format_millis(value: i64, home_timezone: &str) -> Option<String> {
     DateTime::<Utc>::from_timestamp_millis(value).map(|instant| {
         format!(
             "{} ({zone})",
-            instant.with_timezone(&zone).format("%Y-%m-%d %H:%M:%S %:z")
+            instant
+                .with_timezone(&zone)
+                .format(if value.rem_euclid(1000) == 0 {
+                    "%Y-%m-%d %H:%M:%S %:z"
+                } else {
+                    "%Y-%m-%d %H:%M:%S%.3f %:z"
+                })
         )
     })
 }
@@ -92,6 +98,21 @@ fn visit(value: &mut Value, path: &[&str], multiplier: i64, typed: bool, zone: &
 mod tests {
     use super::*;
     use serde_json::json;
+    #[test]
+    fn fractional_milliseconds_are_preserved_including_before_epoch() {
+        assert_eq!(
+            format_millis(123, "UTC").unwrap(),
+            "1970-01-01 00:00:00.123 +00:00 (UTC)"
+        );
+        assert_eq!(
+            format_millis(-1, "Asia/Shanghai").unwrap(),
+            "1970-01-01 07:59:59.999 +08:00 (Asia/Shanghai)"
+        );
+        assert_eq!(
+            format_millis(0, "UTC").unwrap(),
+            "1970-01-01 00:00:00 +00:00 (UTC)"
+        );
+    }
     #[test]
     fn explicit_paths_units_dst_and_payload_isolation() {
         let mut activity = json!({"activities":[{"timestamp":1730615400000_i64,"state":{"timestamp":1730615400000_i64}}]});

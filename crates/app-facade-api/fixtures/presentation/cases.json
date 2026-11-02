@@ -314,14 +314,14 @@
     "essential": {
       "since": "10min",
       "from": 0,
-      "until": "1970-01-01 00:00:00 +00:00 (UTC)",
+      "until": "1970-01-01 00:00:00.100 +00:00 (UTC)",
       "activities": [
         {
           "automationId": "a1",
           "automationName": "Morning",
           "automationType": "TASK_FLOW",
           "activityType": "RUN_FAILED",
-          "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)",
+          "timestamp": "1970-01-01 00:00:00.100 +00:00 (UTC)",
           "instanceId": "run",
           "threadId": 0,
           "singleUse": false
@@ -377,7 +377,7 @@
           "name": "Morning",
           "threadId": 0,
           "instanceId": "run",
-          "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)",
+          "timestamp": "1970-01-01 00:00:00.100 +00:00 (UTC)",
           "status": "failed",
           "reportMode": "STD",
           "logCount": 2,
@@ -389,18 +389,18 @@
             "code": "TIMEOUT"
           },
           "revision": 3,
-          "startedAt": "1970-01-01 00:00:00 +00:00 (UTC)",
-          "finishedAt": "1970-01-01 00:00:00 +00:00 (UTC)",
+          "startedAt": "1970-01-01 00:00:00.090 +00:00 (UTC)",
+          "finishedAt": "1970-01-01 00:00:00.100 +00:00 (UTC)",
           "logs": [
             {
               "level": "INFO",
               "message": "Invoked device",
-              "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)"
+              "timestamp": "1970-01-01 00:00:00.100 +00:00 (UTC)"
             },
             {
               "level": "ERROR",
               "message": "Timed out",
-              "timestamp": "1970-01-01 00:00:00 +00:00 (UTC)"
+              "timestamp": "1970-01-01 00:00:00.100 +00:00 (UTC)"
             }
           ]
         }
@@ -430,7 +430,7 @@
       "snapshots": [
         {
           "snapshotId": "v1",
-          "createdAt": "1970-01-01 00:00:00 +00:00 (UTC)",
+          "createdAt": "1970-01-01 00:00:00.090 +00:00 (UTC)",
           "description": "Prior behavior",
           "automationType": "TASK_FLOW"
         }
@@ -669,7 +669,8 @@
           "capabilityId": "command.onOff",
           "data": {
             "value": false,
-            "level": 0
+            "level": 0,
+            "optional": null
           },
           "traceSteps": [
             {
@@ -753,7 +754,9 @@
           "deviceName": "Button",
           "capabilityId": "event.click",
           "changedAt": "2026-10-27 01:59:58 +00:00 (UTC)",
-          "event": {}
+          "event": {
+            "value": null
+          }
         },
         {
           "deviceId": "d4",
@@ -1136,7 +1139,10 @@
     "status": "success",
     "essential": {
       "spaceId": "space-demo",
-      "configured": false
+      "configured": false,
+      "hub": null,
+      "operation": null,
+      "revocation": null
     }
   },
   {
@@ -1201,7 +1207,8 @@
           "activatedAt": 1800000001000,
           "connection": {
             "state": "unknown",
-            "source": "unavailable"
+            "source": "unavailable",
+            "spaceId": null
           }
         }
       ],
@@ -1277,7 +1284,8 @@
           "status": "active",
           "providerData": {
             "botUsername": "ExampleBot"
-          }
+          },
+          "statusMessage": null
         }
       ]
     }
@@ -1355,11 +1363,13 @@
               "toVersion": "1.0.0",
               "compatibility": {
                 "coreProtocol": 1
-              }
+              },
+              "fromVersion": null
             }
           ]
         }
-      }
+      },
+      "error": null
     }
   },
   {
@@ -1380,7 +1390,9 @@
       "hostId": "host-demo",
       "state": "queued",
       "phase": "queued",
-      "updatedAtMs": 1800000000000
+      "updatedAtMs": 1800000000000,
+      "error": null,
+      "result": null
     }
   },
   {
@@ -1402,7 +1414,8 @@
       "state": "failed",
       "phase": "interrupted",
       "updatedAtMs": 1800000000000,
-      "error": "Host operation interrupted"
+      "error": "Host operation interrupted",
+      "result": null
     }
   },
   {
@@ -1572,7 +1585,9 @@
                   "supported": true,
                   "selectable": true,
                   "structurallyValid": false,
-                  "reason": "Repair required"
+                  "reason": "Repair required",
+                  "enabled": null,
+                  "catalogError": null
                 }
               ],
               "runtime": {
@@ -1610,18 +1625,24 @@
                           "toVersion": "1.0.0",
                           "compatibility": {
                             "coreProtocol": 1
-                          }
+                          },
+                          "fromVersion": null
                         }
                       ]
                     }
-                  }
+                  },
+                  "error": null
                 }
               ],
               "protocolVersion": 1,
               "platform": "macos-arm64",
               "managementMode": "desktop",
               "catalogLoading": false,
-              "pluginCatalogLoading": false
+              "pluginCatalogLoading": false,
+              "unsupportedReason": null,
+              "pluginCatalogError": null,
+              "runtimeError": null,
+              "catalogError": null
             }
           }
         },
@@ -1633,7 +1654,8 @@
           "detail": {
             "status": "unavailable",
             "error": "notObserved",
-            "stale": false
+            "stale": false,
+            "data": null
           }
         }
       ],
@@ -1978,7 +2000,9 @@
     "status": "success",
     "essential": {
       "name": "Example user",
-      "email": "user@example.com"
+      "email": "user@example.com",
+      "avatarUrl": null,
+      "avatarExpiresAtMs": null
     }
   },
   {
@@ -2011,7 +2035,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2021,7 +2045,7 @@
           "modes": [
             {
               "mode": "auto",
-              "displayName": "\u81ea\u52a8",
+              "displayName": "自动",
               "description": null,
               "requirements": {
                 "modelType": "chat",
@@ -2046,7 +2070,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2082,7 +2106,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2137,7 +2161,11 @@
           "provider": "local_example",
           "model": "demo-chat",
           "source": "override",
-          "configuredModel": "demo-chat"
+          "configuredModel": "demo-chat",
+          "fastMode": null,
+          "thinking": null,
+          "reasoningEffort": null,
+          "temperature": null
         }
       ],
       "defaultProviders": [
@@ -2150,13 +2178,13 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "configurable": true,
           "active": true,
           "modes": [
             {
               "mode": "auto",
-              "displayName": "\u81ea\u52a8",
+              "displayName": "自动",
               "requirements": {
                 "modelType": "chat",
                 "requiredInputModalities": [
@@ -2178,7 +2206,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2209,7 +2237,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2231,7 +2259,8 @@
             "readinessByUseCase": {
               "chat": {
                 "ready": true,
-                "modelCount": 1
+                "modelCount": 1,
+                "reason": null
               }
             }
           }
@@ -2249,7 +2278,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2277,7 +2306,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2310,7 +2339,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2335,7 +2364,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2380,7 +2409,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2438,7 +2467,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2490,7 +2519,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2500,7 +2529,7 @@
           "modes": [
             {
               "mode": "auto",
-              "displayName": "\u81ea\u52a8",
+              "displayName": "自动",
               "description": null,
               "requirements": {
                 "modelType": "chat",
@@ -2529,20 +2558,24 @@
           "provider": "local_example",
           "model": "demo-chat",
           "source": "override",
-          "configuredModel": "demo-chat"
+          "configuredModel": "demo-chat",
+          "fastMode": null,
+          "thinking": null,
+          "reasoningEffort": null,
+          "temperature": null
         }
       ],
       "defaultProviders": [],
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "configurable": true,
           "active": true,
           "modes": [
             {
               "mode": "auto",
-              "displayName": "\u81ea\u52a8",
+              "displayName": "自动",
               "requirements": {
                 "modelType": "chat",
                 "requiredInputModalities": [
@@ -2598,22 +2631,22 @@
     "name": "agent-memory-text",
     "target": "/app/agent/memory/get",
     "data": {
-      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
+      "content": "客厅空调设定为 26°C 前先征求用户同意。"
     },
     "status": "success",
     "essential": {
-      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
+      "content": "客厅空调设定为 26°C 前先征求用户同意。"
     }
   },
   {
     "name": "agent-identity-text",
     "target": "/app/agent/identity/get",
     "data": {
-      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
+      "content": "使用中文，回答简洁。"
     },
     "status": "success",
     "essential": {
-      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
+      "content": "使用中文，回答简洁。"
     }
   },
   {
@@ -2852,7 +2885,8 @@
         },
         {
           "cardId": "card-2",
-          "title": "Unpositioned"
+          "title": "Unpositioned",
+          "layout": null
         }
       ]
     }
@@ -3226,7 +3260,7 @@
     "code": "INVALID_RESPONSE"
   },
   {
-    "name": "essential omits null object fields recursively",
+    "name": "essential preserves explicit null object fields",
     "target": "/app/test/read",
     "status": "success",
     "data": {
@@ -3258,19 +3292,22 @@
         "list": [],
         "object": {},
         "text": "null",
-        "profile": "field: null\nKeep this line\n"
+        "profile": "field: null\nKeep this line\n",
+        "missing": null
       },
       "rows": [
         null,
         {
-          "id": "row-1"
+          "id": "row-1",
+          "missing": null
         },
         {}
-      ]
+      ],
+      "missing": null
     }
   },
   {
-    "name": "partial essential omits missing diagnostics",
+    "name": "partial essential preserves explicit null diagnostics",
     "target": "/app/room/devices/move",
     "status": "partial",
     "data": {
@@ -3293,13 +3330,15 @@
       "notMoved": [
         {
           "deviceId": "b",
-          "reason": "offline"
+          "reason": "offline",
+          "retryAfter": null
         }
-      ]
+      ],
+      "missing": null
     }
   },
   {
-    "name": "error essential omits missing diagnostics",
+    "name": "error essential preserves explicit null diagnostics",
     "target": "/app/automation/save",
     "status": "error",
     "code": "OPERATION_FAILED",
@@ -3323,8 +3362,10 @@
           "message": "Failed",
           "retry": false,
           "details": {
-            "remaining": []
-          }
+            "remaining": [],
+            "missing": null
+          },
+          "missing": null
         }
       }
     }
@@ -3775,6 +3816,126 @@
           "requestedId": "missing",
           "found": false,
           "reason": "not_found"
+        }
+      ]
+    }
+  },
+  {
+    "name": "widget-unset-value-preserves-null",
+    "target": "/app/widget/value/get",
+    "status": "success",
+    "data": {
+      "items": [
+        {
+          "resource": {
+            "value": null,
+            "widgetId": "value-d",
+            "revision": 1
+          },
+          "requestedId": "value-d",
+          "found": true
+        }
+      ]
+    },
+    "essential": {
+      "items": [
+        {
+          "resource": {
+            "value": null,
+            "widgetId": "value-d",
+            "revision": 1
+          },
+          "requestedId": "value-d",
+          "found": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "widget-cleared-history-preserves-null",
+    "target": "/app/widget/history/list",
+    "status": "success",
+    "data": {
+      "widgetId": "value-d",
+      "history": [
+        {
+          "timestamp": 1767225600,
+          "value": null
+        }
+      ]
+    },
+    "essential": {
+      "widgetId": "value-d",
+      "history": [
+        {
+          "timestamp": "2026-01-01 00:00:00 +00:00 (UTC)",
+          "value": null
+        }
+      ]
+    }
+  },
+  {
+    "name": "widget-fractional-timestamp-keeps-millis",
+    "target": "/app/widget/value/get",
+    "status": "success",
+    "data": {
+      "items": [
+        {
+          "resource": {
+            "value": {
+              "_type": "Timestamp",
+              "value": 1767225600123
+            },
+            "widgetId": "value-d",
+            "revision": 1
+          },
+          "requestedId": "value-d",
+          "found": true
+        }
+      ]
+    },
+    "essential": {
+      "items": [
+        {
+          "resource": {
+            "value": {
+              "_type": "Timestamp",
+              "value": "2026-01-01 00:00:00.123 +00:00 (UTC)"
+            },
+            "widgetId": "value-d",
+            "revision": 1
+          },
+          "requestedId": "value-d",
+          "found": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "widget-list-omits-only-optional-metadata",
+    "target": "/app/widget/list",
+    "status": "success",
+    "data": {
+      "widgets": [
+        {
+          "id": "value-d",
+          "name": "Level",
+          "description": null,
+          "tag": null,
+          "type": "basic.widget.DataWidget",
+          "dataType": "Number",
+          "repeated": false
+        }
+      ]
+    },
+    "essential": {
+      "widgets": [
+        {
+          "id": "value-d",
+          "name": "Level",
+          "type": "basic.widget.DataWidget",
+          "dataType": "Number",
+          "repeated": false
         }
       ]
     }

@@ -2,23 +2,10 @@
 use super::ResponseDetail;
 use serde_json::{Value, json};
 
-/// Serialize an Essential projection, omitting null-valued object fields recursively.
-/// Keep array positions, root null, empty collections, booleans, numbers and text intact.
-/// This presentation rule never mutates the full business value or parses string content.
+/// Serialize an already selected Essential projection without discarding business values.
+/// Domain projections own field selection; null, false, zero and array positions are data.
 pub fn essential_yaml(value: &Value) -> Result<String, serde_yaml::Error> {
-    fn omit_null_fields(value: &mut Value) {
-        match value {
-            Value::Object(fields) => {
-                fields.retain(|_, value| !value.is_null());
-                fields.values_mut().for_each(omit_null_fields);
-            }
-            Value::Array(items) => items.iter_mut().for_each(omit_null_fields),
-            _ => {}
-        }
-    }
-    let mut projected = value.clone();
-    omit_null_fields(&mut projected);
-    serde_yaml::to_string(&projected)
+    serde_yaml::to_string(value)
 }
 
 /// Text at model/MCP/CLI boundaries. Canonical history keeps the original outcome.
@@ -61,18 +48,13 @@ pub fn tool_result_text(value: &Value, detail: ResponseDetail) -> String {
 mod tests {
     use super::*;
     #[test]
-    fn essential_omits_null_fields_without_losing_values_or_array_positions() {
+    fn essential_preserves_business_nulls_and_array_positions() {
         let full = json!({"missing":null,"nested":{"missing":null,"enabled":false,
             "zero":0,"empty":"","list":[],"object":{},"literal":"null",
             "profile":"missing: null\nKeep this text\n"},"rows":[null,{"missing":null,"id":"a"},{}]});
         let before = full.clone();
         let parsed: Value = serde_yaml::from_str(&essential_yaml(&full).unwrap()).unwrap();
-        assert_eq!(
-            parsed,
-            json!({"nested":{"enabled":false,"zero":0,"empty":"",
-            "list":[],"object":{},"literal":"null","profile":"missing: null\nKeep this text\n"},
-            "rows":[null,{"id":"a"},{}]})
-        );
+        assert_eq!(parsed, full);
         assert_eq!(full, before);
         assert_eq!(essential_yaml(&Value::Null).unwrap(), "null\n");
     }
@@ -87,9 +69,12 @@ mod tests {
             serde_yaml::from_str(&tool_result_text(&value, ResponseDetail::Essential)).unwrap();
         assert_eq!(
             parsed["error"]["details"],
-            json!({"clientReport":{"verified":false}})
+            json!({"missing":null,"clientReport":{"verified":false,"missing":null}})
         );
-        assert_eq!(parsed["warnings"][0]["details"], json!({"retry":false}));
+        assert_eq!(
+            parsed["warnings"][0]["details"],
+            json!({"missing":null,"retry":false})
+        );
         assert!(value["error"]["details"].get("missing").is_some());
     }
     #[test]

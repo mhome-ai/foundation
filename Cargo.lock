@@ -2015,7 +2015,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-conversation-api"
-version = "5.2.1"
+version = "5.2.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -2031,7 +2031,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.60.0"
+version = "1.60.1"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
@@ -2055,7 +2055,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "1.12.2"
+version = "1.12.3"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -2114,7 +2114,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "1.4.44"
+version = "1.4.45"
 dependencies = [
  "cc",
  "mhome-core-api",
