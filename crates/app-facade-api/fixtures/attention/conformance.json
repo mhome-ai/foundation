@@ -1,0 +1,263 @@
+[
+  {
+    "name": "personal",
+    "score": 62.5,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "persistent"
+    },
+    "now": 1000000
+  },
+  {
+    "name": "household",
+    "score": 50,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "household"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "persistent"
+    },
+    "now": 1000000
+  },
+  {
+    "name": "not mine",
+    "score": 0,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "other",
+    "time": {
+      "mode": "persistent"
+    },
+    "now": 1000000
+  },
+  {
+    "name": "shared screen excludes personal",
+    "score": 0,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": null,
+    "time": {
+      "mode": "persistent"
+    },
+    "now": 1000000
+  },
+  {
+    "name": "ineligible",
+    "score": 0,
+    "reasonCode": "dialog.pending",
+    "eligible": false,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "persistent"
+    },
+    "now": 1000000
+  },
+  {
+    "name": "unknown reason",
+    "score": 0,
+    "reasonCode": "unknown",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "persistent"
+    },
+    "now": 1000000
+  },
+  {
+    "name": "half life",
+    "score": 31.25,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "decay",
+      "occurredAt": 100000,
+      "halfLifeMs": 900000
+    },
+    "now": 1000000
+  },
+  {
+    "name": "one hour",
+    "score": 3.9063,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "decay",
+      "occurredAt": 100000,
+      "halfLifeMs": 900000
+    },
+    "now": 3700000
+  },
+  {
+    "name": "invalid decay",
+    "score": 0,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "decay",
+      "occurredAt": 100000,
+      "halfLifeMs": 0
+    },
+    "now": 1000000
+  },
+  {
+    "name": "future creation",
+    "score": 0,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "decay",
+      "occurredAt": 1000001,
+      "halfLifeMs": 900000
+    },
+    "now": 1000000
+  },
+  {
+    "name": "window before start",
+    "score": 0,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "window",
+      "start": 100,
+      "peak": 200,
+      "deadline": 300
+    },
+    "now": 99
+  },
+  {
+    "name": "window rising",
+    "score": 31.25,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "window",
+      "start": 100,
+      "peak": 200,
+      "deadline": 300
+    },
+    "now": 150
+  },
+  {
+    "name": "window plateau",
+    "score": 62.5,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "window",
+      "start": 100,
+      "peak": 200,
+      "deadline": 300
+    },
+    "now": 299
+  },
+  {
+    "name": "window deadline",
+    "score": 0,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "window",
+      "start": 100,
+      "peak": 200,
+      "deadline": 300
+    },
+    "now": 300
+  },
+  {
+    "name": "invalid window",
+    "score": 0,
+    "reasonCode": "dialog.pending",
+    "eligible": true,
+    "association": {
+      "kind": "personal",
+      "ownerUserId": "me"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "window",
+      "start": 200,
+      "peak": 100,
+      "deadline": 300
+    },
+    "now": 150
+  },
+  {
+    "name": "persistent old hazard",
+    "score": 74,
+    "reasonCode": "device.waterDetected",
+    "eligible": true,
+    "association": {
+      "kind": "household"
+    },
+    "userId": "me",
+    "time": {
+      "mode": "persistent"
+    },
+    "now": 9000000000000
+  }
+]

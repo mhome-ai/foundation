@@ -1,0 +1,18 @@
+{
+  "version": "attention.v1",
+  "threshold": 20.0,
+  "impactWeight": 0.625,
+  "necessityWeight": 0.375,
+  "defaultHalfLifeMs": 900000,
+  "refreshIntervalMs": 30000,
+  "rules": {
+    "dialog.pending": { "impact": 0.4, "necessity": 1.0 },
+    "task.userDecision": { "impact": 0.7, "necessity": 1.0 },
+    "task.manualRecovery": { "impact": 0.7, "necessity": 0.8 },
+    "schedule.decisionRequired": { "impact": 0.4, "necessity": 1.0 },
+    "device.waterDetected": { "impact": 1.0, "necessity": 0.8 },
+    "device.smokeDetected": { "impact": 1.0, "necessity": 0.8 },
+    "device.maintenanceRequired": { "impact": 0.2, "necessity": 0.5 },
+    "system.manualRecovery": { "impact": 0.7, "necessity": 0.8 }
+  }
+}

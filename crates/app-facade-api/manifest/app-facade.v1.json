@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.87.1",
+  "contractVersion": "1.88.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -295,6 +295,14 @@
       ],
       "owner": "authenticatedClient",
       "persistence": "connection lease only"
+    },
+    "nowAttention": {
+      "schema": "schema/now-attention.v1.schema.json",
+      "contract": "contract/now-attention-v1.md",
+      "requestTargets": [
+        "/app/now/attention/list"
+      ],
+      "policy": "manifest/attention-policy.v1.json"
     }
   },
   "authorization": "manifest/authorization.v1.json",

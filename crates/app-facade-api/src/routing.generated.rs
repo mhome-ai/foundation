@@ -59,6 +59,7 @@ const SCOPE_MODE_TARGETS: &[&str] = &[
     "/app/host/service/install",
     "/app/host/service/restart",
     "/app/pod/list",
+    "/app/now/attention/list",
 ];
 
 const HUB_PREFIXES: &[&str] = &[

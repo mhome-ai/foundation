@@ -7,6 +7,7 @@
 
 pub mod agent_llm;
 pub mod artifact;
+pub mod attention;
 pub mod call;
 pub mod entity_presentation;
 pub mod group;

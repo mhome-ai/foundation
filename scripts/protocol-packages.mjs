@@ -55,6 +55,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "manifest/routing.v1.json",
       "manifest/authorization.v1.json",
       "manifest/presentation-times.v1.json",
+      "manifest/attention-policy.v1.json",
+      "contract/now-attention-v1.md",
       "manifest/hub-targets.v1.json",
       "manifest/pod-targets.v1.json",
       "contract/pod-commissioning-v1.md",
@@ -77,6 +79,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "schema/delegated-call.v1.schema.json",
     ]),
     schemas: Object.freeze({
+      nowAttention: "schema/now-attention.v1.schema.json",
       pluginInstall: "schema/plugin-install.v1.schema.json",
       hostAuthorization: "schema/host-authorization.v1.schema.json",
       hostAccess: "schema/host-access.v1.schema.json",
@@ -105,6 +108,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       person: "schema/person.v1.schema.json",
     }),
     fixtures: Object.freeze({
+      attention: "fixtures/attention/conformance.json",
       agentLlm: "fixtures/agent-llm.conformance.json",
       entityPresentation: "fixtures/entity-presentation.conformance.json",
       integrationPresentation: "fixtures/integration-presentation.conformance.json",

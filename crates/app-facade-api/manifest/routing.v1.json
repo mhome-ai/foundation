@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.87.1",
+  "contractVersion": "1.88.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode"
@@ -61,7 +61,8 @@
       "/app/host/permissions/get",
       "/app/host/service/install",
       "/app/host/service/restart",
-      "/app/pod/list"
+      "/app/pod/list",
+      "/app/now/attention/list"
     ],
     "hubPrefixes": [
       "/app/plugin/",

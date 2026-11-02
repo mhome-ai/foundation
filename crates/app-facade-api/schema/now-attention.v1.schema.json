@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/app-facade/now-attention.v1.schema.json",
+  "$defs": {
+    "Input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {},
+      "required": []
+    },
+    "Time": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "const": "persistent"
+            }
+          },
+          "required": [
+            "mode"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "const": "decay"
+            },
+            "occurredAt": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "halfLifeMs": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "mode",
+            "occurredAt",
+            "halfLifeMs"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "const": "window"
+            },
+            "start": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "peak": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "deadline": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "mode",
+            "start",
+            "peak",
+            "deadline"
+          ]
+        }
+      ]
+    },
+    "Association": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "household"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "personal"
+            },
+            "ownerUserId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "ownerUserId"
+          ]
+        }
+      ]
+    },
+    "Context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reasonCode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "association": {
+          "$ref": "#/$defs/Association"
+        },
+        "time": {
+          "$ref": "#/$defs/Time"
+        }
+      },
+      "required": [
+        "reasonCode",
+        "association",
+        "time"
+      ]
+    },
+    "Source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "dialog",
+            "device"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "capabilityId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ]
+    },
+    "Item": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reasonCode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "time": {
+          "$ref": "#/$defs/Time"
+        },
+        "validUntil": {
+          "type": "integer"
+        },
+        "sourceUpdatedAt": {
+          "type": "integer"
+        },
+        "verificationRequired": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "reasonCode",
+        "title",
+        "summary",
+        "source",
+        "score",
+        "time",
+        "sourceUpdatedAt",
+        "verificationRequired"
+      ]
+    },
+    "SourceError": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "source",
+        "code"
+      ]
+    },
+    "Output": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Item"
+          }
+        },
+        "evaluatedAt": {
+          "type": "integer"
+        },
+        "nextRefreshAt": {
+          "type": "integer"
+        },
+        "policyVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceError"
+          }
+        }
+      },
+      "required": [
+        "items",
+        "evaluatedAt",
+        "nextRefreshAt",
+        "policyVersion",
+        "sourceErrors"
+      ]
+    }
+  }
+}

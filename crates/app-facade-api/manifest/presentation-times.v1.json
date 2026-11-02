@@ -92,5 +92,17 @@
       "items.*.widget.max",
       "items.*.widget.offset"
     ]
+  },
+  "/app/now/attention/list": {
+    "ms": [
+      "evaluatedAt",
+      "nextRefreshAt",
+      "items.*.sourceUpdatedAt",
+      "items.*.validUntil",
+      "items.*.time.occurredAt",
+      "items.*.time.start",
+      "items.*.time.peak",
+      "items.*.time.deadline"
+    ]
   }
 }

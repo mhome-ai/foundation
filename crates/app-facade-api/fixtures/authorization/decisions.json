@@ -650,5 +650,93 @@
     "scopeId": "space",
     "target": "/app/agent/credit/usage",
     "allowed": false
+  },
+  {
+    "name": "owner:/app/now/attention/list",
+    "principal": {
+      "kind": "user",
+      "userId": "owner"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/now/attention/list",
+    "allowed": true
+  },
+  {
+    "name": "member:/app/now/attention/list",
+    "principal": {
+      "kind": "user",
+      "userId": "member"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/now/attention/list",
+    "allowed": true
+  },
+  {
+    "name": "removed:/app/now/attention/list",
+    "principal": {
+      "kind": "user",
+      "userId": "former"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/now/attention/list",
+    "allowed": false
+  },
+  {
+    "name": "space:/app/now/attention/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/now/attention/list",
+    "allowed": true
+  },
+  {
+    "name": "space-cannot-borrow-owner:/app/now/attention/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "space"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/now/attention/list",
+    "allowed": true
+  },
+  {
+    "name": "foreign-space:/app/now/attention/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "tenant",
+      "scopeId": "other"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/now/attention/list",
+    "allowed": false
+  },
+  {
+    "name": "foreign-tenant:/app/now/attention/list",
+    "principal": {
+      "kind": "space",
+      "tenantId": "other",
+      "scopeId": "space"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/now/attention/list",
+    "allowed": false
   }
 ]
