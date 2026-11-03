@@ -266,7 +266,7 @@
             "message": "Member is unavailable"
           }
         ],
-        "twinSig": "internal"
+        "blueprintSignature": "internal"
       }
     },
     {

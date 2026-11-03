@@ -56,17 +56,43 @@ observation and graph reads preserve their bounded business fields in Essential.
 
 ## UI-only reads
 
-- `/app/device/view/get`, `{deviceId}`: `{deviceId, primaryViewId, views, widgets}`.
+- `/app/device/view/get`, `{deviceId}`: `{deviceId, primaryViewId, views, widgets, twin}`.
   Reads the unique hidden Device render definition, preserving exact Widget/Twin
   bindings. Disabled devices can have empty definitions. Multiple anchors fail rather
-  than choosing an arbitrary visible Card. Widgets contain configuration, never values.
+  than choosing an arbitrary visible Card. Widgets contain configuration, never values. The optional `twin` metadata is
+  returned even when a known device has no render anchor.
 - `/app/device/history/series/get`, `{deviceId, capabilityIds?: []}`:
   `{deviceId, series}` with per-capability decoded `states`, `events`, `logs`. Empty
   capability selection reads all series. This preserves chart structure; the shared
   Device history Facade remains a bounded, merged business timeline.
 - `/app/dashboard/canvas/content/get`, `{canvasId}`: Canvas metadata plus Cards' static
   titles, view bindings, layouts, settings, metadata and selected Widget definitions.
-  No observations, history, related automations or suggestions are loaded.
+  Each entity Card includes the same `twin` metadata, loaded once per entity in the
+  batch. No observations, history, related automations or suggestions are loaded.
+
+`twin` contains `entityId`, `entityType`, `integration`, `capabilities`,
+`blueprintIds`, `attributes`, `available`, and optional `problem`. Attributes use canonical data capability IDs as
+keys and preserve typed JSON values, including units, false, zero and empty arrays.
+Only immutable entity-only data is cached here; mutable or parameterized data is
+invoked explicitly when needed. These reads never fetch providers. A missing key
+means no cached value is available, not a null/empty result. Group `available` is
+true only for a ready definition whose runtime revision matches its Twin projection.
+Applying/failed/mismatched projections return empty `attributes` and a `problem`,
+while retaining identity and capability/Blueprint IDs for rendering. Clients disable
+actions while unavailable, including retained Widget controls. This availability is
+projection usability, not device reachability or on/off state. Retained observations
+and history are not deleted by projection failure.
+
+Ordinary source synchronization preserves immutable caches for unchanged entity
+identity/connection/capabilities. Schema publication does not expire them. Explicit
+device refresh rereads attributes and reconciles related Groups. These are write-side
+operations; definition reads remain cache-only.
+
+`/twin/entityUpdate` pushes `{scopeId, entityIds}` after cached metadata changes.
+Open views refresh their definition batches; other Spaces and unrelated entities
+are ignored. A new definition owns its capability membership: old observations
+for removed capabilities must not be merged back into the current view. History
+remains available through its separate read.
 
 The frontend batches selected observations after reading definitions. Automation Cards
 also read selected Automation definitions for their name and type. Canvas IDs are

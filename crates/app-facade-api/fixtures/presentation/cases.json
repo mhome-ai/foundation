@@ -458,7 +458,7 @@
           "manufacturerId": "demo",
           "manufacturerName": "Example maker",
           "availabilityStatus": "unavailable",
-          "twinTags": [
+          "blueprintIds": [
             "light"
           ]
         },
@@ -492,7 +492,7 @@
           "group": false,
           "integration": "demo.device",
           "availabilityStatus": "unavailable",
-          "twinTags": [
+          "blueprintIds": [
             "light"
           ]
         },
@@ -546,7 +546,7 @@
             "manufacturerId": "demo",
             "manufacturerName": "Example maker",
             "availabilityStatus": "unavailable",
-            "twinTags": [
+            "blueprintIds": [
               "light"
             ],
             "entityIds": []
@@ -600,7 +600,7 @@
             "manufacturerId": "demo",
             "manufacturerName": "Example maker",
             "availabilityStatus": "unavailable",
-            "twinTags": [
+            "blueprintIds": [
               "light"
             ],
             "entityIds": []

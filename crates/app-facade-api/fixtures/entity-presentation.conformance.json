@@ -34,7 +34,7 @@
           "active": false,
           "data": {},
           "capabilities": [],
-          "twinTags": [],
+          "blueprintIds": [],
           "cardCount": 0,
           "issue": false
         },

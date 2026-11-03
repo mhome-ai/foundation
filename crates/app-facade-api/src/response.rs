@@ -258,7 +258,7 @@ fn device_briefs(data: &Value) -> Value {
                             | "group"
                             | "integration"
                             | "availabilityStatus"
-                            | "twinTags"
+                            | "blueprintIds"
                     )
                 });
             }
