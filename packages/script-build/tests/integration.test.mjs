@@ -138,3 +138,64 @@ test("source identity preserves BOM bytes and oversized or malformed inputs fail
   p.write("package.json", "null");
   await assert.rejects(p.build(), (error) => error.code === "INVALID_DEPENDENCIES");
 });
+
+function dependencyProject(t, packages, source) {
+  const dependencies = Object.fromEntries(Object.keys(packages).map((name) => [name, "1.0.0"]));
+  const files = {
+    "package.json": { name: "fixture-functions", dependencies },
+    "package-lock.json": { lockfileVersion: 3, packages: {
+      "": { dependencies },
+      ...Object.fromEntries(Object.keys(packages).map((name) => [`node_modules/${name}`, {
+        version: "1.0.0", resolved: `https://registry.example/${name}.tgz`, integrity: "sha512-fixture",
+      }])),
+    } },
+    "calculate.ts": source,
+  };
+  for (const [name, entries] of Object.entries(packages)) {
+    files[`node_modules/${name}/package.json`] = { name, version: "1.0.0", main: "index.js", ...entries.manifest };
+    for (const [filename, content] of Object.entries(entries.files)) files[`node_modules/${name}/${filename}`] = content;
+  }
+  return project(t, files);
+}
+
+test("scoped packages and separate type packages survive TypeScript candidate probes", async (t) => {
+  for (const name of ["colors", "@demo/colors"]) {
+    const types = name.startsWith("@") ? "@types/demo__colors" : "@types/colors";
+    const p = dependencyProject(t, {
+      [name]: { files: { "index.js": "exports.average = values => values.reduce((a,b)=>a+b,0)/values.length;" } },
+      [types]: { files: { "index.d.ts": "export function average(values:number[]):number;" } },
+    }, `import {average} from '${name}'; export default (values:number[])=>average(values);`);
+    const [built] = await p.build();
+    const module = await import(`data:text/javascript;base64,${Buffer.from(built.javascript).toString("base64")}`);
+    assert.equal(module.default([2, 4]), 3);
+    p.write(`node_modules/${name}/package.json`, { name, version: "1.0.1", main: "index.js" });
+    await assert.rejects(p.build(), (error) => error.code === "INVALID_DEPENDENCIES");
+  }
+});
+
+test("unsupported dependency loaders cannot bypass input hashing, import checks or budgets", async (t) => {
+  const p = dependencyProject(t, {
+    colors: { manifest: { types: "index.d.ts", main: "index.jsx" }, files: {
+      "index.d.ts": "export const answer:number;", "index.jsx": "export const answer=1;",
+    } },
+  }, "import {answer} from 'colors'; export default ()=>answer;");
+  for (const source of ["export const answer=1;", "export const answer=name=>import(name);",
+    `/*${"x".repeat(4 * 1024 * 1024)}*/ export const answer=2;`]) {
+    p.write("node_modules/colors/index.jsx", source);
+    await assert.rejects(p.build(), (error) => error.code === "BUNDLE_FAILED"
+      && error.message.includes("Unsupported Integration input extension"));
+  }
+});
+
+test("hoisted transitive dependencies remain bundled and participate in source identity", async (t) => {
+  const p = dependencyProject(t, {
+    colors: { files: { "index.d.ts": "export {answer} from '@demo/math';", "index.js": "exports.answer=require('@demo/math').answer;" } },
+    "@demo/math": { files: { "index.d.ts": "export const answer:number;", "index.js": "exports.answer=1;" } },
+  }, "import {answer} from 'colors'; export default ()=>answer;");
+  fs.mkdirSync(path.join(p.root, "node_modules/colors/node_modules"));
+  const [before] = await p.build();
+  p.write("node_modules/@demo/math/index.js", "exports.answer=2;");
+  const [after] = await p.build();
+  assert.notEqual(before.sourceHash, after.sourceHash);
+  assert.notEqual(before.artifact.sha256, after.artifact.sha256);
+});

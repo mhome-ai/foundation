@@ -41,7 +41,7 @@ impl Operation {
             Self::EventProcessing => 60000,
             Self::EntityRefresh => 85000,
             Self::HarnessSessionOpen => 150000,
-            Self::ScriptValidation => 205000,
+            Self::ScriptValidation => 60000,
             Self::ScriptSave => 60000,
             Self::CoreBridgeRequest => 35000,
             Self::CoreBridgeInbound => 55000,

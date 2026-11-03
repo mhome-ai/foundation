@@ -26,7 +26,8 @@ Automation contract. The project has `package.json` and an npm v3
 versions and hashes the actual consumed source bytes. This check does not replace
 npm's archive-integrity verification or reviewed build provenance.
 
-Registry packages may contain pure JS/TS and JSON. SDK imports always resolve to
+Registry inputs support `.js`, `.mjs`, `.cjs`, `.ts`, `.mts`, `.cts` and `.json`;
+other loaders, including JSX/TSX and native addons, are rejected. SDK imports always resolve to
 the builder's exact managed SDK. Node built-ins, undeclared local files, symlinked
 inputs and computed runtime imports are rejected. Project tsconfig files, build
 plugins and lifecycle scripts are not loaded. Each entry is limited to 256 KiB,
@@ -35,6 +36,17 @@ single input over 4 MiB. The native host port is the only external runtime impor
 These compiler APIs do not yet switch Integration staging, schema bindings or
 Core's Integration executor to JavaScript; those consumers cut over together.
 
-During local development, build `../script-sdk` first, then `npm ci` and `npm test`
-here. The local SDK dependency will become an exact published version during the
-coordinated release cutover; this package is not currently publishable.
+The distributable `@meowlink/script-build` npm package pins the SDK to an exact
+version. Its `meowlink-script-build <project-directory> <functions-json-array>
+<empty-output-directory>` command writes per-function JavaScript and `build.json`.
+It does not install project dependencies or run their lifecycle scripts.
+
+Source development keeps the SDK file link. Build `../script-sdk` first, then run
+`npm ci --ignore-scripts` and `npm test` here. From the Foundation root, prepare
+publishable directories with `node scripts/stage-script-package.mjs sdk <empty-dir>`
+and `node scripts/stage-script-package.mjs build <empty-dir>`. These directories
+contain executable/types artifacts, exact dependencies, README and LICENSE, with
+no install hooks or sibling source paths. Pack with `npm pack <directory>`.
+Tests install both tarballs offline and build a separate project without Foundation
+sources. Staging/packing does not publish packages; registry publication and consumer
+availability remain a separate release step.

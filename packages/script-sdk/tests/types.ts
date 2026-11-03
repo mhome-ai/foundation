@@ -34,6 +34,18 @@ async function typedHostResults() {
   await sendChannel({id: "runtime-id"});
 }
 
+async function nativeCastAndDiscovery() {
+  const sdk = await import("../src/index.js");
+  const found: Value = await sdk.browseMdns({serviceTypes: ["_googlecast._tcp.local."], timeoutMillis: 4000, maxResults: 64});
+  const state: Value = await sdk.requestGoogleCast({host: "receiver.local", action: "getStatus", port: 8009});
+  await sdk.log("Album art import failed", {code: "NOT_FOUND"}, "warn");
+  void [found, state];
+  // @ts-expect-error Cast actions are explicit supported protocol operations
+  await sdk.requestGoogleCast({host: "receiver.local", action: "execute"});
+  // @ts-expect-error trusted scope cannot be replaced by a host request
+  await sdk.browseMdns({serviceTypes: [], scopeId: "foreign"});
+}
+
 async function subscriptionRouting() {
   const sdk = await import("../src/index.js");
   const key = {category: "provider.events", subscriptionId: "device|state"};

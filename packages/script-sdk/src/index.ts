@@ -68,6 +68,11 @@ export async function sleep(milliseconds: number): Promise<void> {
   await call("time.sleep", [milliseconds]);
 }
 
+/** Bounded diagnostic logging, attributed by Core to the current invocation. */
+export async function log(message: string, fields?: ScriptObject, level: "debug" | "info" | "warn" | "error" = "info"): Promise<void> {
+  await call("log.write", [{ message, level, ...(fields === undefined ? {} : { fields }) }]);
+}
+
 export async function randomU64(): Promise<bigint> {
   return await call("random.u64", []) as bigint;
 }
@@ -229,6 +234,31 @@ export async function dnsLookup(request: DnsRequest): Promise<DnsResult> {
 }
 export async function resolveMdns(request: Omit<DnsRequest, "port"> & { timeoutMillis?: number }): Promise<DnsResult> {
   return await call("mdns.resolve", [request as unknown as Value]) as unknown as DnsResult;
+}
+
+export interface MdnsBrowseRequest {
+  serviceTypes: string[];
+  timeoutMillis?: number;
+  maxResults?: number;
+}
+/** Discovery returns the native record fields, including provider-specific TXT records. */
+export async function browseMdns(request: MdnsBrowseRequest): Promise<ScriptObject> {
+  return await call("mdns.browse", [request as unknown as Value]) as ScriptObject;
+}
+export interface GoogleCastRequest {
+  host: string;
+  port?: number;
+  action: "playMedia" | "getStatus" | "setVolume" | "setMuted" | "mediaControl";
+  timeoutMillis?: number;
+  tls?: { verify?: boolean };
+  media?: { url: string; contentType?: string; streamType?: string; metadata?: Value };
+  volume?: number;
+  command?: string;
+  muted?: boolean;
+}
+/** Native Cast transport; provider schemas and functions own the business mapping. */
+export async function requestGoogleCast(request: GoogleCastRequest): Promise<ScriptObject> {
+  return await call("googleCast.request", [request as unknown as Value]) as ScriptObject;
 }
 
 export interface HostError { code: string; message: string }

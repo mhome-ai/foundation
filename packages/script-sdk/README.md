@@ -10,7 +10,10 @@ Functions return business data or throw `ScriptError`. This package does not
 implement privileged IO itself. `getRuntimeContext`, `sleep`, `randomU64` and
 `readArtifact` call the native host module; that import remains external in built
 ESM. Calling these helpers in ordinary Node author tooling fails explicitly.
-The package remains private until coordinated publication and consumer cutover.
+The source workspace is private; Foundation's script-package stager creates the
+standalone `@meowlink/script` npm package with built JavaScript and declarations.
+It has no install hooks or sibling-source dependency. Actual registry publication
+is a separate release step.
 
 Network helpers include `httpRequest`, `httpReadBatch`, `dnsLookup`, `resolveMdns`,
 `probeTcp` and `probeRtsp`. HTTP error status remains a response. Device probes
@@ -72,4 +75,11 @@ npm ci
 npm test
 ```
 
-See the authoritative [shared contract](../../crates/script-api/contract/javascript-v1.md).
+See the authoritative [shared contract](https://github.com/mhome-ai/foundation/blob/main/crates/script-api/contract/javascript-v1.md).
+
+`browseMdns` exposes native local service discovery; `requestGoogleCast` uses Core's
+native Cast transport. Provider functions retain ownership of discovery identity,
+capability mapping and error handling. Calls share the invocation deadline. Blocking
+Cast IO uses the bounded native worker pool and retains admission until it actually
+finishes; cancellation is best effort. `log` records bounded diagnostics attributed
+to the invocation, using the existing Integration log directory.

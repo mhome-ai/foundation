@@ -15,6 +15,7 @@ const hash = (value) => createHash("sha256").update(value).digest("hex");
 const fail = (code, message) => { throw new BuildError(code, [{ message }]); };
 const inside = (root, name) => name === root || name.startsWith(`${root}${path.sep}`);
 const sorted = (object = {}) => Object.entries(object).sort(([a], [b]) => a.localeCompare(b));
+const isFile = (filename) => fs.existsSync(filename) && fs.statSync(filename).isFile();
 
 function checkImports(filename, contents) {
   const source = ts.createSourceFile(filename, contents, ts.ScriptTarget.ES2022, true);
@@ -98,9 +99,11 @@ export async function buildIntegration({ projectRoot, functions, sdkVersion = SD
     const relative = path.relative(root, filename).split(path.sep).join("/");
     if (relative.startsWith("common/") || functions.some((name) => relative === `${name}.ts`)
         || relative === "package.json" || relative === "package-lock.json") return true;
-    const match = /^(.*(?:^|\/)node_modules\/(?:@[^/]+\/)?[^/]+)\//.exec(relative);
-    if (!match) return false;
-    const key = match[1];
+    const parts = relative.split("/");
+    const modules = parts.lastIndexOf("node_modules");
+    const packageEnd = modules + (parts[modules + 1]?.startsWith("@") ? 3 : 2);
+    if (modules < 0 || parts.length <= packageEnd) return false;
+    const key = parts.slice(0, packageEnd).join("/");
     if (!checkedPackages.has(key)) {
       const pinned = lock.packages[key];
       if (!pinned || pinned.link || typeof pinned.version !== "string"
@@ -124,8 +127,10 @@ export async function buildIntegration({ projectRoot, functions, sdkVersion = SD
     noEmit: true, skipLibCheck: false, allowJs: true, resolveJsonModule: true,
   };
   const host = ts.createCompilerHost(options);
-  host.readFile = (filename) => allowed(filename) ? read(filename) : undefined;
-  host.fileExists = (filename) => allowed(filename) && fs.existsSync(filename) && fs.statSync(filename).isFile();
+  // TypeScript probes nonexistent candidates such as @scope/package.ts before
+  // resolving @scope/package/index.d.ts. Only actual inputs have a package owner.
+  host.readFile = (filename) => isFile(filename) && allowed(filename) ? read(filename) : undefined;
+  host.fileExists = (filename) => isFile(filename) && allowed(filename);
   host.getSourceFile = (filename, version) => {
     const text = host.readFile(filename);
     return text === undefined ? undefined : ts.createSourceFile(filename, text, version, true);
@@ -182,12 +187,17 @@ export async function buildIntegration({ projectRoot, functions, sdkVersion = SD
           if (resolved.external || !allowed(resolved.path)) return { errors: [{ text: "Import is outside declared function sources or locked dependencies" }] };
           return resolved;
         });
-        build.onLoad({ filter: /\.[cm]?[jt]s$|\.json$/ }, (args) => {
+        // Never fall through to esbuild's default filesystem loaders: every input
+        // must be bounded, checked and included in the build's source identity.
+        build.onLoad({ filter: /.*/ }, (args) => {
+          const extension = path.extname(args.path);
+          const loader = extension === ".json" ? "json" : /^\.[cm]?ts$/.test(extension) ? "ts"
+            : /^\.[cm]?js$/.test(extension) ? "js" : undefined;
+          if (!loader) return { errors: [{ text: `Unsupported Integration input extension: ${extension || "(none)"}` }] };
           const contents = allowed(args.path) ? read(args.path) : undefined;
           if (contents === undefined) return { errors: [{ text: "Undeclared Integration build input" }] };
-          if (!args.path.endsWith(".json")) checkImports(args.path, contents);
-          return { contents, loader: args.path.endsWith(".json") ? "json" : /\.[cm]?ts$/.test(args.path) ? "ts" : "js",
-            resolveDir: path.dirname(args.path) };
+          if (loader !== "json") checkImports(args.path, contents);
+          return { contents, loader, resolveDir: path.dirname(args.path) };
         });
       } }],
     });

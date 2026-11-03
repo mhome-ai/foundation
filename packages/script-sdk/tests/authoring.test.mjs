@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { defineScript, t, ScriptError, SDK_VERSION, readArtifact, getRuntimeContext,
-  requestChannel, sendChannel, isChannelReady, disconnectChannel, getChannelContext } from "../dist/index.js";
+  requestChannel, sendChannel, isChannelReady, disconnectChannel, getChannelContext,
+  browseMdns, requestGoogleCast, log } from "../dist/index.js";
 
 test("declaration is lazy and invocation returns unwrapped business data", async () => {
   let calls = 0;
@@ -43,4 +44,7 @@ test("author tooling cannot accidentally execute privileged host operations", as
     await assert.rejects(operation({id: "runtime-id", payload: null}), /host bindings are unavailable/);
   }
   await assert.rejects(getChannelContext(), /host bindings are unavailable/);
+  await assert.rejects(browseMdns({serviceTypes: ["_googlecast._tcp.local."]}), /host bindings are unavailable/);
+  await assert.rejects(requestGoogleCast({host: "example.test", action: "getStatus"}), /host bindings are unavailable/);
+  await assert.rejects(log("fixture"), /host bindings are unavailable/);
 });
