@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.88.0",
+  "contractVersion": "1.89.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode"
@@ -12,7 +12,7 @@
       "/app/space/",
       "/app/inspire/",
       "/app/user/",
-      "/app/card-skins/catalog/"
+      "/app/ui/customize/cards/catalog/"
     ],
     "cloudTargets": [
       "/app/agent/context/get",

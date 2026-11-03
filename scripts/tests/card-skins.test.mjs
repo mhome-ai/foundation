@@ -28,7 +28,7 @@ test("card skin routes share one policy and schema inventory", () => {
   const requests = read("manifest/app-facade.v1.json").domains.cardSkins.requests;
   const policies = read("manifest/authorization.v1.json").operations;
   const routing = read("manifest/routing.v1.json").rules;
-  assert.ok(routing.cloudPrefixes.includes("/app/card-skins/catalog/"));
+  assert.ok(routing.cloudPrefixes.includes("/app/ui/customize/cards/catalog/"));
   assert.equal(Object.keys(requests).length, 13);
   for (const [target, reference] of Object.entries(requests)) {
     assert.ok(wire.definitions[reference.split("/").at(-1)]);

@@ -8,7 +8,7 @@ identity come exclusively from authenticated ingress, never from domain input.
 
 ## Catalog and publication
 
-`/app/card-skins/catalog/*` always executes in Cloud. Catalog reads require a
+`/app/ui/customize/cards/catalog/*` always executes in Cloud. Catalog reads require a
 User principal. Package creation reserves `packageId` in that tenant. Only the
 stored author may edit its display metadata or publish versions. Authorship is
 immutable. Creation requires `baseUi` (for example `default` or `default-pod`).
@@ -36,29 +36,33 @@ only supported asset extensions with their exact media type, size and SHA-256.
 Schema draft-07, with only fragment `$ref`s, no `$async`, and at most 64 levels.
 Each config root must have `type: object`.
 
-Each prepared session binds one manifest, author and immutable delivery directory.
-It expires after 15 minutes. Upload each file with HTTP PUT to its returned URL
-and the exact returned headers. Upload grants are bearer secrets; only their
-SHA-256 digests are persisted. The server verifies the actual body before writing
-it to a private bucket. S3 conditional create / OSS forbid-overwrite makes each
-verified object immutable; clients never receive an object-store write URL.
-A repeated identical PUT is safe. Different bytes, sizes or media types fail.
+Each prepared session binds a manifest, authenticated author and immutable delivery directory.
+It expires after 15 minutes. Each file's returned URL and exact headers authorize a direct
+S3/OSS PUT to a private staging key, binding its size and forbidding overwrite. Upload grants
+are temporary secrets and are not persisted in the publishing session. Staging is outside
+CloudFront's readable origin prefix. No App HTTP endpoint relays upload or download bytes.
 
-Complete checks authorship, session expiry and all server-verified immutable
-object receipts before a create-only release write. Missing files never create a
-release. Two sessions racing for the same version have one winner. Retrying the
-winning completion returns that exact release, including after session expiry;
-a different session cannot replace it. Unknown storage outcomes are errors, not
-automatically replayed business operations. Reload the version to resolve them.
-A newer version requires another prepare/upload/complete cycle.
+Complete checks ownership and expiry, then reads the actual staged bytes with the declared
+size plus one byte as a hard bound. Size, SHA-256 and completeness must match the manifest;
+uploader-supplied object metadata is not an integrity receipt. The exact verified bytes are
+written with create-only semantics to a separate published prefix. Only after all files
+succeed can a create-only release become visible. Concurrent sessions for one version have
+one winner. Retrying that winning completion returns its exact release even after expiry.
+A failed completion may leave unreferenced objects, never a partial installable release.
 
-Published `baseUrl` is a stable HTTPS directory. GET of a declared file checks the
-published release and its random delivery-directory ID, verifies content integrity,
-and serves the correct media type with CORS, `nosniff`, and immutable caching.
-There is no expiring signed URL in a release. Unpublished files cannot be fetched
-through delivery. A delivery URL is shareable: knowledge of it permits reading
-that release's executable bytes, without granting catalog or upload permissions.
-Do not put secrets in skins. Config values stay in the Space selection.
+Published `baseUrl` is a stable HTTPS directory under the configured static origin, for
+example `https://static.mhome.ai/ui/cards/<namespace>/<package>/<version>/<deliveryId>/`.
+CloudFront reads only the `published/` storage prefix and supplies CORS, correct media types,
+`nosniff` and immutable caching. Temporary uploads use `staging/`, which CDN readers cannot
+access. There is no expiring download signature in a release. Possession of a delivery URL
+permits reading its public executable bytes; catalog and upload authority remain separate.
+Config values stay in the Space selection and secrets must not enter card packages.
+
+Web loads compiled modules from the static origin. Native clients may resolve a release to
+verified local package files through a host-only resource port. Such runtime resource URLs
+are never persisted in Catalog or Space selection records and do not alter release identity.
+Package caching does not install, select, upgrade, or grant additional device authority.
+All platforms retain the renderer isolation requirement, including for cached files.
 
 The publication service validates metadata and bytes, not JavaScript behavior.
 The renderer contract remains `apiVersion: 1` during development and changes in
@@ -124,12 +128,15 @@ publication does not assume every MeowLink client supports the same contracts.
 
 ## Deployment and boundaries
 
-The cloud service needs a private `card-skins.storage.bucket` on its configured
-AWS/OSS provider and an HTTPS `card-skins.delivery.base-url` reaching the binary
-controller. Object-store credentials must not grant end users overwrite/delete
-access to skin objects. Existing release directories and URLs must be preserved
-across deployment. A trusted reverse proxy/CDN may cache successful delivery;
-upload and error responses are `no-store`.
+The cloud service needs a private `ui.customize.cards.storage.bucket` on its configured
+AWS/OSS provider and the platform-wide HTTPS origin `resources.static.base-url` (normally
+`https://static.mhome.ai`, without a path). CloudFront maps its origin to `published/`;
+its S3 access policy must exclude `staging/`. End users receive only bounded, expiring
+create-only staging writes. They receive no published-object overwrite/delete authority.
+This development cutover removes the old binary routes without a compatibility alias.
+Existing development releases/selections containing old delivery URLs require explicit
+recreation; startup and ordinary reads never rewrite or erase them.
+
 
 Unfinished publishing sessions expire but their draft records and unreferenced
 objects are currently retained. This version provides no automatic garbage

@@ -1666,7 +1666,7 @@
   },
   {
     "name": "card-skin-release-detail",
-    "target": "/app/card-skins/catalog/release/get",
+    "target": "/app/ui/customize/cards/catalog/release/get",
     "data": {
       "id": "release-demo",
       "baseUrl": "https://example.invalid/skin/",
@@ -1757,7 +1757,7 @@
   },
   {
     "name": "card-skin-release-list",
-    "target": "/app/card-skins/catalog/release/list",
+    "target": "/app/ui/customize/cards/catalog/release/list",
     "data": {
       "releases": [
         {
@@ -1847,7 +1847,7 @@
   },
   {
     "name": "card-skin-selection",
-    "target": "/app/card-skins/selection/get",
+    "target": "/app/ui/customize/cards/selection/get",
     "data": {
       "revision": "revision-demo",
       "selection": {
@@ -1983,7 +1983,7 @@
   },
   {
     "name": "card-skin-empty-ack",
-    "target": "/app/card-skins/install",
+    "target": "/app/ui/customize/cards/install",
     "data": {},
     "status": "success",
     "essential": {}

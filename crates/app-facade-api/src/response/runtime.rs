@@ -9,9 +9,9 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
             | "/app/host/list"
             | "/app/host/service/install"
             | "/app/host/service/restart"
-            | "/app/card-skins/selection/get"
-            | "/app/card-skins/catalog/release/list"
-            | "/app/card-skins/catalog/release/get"
+            | "/app/ui/customize/cards/selection/get"
+            | "/app/ui/customize/cards/catalog/release/list"
+            | "/app/ui/customize/cards/catalog/release/get"
     ) {
         return None;
     }
@@ -51,7 +51,7 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
             }
         }
         "/app/host/service/install" | "/app/host/service/restart" => project_operation(&mut result),
-        "/app/card-skins/selection/get" => {
+        "/app/ui/customize/cards/selection/get" => {
             if let Some(releases) = result
                 .pointer_mut("/selection/releases")
                 .and_then(Value::as_array_mut)
@@ -61,14 +61,14 @@ pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
                 }
             }
         }
-        "/app/card-skins/catalog/release/list" => {
+        "/app/ui/customize/cards/catalog/release/list" => {
             if let Some(releases) = result.get_mut("releases").and_then(Value::as_array_mut) {
                 for release in releases {
                     project_release(release, false);
                 }
             }
         }
-        "/app/card-skins/catalog/release/get" => project_release(&mut result, true),
+        "/app/ui/customize/cards/catalog/release/get" => project_release(&mut result, true),
         _ => return None,
     }
     Some(result)
