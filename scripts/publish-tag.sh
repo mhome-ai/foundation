@@ -17,21 +17,6 @@ case "${tag}" in
     manifest="crates/script-runtime/Cargo.toml"
     version="${tag#mhome-script-runtime-v}"
     ;;
-  mhome-script-sdk-macros-v*)
-    package="mhome-script-sdk-macros"
-    manifest="crates/script-sdk-macros/Cargo.toml"
-    version="${tag#mhome-script-sdk-macros-v}"
-    ;;
-  mhome-script-sdk-v*)
-    package="mhome-script-sdk"
-    manifest="crates/script-sdk/Cargo.toml"
-    version="${tag#mhome-script-sdk-v}"
-    ;;
-  mhome-wasm-runtime-v*)
-    package="mhome-wasm-runtime"
-    manifest="crates/wasm-runtime/Cargo.toml"
-    version="${tag#mhome-wasm-runtime-v}"
-    ;;
   mhome-person-api-v*)
     package="mhome-person-api"
     manifest="crates/person-api/Cargo.toml"

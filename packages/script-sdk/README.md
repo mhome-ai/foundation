@@ -77,9 +77,16 @@ npm test
 
 See the authoritative [shared contract](https://github.com/mhome-ai/foundation/blob/main/crates/script-api/contract/javascript-v1.md).
 
-`browseMdns` exposes native local service discovery; `requestGoogleCast` uses Core's
+`browseMdns` exposes native local service discovery. `browseSsdp` sends IPv4 SSDP
+M-SEARCH to the standard local multicast address; it accepts a search target, a
+100–10,000 ms timeout and up to 64 responses, each at most 4 KiB. Its temporary
+socket closes on completion or cancellation. Provider code parses response text; `requestGoogleCast` uses Core's
 native Cast transport. Provider functions retain ownership of discovery identity,
 capability mapping and error handling. Calls share the invocation deadline. Blocking
 Cast IO uses the bounded native worker pool and retains admission until it actually
 finishes; cancellation is best effort. `log` records bounded diagnostics attributed
 to the invocation, using the existing Integration log directory.
+
+`scanLocalTcp` uses Core's bounded local-network scanner; provider code chooses
+ports and identifies devices from the results. It shares the invocation deadline
+and does not expose arbitrary subnet selection.

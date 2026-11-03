@@ -138,7 +138,7 @@ class PublicationScriptTests(unittest.TestCase):
         ):
             with self.subTest(exists=exists, verified=verified, upload=upload), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
-                manifest = root / "crates/script-sdk-macros/Cargo.toml"
+                manifest = root / "crates/script-api/Cargo.toml"
                 manifest.parent.mkdir(parents=True)
                 manifest.write_text('version = "1.0.0"\n')
                 tools = root / "bin"; tools.mkdir()
@@ -149,11 +149,11 @@ args=sys.argv[1:]
 with open(os.environ['FAKE_TRACE'],'a') as log:log.write('cargo '+' '.join(args)+'\\n')
 if args[0]=='metadata':print(json.dumps({'target_directory':os.environ['FAKE_TARGET']}))
 if args[0]=='package':
- path=pathlib.Path(os.environ['FAKE_TARGET'])/'package/mhome-script-sdk-macros-1.0.0.crate'
+ path=pathlib.Path(os.environ['FAKE_TARGET'])/'package/mhome-script-api-1.0.0.crate'
  path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'prepared local archive')
 if args[0]=='publish':
  if '--dry-run' in args:
-  path=pathlib.Path(os.environ['FAKE_TARGET'])/'package/tmp-crate/mhome-script-sdk-macros-1.0.0.crate'
+  path=pathlib.Path(os.environ['FAKE_TARGET'])/'package/tmp-crate/mhome-script-api-1.0.0.crate'
   path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'prepared local archive')
  else:raise SystemExit(int(os.environ['UPLOAD_RESULT']))
 ''')
@@ -172,7 +172,7 @@ os.execv(''' + repr(sys.executable) + ''',[''' + repr(sys.executable) + ''',*sys
                 env = {**os.environ, "PATH": str(tools) + os.pathsep + os.environ["PATH"],
                        "FAKE_TRACE": str(trace), "FAKE_TARGET": str(root / "target"),
                        "REGISTRY_EXISTS": str(exists), "VERIFY_RESULT": str(verified), "UPLOAD_RESULT": str(upload)}
-                result = subprocess.run(["bash", str(script), "mhome-script-sdk-macros-v1.0.0", "--publish"],
+                result = subprocess.run(["bash", str(script), "mhome-script-api-v1.0.0", "--publish"],
                                         cwd=root, env=env, text=True, capture_output=True, timeout=10)
                 self.assertEqual(succeeds, result.returncode == 0, result.stdout + result.stderr)
                 calls = trace.read_text().splitlines()
@@ -190,11 +190,11 @@ class PreparedCrateArchiveTests(unittest.TestCase):
         self.assertIsNotNone(cargo)
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            package = root / "crates/script-sdk-macros"
+            package = root / "crates/script-api"
             (package / "src").mkdir(parents=True)
-            (root / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/script-sdk-macros"]\nresolver = "2"\n')
+            (root / "Cargo.toml").write_text('[workspace]\nmembers = ["crates/script-api"]\nresolver = "2"\n')
             (package / "Cargo.toml").write_text(
-                '[package]\nname = "mhome-script-sdk-macros"\nversion = "1.0.0"\nedition = "2021"\n'
+                '[package]\nname = "mhome-script-api"\nversion = "1.0.0"\nedition = "2021"\n'
                 'license = "MIT"\ndescription = "Offline reference archive fixture"\n')
             (package / "src/lib.rs").write_text("pub fn fixture() {}\n")
             env = {key: value for key, value in os.environ.items()
@@ -212,18 +212,18 @@ if args[0] in ('package','metadata'):
  os.execv(os.environ['REAL_CARGO'],[os.environ['REAL_CARGO'],*args])
 if args[0]=='publish':
  if '--dry-run' not in args:raise SystemExit('Test must never upload')
- path=pathlib.Path('target/package/tmp-crate/mhome-script-sdk-macros-1.0.0.crate')
+ path=pathlib.Path('target/package/tmp-crate/mhome-script-api-1.0.0.crate')
  path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'temporary dry-run artifact')
 ''')
             (tools / "node").write_text("#!/bin/sh\nexit 0\n")
             for path in tools.iterdir():
                 path.chmod(0o755)
             env.update(PATH=str(tools) + os.pathsep + env["PATH"], FAKE_TRACE=str(trace))
-            result = subprocess.run(["bash", str(script), "mhome-script-sdk-macros-v1.0.0"],
+            result = subprocess.run(["bash", str(script), "mhome-script-api-v1.0.0"],
                                     cwd=root, env=env, capture_output=True, text=True, timeout=30)
             self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-            reference = root / "target/package/mhome-script-sdk-macros-1.0.0.crate"
-            files = r.archive_files(reference.read_bytes(), "mhome-script-sdk-macros-1.0.0", crate=True)
+            reference = root / "target/package/mhome-script-api-1.0.0.crate"
+            files = r.archive_files(reference.read_bytes(), "mhome-script-api-1.0.0", crate=True)
             self.assertEqual(b"pub fn fixture() {}\n", files["src/lib.rs"])
             self.assertIn("Cargo.lock", files)
             commands = trace.read_text().splitlines()

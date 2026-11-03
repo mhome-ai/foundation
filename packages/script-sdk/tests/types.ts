@@ -37,6 +37,11 @@ async function typedHostResults() {
 async function nativeCastAndDiscovery() {
   const sdk = await import("../src/index.js");
   const found: Value = await sdk.browseMdns({serviceTypes: ["_googlecast._tcp.local."], timeoutMillis: 4000, maxResults: 64});
+  const ssdp = await sdk.browseSsdp({searchTarget: "ssdp:all", timeoutMillis: 3000, maxResults: 16});
+  const replies: {remoteIp: string; responseText: string}[] = ssdp;
+  void replies;
+  // @ts-expect-error SSDP transport destination is fixed by Core
+  await sdk.browseSsdp({searchTarget: "ssdp:all", address: "foreign"});
   const state: Value = await sdk.requestGoogleCast({host: "receiver.local", action: "getStatus", port: 8009});
   await sdk.log("Album art import failed", {code: "NOT_FOUND"}, "warn");
   void [found, state];

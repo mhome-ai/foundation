@@ -1,14 +1,11 @@
 # foundation
 
-Small, stable Rust leaf libraries shared across mHome repositories.
+Shared Rust leaf libraries and TypeScript script tooling for MeowLink and MeowCore.
 
 ## Crates
 
-- `mhome-script-api`: JavaScript resource identities, artifacts and Automation contracts; the new script migration's shared leaf protocol.
-- `mhome-script-runtime`: native QuickJS execution, bounded host calls and shared JS workers; Core/cloud consumer cutover is still pending.
-- `mhome-script-sdk`: Automation values, Rust Input/Output contracts, bounded binary codec and guest ABI.
-- `mhome-script-sdk-macros`: Input/Output derives, re-exported by the Script SDK.
-- `mhome-wasm-runtime`: shared Wasmtime engine, per-call execution policies and Script ABI adapter.
+- `mhome-script-api`: JavaScript resource identities, artifacts and Automation contracts.
+- `mhome-script-runtime`: native QuickJS-NG execution, bounded host calls and shared JS workers. Core uses this runtime; cloud execution remains deferred.
 
 - `mhome-person-api`: Space-owned Person management, embedding contracts and authoritative observations.
 - `mhome-face-matching`: shared pure matching over model-compatible galleries.
@@ -31,14 +28,13 @@ product workflows. Shared wire contracts and deterministic domain models are all
 remain leaf libraries. A crate belongs here only when it has multiple repository consumers or
 defines a genuinely shared leaf contract.
 
-The script contract and validation commands are in [the Script SDK contract](crates/script-sdk/README.md).
-The replacement TS/JS contract is in [JavaScript script v1](crates/script-api/contract/javascript-v1.md).
-Its models are implemented; consumer runtime cutover is separate work.
+The script contract is [JavaScript script v1](crates/script-api/contract/javascript-v1.md).
+TypeScript SDK and builder sources live in `packages/script-sdk` and `packages/script-build`.
+Scripts use ESM JavaScript; there is no Rust/Wasm execution fallback.
 
 ## Development
 
-The shared Wasmtime 48 LTS runtime requires Rust 1.95.0 or newer. The repository
-toolchain and CI use 1.95.0.
+The repository toolchain and CI use Rust 1.95.0.
 
 ```bash
 cargo fmt --all --check
@@ -52,8 +48,11 @@ Publication is immutable and restricted to the allowlist in `scripts/publish-tag
 
 The JavaScript contract and native runtime publish as `mhome-script-api-v<version>`
 and `mhome-script-runtime-v<version>`. Publish the API's exact pinned version
-before the runtime. The TypeScript packages `@meowlink/script` and
-`@meowlink/script-build` remain private and are not published by these tags.
+before the runtime. `@meowlink/script` and `@meowlink/script-build` are independently
+installable npm packages. Source workspaces use private local links;
+`scripts/stage-script-package.mjs` creates distributable manifests with exact registry
+dependencies. Their offline packaging/install tests run in CI. Crate tags do not
+publish these npm packages.
 
 Registry upload acceptance does not imply Cargo index availability. Tagged
 publication waits for exact internal dependency versions in the crates.io sparse

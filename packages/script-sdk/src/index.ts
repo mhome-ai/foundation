@@ -245,6 +245,25 @@ export interface MdnsBrowseRequest {
 export async function browseMdns(request: MdnsBrowseRequest): Promise<ScriptObject> {
   return await call("mdns.browse", [request as unknown as Value]) as ScriptObject;
 }
+export interface SsdpBrowseRequest {
+  searchTarget: string;
+  timeoutMillis?: number;
+  maxResults?: number;
+}
+export interface SsdpResponse { remoteIp: string; responseText: string }
+/** Bounded IPv4 SSDP M-SEARCH on the local network; shares the invocation deadline. */
+export async function browseSsdp(request: SsdpBrowseRequest): Promise<SsdpResponse[]> {
+  return await call("ssdp.browse", [request as unknown as Value]) as unknown as SsdpResponse[];
+}
+export interface LocalTcpScanRequest {
+  port: number;
+  timeoutMillis?: number;
+  maxResults?: number;
+}
+/** Probe one port on the primary IPv4 /24, excluding this host. No arbitrary CIDR expansion. */
+export async function scanLocalTcp(request: LocalTcpScanRequest): Promise<string[]> {
+  return await call("tcp.scanLocal", [request as unknown as Value]) as string[];
+}
 export interface GoogleCastRequest {
   host: string;
   port?: number;
