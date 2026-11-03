@@ -52,7 +52,13 @@ before the runtime. `@meowlink/script` and `@meowlink/script-build` are independ
 installable npm packages. Source workspaces use private local links;
 `scripts/stage-script-package.mjs` creates distributable manifests with exact registry
 dependencies. Their offline packaging/install tests run in CI. Crate tags do not
-publish these npm packages.
+publish these npm packages. Dedicated `meowlink-script-v<version>` and
+`meowlink-script-build-v<version>` tags use the same hosted publication workflow.
+Publish the SDK first; the builder release verifies its exact published SDK bytes.
+`bash scripts/publish-tag.sh <tag>` builds, tests and packs locally without upload;
+only the tagged workflow uses `--publish`. Configure npm trusted publishing for
+both packages before their first release. The workspace Rust release coordinator
+does not create these npm-only tags.
 
 Registry upload acceptance does not imply Cargo index availability. Tagged
 publication waits for exact internal dependency versions in the crates.io sparse

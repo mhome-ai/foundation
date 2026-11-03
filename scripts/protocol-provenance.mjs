@@ -13,12 +13,16 @@ import {
 import npa from "npm-package-arg";
 import { verify } from "sigstore";
 
+import { SCRIPT_PACKAGES } from "./script-packages.mjs";
+
 import { PROTOCOL_PACKAGES } from "./protocol-packages.mjs";
 
 export function protocolStatement(name, version, tarball, env) {
   const spec = npa.resolve(name, version);
-  if (!Object.values(PROTOCOL_PACKAGES).some((p) => p.npmName === name) || spec.type !== "version") {
-    throw new Error("Expected an exact Foundation protocol package version");
+  const supported = Object.values(PROTOCOL_PACKAGES).some((p) => p.npmName === name)
+    || Object.values(SCRIPT_PACKAGES).some((p) => p.name === name);
+  if (!supported || spec.type !== "version") {
+    throw new Error("Expected an exact Foundation npm package version");
   }
   for (const key of ["GITHUB_REPOSITORY", "GITHUB_REF", "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT"]) {
     if (!env[key]) throw new Error(`Missing ${key} for release provenance`);

@@ -7,6 +7,9 @@ protocol=""
 npm_package=""
 
 case "${tag}" in
+  meowlink-script-v*|meowlink-script-build-v*)
+    exec node "$(dirname "$0")/publish-script-tag.mjs" "$@"
+    ;;
   mhome-script-api-v*)
     package="mhome-script-api"
     manifest="crates/script-api/Cargo.toml"
