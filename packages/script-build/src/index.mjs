@@ -7,6 +7,7 @@ import * as esbuild from "esbuild";
 import { SDK_VERSION } from "@meowlink/script";
 import { BuildError, readContract } from "./contract.mjs";
 export { BuildError } from "./contract.mjs";
+export { buildIntegration } from "./integration.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const sdkEntry = fileURLToPath(import.meta.resolve("@meowlink/script"));
