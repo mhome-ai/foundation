@@ -13,6 +13,16 @@ addFormats(ajv);
 ajv.addSchema(read("schema/card-skin-package.v1.schema.json"));
 ajv.addSchema(wire);
 const valid = (definition, value) => ajv.validate({ $ref: `${wire.$id}#/definitions/${definition}` }, value);
+test("prepared uploads carry the storage provider's exact signed headers without an App bearer", () => {
+  const prepared = headers => ({ uploadId: "a".repeat(32), expiresAt: 1800000000000,
+    files: [{ path: "skin.mjs", url: "https://storage.example.test/staging/skin.mjs?signature=fictional", headers }] });
+  for (const headers of [
+    { "content-length": "45", "content-type": "application/octet-stream", "if-none-match": "*", "cache-control": "private, no-store" },
+    { "Content-Length": "45", "Content-Type": "application/octet-stream", "x-oss-forbid-overwrite": "true" },
+  ]) assert.ok(valid("prepared", prepared(headers)), JSON.stringify(ajv.errors));
+  for (const headers of [{}, { "Content-Length": 45 }, { "Bad Header": "x" }, { "content-type": "text/plain\r\nInjected: yes" }])
+    assert.equal(valid("prepared", prepared(headers)), false);
+});
 test("Space edits require an explicit revision and cannot supply release data", () => {
   const input = { expectedRevision: null, packageId: "example.evening", version: "1.0.0", baseUi: "default" };
   assert.ok(valid("install", input));

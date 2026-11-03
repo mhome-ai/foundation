@@ -552,22 +552,19 @@
               },
               "headers": {
                 "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "Authorization",
-                  "Content-Type"
-                ],
-                "properties": {
-                  "Authorization": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 512
-                  },
-                  "Content-Type": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 512
-                  }
+                "minProperties": 1,
+                "maxProperties": 32,
+                "propertyNames": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$"
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8192,
+                  "pattern": "^[^\\r\\n]*$"
                 }
               }
             }
