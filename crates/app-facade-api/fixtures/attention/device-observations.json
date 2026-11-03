@@ -1,0 +1,335 @@
+[
+  {
+    "name": "unknown alone does not create water incident",
+    "capabilityId": "basic.device.state.water",
+    "observations": [
+      {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "unknown"
+      }
+    ],
+    "active": false,
+    "verificationRequired": false,
+    "episodeClearSequence": 0,
+    "sourceUpdatedAt": 1000,
+    "persisted": {
+      "entityId": "sensor",
+      "capabilityId": "basic.device.state.water",
+      "latest": {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "unknown"
+      },
+      "detected": null,
+      "cleared": null
+    }
+  },
+  {
+    "name": "delayed first wet survives unknown",
+    "capabilityId": "basic.device.state.water",
+    "observations": [
+      {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "unknown"
+      },
+      {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "wet"
+      }
+    ],
+    "active": true,
+    "verificationRequired": true,
+    "episodeClearSequence": 0,
+    "sourceUpdatedAt": 2000,
+    "persisted": {
+      "entityId": "sensor",
+      "capabilityId": "basic.device.state.water",
+      "latest": {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "unknown"
+      },
+      "detected": {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "wet"
+      },
+      "cleared": null
+    }
+  },
+  {
+    "name": "delayed wet cannot revive cleared incident",
+    "capabilityId": "basic.device.state.water",
+    "observations": [
+      {
+        "sequence": 3,
+        "timestamp": 3000,
+        "value": "unknown"
+      },
+      {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "dry"
+      },
+      {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "wet"
+      }
+    ],
+    "active": false,
+    "verificationRequired": false,
+    "episodeClearSequence": 0,
+    "sourceUpdatedAt": 1000,
+    "persisted": {
+      "entityId": "sensor",
+      "capabilityId": "basic.device.state.water",
+      "latest": {
+        "sequence": 3,
+        "timestamp": 3000,
+        "value": "unknown"
+      },
+      "detected": {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "wet"
+      },
+      "cleared": {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "dry"
+      }
+    }
+  },
+  {
+    "name": "delayed clear cannot remove newer wet",
+    "capabilityId": "basic.device.state.water",
+    "observations": [
+      {
+        "sequence": 3,
+        "timestamp": 3000,
+        "value": "wet"
+      },
+      {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "wet"
+      },
+      {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "dry"
+      }
+    ],
+    "active": true,
+    "verificationRequired": false,
+    "episodeClearSequence": 2,
+    "sourceUpdatedAt": 3000,
+    "persisted": {
+      "entityId": "sensor",
+      "capabilityId": "basic.device.state.water",
+      "latest": {
+        "sequence": 3,
+        "timestamp": 3000,
+        "value": "wet"
+      },
+      "detected": {
+        "sequence": 3,
+        "timestamp": 3000,
+        "value": "wet"
+      },
+      "cleared": {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "dry"
+      }
+    }
+  },
+  {
+    "name": "new episode remains under verification",
+    "capabilityId": "basic.device.state.water",
+    "observations": [
+      {
+        "sequence": 3,
+        "timestamp": 3000,
+        "value": "unknown"
+      },
+      {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "wet"
+      },
+      {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "dry"
+      }
+    ],
+    "active": true,
+    "verificationRequired": true,
+    "episodeClearSequence": 1,
+    "sourceUpdatedAt": 3000,
+    "persisted": {
+      "entityId": "sensor",
+      "capabilityId": "basic.device.state.water",
+      "latest": {
+        "sequence": 3,
+        "timestamp": 3000,
+        "value": "unknown"
+      },
+      "detected": {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "wet"
+      },
+      "cleared": {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "dry"
+      }
+    }
+  },
+  {
+    "name": "duplicate wet is not proof of freshness",
+    "capabilityId": "basic.device.state.water",
+    "observations": [
+      {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "wet"
+      },
+      {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "wet"
+      }
+    ],
+    "active": true,
+    "verificationRequired": false,
+    "episodeClearSequence": 0,
+    "sourceUpdatedAt": 1000,
+    "persisted": {
+      "entityId": "sensor",
+      "capabilityId": "basic.device.state.water",
+      "latest": {
+        "sequence": 2,
+        "timestamp": 1000,
+        "value": "wet"
+      },
+      "detected": {
+        "sequence": 2,
+        "timestamp": 1000,
+        "value": "wet"
+      },
+      "cleared": null
+    }
+  },
+  {
+    "name": "testing alone does not create smoke incident",
+    "capabilityId": "basic.device.state.smoke",
+    "observations": [
+      {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "testing"
+      }
+    ],
+    "active": false,
+    "verificationRequired": false,
+    "episodeClearSequence": 0,
+    "sourceUpdatedAt": 1000,
+    "persisted": {
+      "entityId": "sensor",
+      "capabilityId": "basic.device.state.smoke",
+      "latest": {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "testing"
+      },
+      "detected": null,
+      "cleared": null
+    }
+  },
+  {
+    "name": "smoke testing preserves detected incident",
+    "capabilityId": "basic.device.state.smoke",
+    "observations": [
+      {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "detected"
+      },
+      {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "testing"
+      }
+    ],
+    "active": true,
+    "verificationRequired": true,
+    "episodeClearSequence": 0,
+    "sourceUpdatedAt": 2000,
+    "persisted": {
+      "entityId": "sensor",
+      "capabilityId": "basic.device.state.smoke",
+      "latest": {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "testing"
+      },
+      "detected": {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "detected"
+      },
+      "cleared": null
+    }
+  },
+  {
+    "name": "clear ends smoke incident",
+    "capabilityId": "basic.device.state.smoke",
+    "observations": [
+      {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "detected"
+      },
+      {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "clear"
+      },
+      {
+        "sequence": 3,
+        "timestamp": 3000,
+        "value": "unknown"
+      }
+    ],
+    "active": false,
+    "verificationRequired": false,
+    "episodeClearSequence": 0,
+    "sourceUpdatedAt": 1000,
+    "persisted": {
+      "entityId": "sensor",
+      "capabilityId": "basic.device.state.smoke",
+      "latest": {
+        "sequence": 3,
+        "timestamp": 3000,
+        "value": "unknown"
+      },
+      "detected": {
+        "sequence": 1,
+        "timestamp": 1000,
+        "value": "detected"
+      },
+      "cleared": {
+        "sequence": 2,
+        "timestamp": 2000,
+        "value": "clear"
+      }
+    }
+  }
+]

@@ -1,6 +1,9 @@
 //! Deterministic, viewer-specific household attention contract.
 use serde::{Deserialize, Serialize};
 
+pub const DEVICE_OBSERVATION_FIXTURES: &str =
+    include_str!("../fixtures/attention/device-observations.json");
+
 pub const LIST_TARGET: &str = "/app/now/attention/list";
 pub const POLICY_JSON: &str = include_str!("../manifest/attention-policy.v1.json");
 

@@ -44,10 +44,23 @@ Standard device facts currently cover `state.water` (`wet` / `dry`) and
 `state.smoke` (`detected` / `clear`). Other readings, including unknown/testing,
 do not create an incident and do not resolve an existing incident. The small
 retained device projection preserves the episode across restarts and Space
-execution-mode migration. Its revision is owned by Attention, independent of
-rebuildable Twin cache counters. Each reconciliation reads current canonical
-Twin state, including retained-history recovery, rather than replaying event
-payloads. Device metadata and retained episodes cover cold/missing caches.
+execution-mode migration. Its CAS revision is owned by Attention, independent of rebuildable Twin cache
+counters. Source ingestion persists a bounded set of ordered facts before
+replacing the Twin cache: latest report, latest detection and latest explicit
+clear. Their sequence comes from the existing durable `nowAttention` increment
+namespace. A delayed detection survives a newer unknown, but cannot supersede a
+newer explicit clear. A delayed clear cannot remove a newer detection. Unknown
+changes verification only. The incident ID remains stable until another clear
+boundary is observed. Delayed notification delivery does not replay source facts.
+
+List reconciliation only bootstraps an absent source record from canonical Twin
+state, including retained-history recovery; a live source record wins a racing
+bootstrap. Afterwards the durable source facts own lifecycle state. Device
+metadata and retained episodes cover cold/missing caches. The portable Attention
+payload contains `entityId`, `capabilityId`, and nullable `latest`, `detected`,
+`cleared` observations (`sequence`, `timestamp`, `value`). Imports preserve the
+source sequence floor as well as the separate CAS revision. This keeps source
+ordering valid after a restart, a cache rebuild and execution-mode migration.
 
 All timestamps are epoch milliseconds. `sourceUpdatedAt` is the underlying
 state-change timestamp, not a heartbeat or proof of current connectivity.
