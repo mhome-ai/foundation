@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import test from "node:test";
 import { stageScriptPackage } from "../../../scripts/stage-script-package.mjs";
 
-test("packed SDK and builder install offline without sibling source or lifecycle scripts", (t) => {
+test("packed SDK and builder install independently and replay offline from a prepared cache", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "standalone-script-packages-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const tarballs = [];
@@ -24,7 +24,20 @@ test("packed SDK and builder install offline without sibling source or lifecycle
   const consumer = path.join(root, "consumer");
   fs.mkdirSync(consumer);
   fs.writeFileSync(path.join(consumer, "package.json"), '{"private":true,"type":"module"}');
-  execFileSync("npm", ["install", "--offline", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs], { cwd: consumer, stdio: "pipe" });
+  // npm ci caches locked dependency archives, not necessarily the registry
+  // metadata that npm install needs to resolve a new consumer. Prepare THIS
+  // test's cache explicitly; a developer's warm global cache cannot hide gaps.
+  const cache = path.join(root, "npm-cache");
+  fs.mkdirSync(cache);
+  assert.deepEqual(fs.readdirSync(cache), []);
+  const env = { ...process.env, NPM_CONFIG_CACHE: cache };
+  delete env.npm_config_cache;
+  const install = (args) => execFileSync("npm", args, { cwd: consumer, env, stdio: "pipe" });
+  install(["install", "--offline=false", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs]);
+  const lock = fs.readFileSync(path.join(consumer, "package-lock.json"), "utf8");
+  fs.rmSync(path.join(consumer, "node_modules"), { recursive: true });
+  install(["ci", "--offline", "--ignore-scripts", "--no-audit", "--no-fund"]);
+  assert.equal(fs.readFileSync(path.join(consumer, "package-lock.json"), "utf8"), lock);
   for (const name of ["script", "script-build"]) {
     assert.equal(fs.lstatSync(path.join(consumer, "node_modules/@meowlink", name)).isSymbolicLink(), false);
   }

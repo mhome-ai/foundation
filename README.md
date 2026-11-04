@@ -51,7 +51,8 @@ and `mhome-script-runtime-v<version>`. Publish the API's exact pinned version
 before the runtime. `@meowlink/script` and `@meowlink/script-build` are independently
 installable npm packages. Source workspaces use private local links;
 `scripts/stage-script-package.mjs` creates distributable manifests with exact registry
-dependencies. Their offline packaging/install tests run in CI. Crate tags do not
+dependencies. Their packaging tests prepare an isolated dependency cache, then
+verify offline locked installation and an independent build in CI. Crate tags do not
 publish these npm packages. Dedicated `meowlink-script-v<version>` and
 `meowlink-script-build-v<version>` tags use the same hosted publication workflow.
 Publish the SDK first; the builder release verifies its exact published SDK bytes.

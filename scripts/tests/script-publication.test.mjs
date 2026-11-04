@@ -5,8 +5,11 @@ import test from "node:test";
 import { publishScriptTag } from "../publish-script-tag.mjs";
 import { protocolStatement } from "../protocol-provenance.mjs";
 
+const packageInfo = Object.fromEntries([["sdk", "script-sdk"], ["build", "script-build"]].map(([kind, directory]) =>
+  [kind, JSON.parse(fs.readFileSync(new URL(`../../packages/${directory}/package.json`, import.meta.url), "utf8"))]));
+
 function fixture(kind = "sdk", behavior = {}) {
-  const tag = kind === "sdk" ? "meowlink-script-v0.1.0" : "meowlink-script-build-v0.1.0";
+  const tag = `${kind === "sdk" ? "meowlink-script-v" : "meowlink-script-build-v"}${packageInfo[kind].version}`;
   const calls = [], manifests = new Map();
   const env = {
     GITHUB_ACTIONS: "true", RUNNER_ENVIRONMENT: "github-hosted",
@@ -16,7 +19,8 @@ function fixture(kind = "sdk", behavior = {}) {
   const options = { publish: true, env,
     stage(kind, directory) {
       fs.mkdirSync(directory);
-      const manifest = { name: kind === "sdk" ? "@meowlink/script" : "@meowlink/script-build", version: "0.1.0" };
+      const { name, version } = packageInfo[kind];
+      const manifest = { name, version };
       manifests.set(directory, manifest);
       return manifest;
     },
@@ -42,11 +46,11 @@ function fixture(kind = "sdk", behavior = {}) {
 }
 
 test("unknown tags, mismatched versions and untrusted publication fail before commands", () => {
-  const { options, calls } = fixture();
+  const { tag: trustedTag, options, calls } = fixture();
   for (const tag of ["other-v0.1.0", "meowlink-script-v9.9.9", "meowlink-script-vlatest"]) {
     assert.throws(() => publishScriptTag(tag, options));
   }
-  assert.throws(() => publishScriptTag("meowlink-script-v0.1.0", { ...options, env: {} }));
+  assert.throws(() => publishScriptTag(trustedTag, { ...options, env: {} }));
   assert.deepEqual(calls, []);
 });
 
@@ -64,6 +68,7 @@ test("builder verifies its published SDK before generating proof or uploading", 
   const proof = calls.findIndex(call => call[0] === "node");
   const upload = calls.findIndex(call => call.includes("publish"));
   assert.ok(sdk >= 0 && proof > sdk && upload > proof);
+  assert.equal(calls[sdk][6], packageInfo.sdk.version, "builder verifies the SDK release, not its own version");
   assert.ok(calls[upload].includes("--provenance-file"));
   assert.equal(calls.at(-1)[3], "verify");
   const mismatch = fixture("build", { sdkMismatch: true });
@@ -95,7 +100,7 @@ test("script packages use the canonical workflow's byte-bound provenance", () =>
   for (const kind of ["sdk", "build"]) {
     const { options: { env } } = fixture(kind);
     const name = kind === "sdk" ? "@meowlink/script" : "@meowlink/script-build";
-    const statement = protocolStatement(name, "0.1.0", Buffer.from("packed bytes"), {
+    const statement = protocolStatement(name, packageInfo[kind].version, Buffer.from("packed bytes"), {
       ...env, GITHUB_SERVER_URL: "https://github.com", GITHUB_SHA: "a".repeat(40),
       GITHUB_RUN_ID: "1", GITHUB_RUN_ATTEMPT: "1",
     });

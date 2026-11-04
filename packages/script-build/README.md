@@ -47,6 +47,8 @@ publishable directories with `node scripts/stage-script-package.mjs sdk <empty-d
 and `node scripts/stage-script-package.mjs build <empty-dir>`. These directories
 contain executable/types artifacts, exact dependencies, README and LICENSE, with
 no install hooks or sibling source paths. Pack with `npm pack <directory>`.
-Tests install both tarballs offline and build a separate project without Foundation
-sources. Staging/packing does not publish packages; registry publication and consumer
+Tests first install both tarballs with an isolated empty npm cache, then remove
+node_modules and reinstall offline from the generated lock and prepared cache.
+They build a separate project without Foundation sources or lifecycle scripts.
+Staging/packing does not publish packages; registry publication and consumer
 availability remain a separate release step.
