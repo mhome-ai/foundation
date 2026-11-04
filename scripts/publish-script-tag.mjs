@@ -9,9 +9,10 @@ import { stageScriptPackage } from "./stage-script-package.mjs";
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 export function publishScriptTag(tag, {
-  publish = false, env = process.env, source = root, stage = stageScriptPackage,
+  publish = false, verifyPublished = false, env = process.env, source = root, stage = stageScriptPackage,
   run = (command, args) => execFileSync(command, args, { cwd: source, env, encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] }),
 } = {}) {
+  if (publish && verifyPublished) throw new Error("Publication and read-only verification are mutually exclusive");
   const selected = scriptReleasePlan(tag, source);
   if (publish && (env.GITHUB_ACTIONS !== "true" || env.RUNNER_ENVIRONMENT !== "github-hosted"
       || env.GITHUB_REF !== `refs/tags/${tag}` || env.GITHUB_REPOSITORY !== "mhome-ai/foundation"
@@ -39,12 +40,16 @@ export function publishScriptTag(tag, {
       if (!fs.statSync(tarball).isFile()) throw new Error("Missing script package archive");
       artifacts[kind] = { manifest, tarball };
     }
-    if (!publish) return selected;
+    if (!publish && !verifyPublished) return selected;
     const registry = (action, item) => run("python3", ["-B", "scripts/release-registry.py", action,
       "npm", item.manifest.name, item.manifest.version, ...(action === "verify" ? [item.tarball] : [])]);
     // The builder must consume the already published, identical SDK, never just a matching version label.
     if (selected.kind === "build") registry("verify", artifacts.sdk);
     const item = artifacts[selected.kind];
+    if (verifyPublished) {
+      registry("verify", item);
+      return selected;
+    }
     let exists = false;
     try { registry("exists", item); exists = true; }
     catch (error) { if (error.status !== 3) throw error; }
@@ -70,7 +75,7 @@ export function publishScriptTag(tag, {
 
 if (path.resolve(process.argv[1] || "") === fileURLToPath(import.meta.url)) {
   const [tag, mode] = process.argv.slice(2);
-  if (!tag || (mode !== undefined && mode !== "--publish") || process.argv.length > 4) throw new Error("Usage: publish-script-tag.mjs <tag> [--publish]");
-  const result = publishScriptTag(tag, { publish: mode === "--publish" });
-  console.log(`${mode === "--publish" ? "Published and verified" : "Verified locally"} ${result.name}@${result.version}`);
+  if (!tag || (mode !== undefined && !["--publish", "--verify-published"].includes(mode)) || process.argv.length > 4) throw new Error("Usage: publish-script-tag.mjs <tag> [--publish | --verify-published]");
+  const result = publishScriptTag(tag, { publish: mode === "--publish", verifyPublished: mode === "--verify-published" });
+  console.log(`${mode === "--publish" ? "Published and verified" : mode === "--verify-published" ? "Verified against registry" : "Verified locally"} ${result.name}@${result.version}`);
 }

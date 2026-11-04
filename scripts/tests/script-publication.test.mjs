@@ -103,3 +103,24 @@ test("script packages use the canonical workflow's byte-bound provenance", () =>
     assert.equal(statement.subject[0].digest.sha512.length, 128);
   }
 });
+
+test("read-only registry verification compares packed SDK and builder without publication credentials", () => {
+  for (const kind of ["sdk", "build"]) {
+    const { tag, options, calls } = fixture(kind);
+    publishScriptTag(tag, { ...options, publish: false, verifyPublished: true, env: {} });
+    const registry = calls.filter(call => call[0] === "python3");
+    assert.deepEqual(registry.map(call => [call[3], call[5]]), kind === "sdk"
+      ? [["verify", "@meowlink/script"]]
+      : [["verify", "@meowlink/script"], ["verify", "@meowlink/script-build"]]);
+    assert.ok(!calls.some(call => call[0] === "node" || call.includes("publish") || call.includes("--version")));
+  }
+});
+
+test("read-only verification rejects changed package contents and incompatible modes", () => {
+  const { tag, options, calls } = fixture("sdk", { sdkMismatch: true });
+  assert.throws(() => publishScriptTag(tag, { ...options, publish: false, verifyPublished: true, env: {} }), /SDK content mismatch/);
+  assert.ok(!calls.some(call => call.includes("publish")));
+  const conflict = fixture();
+  assert.throws(() => publishScriptTag(conflict.tag, { ...conflict.options, verifyPublished: true }), /mutually exclusive/);
+  assert.deepEqual(conflict.calls, []);
+});

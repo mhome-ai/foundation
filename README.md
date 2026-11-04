@@ -57,8 +57,13 @@ publish these npm packages. Dedicated `meowlink-script-v<version>` and
 Publish the SDK first; the builder release verifies its exact published SDK bytes.
 `bash scripts/publish-tag.sh <tag>` builds, tests and packs locally without upload;
 only the tagged workflow uses `--publish`. Configure npm trusted publishing for
-both packages before their first release. The workspace Rust release coordinator
-does not create these npm-only tags.
+both packages before their first release. The workspace release coordinator
+publishes these packages in SDK → builder order after the Foundation crates,
+waiting for exact-tag CI and registry availability before advancing consumers.
+Reused tags are verified against their original commit, and
+`bash scripts/publish-tag.sh <tag> --verify-published` checks the current packed
+contents against the immutable registry version without uploading. Changed package
+contents require a new version. Dry-run defers this build/content verification.
 
 Registry upload acceptance does not imply Cargo index availability. Tagged
 publication waits for exact internal dependency versions in the crates.io sparse
