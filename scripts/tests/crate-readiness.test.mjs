@@ -217,7 +217,7 @@ if (operation === 'exists') process.exit(process.env.UPLOAD_API_STATUS === '0' ?
   }
 }
 
-for (const directory of ['script-api', 'script-runtime']) {
+for (const directory of ['person-api', 'llm-api']) {
   const packageName = `mhome-${directory}`;
   test(`${packageName} tags run the crate release gates without npm publication`, () => {
     const options = {packageName, packageVersion: '0.1.0', directory};

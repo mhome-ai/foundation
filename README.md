@@ -1,12 +1,10 @@
 # foundation
 
-Shared Rust leaf libraries and TypeScript script tooling for MeowLink and MeowCore.
+Shared Rust leaf libraries and platform contracts for MeowLink and MeowCore.
 
 ## Crates
 
-- `mhome-script-api`: JavaScript resource identities, artifacts and Automation contracts.
-- `mhome-script-runtime`: native QuickJS-NG execution, bounded host calls and shared JS workers. Core uses this runtime; cloud execution remains deferred.
-
+- `mhome-script-api`: shared script identities, artifacts, typed values and Automation contracts.
 - `mhome-person-api`: Space-owned Person management, embedding contracts and authoritative observations.
 - `mhome-face-matching`: shared pure matching over model-compatible galleries.
 
@@ -28,9 +26,10 @@ product workflows. Shared wire contracts and deterministic domain models are all
 remain leaf libraries. A crate belongs here only when it has multiple repository consumers or
 defines a genuinely shared leaf contract.
 
-The script contract is [JavaScript script v1](crates/script-api/contract/javascript-v1.md).
-TypeScript SDK and builder sources live in `packages/script-sdk` and `packages/script-build`.
-Scripts use ESM JavaScript; there is no Rust/Wasm execution fallback.
+The authoritative [JavaScript v1 contract](crates/script-api/contract/javascript-v1.md)
+and its conformance fixtures remain here. The SDK, builder and native runtime live
+in the separate [Script repository](https://github.com/mhome-ai/script), consuming
+an exact published `mhome-script-api` version. Foundation never depends on Script.
 
 ## Development
 
@@ -46,34 +45,7 @@ Crates are versioned independently. A tag named `<package>-v<version>` publishes
 for example `mhome-runtime-paths-v0.1.0`. The tag version must equal that package's manifest version.
 Publication is immutable and restricted to the allowlist in `scripts/publish-tag.sh`.
 
-The JavaScript contract and native runtime publish as `mhome-script-api-v<version>`
-and `mhome-script-runtime-v<version>`. Publish the API's exact pinned version
-before the runtime. `@mhome/script` and `@mhome/script-build` are independently
-installable npm packages. Source workspaces use private local links;
-`scripts/stage-script-package.mjs` creates distributable manifests with exact registry
-dependencies. Their packaging tests prepare an isolated dependency cache, then
-verify offline locked installation and an independent build in CI. Crate tags do not
-publish these npm packages. Dedicated `mhome-script-v<version>` and
-`mhome-script-build-v<version>` tags use the same hosted publication workflow.
-Publish the SDK first; the builder release verifies its exact published SDK bytes.
-`bash scripts/publish-tag.sh <tag>` builds, tests and packs locally without upload;
-only the tagged workflow uses `--publish`. Configure npm trusted publishing for
-both packages before their first automated release. A new npm scope must first
-belong to the maintainer's npm account or organization; GitHub organization
-ownership does not grant npm access. New packages need a one-time registration
-using an authorized npm session (for example, staged publishing), then a trusted
-publisher for `mhome-ai/foundation`, workflow `publish-crate.yml`, with direct
-`npm publish` allowed. Do not put long-lived npm tokens into this workflow.
-The workspace release coordinator
-publishes these packages in SDK → builder order after the Foundation crates,
-waiting for exact-tag CI and registry availability before advancing consumers.
-Reused tags are verified against their original commit, and
-`bash scripts/publish-tag.sh <tag> --verify-published` checks the current packed
-contents against the immutable registry version without uploading. Changed package
-contents require a new version. Dry-run defers this build/content verification.
-Explicit npm authentication/permission rejection stops immediately; only an
-uncertain upload result keeps the bounded registry wait. Neither path retries
-the upload. Failed release tags remain immutable and reserve their version.
+
 
 Registry upload acceptance does not imply Cargo index availability. Tagged
 publication waits for exact internal dependency versions in the crates.io sparse

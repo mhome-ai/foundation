@@ -7,18 +7,10 @@ protocol=""
 npm_package=""
 
 case "${tag}" in
-  mhome-script-v*|mhome-script-build-v*)
-    exec node "$(dirname "$0")/publish-script-tag.mjs" "$@"
-    ;;
   mhome-script-api-v*)
     package="mhome-script-api"
     manifest="crates/script-api/Cargo.toml"
     version="${tag#mhome-script-api-v}"
-    ;;
-  mhome-script-runtime-v*)
-    package="mhome-script-runtime"
-    manifest="crates/script-runtime/Cargo.toml"
-    version="${tag#mhome-script-runtime-v}"
     ;;
   mhome-person-api-v*)
     package="mhome-person-api"

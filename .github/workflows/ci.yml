@@ -9,23 +9,6 @@ permissions:
   contents: read
 
 jobs:
-  script-tooling:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24.22.1
-          package-manager-cache: false
-      - name: Build and test the SDK
-        run: |
-          npm ci --prefix packages/script-sdk --ignore-scripts --no-audit --no-fund
-          npm test --prefix packages/script-sdk
-      - name: Test builders and standalone offline package installation
-        run: |
-          npm ci --prefix packages/script-build --ignore-scripts --no-audit --no-fund
-          npm test --prefix packages/script-build
   release-tools:
     runs-on: ubuntu-latest
     timeout-minutes: 10

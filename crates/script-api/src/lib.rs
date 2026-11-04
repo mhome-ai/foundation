@@ -360,6 +360,24 @@ pub struct ScriptArtifact {
 }
 
 impl ScriptArtifact {
+    /// Verifies immutable source content. Callers still validate metadata against
+    /// the authorized reference with `validate_for`, including on cache hits.
+    pub fn verify_source<'a>(&self, bytes: &'a [u8]) -> Result<&'a str, ContractError> {
+        use sha2::{Digest, Sha256};
+        if !(1..=MAX_ARTIFACT_BYTES).contains(&self.size)
+            || bytes.len() != self.size
+            || format!("{:x}", Sha256::digest(bytes)) != self.sha256
+        {
+            return Err(invalid("Script content does not match its manifest"));
+        }
+        let source =
+            std::str::from_utf8(bytes).map_err(|_| invalid("Script source is not UTF-8"))?;
+        if source.contains('\0') {
+            return Err(invalid("Invalid JavaScript source"));
+        }
+        Ok(source)
+    }
+
     /// Checks metadata consistency, not caller authorization or the source digest itself.
     pub fn validate_for(&self, reference: &ScriptRef) -> Result<(), ContractError> {
         reference.validate()?;

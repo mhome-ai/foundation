@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
   "crates/script-api",
-  "crates/script-runtime",
   "crates/person-api",
   "crates/face-matching",
   "crates/artifact",
