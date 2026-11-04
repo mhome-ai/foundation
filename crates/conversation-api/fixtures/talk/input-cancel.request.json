@@ -1,0 +1,9 @@
+{
+  "target": "/pod/talk/input/cancel",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "inputId": "input-one",
+    "inputEpoch": 1
+  }
+}

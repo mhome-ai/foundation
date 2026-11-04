@@ -1,0 +1,11 @@
+{
+  "target": "/pod/talk/input/assess",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "inputId": "input-one",
+    "inputEpoch": 1,
+    "revision": 1,
+    "finalize": false
+  }
+}

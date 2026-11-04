@@ -33,7 +33,11 @@
       "/pod/talk/audio/upload/start",
       "/pod/talk/audio/transcribe",
       "/pod/talk/speech/prepare",
-      "/pod/talk/media/resolve"
+      "/pod/talk/media/resolve",
+      "/pod/talk/input/begin",
+      "/pod/talk/input/append",
+      "/pod/talk/input/assess",
+      "/pod/talk/input/cancel"
     ],
     "eventTargets": [
       "/pod/talk/changed"

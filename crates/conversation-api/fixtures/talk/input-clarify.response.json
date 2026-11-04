@@ -1,0 +1,12 @@
+{
+  "target": "/pod/talk/input/assess",
+  "direction": "response",
+  "body": {
+    "inputId": "input-one",
+    "inputEpoch": 1,
+    "revision": 1,
+    "decision": "clarify",
+    "text": "帮我把",
+    "clarification": "请补充一下你的需求。"
+  }
+}

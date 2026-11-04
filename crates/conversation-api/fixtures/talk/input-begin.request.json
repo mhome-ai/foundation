@@ -1,0 +1,19 @@
+{
+  "target": "/pod/talk/input/begin",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "inputId": "input-one",
+    "inputEpoch": 1,
+    "context": {
+      "ownerId": "core:one",
+      "scopeId": "space",
+      "surfaceId": "cs1:cg:c3BhY2UtY2xpZW50cw",
+      "threadId": "thread",
+      "controlVersion": "00000000000000000001:00000000000000000000",
+      "historyVersion": "0"
+    },
+    "locale": "zh-CN",
+    "wakePhrase": "小喵小喵"
+  }
+}

@@ -160,6 +160,26 @@ targets appear under `podTalk` in the target manifest, with independent schema
 `schema/pod-talk.v1.schema.json` and cross-language examples in `fixtures/talk/`.
 The canonical `/chat/*` targets and Agent execution wire remain unchanged.
 
+`capabilities.semanticInput` advertises the optional ephemeral input protocol.
+Begin binds an increasing connection-local `inputEpoch` to the exact current
+Context; append admits ordered, non-overlapping PCM segments using the existing
+Artifact upload contract. Only the first segment may strip the optional exact
+`wakePhrase`; subsequent corrections remain intact. Responses carry the same
+canonical cumulative transcript. Raw empty ASR or an unconfirmed required first wake prefix returns
+`unheard:true` and revokes the complete draft, including any old ready prefix; a wake-only first segment
+remains live with empty text and `unheard:false` (the default). Assess returns `ready`, `wait`, or `clarify`
+without executing a business request; finalize promotes an incomplete wait to a
+fixed localized clarification. It never forces an incomplete input to ready.
+
+The limits are 30 seconds / 960,000 PCM bytes, 32 segments, 4096 transcript UTF-8
+bytes, and a 60-second absolute draft lifetime. Replays do not extend lifetime.
+A new epoch, explicit cancellation, context change or connection loss invalidates
+old results. TurnSubmit's optional `input` binding uses the current ready draft
+and must atomically validate its Context at admission. A draft cancellation that
+loses to admission returns `cancelled:false`; the client must resolve the original
+business request ID instead of claiming it was never submitted. Existing manual
+TurnSubmit requests without `input` remain valid.
+
 Each view carries the authoritative owner, authenticated conversation surface,
 active thread, control version and exact decimal history version. Personal
 Clients retain their own `cp`; Space Clients share only `cg:space-clients` in the
