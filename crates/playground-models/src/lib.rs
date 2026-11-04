@@ -298,9 +298,8 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "online": true,
             "batteryLevel": 82,
             "chargingState": "not charging",
-            "lastButton": "button1",
-            "lastPressType": "single",
-            "pressCount": 0
+            "supportedPressTypes": ["single", "double", "long"],
+            "lastPressType": "single"
         })),
         _ => Err(anyhow!("unknown playground modelId: {}", model_id)),
     }
@@ -564,9 +563,8 @@ pub fn project_state(
             "occurred": bool_attr(attrs, "chimeOccurred")?
         }))?),
         "event.buttonPress" => Ok(object_map(json!({
-            "button": string_attr(attrs, "lastButton")?,
-            "pressType": string_attr(attrs, "lastPressType")?,
-            "count": number_attr(attrs, "pressCount")?
+            "occurred": true,
+            "pressedType": string_attr(attrs, "lastPressType")?
         }))?),
         _ => Err(anyhow!(
             "playground model {} cannot project state for capability {}",
@@ -620,6 +618,11 @@ pub fn project_discovery(
         "state.alarm" => Ok(object_map(json!({
             "availableModes": attrs.get("availableAlarmModes").cloned().unwrap_or_else(|| Value::Array(Vec::new()))
         }))?),
+        "event.buttonPress" => Ok(object_map(json!({
+            "supportedPressTypes": value_attr(attrs, "supportedPressTypes")?
+        }))?),
+        // This model emits unclassified chimes; it does not advertise type selectors.
+        "event.chime" => Ok(object_map(json!({"supportedChimeTypes": []}))?),
         "command.broadcastAudio" => Ok(object_map(json!({
             "supportedAudioInputs": attrs.get("supportedAudioInputs").cloned().unwrap_or_else(|| Value::Array(Vec::new())),
             "supportedMimeTypes": attrs.get("supportedMimeTypes").cloned().unwrap_or_else(|| Value::Array(Vec::new())),
@@ -775,15 +778,7 @@ pub fn apply_observed_payload(
         }
         "event.chime" => copy_payload_field(attrs, payload, "occurred", "chimeOccurred")?,
         "event.buttonPress" => {
-            copy_optional_payload_fields(
-                attrs,
-                payload,
-                &[
-                    ("button", "lastButton"),
-                    ("pressType", "lastPressType"),
-                    ("count", "pressCount"),
-                ],
-            );
+            copy_payload_field(attrs, payload, "pressedType", "lastPressType")?;
         }
         _ => {
             return Err(anyhow!(
@@ -1351,6 +1346,126 @@ fn duration_unit_multiplier(unit: &str) -> Option<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn button_catalog_and_events_use_the_canonical_contract() {
+        let device = normalize_instance(DeviceInstance {
+            id: "button".into(),
+            display_name: "Button".into(),
+            model_id: BUTTON_SCENE_V1.into(),
+            attributes: object_map(json!({"supportedPressTypes": ["single", "double"]})).unwrap(),
+        })
+        .unwrap();
+        let mut attrs = device.attributes;
+        let catalog =
+            project_discovery(BUTTON_SCENE_V1, &attrs, "event.buttonPress", "$f1").unwrap();
+        assert_eq!(
+            catalog,
+            object_map(json!({"supportedPressTypes": ["single", "double"]})).unwrap()
+        );
+        let payload = object_map(json!({"occurred": true, "pressedType": "double"})).unwrap();
+        apply_observed_payload(BUTTON_SCENE_V1, &mut attrs, "event.buttonPress", &payload).unwrap();
+        assert_eq!(
+            project_state(BUTTON_SCENE_V1, &attrs, "event.buttonPress").unwrap(),
+            payload
+        );
+        assert_eq!(
+            project_discovery(BUTTON_SCENE_V1, &attrs, "event.buttonPress", "$f1").unwrap(),
+            catalog
+        );
+        attrs.remove("supportedPressTypes");
+        assert!(project_discovery(BUTTON_SCENE_V1, &attrs, "event.buttonPress", "$f1").is_err());
+    }
+
+    #[test]
+    fn chime_catalog_is_explicitly_unclassified_and_survives_ringing() {
+        let mut attrs = default_attributes(SMOKE_CO_ALARM_V1).unwrap();
+        let catalog = project_discovery(SMOKE_CO_ALARM_V1, &attrs, "event.chime", "$f1").unwrap();
+        assert_eq!(
+            catalog,
+            object_map(json!({"supportedChimeTypes": []})).unwrap()
+        );
+        let outcome = handle_command(
+            SMOKE_CO_ALARM_V1,
+            &mut attrs,
+            "command.chime",
+            &object_map(json!({"command": "on"})).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(outcome.events[0].payload, json!({"occurred": true}));
+        assert_eq!(
+            project_discovery(SMOKE_CO_ALARM_V1, &attrs, "event.chime", "$f1").unwrap(),
+            catalog
+        );
+    }
+
+    #[test]
+    fn immutable_catalogs_survive_device_controls() {
+        for (model, capability, command, request) in [
+            (
+                LIGHT_RGB_DIMMER_V1,
+                "state.colorTemperature",
+                "command.setColorTemperature",
+                json!({"colorTemperature": 5000}),
+            ),
+            (
+                COVER_SHADE_V1,
+                "state.coverOpenClose",
+                "command.coverOpenClose",
+                json!({"command": "open"}),
+            ),
+            (
+                FAN_PURIFIER_V1,
+                "state.fan",
+                "command.setFan",
+                json!({"mode": "turbo", "speed": 90}),
+            ),
+            (
+                THERMOSTAT_FAN_V1,
+                "state.thermostat",
+                "command.setThermostatMode",
+                json!({"hvacMode": "heat"}),
+            ),
+            (
+                THERMOSTAT_FAN_V1,
+                "state.thermostat",
+                "command.setThermostatMode",
+                json!({"hvacMode": "cool"}),
+            ),
+            (
+                THERMOSTAT_FAN_V1,
+                "state.thermostat",
+                "command.setThermostatMode",
+                json!({"hvacMode": "off"}),
+            ),
+        ] {
+            let mut attrs = default_attributes(model).unwrap();
+            let before = project_discovery(model, &attrs, capability, "$f1").unwrap();
+            handle_command(model, &mut attrs, command, &object_map(request).unwrap()).unwrap();
+            assert_eq!(
+                project_discovery(model, &attrs, capability, "$f1").unwrap(),
+                before,
+                "{model}: {command}"
+            );
+        }
+        for (model, capability, payload) in [
+            (
+                AIR_MONITOR_V1,
+                "state.air",
+                json!({"pm25": 90, "qualityState": "poor"}),
+            ),
+            (SMOKE_CO_ALARM_V1, "state.alarm", json!({"mode": "away"})),
+        ] {
+            let mut attrs = default_attributes(model).unwrap();
+            let before = project_discovery(model, &attrs, capability, "$f1").unwrap();
+            apply_observed_payload(model, &mut attrs, capability, &object_map(payload).unwrap())
+                .unwrap();
+            assert_eq!(
+                project_discovery(model, &attrs, capability, "$f1").unwrap(),
+                before
+            );
+        }
+    }
 
     #[test]
     fn speaker_defaults_project_basic_state() {
