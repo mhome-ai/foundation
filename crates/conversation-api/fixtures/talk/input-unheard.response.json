@@ -1,0 +1,12 @@
+{
+  "target": "/pod/talk/input/append",
+  "direction": "response",
+  "body": {
+    "inputId": "input-one",
+    "inputEpoch": 1,
+    "revision": 2,
+    "text": "",
+    "audioDurationMs": 600,
+    "unheard": true
+  }
+}

@@ -1,0 +1,368 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mhome:core-api:audio-analysis:v1",
+  "title": "Finite AudioBridge Artifact analysis v1",
+  "$comment": "Wire shape and local bounds. Shared Rust validators additionally enforce UTF-8 and serialized byte budgets, canonical Artifact metadata, exact coverage, score count and input/model identity. No policy thresholds.",
+  "$defs": {
+    "MediaReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uri"
+      ],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "pattern": "^meow-artifact://v3/",
+          "maxLength": 2048
+        }
+      }
+    },
+    "AudioAnalysisCapabilitiesRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "AudioAnalysisRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audio"
+      ],
+      "properties": {
+        "audio": {
+          "$ref": "#/$defs/MediaReference"
+        }
+      }
+    },
+    "AudioAnalysisModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "modelSha256",
+        "labelsSha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "\\S",
+          "$comment": "At most 256 UTF-8 bytes; shared runtime validation enforces the byte bound."
+        },
+        "modelSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "labelsSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "AudioAnalysisFormat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "container",
+        "sampleFormat",
+        "channels",
+        "sampleRateHz",
+        "headerBytes"
+      ],
+      "properties": {
+        "container": {
+          "const": "wav"
+        },
+        "sampleFormat": {
+          "const": "pcmS16le"
+        },
+        "channels": {
+          "const": 1
+        },
+        "sampleRateHz": {
+          "const": 16000
+        },
+        "headerBytes": {
+          "const": 44
+        }
+      }
+    },
+    "AudioAnalysisLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minSampleCount",
+        "maxSampleCount",
+        "maxWavBytes",
+        "windowSamples",
+        "hopSamples",
+        "maxWindows",
+        "maxClasses",
+        "maxLabelBytes",
+        "maxResponseBytes"
+      ],
+      "properties": {
+        "minSampleCount": {
+          "const": 4800
+        },
+        "maxSampleCount": {
+          "const": 480000
+        },
+        "maxWavBytes": {
+          "const": 960044
+        },
+        "windowSamples": {
+          "const": 64000
+        },
+        "hopSamples": {
+          "const": 32000
+        },
+        "maxWindows": {
+          "const": 14
+        },
+        "maxClasses": {
+          "const": 1024
+        },
+        "maxLabelBytes": {
+          "const": 256
+        },
+        "maxResponseBytes": {
+          "const": 524288
+        }
+      }
+    },
+    "AudioAnalysisClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "label"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1023
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "\\S",
+          "$comment": "At most 256 UTF-8 bytes; shared runtime validation enforces the byte bound."
+        }
+      }
+    },
+    "AudioAnalysisCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offsetSamples",
+        "validSamples",
+        "paddingSamples"
+      ],
+      "properties": {
+        "offsetSamples": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 416000
+        },
+        "validSamples": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64000
+        },
+        "paddingSamples": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 59200
+        }
+      }
+    },
+    "AudioAnalysisWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offsetSamples",
+        "validSamples",
+        "paddingSamples",
+        "scores"
+      ],
+      "properties": {
+        "offsetSamples": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 416000
+        },
+        "validSamples": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64000
+        },
+        "paddingSamples": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 59200
+        },
+        "scores": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1024,
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "AudioAnalysisUnknownReason": {
+      "enum": [
+        "unavailable",
+        "busy",
+        "timeout",
+        "unsupportedAudio",
+        "invalidAudio",
+        "insufficientAudio",
+        "inferenceFailed",
+        "incompleteScores"
+      ]
+    },
+    "AudioAnalysisCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysisVersion",
+        "supported",
+        "loaded",
+        "expectedModel",
+        "format",
+        "limits"
+      ],
+      "properties": {
+        "analysisVersion": {
+          "const": 1
+        },
+        "supported": {
+          "type": "boolean"
+        },
+        "loaded": {
+          "type": "boolean"
+        },
+        "expectedModel": {
+          "$ref": "#/$defs/AudioAnalysisModel"
+        },
+        "format": {
+          "$ref": "#/$defs/AudioAnalysisFormat"
+        },
+        "limits": {
+          "$ref": "#/$defs/AudioAnalysisLimits"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "loaded": {
+                "const": true
+              }
+            },
+            "required": [
+              "loaded"
+            ]
+          },
+          "then": {
+            "properties": {
+              "supported": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "AudioAnalysisResponse": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "audio",
+            "analysisVersion",
+            "model",
+            "sampleRateHz",
+            "sampleCount",
+            "classes",
+            "windows"
+          ],
+          "properties": {
+            "status": {
+              "const": "analyzed"
+            },
+            "audio": {
+              "$ref": "#/$defs/MediaReference"
+            },
+            "analysisVersion": {
+              "const": 1
+            },
+            "model": {
+              "$ref": "#/$defs/AudioAnalysisModel"
+            },
+            "sampleRateHz": {
+              "const": 16000
+            },
+            "sampleCount": {
+              "type": "integer",
+              "minimum": 4800,
+              "maximum": 480000
+            },
+            "classes": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1024,
+              "items": {
+                "$ref": "#/$defs/AudioAnalysisClass"
+              }
+            },
+            "windows": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 14,
+              "items": {
+                "$ref": "#/$defs/AudioAnalysisWindow"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "audio",
+            "analysisVersion",
+            "reason"
+          ],
+          "properties": {
+            "status": {
+              "const": "unknown"
+            },
+            "audio": {
+              "$ref": "#/$defs/MediaReference"
+            },
+            "analysisVersion": {
+              "const": 1
+            },
+            "reason": {
+              "$ref": "#/$defs/AudioAnalysisUnknownReason"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

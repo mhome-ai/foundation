@@ -132,6 +132,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/recipient-id-v1.md",
       "contract/host-management-v1.json",
       "contract/host-permissions.md",
+      "contract/audio-analysis-v1.md",
     ]),
     schemas: Object.freeze({
       hostManagementRequest: "schema/host-management-request.v1.schema.json",
@@ -140,12 +141,14 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       messagingCommands: "schema/messaging-commands.v1.schema.json",
       interactionFlowNode: "schema/interaction-flow-node.v1.schema.json",
       pluginManagement: "schema/plugin-management.v1.schema.json",
+      audioAnalysis: "schema/audio-analysis.v1.schema.json",
     }),
     fixtures: Object.freeze({
       normalizedInbound: "fixtures/normalized-inbound.conformance.json",
       messagingCommands: "fixtures/messaging-commands.conformance.json",
       interactionFlowNode: "fixtures/interaction-flow-node.conformance.json",
       recipientId: "fixtures/recipient-id.conformance.json",
+      audioAnalysis: "fixtures/audio-analysis.conformance.json",
     }),
   }),
 });

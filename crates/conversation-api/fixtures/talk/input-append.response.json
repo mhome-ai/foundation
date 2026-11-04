@@ -1,0 +1,11 @@
+{
+  "target": "/pod/talk/input/append",
+  "direction": "response",
+  "body": {
+    "inputId": "input-one",
+    "inputEpoch": 1,
+    "revision": 1,
+    "text": "帮我把",
+    "audioDurationMs": 1000
+  }
+}

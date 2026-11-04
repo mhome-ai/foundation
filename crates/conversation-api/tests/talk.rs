@@ -66,6 +66,14 @@ fn talk_fixtures_match_schema_and_rust_without_extending_chat() {
                 let media: ResolvedMedia = serde_json::from_value(body).unwrap();
                 media.descriptor.validate().unwrap();
             }
+            (INPUT_BEGIN, "request") => decode::<InputBegin>(body),
+            (INPUT_BEGIN, "response") => decode::<InputStarted>(body),
+            (INPUT_APPEND, "request") => decode::<InputAppend>(body),
+            (INPUT_APPEND, "response") => decode::<InputTranscript>(body),
+            (INPUT_ASSESS, "request") => decode::<InputAssess>(body),
+            (INPUT_ASSESS, "response") => decode::<InputAssessment>(body),
+            (INPUT_CANCEL, "request") => decode::<InputCancel>(body),
+            (INPUT_CANCEL, "response") => decode::<InputCancelled>(body),
             (CHANGED, "event") => decode::<Changed>(body),
             _ => panic!("unexpected Talk fixture"),
         }

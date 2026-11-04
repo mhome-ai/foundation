@@ -3,6 +3,10 @@
 use crate::{ControlVersion, ConversationSurface, RunStatus};
 use serde::{Deserialize, Serialize};
 
+#[path = "talk_input.rs"]
+mod input;
+pub use input::*;
+
 pub const VIEW_GET: &str = "/pod/talk/view/get";
 pub const TURN_SUBMIT: &str = "/pod/talk/turn/submit";
 pub const REQUEST_GET: &str = "/pod/talk/request/get";
@@ -25,6 +29,10 @@ pub const REQUEST_TARGETS: &[&str] = &[
     AUDIO_TRANSCRIBE,
     SPEECH_PREPARE,
     MEDIA_RESOLVE,
+    INPUT_BEGIN,
+    INPUT_APPEND,
+    INPUT_ASSESS,
+    INPUT_CANCEL,
 ];
 pub fn is_request_target(target: &str) -> bool {
     REQUEST_TARGETS.contains(&target)
@@ -57,6 +65,12 @@ pub struct Capabilities {
     pub answer: bool,
     pub transcribe: bool,
     pub speak: bool,
+    /// The pre-submission input draft protocol is available on this owner.
+    #[serde(default)]
+    pub semantic_input: bool,
+    /// Bounded sound evidence and contextual interruption intent are available.
+    #[serde(default)]
+    pub semantic_interruption: bool,
     pub unavailable_reason: Option<String>,
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -159,6 +173,9 @@ pub struct TurnSubmit {
     pub request_id: String,
     pub text: String,
     pub occurred_at_unix_ms: i64,
+    /// Binds an automatically completed input to its current ready draft. Absent for PTT.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub input: Option<InputBinding>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

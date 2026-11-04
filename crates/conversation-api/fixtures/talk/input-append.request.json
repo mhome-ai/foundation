@@ -1,0 +1,12 @@
+{
+  "target": "/pod/talk/input/append",
+  "direction": "request",
+  "body": {
+    "ownerId": "core:one",
+    "inputId": "input-one",
+    "inputEpoch": 1,
+    "revision": 1,
+    "operationId": "audio-one",
+    "uri": "meow-artifact://v3/tenant/space/tmp/man/operation/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjozMjA0NCwiZCI6MTAwMH0"
+  }
+}
