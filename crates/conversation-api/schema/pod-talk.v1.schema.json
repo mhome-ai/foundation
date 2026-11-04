@@ -675,6 +675,9 @@
         },
         "semanticInput": {
           "type": "boolean"
+        },
+        "semanticInterruption": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -1900,6 +1903,9 @@
           "minLength": 1,
           "maxLength": 64,
           "pattern": "^[^\\u0000]*$"
+        },
+        "interruption": {
+          "$ref": "#/$defs/input_interruption"
         }
       },
       "required": [
@@ -1908,6 +1914,21 @@
         "inputEpoch",
         "context",
         "locale"
+      ],
+      "allOf": [
+        {
+          "not": {
+            "type": "object",
+            "properties": {
+              "wakePhrase": {},
+              "interruption": {}
+            },
+            "required": [
+              "wakePhrase",
+              "interruption"
+            ]
+          }
+        }
       ]
     },
     "input_started": {
@@ -2117,6 +2138,14 @@
             "null"
           ],
           "maxLength": 128
+        },
+        "interruptionIntent": {
+          "enum": [
+            "task",
+            "backchannel",
+            "irrelevant_sound",
+            "unknown"
+          ]
         }
       },
       "required": [
@@ -2180,6 +2209,40 @@
         "inputId",
         "inputEpoch",
         "cancelled"
+      ]
+    },
+    "input_interruption": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "threadId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "messageId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "contentRevision": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "threadId",
+        "requestId",
+        "messageId",
+        "contentRevision"
       ]
     }
   }

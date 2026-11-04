@@ -10,6 +10,11 @@ This package distributes shared Node wire contracts, including Matter and Camera
 management schemas; each Plugin owns their execution. App consumers use the
 opaque Plugin Facade envelope, and Core does not aggregate these inventories.
 
+AudioBridge's optional [finite audio analysis](contract/audio-analysis-v1.md)
+uses a scope-owned WAV Artifact and returns complete model observations or an
+explicit unknown result. Shared validators enforce finite audio, coverage and
+identity bounds; Core owns sound policy. Discovery opens no devices or models.
+
 `messaging::IngressRedeem` carries a parsed identity code and a dedicated
 `IdentityRedemptionContext`: event ID, receiving address, sender and optional
 conversation display name. Redemption is independent of normalized message

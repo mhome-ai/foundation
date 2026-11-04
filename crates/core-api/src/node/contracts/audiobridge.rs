@@ -1,5 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+#[path = "audio_analysis.rs"]
+mod audio_analysis;
+pub use audio_analysis::*;
+
 pub const VERSION: &str = crate::node::V1;
 pub const NODE_TYPE: &str = "audiobridge";
 pub const APP_TARGET_PREFIX: &str = "/app/plugin/audiobridge/";

@@ -45,6 +45,28 @@ pub struct InputBegin {
     /// Exact configured wake phrase; stripped deterministically on the first segment only.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub wake_phrase: Option<String>,
+    /// Current settled reply whose local playback yielded to this input.
+    /// Mutually exclusive with wake_phrase; this is not permission to resume.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub interruption: Option<InputInterruption>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct InputInterruption {
+    pub thread_id: String,
+    pub request_id: String,
+    pub message_id: String,
+    pub content_revision: String,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum InputInterruptionIntent {
+    Task,
+    Backchannel,
+    IrrelevantSound,
+    Unknown,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -113,6 +135,10 @@ pub struct InputAssessment {
     pub decision: InputDecision,
     pub text: String,
     pub clarification: Option<String>,
+    /// Present only for interruption drafts. Only Task + Ready may submit;
+    /// benign intents still require the client's current-reply/acoustic check.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub interruption_intent: Option<InputInterruptionIntent>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]

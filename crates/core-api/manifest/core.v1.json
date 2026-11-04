@@ -44,7 +44,15 @@
         "smartSpeakerUpdate": "smart-speaker/update",
         "smartSpeakerRemove": "smart-speaker/remove"
       },
-      "agentReplyTarget": "/audiobridge/agent/reply"
+      "agentReplyTarget": "/audiobridge/agent/reply",
+      "audioAnalysis": {
+        "version": 1,
+        "capabilitiesTarget": "/audiobridge/audio/analysis/capabilities",
+        "analyzeTarget": "/audiobridge/audio/analyze",
+        "schema": "schema/audio-analysis.v1.schema.json",
+        "fixtures": "fixtures/audio-analysis.conformance.json",
+        "contract": "contract/audio-analysis-v1.md"
+      }
     },
     "messaging": {
       "normalizedInboundSchema": "schema/normalized-inbound.v4.schema.json",

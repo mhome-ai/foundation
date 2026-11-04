@@ -219,3 +219,13 @@ test("Agent LLM settings shared corpus is strict and rejects credential leakage"
     }
   }
 });
+
+test("AudioBridge finite analysis shared wire corpus", () => {
+  const base = path.join(root, PROTOCOL_PACKAGES.core.crateDir);
+  const schema = readJson(path.join(base, PROTOCOL_PACKAGES.core.schemas.audioAnalysis));
+  const corpus = readJson(path.join(base, PROTOCOL_PACKAGES.core.fixtures.audioAnalysis));
+  for (const item of corpus.cases) {
+    const validate = compiler().compile({ $defs: schema.$defs, $ref: `#/$defs/${item.type}` });
+    assert.equal(validate(item.value), item.schemaValid, `${item.name}: ${JSON.stringify(validate.errors)}`);
+  }
+});

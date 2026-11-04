@@ -68,6 +68,9 @@ pub struct Capabilities {
     /// The pre-submission input draft protocol is available on this owner.
     #[serde(default)]
     pub semantic_input: bool,
+    /// Bounded sound evidence and contextual interruption intent are available.
+    #[serde(default)]
+    pub semantic_interruption: bool,
     pub unavailable_reason: Option<String>,
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]

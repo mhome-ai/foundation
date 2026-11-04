@@ -1,0 +1,13 @@
+{
+  "target": "/pod/talk/input/assess",
+  "direction": "response",
+  "body": {
+    "inputId": "input-one",
+    "inputEpoch": 1,
+    "revision": 1,
+    "decision": "ready",
+    "text": "嗯，我明白了。",
+    "clarification": null,
+    "interruptionIntent": "backchannel"
+  }
+}

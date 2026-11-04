@@ -1,0 +1,638 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "name": "empty capability query",
+      "type": "AudioAnalysisCapabilitiesRequest",
+      "value": {},
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "canonical audio input",
+      "type": "AudioAnalysisRequest",
+      "value": {
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        }
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "cold interface does not claim loaded model",
+      "type": "AudioAnalysisCapabilities",
+      "value": {
+        "analysisVersion": 1,
+        "supported": true,
+        "loaded": false,
+        "expectedModel": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "format": {
+          "container": "wav",
+          "sampleFormat": "pcmS16le",
+          "channels": 1,
+          "sampleRateHz": 16000,
+          "headerBytes": 44
+        },
+        "limits": {
+          "minSampleCount": 4800,
+          "maxSampleCount": 480000,
+          "maxWavBytes": 960044,
+          "windowSamples": 64000,
+          "hopSamples": 32000,
+          "maxWindows": 14,
+          "maxClasses": 1024,
+          "maxLabelBytes": 256,
+          "maxResponseBytes": 524288
+        }
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "short padded complete result",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "analyzed",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "model": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "sampleRateHz": 16000,
+        "sampleCount": 4800,
+        "classes": [
+          {
+            "index": 0,
+            "label": "Speech"
+          },
+          {
+            "index": 1,
+            "label": "Unmapped catalog label"
+          }
+        ],
+        "windows": [
+          {
+            "offsetSamples": 0,
+            "validSamples": 4800,
+            "paddingSamples": 59200,
+            "scores": [
+              0,
+              1
+            ]
+          }
+        ]
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "explicit unknown unavailable",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "unavailable"
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "explicit unknown busy",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "busy"
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "explicit unknown timeout",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "timeout"
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "explicit unknown unsupportedAudio",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "unsupportedAudio"
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "explicit unknown invalidAudio",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "invalidAudio"
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "explicit unknown insufficientAudio",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "insufficientAudio"
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "explicit unknown inferenceFailed",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "inferenceFailed"
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "explicit unknown incompleteScores",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "incompleteScores"
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "no physical device parameter",
+      "type": "AudioAnalysisRequest",
+      "value": {
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "deviceId": "mic"
+      },
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "name": "no raw URL",
+      "type": "AudioAnalysisRequest",
+      "value": {
+        "audio": {
+          "uri": "https://example.com/a.wav"
+        }
+      },
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "name": "Audio kind required",
+      "type": "AudioAnalysisRequest",
+      "value": {
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiZiIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0fQ"
+        }
+      },
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "name": "not raw octet stream",
+      "type": "AudioAnalysisRequest",
+      "value": {
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhcHBsaWNhdGlvbi9vY3RldC1zdHJlYW0iLCJzIjo5NjQ0LCJkIjozMDB9"
+        }
+      },
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "name": "unsupported version",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "analyzed",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 2,
+        "model": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "sampleRateHz": 16000,
+        "sampleCount": 4800,
+        "classes": [
+          {
+            "index": 0,
+            "label": "Speech"
+          },
+          {
+            "index": 1,
+            "label": "Unmapped catalog label"
+          }
+        ],
+        "windows": [
+          {
+            "offsetSamples": 0,
+            "validSamples": 4800,
+            "paddingSamples": 59200,
+            "scores": [
+              0,
+              1
+            ]
+          }
+        ]
+      },
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "name": "unknown cannot carry successful scores",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "busy",
+        "windows": []
+      },
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "name": "unknown reason is closed",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "unknown",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "reason": "lowConfidence"
+      },
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "name": "continuous class index",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "analyzed",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "model": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "sampleRateHz": 16000,
+        "sampleCount": 4800,
+        "classes": [
+          {
+            "index": 0,
+            "label": "Speech"
+          },
+          {
+            "index": 0,
+            "label": "Unmapped catalog label"
+          }
+        ],
+        "windows": [
+          {
+            "offsetSamples": 0,
+            "validSamples": 4800,
+            "paddingSamples": 59200,
+            "scores": [
+              0,
+              1
+            ]
+          }
+        ]
+      },
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "name": "complete score vector",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "analyzed",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "model": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "sampleRateHz": 16000,
+        "sampleCount": 4800,
+        "classes": [
+          {
+            "index": 0,
+            "label": "Speech"
+          },
+          {
+            "index": 1,
+            "label": "Unmapped catalog label"
+          }
+        ],
+        "windows": [
+          {
+            "offsetSamples": 0,
+            "validSamples": 4800,
+            "paddingSamples": 59200,
+            "scores": [
+              0
+            ]
+          }
+        ]
+      },
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "name": "explicit exact padding",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "analyzed",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "model": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "sampleRateHz": 16000,
+        "sampleCount": 4800,
+        "classes": [
+          {
+            "index": 0,
+            "label": "Speech"
+          },
+          {
+            "index": 1,
+            "label": "Unmapped catalog label"
+          }
+        ],
+        "windows": [
+          {
+            "offsetSamples": 0,
+            "validSamples": 4800,
+            "paddingSamples": 0,
+            "scores": [
+              0,
+              1
+            ]
+          }
+        ]
+      },
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "name": "no score above one",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "analyzed",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "model": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "sampleRateHz": 16000,
+        "sampleCount": 4800,
+        "classes": [
+          {
+            "index": 0,
+            "label": "Speech"
+          },
+          {
+            "index": 1,
+            "label": "Unmapped catalog label"
+          }
+        ],
+        "windows": [
+          {
+            "offsetSamples": 0,
+            "validSamples": 4800,
+            "paddingSamples": 59200,
+            "scores": [
+              1.01,
+              1
+            ]
+          }
+        ]
+      },
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "name": "nonblank labels",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "analyzed",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "model": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "sampleRateHz": 16000,
+        "sampleCount": 4800,
+        "classes": [
+          {
+            "index": 0,
+            "label": "  "
+          },
+          {
+            "index": 1,
+            "label": "Unmapped catalog label"
+          }
+        ],
+        "windows": [
+          {
+            "offsetSamples": 0,
+            "validSamples": 4800,
+            "paddingSamples": 59200,
+            "scores": [
+              0,
+              1
+            ]
+          }
+        ]
+      },
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "name": "UTF8 byte bound",
+      "type": "AudioAnalysisResponse",
+      "value": {
+        "status": "analyzed",
+        "audio": {
+          "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiYSIsIm0iOiJhdWRpby93YXYiLCJzIjo5NjQ0LCJkIjozMDB9"
+        },
+        "analysisVersion": 1,
+        "model": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "sampleRateHz": 16000,
+        "sampleCount": 4800,
+        "classes": [
+          {
+            "index": 0,
+            "label": "声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声声"
+          },
+          {
+            "index": 1,
+            "label": "Unmapped catalog label"
+          }
+        ],
+        "windows": [
+          {
+            "offsetSamples": 0,
+            "validSamples": 4800,
+            "paddingSamples": 59200,
+            "scores": [
+              0,
+              1
+            ]
+          }
+        ]
+      },
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "name": "loaded implies supported",
+      "type": "AudioAnalysisCapabilities",
+      "value": {
+        "analysisVersion": 1,
+        "supported": true,
+        "loaded": true,
+        "expectedModel": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "format": {
+          "container": "wav",
+          "sampleFormat": "pcmS16le",
+          "channels": 1,
+          "sampleRateHz": 16000,
+          "headerBytes": 44
+        },
+        "limits": {
+          "minSampleCount": 4800,
+          "maxSampleCount": 480000,
+          "maxWavBytes": 960044,
+          "windowSamples": 64000,
+          "hopSamples": 32000,
+          "maxWindows": 14,
+          "maxClasses": 1024,
+          "maxLabelBytes": 256,
+          "maxResponseBytes": 524288
+        }
+      },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "name": "unsupported interface cannot be loaded",
+      "type": "AudioAnalysisCapabilities",
+      "value": {
+        "analysisVersion": 1,
+        "supported": false,
+        "loaded": true,
+        "expectedModel": {
+          "id": "fixture-model",
+          "modelSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "labelsSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "format": {
+          "container": "wav",
+          "sampleFormat": "pcmS16le",
+          "channels": 1,
+          "sampleRateHz": 16000,
+          "headerBytes": 44
+        },
+        "limits": {
+          "minSampleCount": 4800,
+          "maxSampleCount": 480000,
+          "maxWavBytes": 960044,
+          "windowSamples": 64000,
+          "hopSamples": 32000,
+          "maxWindows": 14,
+          "maxClasses": 1024,
+          "maxLabelBytes": 256,
+          "maxResponseBytes": 524288
+        }
+      },
+      "valid": false,
+      "schemaValid": false
+    }
+  ]
+}
