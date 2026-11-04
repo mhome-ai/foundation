@@ -220,9 +220,7 @@ if [[ -n "${npm_package}" ]]; then
   else
     # Always make the current canonical release the default, including when a
     # previously published erroneous version has a numerically higher semver.
-    if ! npm publish "${protocol_tarball}" --access public --provenance-file "${protocol_provenance}" --tag latest; then
-      echo "npm publication returned an error; checking exact registry contents without another upload" >&2
-    fi
+    node "$script_dir/upload-npm.mjs" "${protocol_tarball}" "${protocol_provenance}"
     python3 -B "$registry_script" wait npm "$npm_package" "$version"
     python3 -B "$registry_script" verify npm "$npm_package" "$version" "$protocol_tarball"
   fi

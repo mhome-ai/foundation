@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { SCRIPT_PACKAGES, scriptReleasePlan } from "./script-packages.mjs";
 import { stageScriptPackage } from "./stage-script-package.mjs";
+import { uploadNpm } from "./upload-npm.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -59,12 +60,7 @@ export function publishScriptTag(tag, {
     }
     const proof = path.join(temporary, "provenance.sigstore.json");
     run("node", ["scripts/protocol-provenance.mjs", selected.name, selected.version, item.tarball, proof]);
-    try {
-      run("npm", ["publish", item.tarball, "--access", "public", "--provenance-file", proof, "--tag", "latest"]);
-    } catch (error) {
-      // A response can be lost after upload. Read back once; never issue a second upload.
-      if (error.status === undefined) throw error;
-    }
+    uploadNpm(item.tarball, proof, { run });
     registry("wait", item);
     registry("verify", item);
     return selected;

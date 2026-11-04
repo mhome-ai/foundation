@@ -39,6 +39,9 @@ function fixture(kind = "sdk", behavior = {}) {
       if (command === "node" && behavior.proofFailure) throw new Error("proof rejected");
       if (command === "python3" && args[2] === "verify" && args[4] === "@meowlink/script" && behavior.sdkMismatch) throw new Error("SDK content mismatch");
       if (args[0] === "publish" && behavior.uploadLost) throw Object.assign(new Error("lost response"), { status: 1 });
+      if (args[0] === "publish" && behavior.uploadRejected) throw Object.assign(new Error("rejected"), {
+        status: 1, stdout: JSON.stringify({ error: { code: behavior.uploadRejected } }),
+      });
       return "";
     },
   };
@@ -94,6 +97,16 @@ test("lost upload response triggers verification without another upload", () => 
   assert.equal(calls.filter(call => call.includes("publish")).length, 1);
   assert.equal(calls.at(-2)[3], "wait");
   assert.equal(calls.at(-1)[3], "verify");
+});
+
+test("explicit npm authorization rejection stops without waiting for an impossible upload", () => {
+  for (const uploadRejected of ["E401", "E402", "E403", "E404", "ENEEDAUTH", "EOTP"]) {
+    const { tag, options, calls } = fixture("sdk", { uploadRejected });
+    assert.throws(() => publishScriptTag(tag, options), new RegExp(`npm rejected publication \\(${uploadRejected}\\)`));
+    assert.equal(calls.filter(call => call.includes("publish")).length, 1);
+    assert.ok(calls.find(call => call.includes("publish")).includes("--json"));
+    assert.ok(!calls.some(call => call[0] === "python3" && ["wait", "verify"].includes(call[3])));
+  }
 });
 
 test("script packages use the canonical workflow's byte-bound provenance", () => {

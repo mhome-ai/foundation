@@ -129,8 +129,9 @@ test("a recovered entry cannot bypass signature or proof verification failure", 
   });
 });
 
-for (const failProof of [false, true]) {
-  test(`publication ${failProof ? "stops before either upload when proof fails" : "supplies the verified proof to npm without generating another"}`, () => {
+for (const outcome of ["success", "proof-failure", "rejected", "lost-response"]) {
+  test(`protocol publication preserves verified proof and handles ${outcome}`, () => {
+    const failProof = outcome === "proof-failure";
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "foundation-publish-proof-"));
     const bin = path.join(root, "bin");
     fs.mkdirSync(bin);
@@ -152,9 +153,17 @@ if (tool === 'node' && args[0] === 'scripts/protocol-provenance.mjs') {
   if (process.env.FAIL_PROOF === 'true') process.exit(1);
   fs.writeFileSync(args.at(-1), 'verified bundle');
 }
+if (tool === 'node' && args[0].endsWith('/upload-npm.mjs')) {
+  const result = require('node:child_process').spawnSync(process.execPath, args, {stdio:'inherit', env:process.env});
+  process.exit(result.status ?? 1);
+}
 if (tool === 'npm' && args[0] === 'publish' && !args.includes('--dry-run')) {
   if (!args.includes('--provenance-file') || args.includes('--provenance')) process.exit(2);
   if (fs.readFileSync(args[args.indexOf('--provenance-file')+1], 'utf8') !== 'verified bundle') process.exit(3);
+  if (process.env.UPLOAD_OUTCOME !== 'success') {
+    console.log(JSON.stringify({error:{code:process.env.UPLOAD_OUTCOME === 'rejected' ? 'E404' : 'ECONNRESET'}}));
+    process.exit(1);
+  }
 }
 `;
     for (const tool of ["cargo", "curl", "node", "npm"]) fs.writeFileSync(path.join(bin, tool), mock, { mode: 0o755 });
@@ -165,15 +174,18 @@ if (operation === 'exists') process.exit(3);
     const callLog = path.join(root, "calls.jsonl");
     try {
       const result = spawnSync("bash", [fileURLToPath(new URL("../publish-tag.sh", import.meta.url)), `mhome-core-api-v${version}`, "--publish"], {
-        cwd: root, encoding: "utf8", timeout: 15000, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof), FAKE_TARGET: path.join(root, 'target') },
+        cwd: root, encoding: "utf8", timeout: 15000, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof), UPLOAD_OUTCOME: outcome, FAKE_TARGET: path.join(root, 'target') },
       });
       const calls = fs.readFileSync(callLog, "utf8").trim().split("\n").map(JSON.parse);
       const proof = calls.findIndex(([tool, arg]) => tool === "node" && arg === "scripts/protocol-provenance.mjs");
       const uploads = calls.map((call, i) => ({ call, i })).filter(({ call }) => ["cargo", "npm"].includes(call[0]) && call[1] === "publish" && !call.includes("--dry-run"));
       assert.ok(proof >= 0);
-      assert.equal(result.status, failProof ? 1 : 0, result.stderr);
+      assert.equal(result.status, failProof || outcome === "rejected" ? 1 : 0, result.stderr);
       assert.equal(uploads.length, failProof ? 0 : 2);
       assert.ok(uploads.every(({ i }) => i > proof));
+      const waits = calls.filter(call => call[0] === 'python3' && call[3] === 'wait' && call[4] === 'npm');
+      assert.equal(waits.length, failProof || outcome === 'rejected' ? 0 : 1);
+      if (outcome === 'rejected') assert.match(result.stderr, /npm rejected publication \(E404\)/);
     } finally { fs.rmSync(root, { recursive: true, force: true }); }
   });
 }
