@@ -75,6 +75,19 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
           }
         }
       }
+      if (["appFacade", "core"].includes(name)) {
+        const storageSchema = JSON.parse(fs.readFileSync(path.join(staged.stagingRoot, "schema/storage.v1.schema.json"), "utf8"));
+        assert.deepEqual(storageSchema, JSON.parse(fs.readFileSync(new URL("../../crates/storage-api/schema/storage.v1.schema.json", import.meta.url), "utf8")));
+        const ajv = new Ajv2020({ strict: false });
+        const validate = ajv.compile({ ...storageSchema, $ref: "#/$defs/setFolderLimit" });
+        for (const maxBytes of [null, "1", "9007199254740993", "9223372036854775807"]) {
+          assert.ok(validate({ folderId: "plugin/camera/one/recordings", maxBytes }), JSON.stringify(validate.errors));
+        }
+        for (const maxBytes of [0, 1, "0", "01", "9223372036854775808", "9999999999999999999"]) {
+          assert.equal(validate({ folderId: "home/photos", maxBytes }), false);
+        }
+        assert.equal(validate({ folderId: "home/photos" }), false);
+      }
       const executableFiles = fs
         .readdirSync(staged.stagingRoot, { recursive: true })
         .filter((entry) => /\.(?:c?js|mjs|ts|tsx|jsx)$/.test(String(entry)));

@@ -51,6 +51,7 @@ fn immutable_path_requests_have_no_settings_or_implicit_recursive_deletion() {
 fn typed_errors_and_physical_contracts_round_trip() {
     for error in [
         StorageError::new(StorageErrorCode::VolumeFull, "full"),
+        StorageError::new(StorageErrorCode::QuotaExceeded, "quota"),
         StorageError::new(StorageErrorCode::SessionExpired, "expired"),
         StorageError::new(StorageErrorCode::Unavailable, "timeout").uncertain(),
         StorageError::new(StorageErrorCode::Unavailable, "delete failed").partial(2),
@@ -79,7 +80,7 @@ fn typed_errors_and_physical_contracts_round_trip() {
 
 #[test]
 fn management_contract_covers_system_folders_and_multiple_repositories() {
-    let folder = json!({"system":true,"deleting":false,"id":"artifact","usedBytes":"5","reservedBytes":"0","objectCount":"1","createdAtMs":"1","updatedAtMs":"1"});
+    let folder = json!({"quota":{"maxBytes":null,"usedBytes":"5","reservedBytes":"0","remainingBytes":null,"exceeded":false},"system":true,"deleting":false,"id":"artifact","usedBytes":"5","reservedBytes":"0","objectCount":"1","createdAtMs":"1","updatedAtMs":"1"});
     let typed: ObjectStorageFolder = serde_json::from_value(folder.clone()).unwrap();
     validate("folder", &serde_json::to_value(typed).unwrap());
     validate("folderList", &json!({"folders":[folder]}));
@@ -181,5 +182,40 @@ fn sessions_have_fixed_authority_and_expiry() {
     assert_eq!(
         StorageError::new(StorageErrorCode::Unauthorized, "unbound").http_status(),
         403
+    );
+}
+
+#[test]
+fn subtree_limits_require_explicit_lossless_values() {
+    for value in [json!(null), json!("1"), json!("9223372036854775807")] {
+        let wire = json!({"folderId":"plugin/camera/one/recordings", "maxBytes":value});
+        validate("setFolderLimit", &wire);
+        let request: ObjectStorageSetFolderLimitRequest =
+            serde_json::from_value(wire.clone()).unwrap();
+        validate_folder_max_bytes(request.max_bytes).unwrap();
+        assert_eq!(serde_json::to_value(request).unwrap(), wire);
+    }
+    assert!(
+        serde_json::from_value::<ObjectStorageSetFolderLimitRequest>(
+            json!({"folderId":"home/files"})
+        )
+        .is_err()
+    );
+    for value in [
+        json!(0),
+        json!("0"),
+        json!("01"),
+        json!("-1"),
+        json!("9223372036854775808"),
+    ] {
+        let wire = json!({"folderId":"home/files", "maxBytes":value});
+        let rejected = serde_json::from_value::<ObjectStorageSetFolderLimitRequest>(wire)
+            .map(|request| validate_folder_max_bytes(request.max_bytes).is_err())
+            .unwrap_or(true);
+        assert!(rejected);
+    }
+    assert_eq!(
+        StorageError::new(StorageErrorCode::QuotaExceeded, "quota").http_status(),
+        507
     );
 }

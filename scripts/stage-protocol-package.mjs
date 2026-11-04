@@ -17,12 +17,12 @@ function crateVersion(crateDir) {
   return version;
 }
 
-function copyRelative(crateRoot, stagingRoot, relativePath) {
+function copyRelative(crateRoot, stagingRoot, relativePath, destinationPath = relativePath) {
   const source = path.join(crateRoot, relativePath);
   if (!fs.existsSync(source)) {
     throw new Error(`Missing protocol artifact: ${source}`);
   }
-  const destination = path.join(stagingRoot, relativePath);
+  const destination = path.join(stagingRoot, destinationPath);
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   fs.cpSync(source, destination, { recursive: true });
 }
@@ -52,13 +52,16 @@ export function stageProtocolPackage(name, outputDir) {
   const paths = new Set([
     config.manifest,
     ...(config.additionalFiles || []),
+    ...Object.keys(config.sharedFiles || {}),
     ...Object.values(config.schemas),
     ...Object.values(config.fixtures),
     "README.md",
     "LICENSE",
   ]);
   for (const relativePath of paths) {
-    copyRelative(crateRoot, stagingRoot, relativePath);
+    const shared = config.sharedFiles?.[relativePath];
+    if (shared) copyRelative(root, stagingRoot, shared, relativePath);
+    else copyRelative(crateRoot, stagingRoot, relativePath);
   }
 
   const descriptor = {

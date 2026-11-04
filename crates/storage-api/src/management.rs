@@ -35,6 +35,58 @@ pub mod decimal_u64 {
     }
 }
 
+/// Nullable byte limits use the same lossless wire representation as other management counts.
+pub mod optional_decimal_u64 {
+    use super::*;
+    pub fn serialize<S: Serializer>(value: &Option<u64>, serializer: S) -> Result<S::Ok, S::Error> {
+        match value {
+            Some(value) => decimal_u64::serialize(value, serializer),
+            None => serializer.serialize_none(),
+        }
+    }
+    pub fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Option<u64>, D::Error> {
+        Option::<String>::deserialize(deserializer)?
+            .map(|value| decimal_u64::parse(&value).map_err(serde::de::Error::custom))
+            .transpose()
+    }
+}
+
+/// Set or clear the shared subtree limit. Last successfully committed setting wins.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ObjectStorageSetFolderLimitRequest {
+    pub folder_id: String,
+    #[serde(with = "optional_decimal_u64")]
+    pub max_bytes: Option<u64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ObjectStorageFolderQuota {
+    #[serde(with = "optional_decimal_u64")]
+    pub max_bytes: Option<u64>,
+    #[serde(with = "decimal_u64")]
+    pub used_bytes: u64,
+    #[serde(with = "decimal_u64")]
+    pub reserved_bytes: u64,
+    /// Minimum remaining allowance across this Folder and every limited ancestor.
+    #[serde(with = "optional_decimal_u64")]
+    pub remaining_bytes: Option<u64>,
+    pub exceeded: bool,
+}
+
+pub fn validate_folder_max_bytes(value: Option<u64>) -> Result<(), crate::StorageError> {
+    if value.is_some_and(|value| value == 0 || value > i64::MAX as u64) {
+        return Err(crate::StorageError::new(
+            crate::StorageErrorCode::InvalidInput,
+            "maxBytes must be null or a positive supported decimal byte count",
+        ));
+    }
+    Ok(())
+}
+
 /// Idempotent creation of an immutable logical path in the caller's namespace.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -74,6 +126,7 @@ pub struct ObjectStorageSessionRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ObjectStorageFolder {
+    pub quota: ObjectStorageFolderQuota,
     /// Immutable, case-sensitive logical path; never a filesystem path.
     pub id: String,
     pub system: bool,

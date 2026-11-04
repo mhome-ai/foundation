@@ -22,9 +22,9 @@ are never joined to disk paths. Unicode spellings remain distinct exact IDs.
 `folders/create` takes `folderId`, is idempotent, and creates missing parents
 below the namespace root in one transaction. Namespace roots themselves are
 virtual and cannot be created or deleted. `folders/get` and `folders/list` return
-path IDs, system/deleting flags, timestamps and usage. There is no display-name
-alias, rename/update endpoint, Folder quota, aggregate logical quota, overflow
-policy, automatic eviction or consumer-folder mapping.
+path IDs, system/deleting flags, timestamps, direct usage and subtree quota
+snapshots. Paths have no display-name alias or rename endpoint. Storage does not
+automatically evict data or infer consumer-folder mappings.
 
 App/CLI/Agent users may create, delete and acquire data sessions only under
 `home/`. Space-authorized diagnostics may list Plugin/system Folder usage.
@@ -34,6 +34,41 @@ binding metadata and the instance from authenticated context; `nodeType`, a
 request path or a caller-supplied name is not ownership proof. Core internal
 modules use `core/<module>/...`. The protected `artifact` Folder is created and
 used only through Artifact APIs; it has no ordinary sessions or Storage settings.
+
+## Folder quota settings
+
+`folders/set-limit` takes exactly `{ "folderId": "<path>", "maxBytes": "<bytes>" }`.
+Both fields are required. `maxBytes` is a canonical positive decimal string in
+1..9223372036854775807, or explicit `null` to remove this Folder's own limit.
+The result is the updated Folder. App Facade uses
+`/app/object-storage/folders/set-limit`; authenticated Node requests use the same
+target with Plugin context derived by Core. Space members can change any ordinary Folder
+setting, including Plugin Folders, without acquiring content mutation permission.
+Plugins can change only their own authenticated namespace. System `artifact` and
+deleting Folders reject settings. There is no version check: last committed write wins.
+
+Limits cover a Folder and all descendants across every physical repository.
+Every limited ancestor applies even if a child has no own limit. `quota` contains
+`maxBytes` (own setting), `usedBytes` (subtree committed bytes), `reservedBytes`
+(subtree admitted/uncertain/cleanup writes), `remainingBytes` (minimum remaining
+allowance across this Folder and limited ancestors, or null if none), and
+`exceeded` (any applicable limit is below its charged usage). All byte fields use
+decimal strings. Existing top-level `usedBytes`, `reservedBytes`, and `objectCount`
+continue to describe only the Folder's direct objects.
+
+Core checks and reserves the declared object length atomically against all
+applicable limits before physical write preparation. Concurrent descendants cannot
+spend the same allowance. Publication transfers reserved to used; confirmed
+physical deletion/retirement releases the corresponding charge. Lost responses,
+offline repositories, restarts and failed cleanup do not free unconfirmed bytes.
+Immutable-object retries keep their original reservation and do not charge twice.
+`QUOTA_EXCEEDED` is a typed refusal (HTTP 507), distinct from physical `VOLUME_FULL`.
+
+Lowering below used plus reserved saves immediately. Existing objects and admitted
+uploads remain; new admissions fail until enough charged bytes are removed or the
+limit increases. Storage never deletes content in response to a setting change.
+Null removes only this Folder's limit; ancestor limits, physical reserves and
+staging requirements still apply. New Folders start with no own limit.
 
 ## Deletion and lifetime
 
@@ -64,9 +99,9 @@ prepare/upload remains pinned until retry or confirmed retirement resolves it.
 All Folders share available capacity. Host physical reserves and staging space
 still apply. A write validates full size and SHA-256; no staging space means
 failure without deleting old data. Storage never infers business references.
-Camera owns retention, pinned clips and shared segments, using its own retention
-budget independently of Storage. Temporary Artifact content retains its transient
-store and idle TTL. Logically unlimited Artifact storage still needs real space.
+Camera owns retention, pinned clips and shared segments, using the recording
+Folder quota with no separate default byte budget. Temporary Artifact content
+retains its transient store and idle TTL. Logically unlimited Artifact storage still needs real space.
 
 Object keys are immutable: the same key, size and SHA-256 is an idempotent retry;
 new content requires a new key. Management byte counts and timestamps are decimal

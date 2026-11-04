@@ -47,6 +47,12 @@ export const PROTOCOL_PACKAGES = Object.freeze({
   }),
   appFacade: Object.freeze({
     crateDir: "crates/app-facade-api",
+    // Pack canonical Storage artifacts from their single source; no schema copy is maintained here.
+    sharedFiles: Object.freeze({
+      "schema/storage.v1.schema.json": "crates/storage-api/schema/storage.v1.schema.json",
+      "contract/storage-v1.md": "crates/storage-api/contract/storage-v1.md",
+    }),
+
     npmName: "@mhome/app-facade-protocol",
     protocol: "mhome.app-facade",
     manifest: "manifest/app-facade.v1.json",
@@ -79,6 +85,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "schema/delegated-call.v1.schema.json",
     ]),
     schemas: Object.freeze({
+      storage: "schema/storage.v1.schema.json",
       nowAttention: "schema/now-attention.v1.schema.json",
       pluginInstall: "schema/plugin-install.v1.schema.json",
       hostAuthorization: "schema/host-authorization.v1.schema.json",
@@ -122,6 +129,12 @@ export const PROTOCOL_PACKAGES = Object.freeze({
   }),
   core: Object.freeze({
     crateDir: "crates/core-api",
+    // Pack canonical Storage artifacts from their single source; no schema copy is maintained here.
+    sharedFiles: Object.freeze({
+      "schema/storage.v1.schema.json": "crates/storage-api/schema/storage.v1.schema.json",
+      "contract/storage-v1.md": "crates/storage-api/contract/storage-v1.md",
+    }),
+
     npmName: "@mhome/core-protocol",
     protocol: "mhome.core",
     manifest: "manifest/core.v1.json",
@@ -138,6 +151,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/host-permissions.md",
     ]),
     schemas: Object.freeze({
+      storage: "schema/storage.v1.schema.json",
       hostManagementRequest: "schema/host-management-request.v1.schema.json",
       hostPermissions: "schema/host-permissions.schema.json",
       normalizedInbound: "schema/normalized-inbound.v4.schema.json",

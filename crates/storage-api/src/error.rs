@@ -7,6 +7,7 @@ pub enum StorageErrorCode {
     NotFound,
     Conflict,
     VolumeFull,
+    QuotaExceeded,
     Integrity,
     Unauthorized,
     /// The data-plane credential can be refreshed; no object mutation was attempted.
@@ -60,7 +61,7 @@ impl StorageError {
             SessionExpired => 401,
             Unauthorized | SystemFolderProtected | ScopeRemoving => 403,
             Conflict | RepositoryIdentityMismatch => 409,
-            VolumeFull => 507,
+            VolumeFull | QuotaExceeded => 507,
             Unavailable | ProtocolMismatch => 503,
             Internal => 500,
         }

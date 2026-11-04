@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.91.0",
+  "contractVersion": "1.92.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -303,6 +303,21 @@
         "/app/now/attention/list"
       ],
       "policy": "manifest/attention-policy.v1.json"
+    },
+    "storage": {
+      "contract": "storage.v1",
+      "schema": "schema/storage.v1.schema.json",
+      "owner": "scopeHub",
+      "managementPermission": "spaceMember",
+      "requestTargets": [
+        "/app/object-storage/overview",
+        "/app/object-storage/folders/list",
+        "/app/object-storage/folders/get",
+        "/app/object-storage/folders/create",
+        "/app/object-storage/folders/delete",
+        "/app/object-storage/folders/set-limit",
+        "/app/object-storage/session/acquire"
+      ]
     }
   },
   "authorization": "manifest/authorization.v1.json",

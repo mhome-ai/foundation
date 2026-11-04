@@ -1,6 +1,6 @@
 {
   "protocol": "storage.v1",
-  "contractVersion": "0.3.0",
+  "contractVersion": "0.4.0",
   "schema": "schema/storage.v1.schema.json",
   "definitions": [
     "decimalU64",
@@ -22,7 +22,9 @@
     "overview",
     "folderPath",
     "deleteFolder",
-    "deleteFolderResponse"
+    "deleteFolderResponse",
+    "setFolderLimit",
+    "folderQuota"
   ],
   "contract": "contract/storage-v1.md"
 }
