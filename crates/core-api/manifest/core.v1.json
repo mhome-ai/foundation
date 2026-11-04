@@ -1,7 +1,13 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.63.0",
+  "contractVersion": "1.64.0",
   "protocols": {
+    "extensionSources": {
+      "contract": "contract/extension-sources-v1.md",
+      "fixtures": "fixtures/extension-sources.conformance.json",
+      "snapshotTarget": "/dispatch/extension/sources/snapshot",
+      "readTarget": "/dispatch/extension/sources/read"
+    },
     "agentGateway": {
       "submitTarget": "/agent/submit",
       "replyTarget": "/{nodeType}/agent/reply"

@@ -3,6 +3,7 @@
 pub mod client_identity;
 mod delivery;
 pub mod execution_budget;
+pub mod extension_sources;
 mod external_rpc;
 pub mod host;
 pub mod ingress;

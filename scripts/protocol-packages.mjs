@@ -149,6 +149,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/recipient-id-v1.md",
       "contract/host-management-v1.json",
       "contract/host-permissions.md",
+      "contract/extension-sources-v1.md",
     ]),
     schemas: Object.freeze({
       storage: "schema/storage.v1.schema.json",
@@ -164,6 +165,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       messagingCommands: "fixtures/messaging-commands.conformance.json",
       interactionFlowNode: "fixtures/interaction-flow-node.conformance.json",
       recipientId: "fixtures/recipient-id.conformance.json",
+      extensionSources: "fixtures/extension-sources.conformance.json",
     }),
   }),
 });

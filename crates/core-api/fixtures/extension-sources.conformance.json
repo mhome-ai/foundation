@@ -1,0 +1,339 @@
+{
+  "cases": [
+    {
+      "name": "published",
+      "kind": "source",
+      "valid": true,
+      "value": {
+        "integrationId": "garden.device",
+        "version": 7,
+        "type": "standard"
+      }
+    },
+    {
+      "name": "preview",
+      "kind": "source",
+      "valid": true,
+      "value": {
+        "integrationId": "garden.device",
+        "version": 7,
+        "type": "standard",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "uppercase-hash",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "version": 7,
+        "type": "standard",
+        "snapshot": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      }
+    },
+    {
+      "name": "fractional-version",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "version": 1.5,
+        "type": "standard"
+      }
+    },
+    {
+      "name": "string-version",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "version": "7",
+        "type": "standard"
+      }
+    },
+    {
+      "name": "zero-version",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "version": 0,
+        "type": "standard"
+      }
+    },
+    {
+      "name": "overflow-version",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "version": 2147483648,
+        "type": "standard"
+      }
+    },
+    {
+      "name": "unknown-field",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "version": 7,
+        "type": "standard",
+        "tenantId": "forged"
+      }
+    },
+    {
+      "name": "invalid-id",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "../garden.device",
+        "version": 7,
+        "type": "standard"
+      }
+    },
+    {
+      "name": "unknown-type",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "version": 7,
+        "type": "other"
+      }
+    },
+    {
+      "name": "base-preview",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "base",
+        "version": 7,
+        "type": "standard",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "composite-preview",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "version": 7,
+        "type": "composite",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "empty-selection",
+      "kind": "snapshot",
+      "valid": true,
+      "value": {
+        "revision": 0,
+        "integrations": []
+      }
+    },
+    {
+      "name": "preview-selection",
+      "kind": "snapshot",
+      "valid": true,
+      "value": {
+        "revision": 2,
+        "integrations": [
+          {
+            "integrationId": "garden.device",
+            "version": 7,
+            "type": "standard",
+            "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate-selection",
+      "kind": "snapshot",
+      "valid": false,
+      "value": {
+        "revision": 2,
+        "integrations": [
+          {
+            "integrationId": "garden.device",
+            "version": 7,
+            "type": "standard"
+          },
+          {
+            "integrationId": "garden.device",
+            "version": 7,
+            "type": "standard",
+            "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fractional-revision",
+      "kind": "snapshot",
+      "valid": false,
+      "value": {
+        "revision": 1.5,
+        "integrations": []
+      }
+    },
+    {
+      "name": "unsafe-revision",
+      "kind": "snapshot",
+      "valid": false,
+      "value": {
+        "revision": 9007199254740992,
+        "integrations": []
+      }
+    },
+    {
+      "name": "source-material",
+      "kind": "material",
+      "valid": true,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 7,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "capabilities/read.yml": "capability: {}"
+        },
+        "scriptDigests": {
+          "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      }
+    },
+    {
+      "name": "empty-material",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 7,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {},
+        "scriptDigests": {
+          "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      }
+    },
+    {
+      "name": "foreign-text-value",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 7,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "read.yml": 7
+        },
+        "scriptDigests": {
+          "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      }
+    },
+    {
+      "name": "bad-path",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 7,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "../read.yml": "x"
+        },
+        "scriptDigests": {
+          "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      }
+    },
+    {
+      "name": "empty-path-segment",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 7,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "a//read.yml": "x"
+        },
+        "scriptDigests": {
+          "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      }
+    },
+    {
+      "name": "bad-script-digest",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 7,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "capabilities/read.yml": "capability: {}"
+        },
+        "scriptDigests": {
+          "read": "oops"
+        }
+      }
+    },
+    {
+      "name": "bad-function",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 7,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "capabilities/read.yml": "capability: {}"
+        },
+        "scriptDigests": {
+          "read.js": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      }
+    },
+    {
+      "name": "uninitialized selection cannot contain packages",
+      "kind": "snapshot",
+      "valid": false,
+      "value": {
+        "revision": 0,
+        "integrations": [
+          {
+            "integrationId": "garden.device",
+            "version": 1,
+            "type": "standard"
+          }
+        ]
+      }
+    }
+  ]
+}
