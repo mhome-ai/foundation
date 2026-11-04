@@ -86,6 +86,50 @@ fn current_conversation_and_talk_routes_are_all_declared() {
 }
 
 #[test]
+fn pod_input_preparation_requires_the_same_space_writer_as_voice_submission() {
+    use authorization::OperationPolicy;
+    for target in [
+        conversation_api::talk::INPUT_BEGIN,
+        conversation_api::talk::INPUT_APPEND,
+        conversation_api::talk::INPUT_ASSESS,
+        conversation_api::talk::INPUT_CANCEL,
+    ] {
+        let policy = authorization::required(target).unwrap();
+        assert_eq!(policy, OperationPolicy::SpaceWrite);
+        assert!(!authorization::allows_service(target));
+        let user = ClientPrincipal::User {
+            user_id: "user".into(),
+        };
+        for member_role in [
+            None,
+            Some(SpaceMemberRole::Member),
+            Some(SpaceMemberRole::Owner),
+        ] {
+            let facts = SpaceAccessFacts {
+                principal: &user,
+                tenant_id: "tenant",
+                scope_id: "space",
+                member_role,
+            };
+            assert_eq!(policy.allows(&facts), member_role.is_some());
+        }
+        let pod = ClientPrincipal::Space {
+            tenant_id: "tenant".into(),
+            scope_id: "space".into(),
+        };
+        for scope_id in ["space", "other", ""] {
+            let facts = SpaceAccessFacts {
+                principal: &pod,
+                tenant_id: "tenant",
+                scope_id,
+                member_role: Some(SpaceMemberRole::Owner),
+            };
+            assert_eq!(policy.allows(&facts), scope_id == "space");
+        }
+    }
+}
+
+#[test]
 fn delegated_wire_schema_and_rust_agree_on_authority() {
     use serde_json::{json, Value};
     let schema: Value =
