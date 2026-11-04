@@ -128,8 +128,12 @@ test("a recovered entry cannot bypass signature or proof verification failure", 
   });
 });
 
-for (const failProof of [false, true]) {
-  test(`publication ${failProof ? "stops before either upload when proof fails" : "supplies the verified proof to npm without generating another"}`, () => {
+for (const { title, failProof = false, runnerEnvironment = "github-hosted" } of [
+  { title: "supplies the verified proof to npm without generating another" },
+  { title: "stops before either upload when proof fails", failProof: true },
+  { title: "rejects self-hosted runners before invoking any tool", runnerEnvironment: "self-hosted" },
+]) {
+  test(`publication ${title}`, () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "foundation-publish-proof-"));
     const bin = path.join(root, "bin");
     fs.mkdirSync(bin);
@@ -165,13 +169,24 @@ if (tool === 'npm' && args[0] === 'publish' && !args.includes('--dry-run')) {
     const callLog = path.join(root, "calls.jsonl");
     try {
       const result = spawnSync("bash", [fileURLToPath(new URL("../publish-tag.sh", import.meta.url)), `mhome-core-api-v${version}`, "--publish"], {
-        cwd: root, encoding: "utf8", env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof), FAKE_TARGET: path.join(root, 'target') },
+        // The script sees an explicit release fixture, independent of the host
+        // CI job. All registry, package and provenance commands remain mocked.
+        cwd: root, encoding: "utf8", env: { ...process.env, ...env, RUNNER_ENVIRONMENT: runnerEnvironment,
+          PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof), FAKE_TARGET: path.join(root, 'target') },
       });
+      assert.ifError(result.error);
+      if (runnerEnvironment === "self-hosted") {
+        assert.equal(result.status, 1, result.stderr);
+        assert.match(result.stderr, /npm trusted publishing\/provenance does not support self-hosted runners/);
+        assert.equal(fs.existsSync(callLog), false, "runner rejection must precede every mocked tool call");
+        return;
+      }
+      assert.equal(result.status, failProof ? 1 : 0, result.stderr);
+      assert.ok(fs.existsSync(callLog), `publication exited before invoking a mocked tool: ${result.stderr}`);
       const calls = fs.readFileSync(callLog, "utf8").trim().split("\n").map(JSON.parse);
       const proof = calls.findIndex(([tool, arg]) => tool === "node" && arg === "scripts/protocol-provenance.mjs");
       const uploads = calls.map((call, i) => ({ call, i })).filter(({ call }) => ["cargo", "npm"].includes(call[0]) && call[1] === "publish" && !call.includes("--dry-run"));
       assert.ok(proof >= 0);
-      assert.equal(result.status, failProof ? 1 : 0, result.stderr);
       assert.equal(uploads.length, failProof ? 0 : 2);
       assert.ok(uploads.every(({ i }) => i > proof));
     } finally { fs.rmSync(root, { recursive: true, force: true }); }
