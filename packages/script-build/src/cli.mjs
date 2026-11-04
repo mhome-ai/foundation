@@ -6,7 +6,7 @@ import { buildIntegration } from "./integration.mjs";
 // Developer/CI entrypoint. It checks and bundles sources without evaluating them.
 try {
   const args = process.argv.slice(2);
-  if (args.length !== 3) throw new Error("Usage: meowlink-script-build <project-directory> <functions-json-array> <empty-output-directory>");
+  if (args.length !== 3) throw new Error("Usage: mhome-script-build <project-directory> <functions-json-array> <empty-output-directory>");
   const [projectRoot, names, directory] = args;
   const output = path.resolve(directory);
   if (fs.existsSync(output) && fs.readdirSync(output).length) throw new Error("Output directory must be empty");

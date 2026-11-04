@@ -53,7 +53,7 @@ async fn shutdown_waits_for_native_jobs_without_blocking_the_caller_executor() {
         let host = host.clone();
         async move {
             pool.invoke(
-                "import {call} from '@meowlink/script/host';export default () => call('cpu',[])"
+                "import {call} from '@mhome/script/host';export default () => call('cpu',[])"
                     .into(),
                 vec![],
                 host,
@@ -106,7 +106,7 @@ impl ScriptHost for Nested {
         Box::pin(async move {
             match operation {
                 "channel" => self.0.invoke("export default () => 41".into(), vec![], Arc::new(NoHost), control, ScriptLimits::default(), Admission::Hook).await,
-                "recursive" => self.0.invoke("import {call} from '@meowlink/script/host';export default async () => await call('recursive',[])".into(), vec![], Arc::new(Nested(self.0.clone())), control, ScriptLimits::default(), Admission::Hook).await,
+                "recursive" => self.0.invoke("import {call} from '@mhome/script/host';export default async () => await call('recursive',[])".into(), vec![], Arc::new(Nested(self.0.clone())), control, ScriptLimits::default(), Admission::Hook).await,
                 _ => Err(ScriptError::new("UNKNOWN", "unknown operation")),
             }
         })
@@ -116,7 +116,7 @@ impl ScriptHost for Nested {
 #[tokio::test(flavor = "current_thread")]
 async fn channel_hook_reenters_one_thread_with_request_admission_full() {
     let pool = workers();
-    let result = pool.invoke("import {call} from '@meowlink/script/host';export default async () => (await call('channel',[]))+1".into(), vec![], Arc::new(Nested(pool.clone())), control(), ScriptLimits::default(), Admission::Request).await.unwrap();
+    let result = pool.invoke("import {call} from '@mhome/script/host';export default async () => (await call('channel',[]))+1".into(), vec![], Arc::new(Nested(pool.clone())), control(), ScriptLimits::default(), Admission::Request).await.unwrap();
     assert_eq!(result, V::Number(42.0));
     pool.shutdown().await;
 }
@@ -125,7 +125,7 @@ async fn channel_hook_reenters_one_thread_with_request_admission_full() {
 async fn recursive_hooks_fail_fast_instead_of_waiting_for_their_own_slot() {
     let pool = workers();
     let start = Instant::now();
-    let result = pool.invoke("import {call} from '@meowlink/script/host';export default async () => await call('recursive',[])".into(), vec![], Arc::new(Nested(pool.clone())), control(), ScriptLimits::default(), Admission::Request).await.unwrap_err();
+    let result = pool.invoke("import {call} from '@mhome/script/host';export default async () => await call('recursive',[])".into(), vec![], Arc::new(Nested(pool.clone())), control(), ScriptLimits::default(), Admission::Request).await.unwrap_err();
     assert_eq!(result.code, "SCRIPT_BUSY");
     assert!(start.elapsed() < Duration::from_secs(1));
     pool.shutdown().await;
@@ -162,7 +162,7 @@ async fn saturation_is_bounded_and_shutdown_releases_pending_host_work() {
         let pool = pool.clone();
         let host = host.clone();
         async move {
-            pool.invoke("import {call} from '@meowlink/script/host';export default async () => await call('wait',[])".into(), vec![], host, control(), ScriptLimits::default(), Admission::Request).await
+            pool.invoke("import {call} from '@mhome/script/host';export default async () => await call('wait',[])".into(), vec![], host, control(), ScriptLimits::default(), Admission::Request).await
         }
     });
     tokio::time::timeout(Duration::from_secs(1), host.started.notified())
@@ -237,7 +237,7 @@ async fn caller_abort_cancels_worker_and_recovers_admission() {
         let pool = pool.clone();
         let host = host.clone();
         async move {
-            pool.invoke("import {call} from '@meowlink/script/host';export default async () => await call('wait',[])".into(), vec![], host, control(), ScriptLimits::default(), Admission::Request).await
+            pool.invoke("import {call} from '@mhome/script/host';export default async () => await call('wait',[])".into(), vec![], host, control(), ScriptLimits::default(), Admission::Request).await
         }
     });
     tokio::time::timeout(Duration::from_secs(1), host.started.notified())

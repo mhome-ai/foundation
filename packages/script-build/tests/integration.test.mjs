@@ -69,11 +69,11 @@ test("compiler does not evaluate source, tsconfig, plugins or package scripts", 
 });
 
 test("SDK stays managed and only the native host port remains external", async (t) => {
-  const p = project(t, { "calculate.ts": "import {readArtifact} from '@meowlink/script'; export default async (uri:string)=>(await readArtifact(uri)).byteLength;" });
+  const p = project(t, { "calculate.ts": "import {readArtifact} from '@mhome/script'; export default async (uri:string)=>(await readArtifact(uri)).byteLength;" });
   const [built] = await p.build();
-  assert.match(built.javascript, /@meowlink\/script\/host/);
+  assert.match(built.javascript, /@mhome\/script\/host/);
   assert.doesNotMatch(built.javascript, /bindings are unavailable/);
-  assert.equal(built.artifact.sdkVersion, "0.1.0");
+  assert.equal(built.artifact.sdkVersion, "0.2.0");
 });
 
 test("type errors, non-functions and missing entries fail before producing artifacts", async (t) => {

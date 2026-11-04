@@ -154,6 +154,11 @@ async fn errors_have_bounded_codes_and_messages() {
 
 #[tokio::test(flavor = "current_thread")]
 async fn file_node_network_imports_are_not_available() {
+    assert!(
+        run("import {call} from '@meowlink/script/host'; export default () => typeof call")
+            .await
+            .is_err()
+    );
     for name in [
         "fs",
         "node:fs",
@@ -314,7 +319,7 @@ fn host() -> Arc<TestHost> {
 #[tokio::test(flavor = "current_thread")]
 async fn native_host_arguments_and_errors_use_direct_values() {
     let host = host();
-    let result = invoke("import {call} from '@meowlink/script/host'; export default async () => ({echo:await call('echo',[42,18446744073709551615n]),failure:await call('fail',[]).catch(e=>e.code)})", vec![], host.clone(), control(1000), ScriptLimits::default()).await.unwrap();
+    let result = invoke("import {call} from '@mhome/script/host'; export default async () => ({echo:await call('echo',[42,18446744073709551615n]),failure:await call('fail',[]).catch(e=>e.code)})", vec![], host.clone(), control(1000), ScriptLimits::default()).await.unwrap();
     assert_eq!(
         result,
         object([
@@ -328,7 +333,15 @@ async fn native_host_arguments_and_errors_use_direct_values() {
 #[tokio::test(flavor = "current_thread")]
 async fn deadline_drops_pending_host_future() {
     let host = host();
-    let error = invoke("import {call} from '@meowlink/script/host'; export default async () => await call('wait',[])", vec![], host.clone(), control(30), ScriptLimits::default()).await.unwrap_err();
+    let error = invoke(
+        "import {call} from '@mhome/script/host'; export default async () => await call('wait',[])",
+        vec![],
+        host.clone(),
+        control(30),
+        ScriptLimits::default(),
+    )
+    .await
+    .unwrap_err();
     assert_eq!(error.code, "DEADLINE_EXCEEDED");
     assert_eq!(host.calls.load(Ordering::SeqCst), 1);
     assert_eq!(host.dropped.load(Ordering::SeqCst), 1);
@@ -339,7 +352,13 @@ async fn dropping_caller_future_releases_host_work_without_cancelling_parent() {
     let host = host();
     let control = control(2000);
     let parent = control.cancel.clone();
-    let future = invoke("import {call} from '@meowlink/script/host'; export default async () => await call('wait',[])", vec![], host.clone(), control, ScriptLimits::default());
+    let future = invoke(
+        "import {call} from '@mhome/script/host'; export default async () => await call('wait',[])",
+        vec![],
+        host.clone(),
+        control,
+        ScriptLimits::default(),
+    );
     assert!(tokio::time::timeout(Duration::from_millis(30), future)
         .await
         .is_err());
@@ -349,8 +368,8 @@ async fn dropping_caller_future_releases_host_work_without_cancelling_parent() {
 
 #[tokio::test(flavor = "current_thread")]
 async fn detached_host_calls_and_unhandled_rejections_are_not_success() {
-    for source in ["import {call} from '@meowlink/script/host'; export default () => {call('wait',[]);return 1}",
-        "import {call} from '@meowlink/script/host'; export default () => {Promise.resolve().then(()=>call('wait',[]));return 1}"] {
+    for source in ["import {call} from '@mhome/script/host'; export default () => {call('wait',[]);return 1}",
+        "import {call} from '@mhome/script/host'; export default () => {Promise.resolve().then(()=>call('wait',[]));return 1}"] {
         let error = invoke(source, vec![], host(), control(1000), ScriptLimits::default()).await.unwrap_err();
         assert_eq!(error.code, "UNAWAITED_HOST_CALL");
     }
@@ -376,13 +395,13 @@ async fn host_calls_are_bounded_before_spawning_futures() {
         concurrent_host_calls: 1,
         ..ScriptLimits::default()
     };
-    assert!(invoke("import {call} from '@meowlink/script/host'; export default async () => await Promise.all([call('wait',[]),call('wait',[])])", vec![], host.clone(), control(1000), limits).await.is_err());
+    assert!(invoke("import {call} from '@mhome/script/host'; export default async () => await Promise.all([call('wait',[]),call('wait',[])])", vec![], host.clone(), control(1000), limits).await.is_err());
     assert!(host.calls.load(Ordering::SeqCst) <= 1);
     let limits = ScriptLimits {
         host_calls: 1,
         ..ScriptLimits::default()
     };
-    assert!(invoke("import {call} from '@meowlink/script/host'; export default async () => {await call('echo',[]);return await call('echo',[])}", vec![], host, control(1000), limits).await.is_err());
+    assert!(invoke("import {call} from '@mhome/script/host'; export default async () => {await call('echo',[]);return await call('echo',[])}", vec![], host, control(1000), limits).await.is_err());
 }
 
 #[tokio::test(flavor = "current_thread")]

@@ -34,7 +34,7 @@ export function stageScriptPackage(kind, directory) {
   if (kind === "build") {
     const sdk = JSON.parse(fs.readFileSync(path.join(root, "packages/script-sdk/package.json"), "utf8"));
     packaged.dependencies = { ...manifest.dependencies, [sdk.name]: sdk.version };
-    packaged.bin = { "meowlink-script-build": "src/cli.mjs" };
+    packaged.bin = { "mhome-script-build": "src/cli.mjs" };
     fs.chmodSync(path.join(output, "src/cli.mjs"), 0o755);
   }
   fs.writeFileSync(path.join(output, "package.json"), JSON.stringify(packaged, null, 2) + "\n");

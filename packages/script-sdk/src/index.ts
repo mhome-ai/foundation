@@ -1,6 +1,6 @@
 /** Authoring helpers only. Privileged host modules are installed by the runtime. */
-import { call } from "@meowlink/script/host";
-export const SDK_VERSION = "0.1.0";
+import { call } from "@mhome/script/host";
+export const SDK_VERSION = "0.2.0";
 
 // Preserve the existing platform's explicit domain-object shape. Values are in
 // the stated unit; adapters perform any conversion to Core's canonical units.

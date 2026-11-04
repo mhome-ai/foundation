@@ -39,15 +39,15 @@ test("packed SDK and builder install independently and replay offline from a pre
   install(["ci", "--offline", "--ignore-scripts", "--no-audit", "--no-fund"]);
   assert.equal(fs.readFileSync(path.join(consumer, "package-lock.json"), "utf8"), lock);
   for (const name of ["script", "script-build"]) {
-    assert.equal(fs.lstatSync(path.join(consumer, "node_modules/@meowlink", name)).isSymbolicLink(), false);
+    assert.equal(fs.lstatSync(path.join(consumer, "node_modules/@mhome", name)).isSymbolicLink(), false);
   }
   const project = path.join(root, "provider");
   fs.mkdirSync(project);
   fs.writeFileSync(path.join(project, "package.json"), '{"private":true,"name":"fixture-provider"}');
   fs.writeFileSync(path.join(project, "package-lock.json"), '{"lockfileVersion":3,"packages":{"":{}}}');
-  fs.writeFileSync(path.join(project, "entry.ts"), "import {ScriptError} from '@meowlink/script'; export default (x:number) => { if(x<0) throw new ScriptError('BAD_REQUEST','negative'); return x*2; };");
+  fs.writeFileSync(path.join(project, "entry.ts"), "import {ScriptError} from '@mhome/script'; export default (x:number) => { if(x<0) throw new ScriptError('BAD_REQUEST','negative'); return x*2; };");
   const output = path.join(root, "output");
-  execFileSync(process.execPath, [path.join(consumer, "node_modules/@meowlink/script-build/src/cli.mjs"), project, '["entry"]', output], { cwd: consumer, stdio: "pipe" });
+  execFileSync(process.execPath, [path.join(consumer, "node_modules/@mhome/script-build/src/cli.mjs"), project, '["entry"]', output], { cwd: consumer, stdio: "pipe" });
   const built = JSON.parse(fs.readFileSync(path.join(output, "build.json"), "utf8"));
   assert.equal(built.functions[0].artifact.format, "javascript-esm");
   assert.ok(fs.readFileSync(path.join(output, "entry.js"), "utf8").includes("BAD_REQUEST"));

@@ -4,11 +4,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import * as esbuild from "esbuild";
-import { SDK_VERSION } from "@meowlink/script";
+import { SDK_VERSION } from "@mhome/script";
 import { BuildError } from "./contract.mjs";
 
-const HOST_MODULE = "@meowlink/script/host";
-const sdkEntry = fileURLToPath(import.meta.resolve("@meowlink/script"));
+const HOST_MODULE = "@mhome/script/host";
+const sdkEntry = fileURLToPath(import.meta.resolve("@mhome/script"));
 const sdkDirectory = path.dirname(sdkEntry);
 const tsDirectory = path.dirname(fileURLToPath(import.meta.resolve("typescript")));
 const hash = (value) => createHash("sha256").update(value).digest("hex");
@@ -136,7 +136,7 @@ export async function buildIntegration({ projectRoot, functions, sdkVersion = SD
     return text === undefined ? undefined : ts.createSourceFile(filename, text, version, true);
   };
   host.resolveModuleNames = (names, containingFile) => names.map((name) => {
-    if (name === "@meowlink/script" || name === HOST_MODULE) return {
+    if (name === "@mhome/script" || name === HOST_MODULE) return {
       resolvedFileName: path.join(sdkDirectory, name === HOST_MODULE ? "host.d.ts" : "index.d.ts"),
       extension: ts.Extension.Dts, isExternalLibraryImport: true,
     };
@@ -179,7 +179,7 @@ export async function buildIntegration({ projectRoot, functions, sdkVersion = SD
         build.onResolve({ filter: /.*/ }, async (args) => {
           if (args.pluginData?.resolved) return;
           if (args.path === HOST_MODULE) return { path: args.path, external: true, sideEffects: false };
-          if (args.path === "@meowlink/script") return { path: sdkEntry };
+          if (args.path === "@mhome/script") return { path: sdkEntry };
           if (args.path.startsWith("node:")) return { errors: [{ text: "Node built-ins are unavailable in MeowCore scripts" }] };
           const resolved = await build.resolve(args.path, { importer: args.importer, resolveDir: args.resolveDir,
             kind: args.kind, pluginData: { resolved: true } });

@@ -9,7 +9,7 @@ const packageInfo = Object.fromEntries([["sdk", "script-sdk"], ["build", "script
   [kind, JSON.parse(fs.readFileSync(new URL(`../../packages/${directory}/package.json`, import.meta.url), "utf8"))]));
 
 function fixture(kind = "sdk", behavior = {}) {
-  const tag = `${kind === "sdk" ? "meowlink-script-v" : "meowlink-script-build-v"}${packageInfo[kind].version}`;
+  const tag = `${kind === "sdk" ? "mhome-script-v" : "mhome-script-build-v"}${packageInfo[kind].version}`;
   const calls = [], manifests = new Map();
   const env = {
     GITHUB_ACTIONS: "true", RUNNER_ENVIRONMENT: "github-hosted",
@@ -37,7 +37,7 @@ function fixture(kind = "sdk", behavior = {}) {
         throw Object.assign(new Error("registry"), { status: behavior.registryFailure ?? 3 });
       }
       if (command === "node" && behavior.proofFailure) throw new Error("proof rejected");
-      if (command === "python3" && args[2] === "verify" && args[4] === "@meowlink/script" && behavior.sdkMismatch) throw new Error("SDK content mismatch");
+      if (command === "python3" && args[2] === "verify" && args[4] === "@mhome/script" && behavior.sdkMismatch) throw new Error("SDK content mismatch");
       if (args[0] === "publish" && behavior.uploadLost) throw Object.assign(new Error("lost response"), { status: 1 });
       if (args[0] === "publish" && behavior.uploadRejected) throw Object.assign(new Error("rejected"), {
         status: 1, stdout: JSON.stringify({ error: { code: behavior.uploadRejected } }),
@@ -50,7 +50,7 @@ function fixture(kind = "sdk", behavior = {}) {
 
 test("unknown tags, mismatched versions and untrusted publication fail before commands", () => {
   const { tag: trustedTag, options, calls } = fixture();
-  for (const tag of ["other-v0.1.0", "meowlink-script-v9.9.9", "meowlink-script-vlatest"]) {
+  for (const tag of ["other-v0.1.0", "mhome-script-v9.9.9", "mhome-script-vlatest"]) {
     assert.throws(() => publishScriptTag(tag, options));
   }
   assert.throws(() => publishScriptTag(trustedTag, { ...options, env: {} }));
@@ -67,7 +67,7 @@ test("local verification never queries or publishes a registry", () => {
 test("builder verifies its published SDK before generating proof or uploading", () => {
   const { tag, options, calls } = fixture("build");
   publishScriptTag(tag, options);
-  const sdk = calls.findIndex(call => call[0] === "python3" && call.includes("verify") && call.includes("@meowlink/script"));
+  const sdk = calls.findIndex(call => call[0] === "python3" && call.includes("verify") && call.includes("@mhome/script"));
   const proof = calls.findIndex(call => call[0] === "node");
   const upload = calls.findIndex(call => call.includes("publish"));
   assert.ok(sdk >= 0 && proof > sdk && upload > proof);
@@ -112,12 +112,12 @@ test("explicit npm authorization rejection stops without waiting for an impossib
 test("script packages use the canonical workflow's byte-bound provenance", () => {
   for (const kind of ["sdk", "build"]) {
     const { options: { env } } = fixture(kind);
-    const name = kind === "sdk" ? "@meowlink/script" : "@meowlink/script-build";
+    const name = kind === "sdk" ? "@mhome/script" : "@mhome/script-build";
     const statement = protocolStatement(name, packageInfo[kind].version, Buffer.from("packed bytes"), {
       ...env, GITHUB_SERVER_URL: "https://github.com", GITHUB_SHA: "a".repeat(40),
       GITHUB_RUN_ID: "1", GITHUB_RUN_ATTEMPT: "1",
     });
-    assert.match(statement.subject[0].name, /meowlink/);
+    assert.match(statement.subject[0].name, /mhome/);
     assert.equal(statement.subject[0].digest.sha512.length, 128);
   }
 });
@@ -128,8 +128,8 @@ test("read-only registry verification compares packed SDK and builder without pu
     publishScriptTag(tag, { ...options, publish: false, verifyPublished: true, env: {} });
     const registry = calls.filter(call => call[0] === "python3");
     assert.deepEqual(registry.map(call => [call[3], call[5]]), kind === "sdk"
-      ? [["verify", "@meowlink/script"]]
-      : [["verify", "@meowlink/script"], ["verify", "@meowlink/script-build"]]);
+      ? [["verify", "@mhome/script"]]
+      : [["verify", "@mhome/script"], ["verify", "@mhome/script-build"]]);
     assert.ok(!calls.some(call => call[0] === "node" || call.includes("publish") || call.includes("--version")));
   }
 });

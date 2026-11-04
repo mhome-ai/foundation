@@ -48,13 +48,13 @@ Publication is immutable and restricted to the allowlist in `scripts/publish-tag
 
 The JavaScript contract and native runtime publish as `mhome-script-api-v<version>`
 and `mhome-script-runtime-v<version>`. Publish the API's exact pinned version
-before the runtime. `@meowlink/script` and `@meowlink/script-build` are independently
+before the runtime. `@mhome/script` and `@mhome/script-build` are independently
 installable npm packages. Source workspaces use private local links;
 `scripts/stage-script-package.mjs` creates distributable manifests with exact registry
 dependencies. Their packaging tests prepare an isolated dependency cache, then
 verify offline locked installation and an independent build in CI. Crate tags do not
-publish these npm packages. Dedicated `meowlink-script-v<version>` and
-`meowlink-script-build-v<version>` tags use the same hosted publication workflow.
+publish these npm packages. Dedicated `mhome-script-v<version>` and
+`mhome-script-build-v<version>` tags use the same hosted publication workflow.
 Publish the SDK first; the builder release verifies its exact published SDK bytes.
 `bash scripts/publish-tag.sh <tag>` builds, tests and packs locally without upload;
 only the tagged workflow uses `--publish`. Configure npm trusted publishing for

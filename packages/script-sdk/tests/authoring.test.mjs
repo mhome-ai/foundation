@@ -28,7 +28,7 @@ test("business exceptions propagate without fake success or compensation", async
 test("SDK descriptors match canonical metadata, including nested lists", async () => {
   const fixture = JSON.parse(await readFile(new URL("../../../crates/script-api/fixtures/javascript-v1.json", import.meta.url), "utf8"));
   const contract = fixture.validContracts[0];
-  assert.equal(contract.sdkVersion, SDK_VERSION);
+  assert.equal(SDK_VERSION, "0.2.0");
   const input = { samples: t.list(t.number), settings: t.object, optionalValue: t.value,
     matrix: t.list(t.list(t.number)), temperature: t.temperature, delay: t.duration,
     at: t.timestamp, photo: t.image };

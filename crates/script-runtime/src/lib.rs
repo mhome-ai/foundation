@@ -330,7 +330,7 @@ fn install_host<'js>(
     Ok(())
 }
 
-const HOST_MODULE: &str = "@meowlink/script/host";
+const HOST_MODULE: &str = "@mhome/script/host";
 struct HostResolver;
 impl Resolver for HostResolver {
     fn resolve<'js>(

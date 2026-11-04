@@ -1,4 +1,4 @@
-import { defineScript, t } from "@meowlink/script";
+import { defineScript, t } from "@mhome/script";
 
 export default defineScript({
   input: {

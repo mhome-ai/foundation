@@ -1,5 +1,8 @@
 # Script runtime
 
+Runtime 0.2.0 loads only `@mhome/script/host`. Rebuild and republish older
+scripts with the `@mhome/script` 0.2.0 toolchain before using this runtime.
+
 Shared native QuickJS-NG execution through rquickjs. Core and the cloud script
 service supply trusted host implementations and resolve/hash artifacts before
 invocation. The library does not own storage, installation, transport, or Space

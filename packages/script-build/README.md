@@ -36,8 +36,8 @@ single input over 4 MiB. The native host port is the only external runtime impor
 These compiler APIs do not yet switch Integration staging, schema bindings or
 Core's Integration executor to JavaScript; those consumers cut over together.
 
-The distributable `@meowlink/script-build` npm package pins the SDK to an exact
-version. Its `meowlink-script-build <project-directory> <functions-json-array>
+The distributable `@mhome/script-build` npm package pins the SDK to an exact
+version. Its `mhome-script-build <project-directory> <functions-json-array>
 <empty-output-directory>` command writes per-function JavaScript and `build.json`.
 It does not install project dependencies or run their lifecycle scripts.
 

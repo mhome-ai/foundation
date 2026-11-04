@@ -20,7 +20,7 @@ export function readContract(sourceFile, sdkVersion) {
   };
   const imported = new Map();
   for (const statement of sourceFile.statements) {
-    if (!ts.isImportDeclaration(statement) || statement.moduleSpecifier.text !== "@meowlink/script"
+    if (!ts.isImportDeclaration(statement) || statement.moduleSpecifier.text !== "@mhome/script"
         || statement.importClause?.isTypeOnly) continue;
     const bindings = statement.importClause?.namedBindings;
     if (bindings && ts.isNamedImports(bindings)) {
@@ -35,7 +35,7 @@ export function readContract(sourceFile, sdkVersion) {
   if (!ts.isCallExpression(call) || !ts.isIdentifier(call.expression)
       || imported.get(call.expression.text) !== "defineScript" || call.arguments.length !== 1
       || !ts.isObjectLiteralExpression(call.arguments[0])) {
-    fail(call, "Default export must directly call defineScript imported from @meowlink/script");
+    fail(call, "Default export must directly call defineScript imported from @mhome/script");
   }
   const definition = new Map();
   for (const property of call.arguments[0].properties) {

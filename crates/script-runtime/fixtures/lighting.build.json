@@ -1,10 +1,10 @@
 {
   "function": "lighting",
-  "sourceHash": "9d374da170fe9833cb95356fc4a52214781d1c56924f3099671a904deb1e2979",
+  "sourceHash": "166afd607983b08caa734eb9e63c0c2b766b9dfff8a884222316fc217dcfc308",
   "build": {
     "profile": "automation-es2022-v1",
-    "sdkVersion": "0.1.0",
-    "sdkHash": "471a7404a49b329d1b48d36c1024ac1e374a56069b8f747133ab4d833631289c",
+    "sdkVersion": "0.2.0",
+    "sdkHash": "f0661e175ef5adb404965715a24ff6006f6659970c35e4da7feab88e503426f5",
     "typescript": "6.0.3",
     "esbuild": "0.28.2"
   },
@@ -12,10 +12,10 @@
     "format": "javascript-esm",
     "sha256": "088f077d6b30b2b5313ae4227dc48795bb4733571d63749b8fc1662330e0333a",
     "size": 839,
-    "sdkVersion": "0.1.0",
+    "sdkVersion": "0.2.0",
     "contract": {
       "version": 1,
-      "sdkVersion": "0.1.0",
+      "sdkVersion": "0.2.0",
       "input": [
         {
           "name": "samples",

@@ -4,16 +4,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import * as esbuild from "esbuild";
-import { SDK_VERSION } from "@meowlink/script";
+import { SDK_VERSION } from "@mhome/script";
 import { BuildError, readContract } from "./contract.mjs";
 export { BuildError } from "./contract.mjs";
 export { buildIntegration } from "./integration.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const sdkEntry = fileURLToPath(import.meta.resolve("@meowlink/script"));
+const sdkEntry = fileURLToPath(import.meta.resolve("@mhome/script"));
 const sdkDirectory = path.dirname(sdkEntry);
 const typeScriptDirectory = path.dirname(fileURLToPath(import.meta.resolve("typescript")));
-const HOST_MODULE = "@meowlink/script/host";
+const HOST_MODULE = "@mhome/script/host";
 const PROFILE = "automation-es2022-v1";
 const MAX_SOURCE_BYTES = 256 * 1024;
 const MAX_ARTIFACT_BYTES = 4 * 1024 * 1024;
@@ -48,7 +48,7 @@ function checkTypes(filename, source) {
   };
   host.resolveModuleNames = (names, containingFile) => names.map((name) => {
     let resolvedFileName;
-    if (name === "@meowlink/script") resolvedFileName = path.join(sdkDirectory, "index.d.ts");
+    if (name === "@mhome/script") resolvedFileName = path.join(sdkDirectory, "index.d.ts");
     else if (name === HOST_MODULE) resolvedFileName = path.join(sdkDirectory, "host.d.ts");
     else if (containingFile.startsWith(`${sdkDirectory}${path.sep}`) && name.startsWith(".")) {
       resolvedFileName = path.resolve(path.dirname(containingFile), name.replace(/\.js$/, ".d.ts"));
@@ -109,7 +109,7 @@ export async function buildAutomation({ function: name, source, sdkVersion = SDK
           // Native module evaluation only declares bindings. Drop unused imports
           // so pure scripts do not require host bindings for side effects.
           if (args.path === HOST_MODULE) return { path: args.path, external: true, sideEffects: false };
-          if (args.path === "@meowlink/script") return { path: sdkEntry };
+          if (args.path === "@mhome/script") return { path: sdkEntry };
           return { errors: [{ text: `Unsupported Automation import: ${args.path}` }] };
         });
       } }],

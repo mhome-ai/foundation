@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 export const SCRIPT_PACKAGES = Object.freeze({
-  sdk: { name: "@meowlink/script", directory: "script-sdk", tag: "meowlink-script-v" },
-  build: { name: "@meowlink/script-build", directory: "script-build", tag: "meowlink-script-build-v" },
+  sdk: { name: "@mhome/script", directory: "script-sdk", tag: "mhome-script-v" },
+  build: { name: "@mhome/script-build", directory: "script-build", tag: "mhome-script-build-v" },
 });
 
 export function scriptReleasePlan(tag, root) {

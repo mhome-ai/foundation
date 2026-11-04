@@ -1,5 +1,9 @@
 # Script authoring SDK
 
+SDK 0.2.0 uses `@mhome/script` and the native `@mhome/script/host` module.
+Rebuild and republish scripts authored with the former `@meowlink` package;
+the old host-module name and SDK 0.1.0 are not compatibility entrypoints.
+
 TypeScript authoring helpers for the JavaScript script migration. `defineScript`
 declares Automation's named input/output fields once and infers the function's
 TypeScript types. `t.object` and `t.value` preserve dynamic data; `t.list` preserves
@@ -11,7 +15,7 @@ implement privileged IO itself. `getRuntimeContext`, `sleep`, `randomU64` and
 `readArtifact` call the native host module; that import remains external in built
 ESM. Calling these helpers in ordinary Node author tooling fails explicitly.
 The source workspace is private; Foundation's script-package stager creates the
-standalone `@meowlink/script` npm package with built JavaScript and declarations.
+standalone `@mhome/script` npm package with built JavaScript and declarations.
 It has no install hooks or sibling-source dependency. Actual registry publication
 is a separate release step.
 
