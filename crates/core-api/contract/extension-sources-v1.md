@@ -31,9 +31,12 @@ package and creating its business Connection remain separate operations.
 
 The read request contains one exact `source`. The response echoes that exact
 source, `schemas` (normalized relative YAML paths to UTF-8 text), and
-`scriptDigests` (function name to lowercase SHA-256). Relative paths may include
+`scriptDigests` (function name to lowercase SHA-256), and required `i18n`
+(language tag to intro-translation YAML; an empty map is valid). English remains
+in the schema. Language tags follow the existing intro-i18n grammar; path-like,
+empty, or malformed tags and empty content are rejected. Relative paths may include
 directories but reject empty/dot/parent segments, backslashes, colons and NULs.
-Both inventories have at most 1,000 members; the encoded material is at most
+Each inventory has at most 1,000 members; the encoded material is at most
 16 MiB, below the existing general Bridge payload ceiling. Its normal bulk
 transport handles large responses. No JavaScript body or credentials are sent
 to the compiler by this callback.
@@ -52,3 +55,17 @@ saved plans. Preview and published Integrations use the same disconnect/uninstal
 business lifecycle; these read routes do not delete Connections or rewrite user
 Automations. Resource retention and invocation admission belong to the resource
 and lifecycle consumers, not this read protocol.
+
+Preview compilation uses the exact candidate plus explicitly acquired dependency
+materials. Its result must retain every source identity; numeric versions and
+staging/prod channel names do not identify Preview bytes. Channels choose release
+heads/configuration, and promotion does not change the immutable release identity.
+The complete material set for one compilation is bounded to 16 MiB of encoded
+material. Translation contents contribute to the material hash and byte bounds.
+
+Provider configuration is not compiler material. Preview provider vars are supplied
+explicitly to the owning Hub through a separate configuration operation, remain
+Space-scoped, and are never part of this source callback or a publication artifact.
+Omitted configuration on repeated Preview preserves existing values; explicit
+updates/deletions are validated against the candidate schema. That configuration
+consumer, compiled-result transport and runtime activation are subsequent work.

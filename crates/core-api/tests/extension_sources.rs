@@ -72,6 +72,7 @@ fn material_inventory_is_bounded_and_retains_relative_schema_paths() {
             snapshot: Some("a".repeat(64).parse().unwrap()),
         },
         schemas: BTreeMap::from([("capabilities/read.yml".into(), "capability: {}".into())]),
+        i18n: BTreeMap::new(),
         script_digests: BTreeMap::from([("read".into(), "b".repeat(64))]),
     };
     material.validate().unwrap();

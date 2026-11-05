@@ -205,7 +205,8 @@
         },
         "scriptDigests": {
           "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-        }
+        },
+        "i18n": {}
       }
     },
     {
@@ -222,7 +223,8 @@
         "schemas": {},
         "scriptDigests": {
           "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-        }
+        },
+        "i18n": {}
       }
     },
     {
@@ -241,7 +243,8 @@
         },
         "scriptDigests": {
           "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-        }
+        },
+        "i18n": {}
       }
     },
     {
@@ -260,7 +263,8 @@
         },
         "scriptDigests": {
           "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-        }
+        },
+        "i18n": {}
       }
     },
     {
@@ -279,7 +283,8 @@
         },
         "scriptDigests": {
           "read": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-        }
+        },
+        "i18n": {}
       }
     },
     {
@@ -298,7 +303,8 @@
         },
         "scriptDigests": {
           "read": "oops"
-        }
+        },
+        "i18n": {}
       }
     },
     {
@@ -317,7 +323,8 @@
         },
         "scriptDigests": {
           "read.js": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-        }
+        },
+        "i18n": {}
       }
     },
     {
@@ -333,6 +340,161 @@
             "type": "standard"
           }
         ]
+      }
+    },
+    {
+      "name": "translation",
+      "kind": "material",
+      "valid": true,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 1,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "root.yml": "integration: {}"
+        },
+        "scriptDigests": {},
+        "i18n": {
+          "zh-CN": "capabilities: {}"
+        }
+      }
+    },
+    {
+      "name": "english-translation",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 1,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "root.yml": "integration: {}"
+        },
+        "scriptDigests": {},
+        "i18n": {
+          "en": "x"
+        }
+      }
+    },
+    {
+      "name": "translation-path",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 1,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "root.yml": "integration: {}"
+        },
+        "scriptDigests": {},
+        "i18n": {
+          "../zh": "x"
+        }
+      }
+    },
+    {
+      "name": "translation-null",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 1,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "root.yml": "integration: {}"
+        },
+        "scriptDigests": {},
+        "i18n": null
+      }
+    },
+    {
+      "name": "translation-empty",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 1,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "root.yml": "integration: {}"
+        },
+        "scriptDigests": {},
+        "i18n": {
+          "zh": ""
+        }
+      }
+    },
+    {
+      "name": "translation-nontext",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 1,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "root.yml": "integration: {}"
+        },
+        "scriptDigests": {},
+        "i18n": {
+          "zh": 1
+        }
+      }
+    },
+    {
+      "name": "translation-tag-case",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 1,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "root.yml": "integration: {}"
+        },
+        "scriptDigests": {},
+        "i18n": {
+          "ZH": "x"
+        }
+      }
+    },
+    {
+      "name": "translation-field-required",
+      "kind": "material",
+      "valid": false,
+      "value": {
+        "source": {
+          "integrationId": "garden.device",
+          "version": 1,
+          "type": "standard",
+          "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "schemas": {
+          "root.yml": "integration: {}"
+        },
+        "scriptDigests": {}
       }
     }
   ]

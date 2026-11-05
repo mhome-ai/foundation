@@ -28,7 +28,7 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
     const compilers = new Map();
     const schemas = [...new Set(Object.values(config.schemas))].map((file) => ({
       file,
-      schema: readJson(path.join(root, config.crateDir, file)),
+      schema: readJson(path.join(root, config.sharedFiles?.[file] ?? path.join(config.crateDir, file))),
     }));
     for (const { file, schema } of schemas) {
       if (!compilers.has(schema.$schema)) compilers.set(schema.$schema, compiler(schema.$schema));

@@ -91,6 +91,8 @@ pub struct SourceReadResponse {
     pub source: IntegrationSource,
     pub schemas: BTreeMap<String, String>,
     pub script_digests: BTreeMap<String, String>,
+    /// Language tag to intro-translation YAML; English remains in the schema.
+    pub i18n: BTreeMap<String, String>,
 }
 
 impl IntegrationSource {
@@ -149,7 +151,10 @@ impl SpaceSources {
 impl SourceReadResponse {
     pub fn validate(&self) -> Result<(), &'static str> {
         self.source.validate()?;
-        if self.schemas.is_empty() || self.schemas.len() > 1000 || self.script_digests.len() > 1000
+        if self.schemas.is_empty()
+            || self.schemas.len() > 1000
+            || self.script_digests.len() > 1000
+            || self.i18n.len() > 1000
         {
             return Err("invalid Integration source inventory");
         }
@@ -178,6 +183,22 @@ impl SourceReadResponse {
                     .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
             {
                 return Err("invalid Integration script digest");
+            }
+        }
+        for (language, content) in &self.i18n {
+            let mut parts = language.split('-');
+            let first = parts.next().unwrap_or_default();
+            if language == "en"
+                || language.len() > 1024
+                || !(2..=3).contains(&first.len())
+                || !first.bytes().all(|c| c.is_ascii_lowercase())
+                || parts.any(|part| {
+                    !(2..=8).contains(&part.len())
+                        || !part.bytes().all(|c| c.is_ascii_alphanumeric())
+                })
+                || content.is_empty()
+            {
+                return Err("invalid Integration translation source");
             }
         }
         // Bound encoded bytes, including JSON escaping, below the general Bridge
