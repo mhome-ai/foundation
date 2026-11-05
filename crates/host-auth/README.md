@@ -79,7 +79,15 @@ read-only file-descriptor imports without exposing source paths or repository
 directories. Core/Storage supply the repository implementation and scoped grants;
 the shared transport owns neither quota policy nor filesystem persistence.
 
-Run `cargo test -p mhome-host-auth --features file-gateway` for transport tests.
+`storage_grants::ReadGrants` (enabled by `storage-local`) signs reusable read
+capabilities with a per-Space random HMAC key. At most one key per Space is
+retained; issuing a capability prunes expired keys. Repeated HTTPS/Unix reads and unused
+transport alternatives do not occupy the single-use mutation grant tables.
+Revocation removes the Space key, so rebinding cannot revive previous tokens.
+Capabilities retain exact object/owner permissions and expiry; they require no
+Core connection during use. Tokens and keys remain process-local.
+
+Run `cargo test -p mhome-host-auth --features storage-local,file-gateway` for transport tests.
 
 
 ## Managed service control (`local-state`)

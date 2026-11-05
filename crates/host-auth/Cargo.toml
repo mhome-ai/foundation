@@ -1,6 +1,6 @@
 [package]
 name = "mhome-host-auth"
-version = "1.13.1"
+version = "1.14.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -26,10 +26,11 @@ rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
+hmac = { version = "0.12", optional = true }
 async-trait = { version = "0.1", optional = true }
 
 [features]
-storage-local = ["dep:libc", "dep:tokio", "tokio/io-util", "tokio/fs", "tokio/rt", "tokio/sync", "tokio/macros", "dep:tempfile", "dep:async-trait"]
+storage-local = ["dep:hmac", "dep:libc", "dep:tokio", "tokio/io-util", "tokio/fs", "tokio/rt", "tokio/sync", "tokio/macros", "dep:tempfile", "dep:async-trait"]
 local-state = ["dep:fs2", "dep:tempfile", "dep:libc", "dep:windows-sys"]
 authority = ["local-state", "tls-server", "dep:reqwest", "reqwest/json", "dep:tokio-util", "dep:jsonwebtoken", "dep:tracing", "dep:libc", "dep:windows-sys", "tokio/sync", "tokio/rt", "tokio/macros", "axum/json"]
 file-gateway = ["tls-server", "dep:reqwest", "dep:tokio-util", "dep:futures-util", "dep:async-stream"]

@@ -169,7 +169,7 @@ pub trait Repository: Send + Sync {
     async fn source(&self, owner: &str, id: &str) -> Result<(Blob, File)>;
 }
 
-#[derive(Clone)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 struct Grant {
     scope: String,
     owner: String,
@@ -183,6 +183,7 @@ pub struct Server {
     socket: PathBuf,
     repository: Arc<dyn Repository>,
     grants: Mutex<HashMap<String, Grant>>,
+    reads: crate::storage_grants::ReadGrants,
 }
 impl Server {
     pub async fn start(repository: Arc<dyn Repository>) -> Result<Arc<Self>> {
@@ -194,6 +195,7 @@ impl Server {
             socket,
             repository,
             grants: Mutex::new(HashMap::new()),
+            reads: crate::storage_grants::ReadGrants::default(),
         });
         let weak = Arc::downgrade(&server);
         tokio::spawn(async move {
@@ -229,26 +231,30 @@ impl Server {
         permission: Permission,
         expires: u64,
     ) -> Result<StorageLocalEndpoint> {
-        let mut grants = self.grants.lock().await;
-        grants.retain(|_, g| g.expires > now());
-        ensure!(grants.len() < 4096, "Too many local Storage grants");
-        let token = crate::signatures::random_id();
-        grants.insert(
-            token.clone(),
-            Grant {
-                scope: scope.into(),
-                owner: owner.into(),
-                blob,
-                permission,
-                expires,
-            },
-        );
+        let grant = Grant {
+            scope: scope.into(),
+            owner: owner.into(),
+            blob,
+            permission,
+            expires,
+        };
+        let token = if permission == Permission::Read {
+            self.reads.issue(scope, grant, expires).await?
+        } else {
+            let mut grants = self.grants.lock().await;
+            grants.retain(|_, g| g.expires > now());
+            ensure!(grants.len() < 4096, "Too many local Storage grants");
+            let token = crate::signatures::random_id();
+            grants.insert(token.clone(), grant);
+            token
+        };
         Ok(StorageLocalEndpoint {
             socket: self.socket.to_string_lossy().into(),
             token,
         })
     }
     pub async fn revoke(&self, scope: &str) {
+        self.reads.revoke(scope).await;
         self.grants.lock().await.retain(|_, g| g.scope != scope);
     }
     pub async fn retire_writes(&self, owner: &str, id: &str) {
@@ -276,7 +282,14 @@ impl Server {
     async fn execute(&self, stream: &mut UnixStream) -> Result<()> {
         let source = receive_source(stream).await?;
         let request: StorageLocalRequest = read_frame(stream).await?;
-        let grant = {
+        let grant = if request.operation == Operation::Read {
+            self.reads.verify::<Grant>(&request.token).await.context(
+                core_api::StorageError::new(
+                    core_api::StorageErrorCode::Unauthorized,
+                    "Invalid local Storage grant",
+                ),
+            )?
+        } else {
             let mut grants = self.grants.lock().await;
             let g = grants
                 .get(&request.token)
@@ -286,13 +299,8 @@ impl Server {
                     core_api::StorageErrorCode::Unauthorized,
                     "Invalid local Storage grant",
                 ))?;
-            let permission = if request.operation == Operation::Read {
-                Permission::Read
-            } else {
-                Permission::Write
-            };
             ensure!(
-                g.permission == permission,
+                g.permission == Permission::Write,
                 core_api::StorageError::new(
                     core_api::StorageErrorCode::Unauthorized,
                     "Local Storage permission denied"
@@ -442,6 +450,41 @@ mod tests {
             panic!("unauthorized read");
         }
     }
+    #[tokio::test]
+    async fn unused_read_alternatives_do_not_exhaust_local_write_authorization() {
+        let server = Server::start(Arc::new(NeverRead)).await.unwrap();
+        let blob = Blob {
+            id: "object".into(),
+            size_bytes: 5,
+            sha256: "a".repeat(64),
+        };
+        let mut first = None;
+        for _ in 0..5000 {
+            let grant = server
+                .issue(
+                    "space",
+                    "owner",
+                    blob.clone(),
+                    Permission::Read,
+                    now() + 60000,
+                )
+                .await
+                .unwrap();
+            first.get_or_insert(grant);
+        }
+        assert!(server.grants.lock().await.is_empty());
+        server
+            .issue("space", "owner", blob, Permission::Write, now() + 60000)
+            .await
+            .unwrap();
+        let token = first.unwrap().token;
+        assert!(server.reads.verify::<Grant>(&token).await.is_ok());
+        assert!(server.reads.verify::<Grant>(&token).await.is_ok());
+        server.revoke("space").await;
+        assert!(server.reads.verify::<Grant>(&token).await.is_err());
+        assert!(server.grants.lock().await.is_empty());
+    }
+
     #[tokio::test]
     async fn local_streams_reject_unknown_or_wrong_operation_grants_before_content() {
         let server = Server::start(Arc::new(NeverRead)).await.unwrap();

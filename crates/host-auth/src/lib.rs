@@ -3,6 +3,9 @@ pub mod access;
 pub mod policy;
 pub mod signatures;
 
+#[cfg(feature = "storage-local")]
+pub mod storage_grants;
+
 #[cfg(all(feature = "storage-local", unix))]
 pub mod storage_local;
 
