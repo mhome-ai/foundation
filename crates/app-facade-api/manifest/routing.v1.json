@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.93.0",
+  "contractVersion": "1.94.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode"
@@ -35,7 +35,9 @@
       "/app/pod/enrollment/get",
       "/app/host/directory/list",
       "/app/pod/rename",
-      "/app/artifact/external/resolve"
+      "/app/artifact/external/resolve",
+      "/app/presentation/space/list",
+      "/app/presentation/space/get"
     ],
     "scopeModeTargets": [
       "/app/artifact/resolve",
@@ -62,7 +64,8 @@
       "/app/host/service/install",
       "/app/host/service/restart",
       "/app/pod/list",
-      "/app/now/attention/list"
+      "/app/now/attention/list",
+      "/app/space/location/list"
     ],
     "hubPrefixes": [
       "/app/plugin/",

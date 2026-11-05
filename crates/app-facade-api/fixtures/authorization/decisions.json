@@ -826,5 +826,101 @@
     "scopeId": "space",
     "target": "/app/object-storage/folders/set-limit",
     "allowed": false
+  },
+  {
+    "name": "space-ui:unscoped:/app/presentation/space/list",
+    "principal": {
+      "kind": "user",
+      "userId": "user"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/presentation/space/list",
+    "allowed": true
+  },
+  {
+    "name": "space-ui:MEMBER:/app/presentation/space/get",
+    "principal": {
+      "kind": "user",
+      "userId": "user"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/presentation/space/get",
+    "allowed": true
+  },
+  {
+    "name": "space-ui:unscoped:/app/presentation/space/get",
+    "principal": {
+      "kind": "user",
+      "userId": "user"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/presentation/space/get",
+    "allowed": false
+  },
+  {
+    "name": "space-ui:MEMBER:/app/space/location/list",
+    "principal": {
+      "kind": "user",
+      "userId": "user"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/space/location/list",
+    "allowed": true
+  },
+  {
+    "name": "space-ui:unscoped:/app/space/location/list",
+    "principal": {
+      "kind": "user",
+      "userId": "user"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/space/location/list",
+    "allowed": false
+  },
+  {
+    "name": "space-ui:unscoped:/app/space/delete/status",
+    "principal": {
+      "kind": "user",
+      "userId": "user"
+    },
+    "memberRole": null,
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/space/delete/status",
+    "allowed": true
+  },
+  {
+    "name": "space-ui:MEMBER:/app/space/beta/update",
+    "principal": {
+      "kind": "user",
+      "userId": "user"
+    },
+    "memberRole": "MEMBER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/space/beta/update",
+    "allowed": false
+  },
+  {
+    "name": "space-ui:OWNER:/app/space/beta/update",
+    "principal": {
+      "kind": "user",
+      "userId": "user"
+    },
+    "memberRole": "OWNER",
+    "tenantId": "tenant",
+    "scopeId": "space",
+    "target": "/app/space/beta/update",
+    "allowed": true
   }
 ]

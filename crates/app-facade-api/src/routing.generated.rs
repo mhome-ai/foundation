@@ -32,6 +32,8 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/host/directory/list",
     "/app/pod/rename",
     "/app/artifact/external/resolve",
+    "/app/presentation/space/list",
+    "/app/presentation/space/get",
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[
@@ -60,6 +62,7 @@ const SCOPE_MODE_TARGETS: &[&str] = &[
     "/app/host/service/restart",
     "/app/pod/list",
     "/app/now/attention/list",
+    "/app/space/location/list",
 ];
 
 const HUB_PREFIXES: &[&str] = &[

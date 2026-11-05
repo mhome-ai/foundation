@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.93.0",
+  "contractVersion": "1.94.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -317,6 +317,16 @@
         "/app/object-storage/folders/delete",
         "/app/object-storage/folders/set-limit",
         "/app/object-storage/session/acquire"
+      ]
+    },
+    "spacePresentation": {
+      "contract": "contract/space-presentation-v1.md",
+      "requestTargets": [
+        "/app/presentation/space/list",
+        "/app/presentation/space/get",
+        "/app/space/delete/status",
+        "/app/space/beta/update",
+        "/app/space/location/list"
       ]
     }
   },

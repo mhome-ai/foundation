@@ -702,5 +702,165 @@
     "hubReady": false,
     "cloudReady": false,
     "entry": "unavailable"
+  },
+  {
+    "target": "/app/presentation/space/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/presentation/space/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/presentation/space/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/presentation/space/list",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/presentation/space/get",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/presentation/space/get",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/presentation/space/get",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/presentation/space/get",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/space/location/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/space/location/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/space/location/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/space/location/list",
+    "execution": "scopeMode",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/space/delete/status",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/space/delete/status",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/space/delete/status",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/space/delete/status",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/space/beta/update",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/space/beta/update",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/space/beta/update",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/space/beta/update",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
   }
 ]

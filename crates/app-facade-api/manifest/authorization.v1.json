@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.93.0",
+  "contractVersion": "1.94.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -403,7 +403,12 @@
     "/app/device/view/get": "spaceRead",
     "/app/client/screenshot/report": "spaceRead",
     "/app/now/attention/list": "spaceRead",
-    "/app/object-storage/folders/set-limit": "spaceWrite"
+    "/app/object-storage/folders/set-limit": "spaceWrite",
+    "/app/presentation/space/list": "userRead",
+    "/app/presentation/space/get": "spaceRead",
+    "/app/space/location/list": "spaceRead",
+    "/app/space/delete/status": "userRead",
+    "/app/space/beta/update": "spaceManage"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [
