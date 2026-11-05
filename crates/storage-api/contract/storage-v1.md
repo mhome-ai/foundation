@@ -115,6 +115,13 @@ put/get/stat/list/delete. The existing Node SDK owns the Plugin client, and the
 App SDK owns the `home/` client. Core internal consumers call the engine directly.
 Camera retains recording retention and shared-segment references.
 
+Object HEAD/stat verifies the selected physical repository, not just its Catalog
+receipt. Confirmed physical absence returns 404 (`NOT_FOUND` for GET); a missing
+repository, transport failure or timeout remains unavailable, never absence.
+Length/hash declaration mismatches remain integrity errors. Existence probes do
+not remove receipts or release quota charges: only confirmed deletion does that.
+SDK HEAD maps 404 to no object, and reads preserve the typed `NOT_FOUND` failure.
+
 `/app/object-storage/session/acquire` is an internal transport operation, with
 `folderId` and optional `expectedIncarnation`. It accepts no `permissions` or
 `ttlSeconds`. An authorized namespace owner receives all object operations for
