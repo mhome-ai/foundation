@@ -77,6 +77,9 @@ fn current_conversation_and_talk_routes_are_all_declared() {
         "/app/widget/brief/list",
         "/app/device/brief/list",
         "/integration/fix",
+        "/scope/agent/get",
+        "/scope/location/list",
+        "/scope/preference/get",
     ] {
         assert!(
             authorization::required(target).is_none(),

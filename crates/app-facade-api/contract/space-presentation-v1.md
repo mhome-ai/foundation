@@ -35,3 +35,7 @@ discarded by the previous Space's request guard.
 Client handling of presentation replies must unwrap Full Facade responses before
 updating cloud-authoritative membership/connection caches. Legacy bootstrap
 protocols and new UI reads must preserve that trust boundary during cutover.
+
+Unused legacy `/scope/preference/get`, `/scope/agent/get`, and
+`/scope/location/list` readers are retired. `/scope/list` and `/scope/get`
+remain available for existing native bootstrap and CLI consumers.
