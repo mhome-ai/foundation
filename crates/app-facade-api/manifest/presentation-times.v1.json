@@ -1,7 +1,8 @@
 {
   "/app/automation/status": {
     "ms": [
-      "items.*.resource.lastRunAt"
+      "items.*.resource.lastRunAt",
+      "items.*.resource.expireAt"
     ]
   },
   "/app/automation/activity/recent/list": {
@@ -103,6 +104,14 @@
       "items.*.time.start",
       "items.*.time.peak",
       "items.*.time.deadline"
+    ]
+  },
+  "/app/presentation/automation/list": {
+    "ms": [
+      "automations.*.timestamp",
+      "automations.*.createdAt",
+      "automations.*.updatedAt",
+      "automations.*.enabledAt"
     ]
   }
 }

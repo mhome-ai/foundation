@@ -34,6 +34,194 @@
           }
         }
       }
+    },
+    "listInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "RECURRING",
+            "TASK_FLOW"
+          ]
+        }
+      }
+    },
+    "automationInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "automationId"
+      ],
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      }
+    },
+    "listItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "type",
+        "enabled",
+        "corrupted",
+        "runnable",
+        "running",
+        "blocked",
+        "hasExpire",
+        "timestamp",
+        "createdAt",
+        "updatedAt",
+        "enabledAt",
+        "tags"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "corrupted": {
+          "type": "boolean"
+        },
+        "runnable": {
+          "type": "boolean"
+        },
+        "running": {
+          "type": "boolean"
+        },
+        "blocked": {
+          "type": "boolean"
+        },
+        "hasExpire": {
+          "type": "boolean"
+        },
+        "timestamp": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "integer"
+        },
+        "enabledAt": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "listOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "automations"
+      ],
+      "properties": {
+        "automations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/listItem"
+          }
+        }
+      }
+    },
+    "overviewOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "type",
+        "enabled",
+        "runnable",
+        "corrupted",
+        "blocked",
+        "widgets"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "runnable": {
+          "type": "boolean"
+        },
+        "corrupted": {
+          "type": "boolean"
+        },
+        "blocked": {
+          "type": "boolean"
+        },
+        "widgets": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "canvasPlacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "containsAutomation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "containsAutomation": {
+          "type": "boolean"
+        }
+      }
+    },
+    "placementsOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canvases"
+      ],
+      "properties": {
+        "canvases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/canvasPlacement"
+          }
+        }
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.96.0",
+  "contractVersion": "1.97.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -260,15 +260,12 @@
     "/app/widget/detail/get": "spaceRead",
     "/app/widget/history/list": "spaceRead",
     "/app/widget/upsert": "spaceWrite",
-    "/automation/card/get": "spaceRead",
     "/automation/copy": "spaceWrite",
     "/automation/disable": "spaceWrite",
     "/automation/enable": "spaceWrite",
     "/automation/enroll": "spaceWrite",
     "/automation/format": "spaceWrite",
     "/automation/get": "spaceRead",
-    "/automation/info": "spaceRead",
-    "/automation/list": "spaceRead",
     "/automation/overview/cancel": "spaceWrite",
     "/automation/overview/init": "spaceWrite",
     "/automation/overview/provideConfig": "spaceWrite",
@@ -402,7 +399,10 @@
     "/app/presentation/automation/names/get": "spaceRead",
     "/app/integration/preview/apply": "spaceWrite",
     "/app/integration/preview/status": "spaceRead",
-    "/app/resource/transfer/prepare": "spaceWrite"
+    "/app/resource/transfer/prepare": "spaceWrite",
+    "/app/presentation/automation/list": "spaceRead",
+    "/app/presentation/automation/overview/get": "spaceRead",
+    "/app/presentation/automation/placements/get": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [
