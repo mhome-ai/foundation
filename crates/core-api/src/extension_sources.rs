@@ -113,10 +113,10 @@ impl IntegrationSource {
         if self.integration_id.len() > 240 || self.version == 0 || self.version > i32::MAX as u32 {
             return Err("invalid Integration source version");
         }
-        if self.snapshot.is_some() {
-            if self.integration_id == "base" || self.package_type != PackageType::Standard {
-                return Err("invalid preview source snapshot");
-            }
+        if self.snapshot.is_some()
+            && (self.integration_id == "base" || self.package_type != PackageType::Standard)
+        {
+            return Err("invalid preview source snapshot");
         }
         Ok(())
     }

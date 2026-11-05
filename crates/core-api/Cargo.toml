@@ -16,11 +16,11 @@ name = "core_api"
 [dependencies]
 storage-api = { package = "mhome-storage-api", version = "=0.4.0", path = "../storage-api" }
 runtime-paths = { package = "mhome-runtime-paths", version = "=1.2.0", path = "../runtime-paths" }
-llm-api = { package = "mhome-llm-api", version = "=3.4.2", path = "../llm-api" }
+llm-api = { package = "mhome-llm-api", version = "=3.5.0", path = "../llm-api" }
 base64 = "0.22"
 sha2 = "0.10"
 artifact-api = { package = "mhome-artifact-api", version = "=1.16.0", path = "../artifact" }
-conversation-api = { package = "mhome-conversation-api", version = "=5.2.2", path = "../conversation-api" }
+conversation-api = { package = "mhome-conversation-api", version = "=5.3.0", path = "../conversation-api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
