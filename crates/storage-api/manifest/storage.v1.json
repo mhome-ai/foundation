@@ -1,6 +1,6 @@
 {
   "protocol": "storage.v1",
-  "contractVersion": "0.4.0",
+  "contractVersion": "0.4.1",
   "schema": "schema/storage.v1.schema.json",
   "definitions": [
     "decimalU64",

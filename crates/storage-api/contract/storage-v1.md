@@ -180,7 +180,9 @@ and removal-only cleanup authority.
 
 ## Physical backend and reads
 
-`storage.backend.v2` remains separate from the public `storage.v1` capability.
+`storage.backend.v1` remains separate from the public `storage.v1` capability.
+Storage is in development: both protocols evolve in place as v1, with no legacy
+readers, version negotiation or compatibility branches.
 Describe reports capacity; grant authorizes stat/read/delete; prepare-write reserves
 space for an immutable Blob before issuing a write grant. A lost reply can have
 reserved bytes. Receipts are resolved before changing repositories. Issued grants survive temporary Core control disconnection until normal expiry;
