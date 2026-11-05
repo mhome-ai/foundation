@@ -3722,9 +3722,8 @@
             "id": "w",
             "revision": 7,
             "type": "data",
-            "name": "Reminder",
             "description": "Alarm instant",
-            "source": "user",
+            "source": "widget",
             "dataType": "Timestamp",
             "repeated": false,
             "displayName": "UI name",
@@ -3765,9 +3764,8 @@
             "id": "w",
             "revision": 7,
             "type": "data",
-            "name": "Reminder",
             "description": "Alarm instant",
-            "source": "user",
+            "source": "widget",
             "dataType": "Timestamp",
             "repeated": false,
             "options": [
@@ -3779,7 +3777,8 @@
             "min": {
               "_type": "Timestamp",
               "value": "1970-01-01 00:00:00 +00:00 (UTC)"
-            }
+            },
+            "displayName": "UI name"
           }
         },
         {
@@ -3889,12 +3888,12 @@
       "widgets": [
         {
           "id": "value-d",
-          "name": "Level",
           "description": null,
           "tag": null,
           "type": "basic.widget.DataWidget",
           "dataType": "Number",
-          "repeated": false
+          "repeated": false,
+          "displayName": "Level"
         }
       ]
     },
@@ -3902,10 +3901,10 @@
       "widgets": [
         {
           "id": "value-d",
-          "name": "Level",
           "type": "basic.widget.DataWidget",
           "dataType": "Number",
-          "repeated": false
+          "repeated": false,
+          "displayName": "Level"
         }
       ]
     }

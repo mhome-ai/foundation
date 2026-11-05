@@ -192,7 +192,7 @@ fn widget_list(data: &Value) -> Value {
     if let Some(widgets) = result.get_mut("widgets").and_then(Value::as_array_mut) {
         for widget in widgets {
             if let Some(fields) = widget.as_object_mut() {
-                for key in ["name", "description", "tag", "dataType", "repeated"] {
+                for key in ["displayName", "description", "tag", "dataType", "repeated"] {
                     if fields.get(key).is_some_and(Value::is_null) {
                         fields.remove(key);
                     }
@@ -209,7 +209,7 @@ fn widget_definition(data: &Value) -> Value {
     if let Some(items) = result.get_mut("items").and_then(Value::as_array_mut) {
         for item in items {
             if let Some(widget) = item.get_mut("widget").and_then(Value::as_object_mut) {
-                for field in ["displayName", "global", "baseId", "steps", "stepUnits"] {
+                for field in ["global", "baseId", "steps", "stepUnits"] {
                     widget.remove(field);
                 }
                 for field in [
@@ -481,6 +481,28 @@ pub use conversation_api::execution::tool_result_text as tool_text;
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn widget_display_name_survives_full_and_essential_without_touching_object_fields() {
+        let widget = json!({"id":"w-d","type":"data","displayName":"目标温度","dataType":"Person",
+            "options":[{"uid":"person/a","displayName":"Alice","name":"schema-owned field"}]});
+        let data = json!({"items":[{"requestedId":"w-d","found":true,"widget":widget}]});
+        for detail in [ResponseDetail::Full, ResponseDetail::Essential] {
+            let response = serde_json::to_value(
+                present("/app/widget/detail/get", data.clone(), detail).unwrap(),
+            )
+            .unwrap();
+            let visible = if detail == ResponseDetail::Essential {
+                serde_yaml::from_str::<Value>(response["data"].as_str().unwrap()).unwrap()
+            } else {
+                response["data"].clone()
+            };
+            let actual = &visible["items"][0]["widget"];
+            assert_eq!(actual["displayName"], "目标温度");
+            assert!(actual.get("name").is_none());
+            assert_eq!(actual["options"][0]["name"], "schema-owned field");
+        }
+    }
+
     #[test]
     fn plugin_business_fields_do_not_determine_outcome() {
         for target in [
