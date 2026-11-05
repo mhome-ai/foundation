@@ -94,6 +94,12 @@ pub enum ScriptRef {
         function: String,
         sha256: String,
     },
+    IntegrationPreview {
+        package_id: String,
+        snapshot: String,
+        function: String,
+        sha256: String,
+    },
     Automation {
         automation_id: String,
         revision: u64,
@@ -105,21 +111,32 @@ pub enum ScriptRef {
 impl ScriptRef {
     pub fn validate(&self) -> Result<(), ContractError> {
         let (owner, version, function, sha256) = match self {
+            Self::IntegrationPreview {
+                package_id,
+                snapshot,
+                function,
+                sha256,
+            } => {
+                validate_sha256(snapshot)?;
+                (package_id, None, function, sha256)
+            }
             Self::Integration {
                 package_id,
                 version,
                 function,
                 sha256,
-            } => (package_id, *version, function, sha256),
+            } => (package_id, Some(*version), function, sha256),
             Self::Automation {
                 automation_id,
                 revision,
                 function,
                 sha256,
-            } => (automation_id, *revision, function, sha256),
+            } => (automation_id, Some(*revision), function, sha256),
         };
         validate_owner(owner)?;
-        validate_version(version)?;
+        if let Some(version) = version {
+            validate_version(version)?;
+        }
         if !is_identifier(function, 128) {
             return Err(invalid(
                 "function must be an ASCII identifier without a path or extension",
@@ -130,7 +147,9 @@ impl ScriptRef {
 
     pub fn sha256(&self) -> &str {
         match self {
-            Self::Integration { sha256, .. } | Self::Automation { sha256, .. } => sha256,
+            Self::Integration { sha256, .. }
+            | Self::IntegrationPreview { sha256, .. }
+            | Self::Automation { sha256, .. } => sha256,
         }
     }
 }
@@ -393,7 +412,7 @@ impl ScriptArtifact {
                     return Err(invalid("script contract SDK does not match the artifact"));
                 }
             }
-            (None, ScriptRef::Integration { .. }) => {}
+            (None, ScriptRef::Integration { .. } | ScriptRef::IntegrationPreview { .. }) => {}
             _ => {
                 return Err(invalid(
                     "only Automation artifacts carry a defineScript contract",

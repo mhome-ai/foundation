@@ -4,6 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 pub const SOURCE_SNAPSHOT_ROUTE: &str = "/dispatch/extension/sources/snapshot";
+pub const ACQUIRE_ROUTE: &str = "/dispatch/extension/acquire";
+pub const RESOURCE_GUIDE_READ_ROUTE: &str = "/dispatch/extension/resources/guides";
+pub const RESOURCE_PLAN_READ_ROUTE: &str = "/dispatch/extension/resources/plan";
 pub const SOURCE_READ_ROUTE: &str = "/dispatch/extension/sources/read";
 pub const MAX_SOURCE_BYTES: usize = 16 * 1024 * 1024;
 pub const MAX_SELECTION_BYTES: usize = 256 * 1024;
@@ -55,7 +58,9 @@ impl<'de> Deserialize<'de> for SnapshotId {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IntegrationSource {
     pub integration_id: String,
-    pub version: u32,
+    /// Registry version, mutually exclusive with Preview content identity.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<u32>,
     #[serde(rename = "type")]
     pub package_type: PackageType,
     /// Exact local source manifest digest. Absent for registry-owned releases.
@@ -63,7 +68,7 @@ pub struct IntegrationSource {
     pub snapshot: Option<SnapshotId>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum PackageType {
     Standard,
@@ -110,7 +115,10 @@ impl IntegrationSource {
         {
             return Err("invalid Integration source identity");
         }
-        if self.integration_id.len() > 240 || self.version == 0 || self.version > i32::MAX as u32 {
+        if self.integration_id.len() > 240
+            || self.version.is_some() == self.snapshot.is_some()
+            || self.version.is_some_and(|v| v == 0 || v > i32::MAX as u32)
+        {
             return Err("invalid Integration source version");
         }
         if self.snapshot.is_some()
@@ -133,7 +141,11 @@ impl SpaceSources {
         let mut sources = std::collections::HashSet::new();
         for source in &self.integrations {
             source.validate()?;
-            if !sources.insert((&source.integration_id, source.package_type)) {
+            if !sources.insert((
+                &source.integration_id,
+                source.package_type,
+                source.snapshot.is_some(),
+            )) {
                 return Err("conflicting Integration sources");
             }
         }
@@ -145,6 +157,18 @@ impl SpaceSources {
             return Err("Space source selection exceeds the size limit");
         }
         Ok(())
+    }
+
+    /// One effective source per package. Order never changes Preview priority.
+    pub fn resolved(&self) -> Vec<&IntegrationSource> {
+        let mut selected = BTreeMap::new();
+        for source in &self.integrations {
+            let key = (&source.integration_id, source.package_type);
+            if source.snapshot.is_some() || !selected.contains_key(&key) {
+                selected.insert(key, source);
+            }
+        }
+        selected.into_values().collect()
     }
 }
 

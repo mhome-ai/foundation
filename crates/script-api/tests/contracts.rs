@@ -114,7 +114,7 @@ fn artifact(reference: &ScriptRef) -> ScriptArtifact {
             ScriptRef::Automation { .. } => {
                 Some(serde_json::from_value(corpus()["validContracts"][0].clone()).unwrap())
             }
-            ScriptRef::Integration { .. } => None,
+            ScriptRef::Integration { .. } | ScriptRef::IntegrationPreview { .. } => None,
         },
     }
 }

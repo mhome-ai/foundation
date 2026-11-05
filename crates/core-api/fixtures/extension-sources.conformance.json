@@ -16,7 +16,6 @@
       "valid": true,
       "value": {
         "integrationId": "garden.device",
-        "version": 7,
         "type": "standard",
         "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       }
@@ -27,7 +26,6 @@
       "valid": false,
       "value": {
         "integrationId": "garden.device",
-        "version": 7,
         "type": "standard",
         "snapshot": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       }
@@ -109,7 +107,6 @@
       "valid": false,
       "value": {
         "integrationId": "base",
-        "version": 7,
         "type": "standard",
         "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       }
@@ -120,7 +117,6 @@
       "valid": false,
       "value": {
         "integrationId": "garden.device",
-        "version": 7,
         "type": "composite",
         "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       }
@@ -143,7 +139,6 @@
         "integrations": [
           {
             "integrationId": "garden.device",
-            "version": 7,
             "type": "standard",
             "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
           }
@@ -151,9 +146,9 @@
       }
     },
     {
-      "name": "duplicate-selection",
+      "name": "published-and-preview-coexist",
       "kind": "snapshot",
-      "valid": false,
+      "valid": true,
       "value": {
         "revision": 2,
         "integrations": [
@@ -164,7 +159,6 @@
           },
           {
             "integrationId": "garden.device",
-            "version": 7,
             "type": "standard",
             "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
           }
@@ -196,7 +190,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 7,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -216,7 +209,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 7,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -234,7 +226,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 7,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -254,7 +245,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 7,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -274,7 +264,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 7,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -294,7 +283,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 7,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -314,7 +302,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 7,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -349,7 +336,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 1,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -369,7 +355,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 1,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -389,7 +374,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 1,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -409,7 +393,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 1,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -427,7 +410,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 1,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -447,7 +429,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 1,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -467,7 +448,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 1,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -487,7 +467,6 @@
       "value": {
         "source": {
           "integrationId": "garden.device",
-          "version": 1,
           "type": "standard",
           "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
@@ -495,6 +474,46 @@
           "root.yml": "integration: {}"
         },
         "scriptDigests": {}
+      }
+    },
+    {
+      "name": "preview cannot carry release version",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "type": "standard",
+        "version": 1,
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "source requires release or preview identity",
+      "kind": "source",
+      "valid": false,
+      "value": {
+        "integrationId": "garden.device",
+        "type": "standard"
+      }
+    },
+    {
+      "name": "duplicate preview conflicts",
+      "kind": "snapshot",
+      "valid": false,
+      "value": {
+        "revision": 1,
+        "integrations": [
+          {
+            "integrationId": "garden.device",
+            "type": "standard",
+            "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          {
+            "integrationId": "garden.device",
+            "type": "standard",
+            "snapshot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          }
+        ]
       }
     }
   ]

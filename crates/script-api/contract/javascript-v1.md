@@ -16,7 +16,10 @@ library through an internal HTTP runtime service. The cloud build service uses
 TypeScript tooling and does not require Rust compiler jobs or Docker per build.
 The services share SDK/protocol versions but have independent admission budgets.
 
-Integration source belongs to an immutable package version. Automation source
+Published Integration source belongs to an immutable package version. Preview
+uses `kind: integrationPreview`, `packageId`, `snapshot`, `function` and `sha256`;
+`snapshot` is the raw package content identity and replaces `version`. It is distinct
+from derived plan identities that also include dependencies/compiler inputs. Automation source
 remains in AutomationScript.scripts; its artifacts belong to an Automation revision
 and Space. Description-only changes do not increment the execution revision.
 
@@ -59,7 +62,7 @@ the verified contract. No duplicate user-authored contract goes into YAML.
 
 `SCRIPT_CALL` uses opcode **0x1d** with four operands:
 
-1. Constant ScriptRef (Integration or Automation).
+1. Constant ScriptRef (published Integration, Integration Preview or Automation).
 2. A normal value operand resolving to an argument array.
 3. Success task ID.
 4. Failure task ID.

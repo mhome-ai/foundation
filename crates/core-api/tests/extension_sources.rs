@@ -32,6 +32,7 @@ fn source_identity_distinguishes_local_snapshot_from_registry_version() {
     .unwrap();
     published.validate().unwrap();
     let mut preview = published.clone();
+    preview.version = None;
     preview.snapshot = Some("a".repeat(64).parse().unwrap());
     assert_ne!(published, preview);
     preview.validate().unwrap();
@@ -39,10 +40,11 @@ fn source_identity_distinguishes_local_snapshot_from_registry_version() {
         revision: 1,
         integrations: vec![published.clone(), preview.clone()],
     };
-    assert!(sources.validate().is_err());
+    sources.validate().unwrap();
+    assert_eq!(sources.resolved(), vec![&preview]);
     assert!("A".repeat(64).parse::<SnapshotId>().is_err());
     preview.snapshot = None;
-    preview.version = 0;
+    preview.version = Some(0);
     assert!(preview.validate().is_err());
     let mut invalid = published.clone();
     invalid.integration_id = "../garden.device".into();
@@ -67,7 +69,7 @@ fn material_inventory_is_bounded_and_retains_relative_schema_paths() {
     let mut material = SourceReadResponse {
         source: IntegrationSource {
             integration_id: "garden.device".into(),
-            version: 1,
+            version: None,
             package_type: PackageType::Standard,
             snapshot: Some("a".repeat(64).parse().unwrap()),
         },

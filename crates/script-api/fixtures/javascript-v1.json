@@ -42,7 +42,8 @@
   ],
   "validReferences": [
     {"kind": "integration", "packageId": "demo.device", "version": 7, "function": "sendCommand", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
-    {"kind": "automation", "automationId": "demo-automation", "revision": 23, "function": "lighting", "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+    {"kind": "automation", "automationId": "demo-automation", "revision": 23, "function": "lighting", "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"kind": "integrationPreview", "packageId": "demo.device", "snapshot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "function": "sendCommand", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
   ],
   "invalidReferences": [
     {"kind": "integration", "packageId": "demo.device", "version": 0, "function": "sendCommand", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
@@ -52,7 +53,11 @@
     {"kind": "integration", "packageId": "demo.device", "version": 1, "function": "run", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "spaceId": "other-space"},
     {"kind": "automation", "automationId": "demo", "revision": 9007199254740992, "function": "run", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
     {"kind": "automation", "automationId": "", "revision": 1, "function": "run", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
-    {"kind": "wasm", "wasmId": "demo.device.run-v1"}
+    {"kind": "wasm", "wasmId": "demo.device.run-v1"},
+    {"kind": "integrationPreview", "packageId": "demo.device", "snapshot": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC", "function": "sendCommand", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"kind": "integrationPreview", "packageId": "demo.device", "snapshot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "function": "sendCommand", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "version": 7},
+    {"kind": "integrationPreview", "packageId": "demo.device", "snapshot": "", "function": "sendCommand", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    {"kind": "integrationPreview", "packageId": "invalid\nowner", "snapshot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "function": "sendCommand", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
   ],
   "validValues": [
     {
