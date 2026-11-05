@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.94.0",
+  "contractVersion": "1.95.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -327,6 +327,13 @@
         "/app/space/delete/status",
         "/app/space/beta/update",
         "/app/space/location/list"
+      ]
+    },
+    "automationPresentation": {
+      "schema": "schema/automation-presentation.v1.schema.json",
+      "contract": "contract/automation-presentation-v1.md",
+      "uiRequestTargets": [
+        "/app/presentation/automation/names/get"
       ]
     }
   },

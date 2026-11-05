@@ -14,7 +14,7 @@ follow the Space execution authority on both local Core and cloud.
 | `/app/widget/list` | `{}` | Summaries: id, displayName, description, type, tag; Data adds dataType/repeated. No list mode or full-definition catalog |
 | `/app/widget/detail/get` | `{ids}` | Existing ordered `items` with `widget` configuration; no value, next or nextTimestamp |
 | `/app/widget/value/get` | `{ids}` | Ordered `items` with `resource: {widgetId, revision, value, next?, nextTimestamp?}` |
-| `/app/automation/status` | `{ids}` | Ordered `items` with `resource: {automationId, enabled, runnable, running, blocked, lastRunAt}` |
+| `/app/automation/status` | `{ids}` | Ordered `items` with `resource: {automationId, enabled, runnable, corrupted, running, blocked, lastRunAt}`; temporary programs also include `expireAt` |
 | `/app/graph/relations/get` | `{resource: {kind, id}}` | `{resource, relations: [{from, relation, to, capabilityIds?}]}` |
 
 Device list and detail discriminate status using `group`: physical Devices (`false`)

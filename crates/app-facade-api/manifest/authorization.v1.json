@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.94.0",
+  "contractVersion": "1.95.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -260,11 +260,8 @@
     "/app/widget/detail/get": "spaceRead",
     "/app/widget/history/list": "spaceRead",
     "/app/widget/upsert": "spaceWrite",
-    "/automation/activity/list": "spaceRead",
-    "/automation/batchGet": "spaceRead",
     "/automation/card/get": "spaceRead",
     "/automation/copy": "spaceWrite",
-    "/automation/delete": "spaceWrite",
     "/automation/disable": "spaceWrite",
     "/automation/enable": "spaceWrite",
     "/automation/enroll": "spaceWrite",
@@ -272,7 +269,6 @@
     "/automation/get": "spaceRead",
     "/automation/info": "spaceRead",
     "/automation/list": "spaceRead",
-    "/automation/names": "spaceRead",
     "/automation/overview/cancel": "spaceWrite",
     "/automation/overview/init": "spaceWrite",
     "/automation/overview/provideConfig": "spaceWrite",
@@ -281,8 +277,6 @@
     "/automation/run": "spaceWrite",
     "/automation/save": "spaceWrite",
     "/automation/share": "spaceWrite",
-    "/automation/snapshot/batchDelete": "spaceWrite",
-    "/automation/snapshot/get": "spaceRead",
     "/automation/snapshot/rollback": "spaceWrite",
     "/automation/status": "spaceRead",
     "/chat/control/get": "spaceRead",
@@ -365,7 +359,6 @@
     "/twin/batchUpsert": "spaceWrite",
     "/twin/getHistory": "spaceRead",
     "/twin/getTwinAutomation": "spaceRead",
-    "/ui/automationCard/create": "spaceWrite",
     "/ui/canvas/delete": "spaceWrite",
     "/ui/canvas/getContent": "spaceRead",
     "/ui/canvas/list": "spaceRead",
@@ -408,7 +401,8 @@
     "/app/presentation/space/get": "spaceRead",
     "/app/space/location/list": "spaceRead",
     "/app/space/delete/status": "userRead",
-    "/app/space/beta/update": "spaceManage"
+    "/app/space/beta/update": "spaceManage",
+    "/app/presentation/automation/names/get": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

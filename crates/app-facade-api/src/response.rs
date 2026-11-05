@@ -291,6 +291,7 @@ fn automation(target: &str, data: &Value) -> Value {
                 "description",
                 "automationType",
                 "enabled",
+                "runnable",
                 "singleUse",
                 "hasExpire",
                 "usedCapabilities",
