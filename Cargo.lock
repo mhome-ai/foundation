@@ -1568,10 +1568,11 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "1.12.8"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "async-stream",
+ "async-trait",
  "axum",
  "base64 0.22.1",
  "elliptic-curve 0.14.3",

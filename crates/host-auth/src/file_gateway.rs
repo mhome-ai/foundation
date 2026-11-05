@@ -28,6 +28,9 @@ pub struct FileGrant {
     pub expires_at_unix_ms: u64,
     #[serde(default)]
     pub storage_prefix: bool,
+    /// Exact-resource writes are limited to PUT. Folder control tickets use storage_prefix.
+    #[serde(default)]
+    pub method: Option<String>,
     #[serde(default)]
     pub headers: std::collections::BTreeMap<String, String>,
 }
@@ -77,6 +80,8 @@ struct Ticket {
     client: reqwest::Client,
     expires: u64,
     prefix: bool,
+    method: Option<Method>,
+    headers: reqwest::header::HeaderMap,
     cancel: CancellationToken,
 }
 impl Drop for Ticket {
@@ -87,6 +92,7 @@ impl Drop for Ticket {
 struct GatewayState {
     tickets: Mutex<HashMap<String, Arc<Ticket>>>,
     slots: Arc<Semaphore>,
+    clients: Mutex<HashMap<String, reqwest::Client>>,
 }
 #[derive(Clone)]
 pub struct FileGateway {
@@ -107,6 +113,7 @@ impl FileGateway {
         let state = Arc::new(GatewayState {
             tickets: Mutex::new(HashMap::new()),
             slots: Arc::new(Semaphore::new(32)),
+            clients: Mutex::new(HashMap::new()),
         });
         let router = Router::new()
             .fallback(any(serve_file))
@@ -165,6 +172,11 @@ impl FileGateway {
             "Invalid Storage session prefix"
         );
         let mut headers = reqwest::header::HeaderMap::new();
+        let method = match grant.method.as_deref() {
+            None => None,
+            Some("PUT") if !grant.storage_prefix => Some(Method::PUT),
+            _ => anyhow::bail!("Unsupported file authorization method"),
+        };
         for (name, value) in grant.headers {
             ensure!(
                 name.eq_ignore_ascii_case("authorization")
@@ -176,17 +188,31 @@ impl FileGateway {
                 HeaderValue::from_str(&value)?,
             );
         }
-        let client = reqwest::Client::builder()
-            .use_preconfigured_tls(crate::tls::PeerPin::trusted(grant.host_public_key)?.config())
-            .no_proxy()
-            .redirect(reqwest::redirect::Policy::none())
-            .no_gzip()
-            .no_brotli()
-            .no_deflate()
-            .connect_timeout(std::time::Duration::from_secs(10))
-            .read_timeout(std::time::Duration::from_secs(60))
-            .default_headers(headers)
-            .build()?;
+        let cache_key =
+            serde_json::to_string(&(url.origin().ascii_serialization(), &grant.host_public_key))?;
+        let mut clients = self.state.clients.lock().expect("file clients");
+        let client = if let Some(client) = clients.get(&cache_key) {
+            client.clone()
+        } else {
+            let client = reqwest::Client::builder()
+                .use_preconfigured_tls(
+                    crate::tls::PeerPin::trusted(grant.host_public_key)?.config(),
+                )
+                .no_proxy()
+                .redirect(reqwest::redirect::Policy::none())
+                .no_gzip()
+                .no_brotli()
+                .no_deflate()
+                .connect_timeout(std::time::Duration::from_secs(10))
+                .read_timeout(std::time::Duration::from_secs(60))
+                .build()?;
+            if clients.len() >= 32 {
+                clients.clear();
+            }
+            clients.insert(cache_key, client.clone());
+            client
+        };
+        drop(clients);
         let id = crate::signatures::random_id();
         let mut tickets = self.state.tickets.lock().expect("file tickets");
         ensure!(!owner.is_retired(), "File owner retired");
@@ -204,6 +230,8 @@ impl FileGateway {
                 client,
                 expires: grant.expires_at_unix_ms,
                 prefix: grant.storage_prefix,
+                method,
+                headers,
                 cancel: owner.0.cancel.child_token(),
             }),
         );
@@ -275,7 +303,10 @@ async fn transfer(state: Arc<GatewayState>, request: Request) -> Result<Response
     ensure!(
         ticket.prefix
             || (suffix.is_empty()
-                && (request.method() == Method::GET || request.method() == Method::HEAD)),
+                && match &ticket.method {
+                    Some(method) => request.method() == method,
+                    None => request.method() == Method::GET || request.method() == Method::HEAD,
+                }),
         "File ticket does not allow this operation"
     );
     let url = if ticket.prefix {
@@ -310,7 +341,10 @@ async fn transfer(state: Arc<GatewayState>, request: Request) -> Result<Response
         .clone()
         .try_acquire_owned()
         .context("File transfer capacity exceeded")?;
-    let mut outgoing = ticket.client.request(request.method().clone(), url);
+    let mut outgoing = ticket
+        .client
+        .request(request.method().clone(), url)
+        .headers(ticket.headers.clone());
     for name in [
         "range",
         "if-range",
@@ -400,8 +434,116 @@ mod tests {
             host_public_key: key,
             expires_at_unix_ms: now() + 60000,
             storage_prefix: false,
+            method: None,
             headers: Default::default(),
         }
+    }
+
+    #[tokio::test]
+    async fn exact_upload_tickets_allow_only_put_to_the_original_pinned_resource() {
+        let key = new_key();
+        let pin = public_key(key.verifying_key());
+        let (cert, private) = tls::certificate(&key).unwrap();
+        let tcp = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let url = format!("https://{}/upload?operation=one", tcp.local_addr().unwrap());
+        let listener = tls::Listener::new(
+            tcp,
+            tls::server_config(cert.as_bytes(), private.as_bytes()).unwrap(),
+        );
+        let app = Router::new().route(
+            "/upload",
+            any(
+                |method: Method,
+                 axum::extract::RawQuery(query): axum::extract::RawQuery,
+                 headers: HeaderMap,
+                 body: axum::body::Bytes| async move {
+                    assert_eq!(method, Method::PUT);
+                    assert_eq!(query.as_deref(), Some("operation=one"));
+                    let expected = if &body[..] == b"media" {
+                        "Bearer one"
+                    } else {
+                        "Bearer two"
+                    };
+                    assert_eq!(headers["authorization"], expected);
+                    StatusCode::CREATED
+                },
+            ),
+        );
+        let task = tokio::spawn(async move {
+            axum::serve(listener, app).await.unwrap();
+        });
+        let gateway = FileGateway::start().await.unwrap();
+        let owner = gateway.owner();
+        let mut invalid = grant(url.clone(), pin.clone());
+        invalid.method = Some("DELETE".into());
+        assert!(gateway.register(&owner, invalid).await.is_err());
+        let mut second = grant(url.clone(), pin.clone());
+        second.method = Some("PUT".into());
+        second
+            .headers
+            .insert("Authorization".into(), "Bearer two".into());
+        let second = gateway.register(&owner, second).await.unwrap();
+        let mut permission = grant(url, pin);
+        permission.method = Some("PUT".into());
+        permission
+            .headers
+            .insert("Authorization".into(), "Bearer one".into());
+        let local = gateway.register(&owner, permission).await.unwrap();
+        let client = reqwest::Client::builder().no_proxy().build().unwrap();
+        assert!(!client
+            .get(&local)
+            .send()
+            .await
+            .unwrap()
+            .status()
+            .is_success());
+        assert!(!client
+            .put(format!("{local}/other"))
+            .body("media")
+            .send()
+            .await
+            .unwrap()
+            .status()
+            .is_success());
+        assert!(!client
+            .put(format!("{local}?operation=two"))
+            .body("media")
+            .send()
+            .await
+            .unwrap()
+            .status()
+            .is_success());
+        assert_eq!(
+            client
+                .put(&local)
+                .body("media")
+                .send()
+                .await
+                .unwrap()
+                .status(),
+            StatusCode::CREATED
+        );
+        assert_eq!(
+            client
+                .put(&second)
+                .body("second")
+                .send()
+                .await
+                .unwrap()
+                .status(),
+            StatusCode::CREATED
+        );
+        gateway.release(&owner, &local);
+        assert!(!client
+            .put(local)
+            .body("media")
+            .send()
+            .await
+            .unwrap()
+            .status()
+            .is_success());
+        gateway.stop().await;
+        task.abort();
     }
 
     #[tokio::test]

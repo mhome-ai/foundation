@@ -68,7 +68,16 @@ when a download finishes or its consumer retires; it releases only that owner’
 exact ticket and is idempotent. Keep media tickets for Range rereads until playback
 consumers retire, and Storage tickets until session release or expiry.
 Storage sessions explicitly grant a same-origin `/storage/v1` prefix; ordinary file
-grants allow only GET/HEAD of their exact URL. Cloud file URLs keep normal CA trust.
+grants allow GET/HEAD of their exact URL. Explicit `method: "PUT"` grants allow only
+PUT to that exact resource, including its original query. Connections are pooled by
+origin and pinned key; authorization stays attached to each request. Cloud file
+URLs keep normal CA trust.
+
+`storage-local` provides a private Unix-socket server and bounded request frames for
+one-object Storage capabilities. It supports memory streams, Range reads and
+read-only file-descriptor imports without exposing source paths or repository
+directories. Core/Storage supply the repository implementation and scoped grants;
+the shared transport owns neither quota policy nor filesystem persistence.
 
 Run `cargo test -p mhome-host-auth --features file-gateway` for transport tests.
 

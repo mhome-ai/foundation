@@ -1,6 +1,6 @@
 //! Core/Plugin byte transport. Logical Folder policy remains in Core.
 use serde::{Deserialize, Serialize};
-pub const STORAGE_BACKEND_PROTOCOL_VERSION: &str = "storage.backend.v1";
+pub const STORAGE_BACKEND_PROTOCOL_VERSION: &str = "storage.backend.v2";
 pub const STORAGE_BACKEND_DESCRIBE: &str = "/storage/backend/describe";
 pub const STORAGE_BACKEND_GRANT: &str = "/storage/backend/grant";
 pub const STORAGE_BACKEND_PREPARE_WRITE: &str = "/storage/backend/prepare-write";
@@ -20,6 +20,7 @@ pub struct StorageBackendGrantRequest {
     pub owner: String,
     pub object_id: String,
     pub permission: StorageBackendPermission,
+    pub local: bool,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -27,6 +28,8 @@ pub struct StorageBackendPrepareWriteRequest {
     pub repository_id: String,
     pub owner: String,
     pub object: storage_api::backend::Blob,
+    pub local_import: bool,
+    pub local: bool,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -48,6 +51,7 @@ pub struct StorageBackendGrant {
     pub token: String,
     pub host_identity: artifact_api::HostTlsIdentity,
     pub expires_at_ms: u64,
+    pub local: Option<crate::StorageLocalEndpoint>,
 }
 
 /// Native gateway transport is local to the hosting process. Never return this descriptor to App callers.

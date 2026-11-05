@@ -3,6 +3,9 @@ pub mod access;
 pub mod policy;
 pub mod signatures;
 
+#[cfg(all(feature = "storage-local", unix))]
+pub mod storage_local;
+
 #[cfg(feature = "tls")]
 pub mod tls;
 

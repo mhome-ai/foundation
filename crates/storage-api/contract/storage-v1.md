@@ -90,11 +90,16 @@ waits for all physical repositories, including offline repositories, to be clean
 
 ## Placement and capacity
 
-Core prefers a healthy, authorized external repository for new writes; otherwise
-it uses its internal disk. Existing objects keep their recorded repository UUID;
-enabling a Plugin does not migrate them. Reads and deletes resolve that recorded
-placement. New writes may fall back before physical mutation; an uncertain
-prepare/upload remains pinned until retry or confirmed retirement resolves it.
+For SDK writes, Core prefers a healthy external repository on the authenticated
+source Host, then another external repository, and finally its internal disk.
+Within each external group, writable staging bytes descending and stable repository/
+binding identities decide the order. An unknown source Host has no local preference.
+Existing objects keep their recorded repository UUID; enabling a Plugin never moves
+them. Discovery excludes unavailable or insufficient candidates. Once selected,
+preparation or transfer failure fails this write: there is no Core byte relay,
+cross-repository replay, persistent sender spool or automatic media retransmission.
+Uncertain results remain pinned to that repository until publication or cleanup.
+Core-internal Artifact consumers retain their existing engine write/recovery path.
 
 All Folders share available capacity. Host physical reserves and staging space
 still apply. A write validates full size and SHA-256; no staging space means
@@ -141,16 +146,45 @@ Retried uploads retain their original key, length and SHA-256. Native file ticke
 are owned per transfer: renewal leaves an admitted read alive, and completion,
 cancellation or SDK disposal releases its ticket.
 
+Object data uses SDK-owned direct transfers. POST to the session's
+`objects/<key>` URL carries a Core API `StorageObjectControl`: `prepare`
+(`sizeBytes`, `sha256`, `contentType`, `localImport`), `complete`, `status`, or
+`abort` (each with `uploadId`), or `read`. Prepare reserves quota once and returns
+an already-published receipt or the exact repository transfer. A transfer contains
+its URL, token, Host TLS identity, expiry and an optional local capability.
+The SDK sends bytes to that repository and completes through Core. Only Core's
+published receipt is success. Complete verifies physical metadata rather than
+trusting the client. Aborting a published upload leaves its object intact.
+Unfinished/cancelled writes remain charged until confirmed cleanup; existing
+recovery may publish verified bytes after a lost response. Terminal journals have
+a 24-hour cleanup window; the immutable object receipt remains accessible by key.
+
+Read obtains the selected repository's grant and streams directly, including HTTP
+Range. Session HEAD/list/delete remain Core metadata/management operations. Session
+PUT only accepts a prepared internal-disk upload; external data cannot be relayed
+through the Core Folder gateway. Old SDK byte routes are not served in parallel.
+
+The Node SDK writes byte buffers without a temporary file and reuses pinned HTTPS
+connections without sharing request authorization. A local capability is projected
+only for a verified same-Host Plugin. Its private Unix socket accepts one authorized
+object stream, or a read-only source file descriptor for import. Source pathnames
+and repository directory access are never transferred. Import clones on supported
+filesystems or allocates/copies locally, verifies the result, and preserves the
+source. Inaccessible local namespaces may use HTTPS to the same selected repository
+before a local request starts. App WebViews use the native pinned file bridge;
+exact-object upload tickets permit PUT only. No offline quota delegation is added.
+
 These logical sessions do not replace physical backend grants. Physical read,
 stat, delete and prepared-write grants remain separate, including Artifact read
 and removal-only cleanup authority.
 
 ## Physical backend and reads
 
-`storage.backend.v1` remains separate from the public `storage.v1` capability.
+`storage.backend.v2` remains separate from the public `storage.v1` capability.
 Describe reports capacity; grant authorizes stat/read/delete; prepare-write reserves
 space for an immutable Blob before issuing a write grant. A lost reply can have
-reserved bytes. Receipts are resolved before changing repositories. TLS is pinned,
+reserved bytes. Receipts are resolved before changing repositories. Issued grants survive temporary Core control disconnection until normal expiry;
+explicit binding removal still revokes unused grants. TLS is pinned,
 with redirects and proxy inheritance disabled. Core's internal `mhome-storage-disk`
 source crate (`publish = false`) owns disk durability, repository identity,
 reservations and idempotent unlink. Core and the Storage Plugin reuse this code;

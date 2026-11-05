@@ -1,6 +1,9 @@
 //! Core-owned Storage access and transport. Domain types have one source in storage-api.
 use serde::{Deserialize, Serialize};
 pub use storage_api::*;
+#[path = "storage_transfer.rs"]
+mod transfer;
+pub use transfer::*;
 pub const STORAGE_NODE_TYPE: &str = "storage";
 pub const STORAGE_PROTOCOL_VERSION: &str = storage_api::PROTOCOL_VERSION;
 pub const STORAGE_READINESS_ROUTE: &str = "/storage/readiness";
