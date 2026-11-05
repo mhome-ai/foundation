@@ -18,11 +18,6 @@ pub use policy::{
 #[serde(transparent)]
 pub struct UseCase(pub String);
 
-/// Logical model mode selected by the product, independent of provider and model identifiers.
-#[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct ModelMode(pub String);
-
 /// Caller-declared requirements. Listed input modalities and true flags require confirmed
 /// support; an empty `input` list and false flags impose no requirement.
 /// Adapters must not infer or override these declarations from message content.
@@ -119,8 +114,7 @@ pub struct ToolCall {
 pub struct CompletionRequest {
     /// Logical routing key resolved by the LLM adapter.
     pub use_case: UseCase,
-    /// Logical quality/cost mode resolved by the LLM adapter adapter.
-    pub model_mode: ModelMode,
+
     /// Conversation input.
     pub messages: Vec<Message>,
     /// Tools available to the model.

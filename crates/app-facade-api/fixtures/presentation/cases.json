@@ -2017,7 +2017,6 @@
           "thinking": null,
           "fastMode": null,
           "useCase": "chat",
-          "agentModelMode": "auto",
           "provider": "local_example",
           "model": "demo-chat",
           "source": "override",
@@ -2042,26 +2041,19 @@
           "executionUseCase": "chat",
           "configurable": true,
           "active": true,
-          "modes": [
-            {
-              "mode": "auto",
-              "displayName": "自动",
-              "description": null,
-              "requirements": {
-                "modelType": "chat",
-                "requiredInputModalities": [
-                  "text"
-                ],
-                "optionalInputModalities": [],
-                "requiredOutputModalities": [
-                  "text"
-                ],
-                "preferredFeatures": []
-              }
-            }
-          ],
           "updatedAtMs": 1793059200000,
-          "lastSeenAtMs": 1793059200000
+          "lastSeenAtMs": 1793059200000,
+          "requirements": {
+            "modelType": "chat",
+            "requiredInputModalities": [
+              "text"
+            ],
+            "optionalInputModalities": [],
+            "requiredOutputModalities": [
+              "text"
+            ],
+            "preferredFeatures": []
+          }
         }
       ],
       "providerModels": [
@@ -2157,7 +2149,6 @@
       "effectiveMappings": [
         {
           "useCase": "chat",
-          "agentModelMode": "auto",
           "provider": "local_example",
           "model": "demo-chat",
           "source": "override",
@@ -2181,23 +2172,17 @@
           "displayName": "对话",
           "configurable": true,
           "active": true,
-          "modes": [
-            {
-              "mode": "auto",
-              "displayName": "自动",
-              "requirements": {
-                "modelType": "chat",
-                "requiredInputModalities": [
-                  "text"
-                ],
-                "optionalInputModalities": [],
-                "requiredOutputModalities": [
-                  "text"
-                ],
-                "preferredFeatures": []
-              }
-            }
-          ]
+          "requirements": {
+            "modelType": "chat",
+            "requiredInputModalities": [
+              "text"
+            ],
+            "optionalInputModalities": [],
+            "requiredOutputModalities": [
+              "text"
+            ],
+            "preferredFeatures": []
+          }
         }
       ],
       "providerModels": [
@@ -2508,7 +2493,6 @@
           "thinking": null,
           "fastMode": null,
           "useCase": "chat",
-          "agentModelMode": "auto",
           "provider": "local_example",
           "model": "demo-chat",
           "source": "override",
@@ -2526,26 +2510,19 @@
           "executionUseCase": "chat",
           "configurable": true,
           "active": true,
-          "modes": [
-            {
-              "mode": "auto",
-              "displayName": "自动",
-              "description": null,
-              "requirements": {
-                "modelType": "chat",
-                "requiredInputModalities": [
-                  "text"
-                ],
-                "optionalInputModalities": [],
-                "requiredOutputModalities": [
-                  "text"
-                ],
-                "preferredFeatures": []
-              }
-            }
-          ],
           "updatedAtMs": 1793059200000,
-          "lastSeenAtMs": 1793059200000
+          "lastSeenAtMs": 1793059200000,
+          "requirements": {
+            "modelType": "chat",
+            "requiredInputModalities": [
+              "text"
+            ],
+            "optionalInputModalities": [],
+            "requiredOutputModalities": [
+              "text"
+            ],
+            "preferredFeatures": []
+          }
         }
       ]
     },
@@ -2554,7 +2531,6 @@
       "effectiveMappings": [
         {
           "useCase": "chat",
-          "agentModelMode": "auto",
           "provider": "local_example",
           "model": "demo-chat",
           "source": "override",
@@ -2572,23 +2548,17 @@
           "displayName": "对话",
           "configurable": true,
           "active": true,
-          "modes": [
-            {
-              "mode": "auto",
-              "displayName": "自动",
-              "requirements": {
-                "modelType": "chat",
-                "requiredInputModalities": [
-                  "text"
-                ],
-                "optionalInputModalities": [],
-                "requiredOutputModalities": [
-                  "text"
-                ],
-                "preferredFeatures": []
-              }
-            }
-          ]
+          "requirements": {
+            "modelType": "chat",
+            "requiredInputModalities": [
+              "text"
+            ],
+            "optionalInputModalities": [],
+            "requiredOutputModalities": [
+              "text"
+            ],
+            "preferredFeatures": []
+          }
         }
       ]
     }

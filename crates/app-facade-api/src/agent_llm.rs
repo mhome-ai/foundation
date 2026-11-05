@@ -138,7 +138,6 @@ pub struct Mapping {
     #[serde(default)]
     pub fast_mode: Option<bool>,
     pub use_case: String,
-    pub agent_model_mode: String,
     pub provider: Option<String>,
     pub model: Option<String>,
     #[serde(default)]
@@ -164,19 +163,6 @@ pub struct ModelRequirements {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub struct UseCaseMode {
-    #[serde(default)]
-    pub mode: String,
-    #[serde(default)]
-    pub display_name: String,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub requirements: ModelRequirements,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
 pub struct UseCase {
     #[serde(default)]
     pub use_case: String,
@@ -195,7 +181,7 @@ pub struct UseCase {
     #[serde(default = "default_true")]
     pub active: bool,
     #[serde(default)]
-    pub modes: Vec<UseCaseMode>,
+    pub requirements: ModelRequirements,
     #[serde(default)]
     pub updated_at_ms: Option<i64>,
     #[serde(default)]

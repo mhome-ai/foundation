@@ -8,8 +8,8 @@ pub const ENQUEUE_FIXTURE: &str = include_str!("../../../fixtures/execution/enqu
 
 use crate::execution::{
     AgentCommand, AgentObservation, ContextGeneration, ConversationSurface, DurableEvent, EventId,
-    FacadeRequest, FacadeResult, InvocationContext, ModelMode, PreparedAction, Revision, RunId,
-    Scope, ThreadId,
+    FacadeRequest, FacadeResult, InvocationContext, PreparedAction, Revision, RunId, Scope,
+    ThreadId,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -221,10 +221,9 @@ pub struct LlmRoute {
 }
 
 /// One resolved model configuration frozen for the entire admitted run.
-/// `model_mode` records the entry-point selection; internal calls do not re-resolve it.
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct LlmExecutionPlan {
-    pub model_mode: ModelMode,
     pub revision: Option<String>,
     pub route: LlmRoute,
 }
@@ -530,13 +529,8 @@ fn validate_command_binding(request: &CommandRequest) -> Result<(), ProtocolErro
         }
     }
     match (&request.command, &request.llm_plan) {
-        (AgentCommand::Enqueue { options, .. }, Some(plan)) => {
+        (AgentCommand::Enqueue { .. }, Some(plan)) => {
             validate_llm_plan(plan)?;
-            if plan.model_mode != options.model_mode {
-                return Err(ProtocolError::InvalidBinding(
-                    "LLM plan mode differs from the command's selected mode".to_owned(),
-                ));
-            }
             Ok(())
         }
         (AgentCommand::Enqueue { .. }, None) => Err(ProtocolError::InvalidBinding(
@@ -568,13 +562,12 @@ fn validate_llm_plan(plan: &LlmExecutionPlan) -> Result<(), ProtocolError> {
     }
     .validate()
     .map_err(|error| ProtocolError::InvalidBinding(error.into()))?;
-    if plan.model_mode.0.trim().is_empty()
-        || route.backend.trim().is_empty()
+    if route.backend.trim().is_empty()
         || route.profile.trim().is_empty()
         || route.model.trim().is_empty()
     {
         return Err(ProtocolError::InvalidBinding(
-            "LLM model mode, backend, profile, and model are required".to_owned(),
+            "LLM backend, profile, and model are required".to_owned(),
         ));
     }
     if plan
@@ -665,8 +658,7 @@ pub enum ProtocolError {
 mod tests {
     use crate::execution::{
         AccessMode, Actor, AgentEvent, ClientId, ContentPart, EventId, Message, MessageRole,
-        ModelMode, OperationId, RunId, RunOptions, Scope, ScopeId, TenantId, ThreadId, UseCase,
-        UserId,
+        OperationId, RunId, RunOptions, Scope, ScopeId, TenantId, ThreadId, UseCase, UserId,
     };
 
     use super::*;
@@ -757,7 +749,6 @@ mod tests {
                     },
                     options: RunOptions {
                         use_case: UseCase("chat".to_owned()),
-                        model_mode: ModelMode("auto".to_owned()),
                         access_mode: AccessMode::Interactive,
                         allow_tools: true,
                         max_steps: 8,
@@ -774,7 +765,6 @@ mod tests {
                     scope_integrations: "scope-integrations-1".to_owned(),
                 }),
                 llm_plan: Some(LlmExecutionPlan {
-                    model_mode: ModelMode("auto".to_owned()),
                     revision: Some("1700000000000".to_owned()),
                     route: LlmRoute {
                         backend: "openrouter".to_owned(),
@@ -1073,17 +1063,23 @@ mod tests {
     }
 
     #[test]
-    fn admission_requires_one_model_matching_the_selected_mode() {
+    fn admission_rejects_removed_modes_and_requires_one_frozen_model() {
         let mut input: serde_json::Value =
             serde_json::from_str(include_str!("../../../fixtures/execution/enqueue.v1.json"))
                 .unwrap();
-        input["payload"]["payload"]["llm_plan"]["model_mode"] = "smart".into();
-        assert!(matches!(
-            Envelope::decode_json(&input.to_string()),
-            Err(ProtocolError::InvalidBinding(_))
-        ));
-        input["payload"]["payload"]["command"]["options"]["model_mode"] = "smart".into();
         assert!(Envelope::decode_json(&input.to_string()).is_ok());
+        input["payload"]["payload"]["llm_plan"]["model_mode"] = "auto".into();
+        assert!(Envelope::decode_json(&input.to_string()).is_err());
+        input["payload"]["payload"]["llm_plan"]
+            .as_object_mut()
+            .unwrap()
+            .remove("model_mode");
+        input["payload"]["payload"]["command"]["options"]["model_mode"] = "cheap".into();
+        assert!(Envelope::decode_json(&input.to_string()).is_err());
+        input["payload"]["payload"]["command"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("model_mode");
         let plan = input["payload"]["payload"]["llm_plan"].take();
         input["payload"]["payload"]["llm_plan"] = serde_json::json!({"routes": [plan]});
         assert!(Envelope::decode_json(&input.to_string()).is_err());

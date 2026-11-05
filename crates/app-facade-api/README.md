@@ -34,7 +34,7 @@ conversion belongs at the Facade implementation boundary.
 
 Agent Profile get/save use `content` for the complete document. LLM mode get/save
 use `llmMode`; summary and default-provider metadata use that same field.
-`control.mode` and `agentModelMode` are separate concepts. The existing
+`control.mode` selects response detail. Each LLM use case has one current model. The existing
 `/app/agent/llm/summary` operation owns the combined LLM read used by UI and CLI.
 See the Agent cases in the shared [presentation fixtures](fixtures/presentation/cases.json).
 

@@ -46,7 +46,6 @@
         },
         "options": {
           "use_case": "chat",
-          "model_mode": "auto",
           "access_mode": "interactive",
           "allow_tools": true,
           "max_steps": 8,
@@ -63,7 +62,6 @@
         "scope_integrations": "scope-integrations-1"
       },
       "llm_plan": {
-        "model_mode": "auto",
         "revision": "1700000000000",
         "route": {
           "backend": "openrouter",

@@ -19,8 +19,6 @@ pub struct LlmCompleteRequest {
     pub constraints: crate::ModelConstraints,
     #[serde(default)]
     pub use_case: Option<String>,
-    #[serde(default)]
-    pub mode: Option<String>,
     pub messages: Vec<crate::Message>,
     #[serde(default)]
     pub tools: Option<Vec<crate::ToolDefinition>>,
@@ -37,7 +35,6 @@ pub struct LlmCompleteRequest {
 pub struct LlmRouteInfo {
     pub provider: String,
     pub model: String,
-    pub mode: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -54,6 +51,20 @@ pub struct LlmCompleteResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn completion_selects_a_use_case_without_accepting_a_model_tier() {
+        let body = serde_json::json!({"messages": [], "useCase": "chat"});
+        let request: LlmCompleteRequest = serde_json::from_value(body.clone()).unwrap();
+        let wire = serde_json::to_value(request).unwrap();
+        assert_eq!(wire["useCase"], "chat");
+        assert!(wire.get("mode").is_none());
+        for removed in ["mode", "modelMode", "agentModelMode"] {
+            let mut old = body.clone();
+            old[removed] = "auto".into();
+            assert!(serde_json::from_value::<LlmCompleteRequest>(old).is_err());
+        }
+    }
 
     #[test]
     fn request_rejects_removed_top_level_generation_options() {
@@ -86,8 +97,6 @@ mod tests {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AsrRequest {
     pub audio: artifact_api::MediaReference,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub mode: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
 }

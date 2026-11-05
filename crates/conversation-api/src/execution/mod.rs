@@ -37,8 +37,8 @@ pub use id::{
 pub use llm::{
     Completion, CompletionRequest, ContentPart, Continuation, FinishReason, INPUT_AUDIO,
     INPUT_FILE, INPUT_IMAGE, INPUT_VIDEO, Llm, LlmFailure, Message, MessageRole, ModelCapabilities,
-    ModelConstraints, ModelMode, ModelProfile, TokenUsage, ToolCall, ToolDefinition, ToolEffect,
-    ToolPolicy, UsageSummary, UseCase, input_modality_for_kind, payload_input_modalities,
+    ModelConstraints, ModelProfile, TokenUsage, ToolCall, ToolDefinition, ToolEffect, ToolPolicy,
+    UsageSummary, UseCase, input_modality_for_kind, payload_input_modalities,
 };
 pub use operational_context::{
     ContextGeneration, ContextInvalidation, ContextSource, OperationalContext,

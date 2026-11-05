@@ -64,15 +64,9 @@ fn mappings(value: &mut Value) {
                 "description",
                 "configurable",
                 "active",
-                "modes",
+                "requirements",
             ],
         );
-        each(use_case, "modes", |mode| {
-            retain(
-                mode,
-                &["mode", "displayName", "description", "requirements"],
-            )
-        });
     });
 }
 

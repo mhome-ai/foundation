@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::execution::{InvocationContext, Message, MessageId, ModelMode, RunId, UseCase};
+use crate::execution::{InvocationContext, Message, MessageId, RunId, UseCase};
 
 /// Mutation policy for tools that can change application state.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
@@ -24,8 +24,7 @@ pub enum AccessMode {
 pub struct RunOptions {
     /// Logical LLM route selected by the deployment.
     pub use_case: UseCase,
-    /// Logical quality/cost mode resolved by the deployment without exposing a provider or model ID.
-    pub model_mode: ModelMode,
+
     /// Tool mutation policy.
     pub access_mode: AccessMode,
     /// Whether this run may expose any tools to the model.

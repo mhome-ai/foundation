@@ -52,3 +52,5 @@ Full preserves the public business DTO, including nullable fields. Essential
 omits absent values and internal catalog/configuration metadata while retaining
 mode, provider identity, configuration/readiness, model choices and actionable
 model controls. Both surfaces preserve result status, warnings and errors.
+
+Each use case has one `requirements` object and one effective provider/model selection. Mapping writes accept `useCase`, `provider`, `model` and generation preferences. Requests and execution snapshots carry no model tier. Local/Cloud execution selection remains independent.

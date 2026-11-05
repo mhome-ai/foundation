@@ -6,11 +6,13 @@
     "title": "Kitchen chat",
     "content": {
       "parts": [
-        { "type": "text", "text": "Turn on the lights" }
+        {
+          "type": "text",
+          "text": "Turn on the lights"
+        }
       ]
     },
     "accessMode": "interactive",
-    "agentModelMode": "auto",
     "temperature": null,
     "allowTools": true,
     "debug": false,

@@ -403,7 +403,6 @@
       "additionalProperties": false,
       "required": [
         "use_case",
-        "model_mode",
         "access_mode",
         "allow_tools",
         "max_steps",
@@ -412,10 +411,6 @@
       ],
       "properties": {
         "use_case": {
-          "type": "string",
-          "minLength": 1
-        },
-        "model_mode": {
           "type": "string",
           "minLength": 1
         },
@@ -615,14 +610,10 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "model_mode",
         "revision",
         "route"
       ],
       "properties": {
-        "model_mode": {
-          "$ref": "#/$defs/identifier"
-        },
         "revision": {
           "oneOf": [
             {

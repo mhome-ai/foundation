@@ -194,7 +194,6 @@
             "thinking": null,
             "fastMode": null,
             "useCase": "chat",
-            "agentModelMode": "auto",
             "provider": "cloud_example",
             "model": "chat-example",
             "source": "default",
@@ -219,26 +218,19 @@
             "executionUseCase": null,
             "configurable": true,
             "active": true,
-            "modes": [
-              {
-                "mode": "auto",
-                "displayName": "Auto",
-                "description": null,
-                "requirements": {
-                  "modelType": "llm",
-                  "requiredInputModalities": [
-                    "text"
-                  ],
-                  "optionalInputModalities": [],
-                  "requiredOutputModalities": [
-                    "text"
-                  ],
-                  "preferredFeatures": []
-                }
-              }
-            ],
             "updatedAtMs": null,
-            "lastSeenAtMs": null
+            "lastSeenAtMs": null,
+            "requirements": {
+              "modelType": "llm",
+              "requiredInputModalities": [
+                "text"
+              ],
+              "optionalInputModalities": [],
+              "requiredOutputModalities": [
+                "text"
+              ],
+              "preferredFeatures": []
+            }
           }
         ]
       }

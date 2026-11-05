@@ -473,9 +473,6 @@
         "useCase": {
           "type": "string"
         },
-        "agentModelMode": {
-          "type": "string"
-        },
         "provider": {
           "anyOf": [
             {
@@ -505,7 +502,6 @@
       },
       "required": [
         "useCase",
-        "agentModelMode",
         "source",
         "configuredModel"
       ]
@@ -548,36 +544,6 @@
         "optionalInputModalities",
         "requiredOutputModalities",
         "preferredFeatures"
-      ]
-    },
-    "UseCaseMode": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "mode": {
-          "type": "string"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "description": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "requirements": {
-          "$ref": "#/$defs/ModelRequirements"
-        }
-      },
-      "required": [
-        "mode",
-        "displayName",
-        "requirements"
       ]
     },
     "UseCase": {
@@ -636,12 +602,6 @@
         "active": {
           "type": "boolean"
         },
-        "modes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/UseCaseMode"
-          }
-        },
         "updatedAtMs": {
           "anyOf": [
             {
@@ -661,6 +621,9 @@
               "type": "null"
             }
           ]
+        },
+        "requirements": {
+          "$ref": "#/$defs/ModelRequirements"
         }
       },
       "required": [
@@ -668,7 +631,7 @@
         "displayName",
         "configurable",
         "active",
-        "modes"
+        "requirements"
       ]
     },
     "Summary": {

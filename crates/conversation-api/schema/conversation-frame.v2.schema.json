@@ -1631,7 +1631,6 @@
             "threadId",
             "requestId",
             "content",
-            "agentModelMode",
             "allowTools",
             "debug"
           ],
@@ -1651,9 +1650,6 @@
                 "full_access",
                 "no_access"
               ]
-            },
-            "agentModelMode": {
-              "$ref": "#/$defs/id"
             },
             "temperature": {
               "oneOf": [
@@ -1696,7 +1692,6 @@
           "required": [
             "requestId",
             "content",
-            "agentModelMode",
             "allowTools",
             "debug",
             "occurredAtUnixMs"
@@ -1717,9 +1712,6 @@
                 "full_access",
                 "no_access"
               ]
-            },
-            "agentModelMode": {
-              "$ref": "#/$defs/id"
             },
             "temperature": {
               "oneOf": [
