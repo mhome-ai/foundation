@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.95.0",
+  "contractVersion": "1.96.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -402,7 +402,10 @@
     "/app/space/location/list": "spaceRead",
     "/app/space/delete/status": "userRead",
     "/app/space/beta/update": "spaceManage",
-    "/app/presentation/automation/names/get": "spaceRead"
+    "/app/presentation/automation/names/get": "spaceRead",
+    "/app/integration/preview/apply": "spaceWrite",
+    "/app/integration/preview/status": "spaceRead",
+    "/app/resource/transfer/prepare": "spaceWrite"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

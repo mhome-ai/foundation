@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.67.0",
+  "contractVersion": "1.68.0",
   "protocols": {
     "extensionSources": {
       "contract": "contract/extension-sources-v1.md",
@@ -81,6 +81,14 @@
       "statusPath": "/v1/permissions",
       "requestPath": "/internal/permissions/request",
       "settingsPath": "/internal/permissions/open-settings"
+    },
+    "extensionPreview": {
+      "contract": "contract/extension-preview-v1.md",
+      "applyTarget": "/app/integration/preview/apply",
+      "statusTarget": "/app/integration/preview/status",
+      "transferPrepareTarget": "/app/resource/transfer/prepare",
+      "transferReadTarget": "/bridge/resource/transfer/read",
+      "runtimeEnvReadTarget": "/dispatch/integration/preview/env/read"
     }
   },
   "hostManagement": {

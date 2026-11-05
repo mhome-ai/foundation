@@ -73,6 +73,9 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/entity-presentation-v1.md",
       "contract/integration-presentation-v1.md",
       "contract/resource-read-v1.md",
+      "contract/space-presentation-v1.md",
+      "contract/automation-presentation-v1.md",
+      "schema/automation-presentation.v1.schema.json",
       "schema/plugin-catalog.v1.schema.json",
       "schema/plugin-install.v1.schema.json",
       "contract/plugin-install-v1.md",
@@ -150,6 +153,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/host-management-v1.json",
       "contract/host-permissions.md",
       "contract/extension-sources-v1.md",
+      "contract/extension-preview-v1.md",
     ]),
     schemas: Object.freeze({
       storage: "schema/storage.v1.schema.json",

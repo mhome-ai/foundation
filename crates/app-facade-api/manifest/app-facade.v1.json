@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.95.0",
+  "contractVersion": "1.96.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -120,7 +120,9 @@
         "/app/integration/connect",
         "/app/integration/disconnect",
         "/app/integration/installed/list",
-        "/app/integration/capability/detail/get"
+        "/app/integration/capability/detail/get",
+        "/app/integration/preview/apply",
+        "/app/integration/preview/status"
       ],
       "includeDocumentationDefault": true
     },
@@ -334,6 +336,11 @@
       "contract": "contract/automation-presentation-v1.md",
       "uiRequestTargets": [
         "/app/presentation/automation/names/get"
+      ]
+    },
+    "resourceTransfer": {
+      "requestTargets": [
+        "/app/resource/transfer/prepare"
       ]
     }
   },

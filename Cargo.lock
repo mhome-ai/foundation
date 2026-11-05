@@ -1477,7 +1477,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.95.0"
+version = "1.96.0"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -1544,7 +1544,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.67.0"
+version = "1.68.0"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
@@ -1552,6 +1552,7 @@ dependencies = [
  "mhome-conversation-api",
  "mhome-llm-api",
  "mhome-runtime-paths",
+ "mhome-script-api",
  "mhome-storage-api",
  "minisign-verify",
  "serde",

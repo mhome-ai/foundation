@@ -34,6 +34,7 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/artifact/external/resolve",
     "/app/presentation/space/list",
     "/app/presentation/space/get",
+    "/app/resource/transfer/prepare",
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[
@@ -82,4 +83,6 @@ const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
 pub const HUB_TARGETS: &[&str] = &[
     "/app/hub/restart",
     "/app/hub/status",
+    "/app/integration/preview/apply",
+    "/app/integration/preview/status",
 ];

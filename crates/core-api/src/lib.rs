@@ -3,6 +3,7 @@
 pub mod client_identity;
 mod delivery;
 pub mod execution_budget;
+pub mod extension_preview;
 pub mod extension_sources;
 mod external_rpc;
 pub mod host;
@@ -14,6 +15,7 @@ pub mod node;
 mod node_commissioning;
 mod node_metadata;
 mod node_service;
+pub mod resource_transfer;
 pub mod runtime_space;
 pub mod space_access;
 pub mod timeouts;
