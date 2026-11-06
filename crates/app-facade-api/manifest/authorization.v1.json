@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.100.0",
+  "contractVersion": "1.101.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -259,7 +259,6 @@
     "/app/widget/delete": "spaceWrite",
     "/app/widget/detail/get": "spaceRead",
     "/app/widget/history/list": "spaceRead",
-    "/app/widget/upsert": "spaceWrite",
     "/automation/copy": "spaceWrite",
     "/automation/disable": "spaceWrite",
     "/automation/enable": "spaceWrite",
@@ -365,7 +364,6 @@
     "/ui/card/layout/update": "spaceWrite",
     "/ui/card/move": "spaceWrite",
     "/ui/card/update": "spaceWrite",
-    "/ui/widgetCard/create": "spaceWrite",
     "/widget/batchDelete": "spaceWrite",
     "/widget/button/trigger": "spaceWrite",
     "/widget/circadian/delete": "spaceWrite",

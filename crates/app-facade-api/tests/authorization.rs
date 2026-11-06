@@ -185,3 +185,21 @@ fn widget_presentation_uses_space_reads_and_retires_the_old_controllers() {
         assert!(authorization::required(target).is_none());
     }
 }
+
+#[test]
+fn obsolete_widget_mutations_are_not_public_targets() {
+    for target in ["/app/widget/upsert", "/ui/widgetCard/create"] {
+        assert!(authorization::required(target).is_none());
+    }
+    for target in [
+        "/app/widget/data/create",
+        "/app/widget/button/create",
+        "/app/widget/circadian/create",
+        "/app/dashboard/card/add",
+    ] {
+        assert_eq!(
+            authorization::required(target),
+            Some(authorization::OperationPolicy::SpaceWrite)
+        );
+    }
+}
