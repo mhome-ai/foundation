@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.108.0",
+  "contractVersion": "1.109.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -366,7 +366,6 @@
     "/twin/batchGetLatest": "spaceRead",
     "/twin/batchUpsert": "spaceWrite",
     "/twin/getHistory": "spaceRead",
-    "/twin/getTwinAutomation": "spaceRead",
     "/ui/canvas/delete": "spaceWrite",
     "/ui/canvas/getContent": "spaceRead",
     "/ui/canvas/list": "spaceRead",

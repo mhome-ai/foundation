@@ -285,3 +285,16 @@ fn all_legacy_widget_requests_are_retired_and_runtime_control_is_a_write() {
         "/app/widget/circadian/runtime/update"
     ));
 }
+
+#[test]
+fn manual_card_sync_is_retired_without_removing_program_control_or_entity_presentation() {
+    assert_eq!(authorization::required("/twin/getTwinAutomation"), None);
+    assert_eq!(
+        authorization::required("/app/presentation/automation/generated/run"),
+        Some(authorization::OperationPolicy::SpaceWrite)
+    );
+    assert_eq!(
+        authorization::required("/app/presentation/entity/get"),
+        Some(authorization::OperationPolicy::SpaceRead)
+    );
+}
