@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.101.0",
+  "contractVersion": "1.102.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -299,7 +299,6 @@
     "/integration/disconnect": "spaceWrite",
     "/integration/entity/batchGetName": "spaceRead",
     "/integration/entity/getHistory": "spaceRead",
-    "/integration/group/get": "spaceRead",
     "/integration/install": "spaceWrite",
     "/integration/model/get": "spaceRead",
     "/integration/providerEnv/refresh": "spaceWrite",
