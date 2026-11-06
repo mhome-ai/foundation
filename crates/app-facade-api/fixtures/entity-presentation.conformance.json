@@ -50,5 +50,221 @@
         "twinAutomations": []
       }
     ]
+  },
+  "metaInput": {
+    "valid": [
+      {
+        "entityType": "basic.device.Device",
+        "ids": [
+          " lamp ",
+          "g:room",
+          "missing",
+          "lamp"
+        ]
+      },
+      {
+        "entityType": "basic.automation.Automation",
+        "ids": [
+          "auto-1"
+        ]
+      }
+    ],
+    "invalid": [
+      {},
+      {
+        "entityType": " ",
+        "ids": [
+          " lamp ",
+          "g:room",
+          "missing",
+          "lamp"
+        ]
+      },
+      {
+        "entityType": "basic.device.Device",
+        "ids": []
+      },
+      {
+        "entityType": "basic.device.Device",
+        "ids": [
+          ""
+        ]
+      },
+      {
+        "entityType": "basic.device.Device",
+        "ids": [
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp",
+          "lamp"
+        ]
+      },
+      {
+        "entityType": "basic.device.Device",
+        "ids": [
+          " lamp ",
+          "g:room",
+          "missing",
+          "lamp"
+        ],
+        "scopeId": "other"
+      }
+    ]
+  },
+  "metaOutput": {
+    "valid": [
+      {
+        "items": [
+          {
+            "requestedId": "lamp",
+            "found": true,
+            "resource": {
+              "id": "lamp",
+              "entityType": "basic.device.Device",
+              "displayName": "Desk lamp",
+              "group": false
+            }
+          },
+          {
+            "requestedId": "g:room",
+            "found": true,
+            "resource": {
+              "id": "g:room",
+              "entityType": "basic.device.Device",
+              "displayName": "Study lights",
+              "group": true
+            }
+          },
+          {
+            "requestedId": "missing",
+            "found": false,
+            "reason": "not_found"
+          }
+        ]
+      }
+    ],
+    "invalid": [
+      {},
+      {
+        "items": [
+          {
+            "requestedId": "missing",
+            "found": false
+          }
+        ]
+      },
+      {
+        "items": [
+          {
+            "requestedId": "lamp",
+            "found": true,
+            "resource": {
+              "id": "lamp",
+              "entityType": "basic.device.Device",
+              "displayName": "Desk lamp",
+              "group": false,
+              "state": {}
+            }
+          }
+        ]
+      }
+    ]
   }
 }

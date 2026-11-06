@@ -101,7 +101,7 @@ open detail renderer; relationships by the view that displays them. Pushes recei
 during a snapshot request are applied after it lands. Switching scopes or disposing
 controllers prevents late responses from landing in another Space.
 
-House continues to use `/app/entity/presentation/get` and legacy Twin reads as its
+House continues to use `/app/presentation/entity/get` and legacy Twin reads as its
 separate development boundary. Pod Deck retains its existing complete Card content
 reader. These consumers are not silently migrated to static Canvas responses.
 

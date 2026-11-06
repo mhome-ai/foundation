@@ -259,7 +259,7 @@ Space-bound `nodeId`, `version`, and Plugin-owned `payload`. The former
 contains only the generic transport contract. Binding/offline observations come from
 `/app/plugin/enabled/list`, independently of the runtime's status.
 
-UI Integration metadata uses `/app/integration/presentation/get`; see
+UI Integration metadata uses `/app/presentation/integration/get`; see
 [the presentation contract](contract/integration-presentation-v1.md).
 
 ## Artifact delivery

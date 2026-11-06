@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.107.0",
+  "contractVersion": "1.108.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -88,7 +88,7 @@
     "/app/entity/detail/get": "spaceRead",
     "/app/entity/history/list": "spaceRead",
     "/app/entity/list": "spaceRead",
-    "/app/entity/presentation/get": "spaceRead",
+    "/app/presentation/entity/get": "spaceRead",
     "/app/graph/relations/get": "spaceRead",
     "/app/group/create": "spaceWrite",
     "/app/group/delete": "spaceWrite",
@@ -129,7 +129,7 @@
     "/app/integration/installed/list": "spaceRead",
     "/app/integration/list": "spaceRead",
     "/app/integration/official/list": "spaceRead",
-    "/app/integration/presentation/get": "spaceRead",
+    "/app/presentation/integration/get": "spaceRead",
     "/app/integration/preview/apply": "spaceWrite",
     "/app/integration/preview/status": "spaceRead",
     "/app/integration/scope/list": "spaceRead",
@@ -332,7 +332,6 @@
     "/identity/node/revoke": "spaceManage",
     "/integration/composite/refresh": "spaceWrite",
     "/integration/disconnect": "spaceWrite",
-    "/integration/entity/batchGetName": "spaceRead",
     "/integration/entity/getHistory": "spaceRead",
     "/integration/install": "spaceWrite",
     "/integration/model/get": "spaceRead",
@@ -382,7 +381,8 @@
     "/ui/card/layout/organize": "spaceWrite",
     "/ui/card/layout/update": "spaceWrite",
     "/ui/card/move": "spaceWrite",
-    "/ui/card/update": "spaceWrite"
+    "/ui/card/update": "spaceWrite",
+    "/app/presentation/entity/meta/get": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

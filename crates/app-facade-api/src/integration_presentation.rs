@@ -3,7 +3,7 @@ use crate::integration::CapabilityDescriptor;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-pub const GET_TARGET: &str = "/app/integration/presentation/get";
+pub const GET_TARGET: &str = "/app/presentation/integration/get";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

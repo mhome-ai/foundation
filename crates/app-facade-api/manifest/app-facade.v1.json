@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.107.0",
+  "contractVersion": "1.108.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -247,14 +247,15 @@
       "schema": "schema/entity-presentation.v1.schema.json",
       "contract": "contract/entity-presentation-v1.md",
       "requestTargets": [
-        "/app/entity/presentation/get"
+        "/app/presentation/entity/get",
+        "/app/presentation/entity/meta/get"
       ]
     },
     "integrationPresentation": {
       "schema": "schema/integration-presentation.v1.schema.json",
       "contract": "contract/integration-presentation-v1.md",
       "requestTargets": [
-        "/app/integration/presentation/get"
+        "/app/presentation/integration/get"
       ]
     },
     "group": {

@@ -1,6 +1,6 @@
 # Integration UI presentation
 
-`/app/integration/presentation/get` is a read-only App Facade for UI consumers.
+`/app/presentation/integration/get` is a read-only App Facade for UI consumers.
 Input is `{integrationId}` for one root Integration. Tenant, Space and caller
 come from authenticated context; Space read membership is required. Empty IDs,
 unknown fields and Provider IDs are rejected; missing Integrations are not found.

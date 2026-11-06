@@ -179,7 +179,7 @@ test("Pod completion retains its client mode rules under strict AJV", () => {
   assert.equal(validate({ ...completed, clientMode: "invalid" }), false);
 });
 
-for (const part of ["input", "output"]) {
+for (const part of ["input", "output", "metaInput", "metaOutput"]) {
   test(`entity presentation ${part} contract`, () => {
     const config = PROTOCOL_PACKAGES.appFacade;
     const schema = readJson(path.join(root, config.crateDir, config.schemas.entityPresentation));
