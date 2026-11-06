@@ -102,3 +102,63 @@ pub type NamesInput = ResourceIdsInput;
 pub struct NamesOutput {
     pub automations: BTreeMap<String, String>,
 }
+
+pub const SUMMARIES_GET: &str = "/app/presentation/automation/summaries/get";
+pub const EDITOR_INIT: &str = "/app/presentation/automation/overview/init";
+pub const EDITOR_CONFIG_UPDATE: &str = "/app/presentation/automation/overview/config/update";
+pub const EDITOR_CONFIG_PROVIDE: &str = "/app/presentation/automation/overview/config/provide";
+pub const EDITOR_SAVE: &str = "/app/presentation/automation/overview/save";
+pub const EDITOR_CANCEL: &str = "/app/presentation/automation/overview/cancel";
+pub const COPY: &str = "/app/presentation/automation/copy";
+pub const ENROLL: &str = "/app/presentation/automation/enroll";
+pub const SHARE: &str = "/app/presentation/automation/share";
+pub const GENERATED_ENABLE: &str = "/app/presentation/automation/generated/enable";
+pub const GENERATED_DISABLE: &str = "/app/presentation/automation/generated/disable";
+pub const GENERATED_RUN: &str = "/app/presentation/automation/generated/run";
+
+/// Selected UI state and labels. No authored source, parsing, Widget or snapshot reads.
+pub type SummariesInput = ResourceIdsInput;
+pub type SummariesOutput = crate::resource_read::ResourceReadOutput<Summary>;
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Summary {
+    #[serde(flatten)]
+    pub item: ListItem,
+    pub automation_id: String,
+    pub temp: bool,
+    pub last_run_at: Option<i64>,
+    pub expire_at: Option<i64>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CopyInput {
+    pub automation_id: String,
+    pub name: Option<String>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SavedOutput {
+    pub automation_id: String,
+    pub runnable: bool,
+    pub enabled: bool,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GeneratedRunInput {
+    pub automation_id: String,
+    pub timezone: Option<String>,
+    pub location_symbol: Option<String>,
+}
+/// Generated execution is an explicit internal UI operation, never a public start alias.
+pub fn generated_program_id(id: &str) -> Result<&str, &'static str> {
+    let id = id.trim();
+    if id.len() > 2
+        && ["P-", "S-", "G-"]
+            .iter()
+            .any(|prefix| id.starts_with(prefix))
+    {
+        Ok(id)
+    } else {
+        Err("A generated Automation program ID is required")
+    }
+}

@@ -146,7 +146,9 @@ pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
 pub fn is_acknowledgement(target: &str) -> bool {
     matches!(
         target,
-        "/app/agent/identity/save"
+        "/app/presentation/automation/generated/run"
+            | "/app/presentation/automation/overview/cancel"
+            | "/app/agent/identity/save"
             | "/app/agent/memory/save"
             | "/app/system/feedback/submit"
             | "/app/agent/mode/save"

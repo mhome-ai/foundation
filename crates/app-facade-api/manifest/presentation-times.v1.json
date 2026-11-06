@@ -137,5 +137,15 @@
       "items.*.min",
       "items.*.max"
     ]
+  },
+  "/app/presentation/automation/summaries/get": {
+    "ms": [
+      "items.*.resource.timestamp",
+      "items.*.resource.createdAt",
+      "items.*.resource.updatedAt",
+      "items.*.resource.enabledAt",
+      "items.*.resource.lastRunAt",
+      "items.*.resource.expireAt"
+    ]
   }
 }

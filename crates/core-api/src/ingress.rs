@@ -156,7 +156,6 @@ mod tests {
             "/bridge/automation/parse",
             "/bridge/automation/verify",
             "/bridge/automation/format",
-            "/automation/format",
         ] {
             assert_eq!(
                 script_validation_timeout(target, &input.to_string()),
@@ -212,8 +211,8 @@ mod tests {
         }
         assert_eq!(
             script_validation_timeout(
-                "/automation/save",
-                r#"{"script":{"scripts":{"f":"source"}}}"#
+                "/app/automation/save",
+                r#"{"input":{"script":{"scripts":{"f":"source"}}}}"#
             ),
             Some(SCRIPT_SAVE_TIMEOUT)
         );
@@ -222,9 +221,8 @@ mod tests {
             None
         );
         for target in [
-            "/automation/snapshot/rollback",
             "/app/automation/snapshot/rollback",
-            "/automation/overview/save",
+            "/app/presentation/automation/overview/save",
         ] {
             assert_eq!(
                 script_validation_timeout(target, "{}"),

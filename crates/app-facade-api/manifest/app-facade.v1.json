@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.103.1",
+  "contractVersion": "1.104.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -338,7 +338,19 @@
         "/app/presentation/automation/names/get",
         "/app/presentation/automation/list",
         "/app/presentation/automation/overview/get",
-        "/app/presentation/automation/placements/get"
+        "/app/presentation/automation/placements/get",
+        "/app/presentation/automation/summaries/get",
+        "/app/presentation/automation/overview/init",
+        "/app/presentation/automation/overview/config/update",
+        "/app/presentation/automation/overview/config/provide",
+        "/app/presentation/automation/overview/save",
+        "/app/presentation/automation/overview/cancel",
+        "/app/presentation/automation/copy",
+        "/app/presentation/automation/enroll",
+        "/app/presentation/automation/share",
+        "/app/presentation/automation/generated/enable",
+        "/app/presentation/automation/generated/disable",
+        "/app/presentation/automation/generated/run"
       ]
     },
     "resourceTransfer": {

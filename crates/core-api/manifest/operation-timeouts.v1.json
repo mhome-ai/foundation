@@ -22,9 +22,9 @@
   },
   "selectors": {
     "forwardPrefixes": ["/invoke", "/dispatch/agent", "/dispatch"],
-    "storedScriptSave": ["/automation/snapshot/rollback", "/app/automation/snapshot/rollback", "/automation/overview/save", "/automation/copy", "/automation/enroll"],
-    "sourceScriptSave": ["/automation/save", "/app/automation/save"],
-    "sourceScriptValidation": ["/app/automation/verify", "/bridge/automation/parse", "/bridge/automation/format", "/bridge/automation/verify", "/automation/format", "/bridge/automation/compile", "/bridge/agent/automation/compile"],
+    "storedScriptSave": ["/app/automation/snapshot/rollback", "/app/presentation/automation/overview/save", "/app/presentation/automation/copy", "/app/presentation/automation/enroll"],
+    "sourceScriptSave": ["/app/automation/save"],
+    "sourceScriptValidation": ["/app/automation/verify", "/bridge/automation/parse", "/bridge/automation/format", "/bridge/automation/verify", "/bridge/automation/compile", "/bridge/agent/automation/compile"],
     "ordinaryOverrides": { "/hub/revoke/start": "hubMigration", "/bridge/hub/revoke/dataUploaded": "hubMigration", "/app/integration/entity/refresh": "entityRefresh", "/harness/test/session/open": "harnessSessionOpen" }
   }
 }

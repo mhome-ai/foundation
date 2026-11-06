@@ -81,15 +81,13 @@ const FORWARD_PREFIXES: &[&str] = &[
 ];
 
 const STORED_SCRIPT_SAVE: &[&str] = &[
-    "/automation/snapshot/rollback",
     "/app/automation/snapshot/rollback",
-    "/automation/overview/save",
-    "/automation/copy",
-    "/automation/enroll",
+    "/app/presentation/automation/overview/save",
+    "/app/presentation/automation/copy",
+    "/app/presentation/automation/enroll",
 ];
 
 const SOURCE_SCRIPT_SAVE: &[&str] = &[
-    "/automation/save",
     "/app/automation/save",
 ];
 
@@ -98,7 +96,6 @@ const SOURCE_SCRIPT_VALIDATION: &[&str] = &[
     "/bridge/automation/parse",
     "/bridge/automation/format",
     "/bridge/automation/verify",
-    "/automation/format",
     "/bridge/automation/compile",
     "/bridge/agent/automation/compile",
 ];

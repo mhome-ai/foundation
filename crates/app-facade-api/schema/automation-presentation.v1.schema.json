@@ -222,6 +222,381 @@
           }
         }
       }
+    },
+    "summariesInput": {
+      "$ref": "#/$defs/namesInput"
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "type",
+        "enabled",
+        "corrupted",
+        "runnable",
+        "running",
+        "blocked",
+        "hasExpire",
+        "timestamp",
+        "createdAt",
+        "updatedAt",
+        "enabledAt",
+        "tags",
+        "automationId",
+        "temp",
+        "lastRunAt",
+        "expireAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "corrupted": {
+          "type": "boolean"
+        },
+        "runnable": {
+          "type": "boolean"
+        },
+        "running": {
+          "type": "boolean"
+        },
+        "blocked": {
+          "type": "boolean"
+        },
+        "hasExpire": {
+          "type": "boolean"
+        },
+        "timestamp": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "integer"
+        },
+        "enabledAt": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "automationId": {
+          "type": "string"
+        },
+        "temp": {
+          "type": "boolean"
+        },
+        "lastRunAt": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "expireAt": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "summariesOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "requestedId",
+              "found"
+            ],
+            "properties": {
+              "found": {
+                "type": "boolean"
+              },
+              "resource": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/summary"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "requestedId": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "copyInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "automationId"
+      ],
+      "properties": {
+        "automationId": {
+          "type": "string"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "savedOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "automationId",
+        "runnable",
+        "enabled"
+      ],
+      "properties": {
+        "automationId": {
+          "type": "string"
+        },
+        "runnable": {
+          "type": "boolean"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "generatedRunInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "automationId"
+      ],
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "^\\s*(P-|S-|G-)\\S.*"
+        },
+        "timezone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "locationSymbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "editorInitInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "automationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inspireId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inspireVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "snapshotId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "args": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "var": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "entityType": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "editorCancelInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId"
+      ],
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        }
+      }
+    },
+    "editorProvideInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "var",
+        "input"
+      ],
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "var": {
+          "type": "string"
+        },
+        "input": {
+          "type": "string"
+        }
+      }
+    },
+    "editorUpdateInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "var"
+      ],
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "var": {
+          "type": "string"
+        },
+        "inputs": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "widgetize": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "editorSaveInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId"
+      ],
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "automationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inspireId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inspireVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "snapshotId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preferredName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "debug": {
+          "type": "boolean"
+        },
+        "addCard": {
+          "type": "boolean"
+        },
+        "canvasIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

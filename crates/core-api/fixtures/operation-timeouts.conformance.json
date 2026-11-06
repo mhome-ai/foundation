@@ -1,27 +1,244 @@
 [
-  {"target":"/app/widget/list","payload":{},"operation":"coreRequest","totalMs":60000},
-  {"target":"/harness/test/session/open","payload":{},"operation":"harnessSessionOpen","totalMs":150000},
-  {"target":"/app/automation/save","payload":{"input":{"script":{"scripts":{"lighting":"source"}}}},"operation":"scriptSave","totalMs":60000,"lionWaitMs":90000},
-  {"target":"/app/automation/verify","payload":{"input":{"script":{"scripts":{"lighting":"source"}}}},"operation":"scriptValidation","totalMs":60000,"lionWaitMs":85000},
-  {"target":"/automation/save","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptSave","totalMs":60000},
-  {"target":"/invoke/app/automation/save","payload":{"call":{"input":{"script":{"scripts":{"lighting":"source"}}}}},"operation":"scriptSave","totalMs":60000},
-  {"target":"/dispatch/agent/app/automation/verify","payload":{"call":{"input":{"script":{"scripts":{"lighting":"source"}}}}},"operation":"scriptValidation","totalMs":60000},
-  {"target":"/dispatch/app/automation/save","payload":{"call":{"input":{"script":{"scripts":{"lighting":"source"}}}}},"operation":"scriptSave","totalMs":60000},
-  {"target":"/app/automation/save","payload":{"input":{"script":{"scripts":{}}}},"operation":"coreRequest","totalMs":60000},
-  {"target":"/app/automation/save","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"coreRequest","totalMs":60000},
-  {"target":"/app/automation/save","payload":{"input":{"script":{"scripts":[]}}},"operation":"coreRequest","totalMs":60000},
-  {"target":"/automation/snapshot/rollback","payload":{},"operation":"scriptSave","totalMs":60000},
-  {"target":"/app/automation/snapshot/rollback","payload":{},"operation":"scriptSave","totalMs":60000},
-  {"target":"/automation/copy","payload":{},"operation":"scriptSave","totalMs":60000},
-  {"target":"/automation/enroll","payload":{},"operation":"scriptSave","totalMs":60000},
-  {"target":"/automation/overview/save","payload":{},"operation":"scriptSave","totalMs":60000},
-  {"target":"/bridge/automation/compile","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":60000},
-  {"target":"/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
-  {"target":"/invoke/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
-  {"target":"/dispatch/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
-  {"target":"/dispatch/agent/app/integration/entity/refresh","payload":{},"operation":"entityRefresh","totalMs":85000,"lionWaitMs":90000},
-  {"target":"/bridge/automation/parse","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":60000,"lionWaitMs":85000},
-  {"target":"/bridge/automation/format","payload":{"script":{"scripts":{"lighting":"source"}}},"operation":"scriptValidation","totalMs":60000,"lionWaitMs":85000},
-  {"target":"/dispatch/hub/revoke/start","payload":{},"operation":"hubMigration","totalMs":600000},
-  {"target":"/bridge/hub/revoke/dataUploaded","payload":{},"operation":"hubMigration","totalMs":600000}
+  {
+    "target": "/app/widget/list",
+    "payload": {},
+    "operation": "coreRequest",
+    "totalMs": 60000
+  },
+  {
+    "target": "/harness/test/session/open",
+    "payload": {},
+    "operation": "harnessSessionOpen",
+    "totalMs": 150000
+  },
+  {
+    "target": "/app/automation/save",
+    "payload": {
+      "input": {
+        "script": {
+          "scripts": {
+            "lighting": "source"
+          }
+        }
+      }
+    },
+    "operation": "scriptSave",
+    "totalMs": 60000,
+    "lionWaitMs": 90000
+  },
+  {
+    "target": "/app/automation/verify",
+    "payload": {
+      "input": {
+        "script": {
+          "scripts": {
+            "lighting": "source"
+          }
+        }
+      }
+    },
+    "operation": "scriptValidation",
+    "totalMs": 60000,
+    "lionWaitMs": 85000
+  },
+  {
+    "target": "/app/automation/save",
+    "payload": {
+      "input": {
+        "script": {
+          "scripts": {
+            "lighting": "source"
+          }
+        }
+      }
+    },
+    "operation": "scriptSave",
+    "totalMs": 60000
+  },
+  {
+    "target": "/invoke/app/automation/save",
+    "payload": {
+      "call": {
+        "input": {
+          "script": {
+            "scripts": {
+              "lighting": "source"
+            }
+          }
+        }
+      }
+    },
+    "operation": "scriptSave",
+    "totalMs": 60000
+  },
+  {
+    "target": "/dispatch/agent/app/automation/verify",
+    "payload": {
+      "call": {
+        "input": {
+          "script": {
+            "scripts": {
+              "lighting": "source"
+            }
+          }
+        }
+      }
+    },
+    "operation": "scriptValidation",
+    "totalMs": 60000
+  },
+  {
+    "target": "/dispatch/app/automation/save",
+    "payload": {
+      "call": {
+        "input": {
+          "script": {
+            "scripts": {
+              "lighting": "source"
+            }
+          }
+        }
+      }
+    },
+    "operation": "scriptSave",
+    "totalMs": 60000
+  },
+  {
+    "target": "/app/automation/save",
+    "payload": {
+      "input": {
+        "script": {
+          "scripts": {}
+        }
+      }
+    },
+    "operation": "coreRequest",
+    "totalMs": 60000
+  },
+  {
+    "target": "/app/automation/save",
+    "payload": {
+      "script": {
+        "scripts": {
+          "lighting": "source"
+        }
+      }
+    },
+    "operation": "coreRequest",
+    "totalMs": 60000
+  },
+  {
+    "target": "/app/automation/save",
+    "payload": {
+      "input": {
+        "script": {
+          "scripts": []
+        }
+      }
+    },
+    "operation": "coreRequest",
+    "totalMs": 60000
+  },
+  {
+    "target": "/app/automation/snapshot/rollback",
+    "payload": {},
+    "operation": "scriptSave",
+    "totalMs": 60000
+  },
+  {
+    "target": "/app/presentation/automation/copy",
+    "payload": {},
+    "operation": "scriptSave",
+    "totalMs": 60000
+  },
+  {
+    "target": "/app/presentation/automation/enroll",
+    "payload": {},
+    "operation": "scriptSave",
+    "totalMs": 60000
+  },
+  {
+    "target": "/app/presentation/automation/overview/save",
+    "payload": {},
+    "operation": "scriptSave",
+    "totalMs": 60000
+  },
+  {
+    "target": "/bridge/automation/compile",
+    "payload": {
+      "script": {
+        "scripts": {
+          "lighting": "source"
+        }
+      }
+    },
+    "operation": "scriptValidation",
+    "totalMs": 60000
+  },
+  {
+    "target": "/app/integration/entity/refresh",
+    "payload": {},
+    "operation": "entityRefresh",
+    "totalMs": 85000,
+    "lionWaitMs": 90000
+  },
+  {
+    "target": "/invoke/app/integration/entity/refresh",
+    "payload": {},
+    "operation": "entityRefresh",
+    "totalMs": 85000,
+    "lionWaitMs": 90000
+  },
+  {
+    "target": "/dispatch/app/integration/entity/refresh",
+    "payload": {},
+    "operation": "entityRefresh",
+    "totalMs": 85000,
+    "lionWaitMs": 90000
+  },
+  {
+    "target": "/dispatch/agent/app/integration/entity/refresh",
+    "payload": {},
+    "operation": "entityRefresh",
+    "totalMs": 85000,
+    "lionWaitMs": 90000
+  },
+  {
+    "target": "/bridge/automation/parse",
+    "payload": {
+      "script": {
+        "scripts": {
+          "lighting": "source"
+        }
+      }
+    },
+    "operation": "scriptValidation",
+    "totalMs": 60000,
+    "lionWaitMs": 85000
+  },
+  {
+    "target": "/bridge/automation/format",
+    "payload": {
+      "script": {
+        "scripts": {
+          "lighting": "source"
+        }
+      }
+    },
+    "operation": "scriptValidation",
+    "totalMs": 60000,
+    "lionWaitMs": 85000
+  },
+  {
+    "target": "/dispatch/hub/revoke/start",
+    "payload": {},
+    "operation": "hubMigration",
+    "totalMs": 600000
+  },
+  {
+    "target": "/bridge/hub/revoke/dataUploaded",
+    "payload": {},
+    "operation": "hubMigration",
+    "totalMs": 600000
+  }
 ]
