@@ -77,6 +77,8 @@ fn current_conversation_and_talk_routes_are_all_declared() {
         "/app/widget/brief/list",
         "/app/device/brief/list",
         "/integration/fix",
+        "/scope/list",
+        "/scope/get",
         "/scope/agent/get",
         "/scope/location/list",
         "/scope/preference/get",

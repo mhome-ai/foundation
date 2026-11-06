@@ -32,10 +32,14 @@ Space. The UI explicitly uses the connection focus protocol after joining when
 its flow intends to enter the joined Space. Current-Space switches must not be
 discarded by the previous Space's request guard.
 
-Client handling of presentation replies must unwrap Full Facade responses before
-updating cloud-authoritative membership/connection caches. Legacy bootstrap
-protocols and new UI reads must preserve that trust boundary during cutover.
+Client handling of presentation replies unwraps successful Full Facade responses
+before updating cloud-authoritative membership/connection caches. Presentation
+wire DTOs (`spaceId`, `llmMode`) are explicitly projected into native state;
+login and Hub authorization retain their independently owned wire DTOs.
 
-Unused legacy `/scope/preference/get`, `/scope/agent/get`, and
-`/scope/location/list` readers are retired. `/scope/list` and `/scope/get`
-remain available for existing native bootstrap and CLI consumers.
+Legacy `/scope/list`, `/scope/get`, `/scope/preference/get`, `/scope/agent/get`,
+and `/scope/location/list` readers are retired, without fallback aliases. Native
+UI membership refresh uses `/app/presentation/space/list`; the CLI uses
+`/app/space/list` for identity-only listing and selection checks, and presentation
+listing for its full management view. Neither lightweight flow expands per-Space
+context. `/focus` remains connection control, not a business Facade.

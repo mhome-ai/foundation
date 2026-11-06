@@ -169,6 +169,7 @@ mod tests {
     #[test]
     fn legacy_targets_are_outside_the_contract() {
         assert_eq!(route_policy_for_target("/scope/get"), None);
+        assert_eq!(route_policy_for_target("/scope/list"), None);
         assert_eq!(route_policy_for_target("/chat"), None);
     }
 
