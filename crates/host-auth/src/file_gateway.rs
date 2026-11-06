@@ -271,7 +271,7 @@ async fn serve_file(State(state): State<Arc<GatewayState>>, request: Request) ->
     headers.insert(
         "access-control-expose-headers",
         HeaderValue::from_static(
-            "Content-Length, Content-Type, Content-Range, Accept-Ranges, ETag, Last-Modified, X-Meow-Object-Id, X-Meow-Content-Sha256",
+            "Content-Length, Content-Type, Content-Range, Accept-Ranges, ETag, Last-Modified, Retry-After, X-Meow-Object-Id, X-Meow-Content-Sha256",
         ),
     );
     headers.insert("cache-control", HeaderValue::from_static("no-store"));
@@ -372,6 +372,7 @@ async fn transfer(state: Arc<GatewayState>, request: Request) -> Result<Response
         "last-modified",
         "content-encoding",
         "content-disposition",
+        "retry-after",
         "x-meow-object-id",
         "x-meow-content-sha256",
     ] {
@@ -437,6 +438,52 @@ mod tests {
             method: None,
             headers: Default::default(),
         }
+    }
+
+    #[tokio::test]
+    async fn preparation_backoff_survives_the_pinned_gateway() {
+        let key = new_key();
+        let pin = public_key(key.verifying_key());
+        let (cert, private) = tls::certificate(&key).unwrap();
+        let tcp = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let url = format!("https://{}/playlist.m3u8", tcp.local_addr().unwrap());
+        let listener = tls::Listener::new(
+            tcp,
+            tls::server_config(cert.as_bytes(), private.as_bytes()).unwrap(),
+        );
+        let app = Router::new().fallback(any(|| async {
+            Response::builder()
+                .status(StatusCode::SERVICE_UNAVAILABLE)
+                .header("retry-after", "2")
+                .header("x-internal-detail", "must-not-pass")
+                .body(Body::from("preparing"))
+                .unwrap()
+        }));
+        let server = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+        let gateway = FileGateway::start().await.unwrap();
+        let owner = gateway.owner();
+        let local = gateway.register(&owner, grant(url, pin)).await.unwrap();
+        let response = reqwest::Client::builder()
+            .no_proxy()
+            .build()
+            .unwrap()
+            .get(local)
+            .header("origin", "http://localhost")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(response.headers()["retry-after"], "2");
+        assert!(response.headers()["access-control-expose-headers"]
+            .to_str()
+            .unwrap()
+            .split(',')
+            .any(|h| h.trim().eq_ignore_ascii_case("retry-after")));
+        assert_eq!(response.headers()["cache-control"], "no-store");
+        assert!(!response.headers().contains_key("x-internal-detail"));
+        assert_eq!(response.text().await.unwrap(), "preparing");
+        gateway.stop().await;
+        server.abort();
     }
 
     #[tokio::test]
