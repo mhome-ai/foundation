@@ -43,3 +43,14 @@ pub struct SettingsChangedEvent {
 pub const INSTALL_PREPARE_TARGET: &str = "/app/plugin/install/prepare";
 pub const INSTALL_START_TARGET: &str = "/app/plugin/install/start";
 pub const INSTALL_STATUS_TARGET: &str = "/app/plugin/install/status";
+
+/// Space Manage entrypoint. Native Preview carries the local Host receipt;
+/// ordinary published onboarding omits it and keeps publisher verification.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct StartPluginEnableInput {
+    pub node_type: String,
+    pub candidate_id: String,
+    pub host_id: Option<String>,
+    pub preview: Option<core_api::plugin_preview::PluginPreviewExpectation>,
+}

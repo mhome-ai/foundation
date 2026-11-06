@@ -4,7 +4,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 pub const NODE_METADATA_TARGET: &str = "/node/metadata";
-pub const NODE_METADATA_SCHEMA_VERSION: &str = "meow.node.metadata.v1";
+pub const NODE_METADATA_SCHEMA_VERSION: &str = "meow.node.metadata.v2";
 pub const NODE_MANIFEST_MAX_BYTES: usize = 1024 * 1024;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -117,7 +117,50 @@ pub struct NodeMetadata {
     pub node_type: String,
     pub service_id: String,
     pub service_version: String,
-    pub release_manifest: NodeReleaseManifestBundle,
+    pub source: NodeSource,
+}
+
+/// Explicit provenance: failed publisher validation never becomes Preview.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "camelCase", deny_unknown_fields)]
+pub enum NodeSource {
+    Published {
+        #[serde(rename = "releaseManifest")]
+        release_manifest: NodeReleaseManifestBundle,
+    },
+    Preview {
+        manifest: String,
+        #[serde(rename = "hostProof")]
+        host_proof: String,
+    },
+}
+impl NodeSource {
+    pub fn kind(&self) -> NodeSourceKind {
+        match self {
+            Self::Published { .. } => NodeSourceKind::Published,
+            Self::Preview { .. } => NodeSourceKind::Preview,
+        }
+    }
+    pub fn manifest_sha256(&self) -> String {
+        match self {
+            Self::Published { release_manifest } => release_manifest.sha256(),
+            Self::Preview { manifest, .. } => {
+                crate::plugin_preview::PluginPreviewManifest::digest(manifest)
+            }
+        }
+    }
+    pub fn published(&self) -> Result<&NodeReleaseManifestBundle, String> {
+        match self {
+            Self::Published { release_manifest } => Ok(release_manifest),
+            Self::Preview { .. } => Err("Preview requires trusted Host provenance".into()),
+        }
+    }
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum NodeSourceKind {
+    Published,
+    Preview,
 }
 
 /// Verified binding state. Persisted with the binding, usable without Host/CDN access.
@@ -130,6 +173,9 @@ pub struct NodeBindingMetadata {
     pub platform: String,
     pub manifest_sha256: String,
     pub core_protocol: Option<u32>,
+    pub source: NodeSourceKind,
+    /// Captured from the verified onboarding challenge; a reconnect cannot replace it.
+    pub host_public_key: Option<crate::host::auth::PublicKey>,
 }
 
 impl NodeMetadata {
@@ -139,7 +185,7 @@ impl NodeMetadata {
         &self,
         verify_signature: impl FnOnce(&[u8], &str) -> Result<(), String>,
     ) -> Result<NodeBindingMetadata, String> {
-        let bundle = &self.release_manifest;
+        let bundle = self.source.published()?;
         if self.schema_version != NODE_METADATA_SCHEMA_VERSION
             || bundle.schema_version != 1
             || bundle.manifest.len() > NODE_MANIFEST_MAX_BYTES
@@ -209,6 +255,54 @@ impl NodeMetadata {
             platform: platform.into(),
             manifest_sha256: bundle.sha256(),
             core_protocol,
+            source: NodeSourceKind::Published,
+            host_public_key: None,
+        })
+    }
+
+    /// The verifier MUST use a key from authenticated onboarding or an existing
+    /// binding, never one offered in this Node's metadata.
+    pub fn verify_preview(
+        &self,
+        host_id: &str,
+        env: crate::RuntimeEnv,
+        verify_proof: impl FnOnce(&str) -> Result<crate::plugin_preview::PluginPreviewProof, String>,
+    ) -> Result<NodeBindingMetadata, String> {
+        let NodeSource::Preview {
+            manifest,
+            host_proof,
+        } = &self.source
+        else {
+            return Err("Expected Preview provenance".into());
+        };
+        if self.schema_version != NODE_METADATA_SCHEMA_VERSION
+            || self.delivery != NodeDelivery::Host
+            || host_proof.len() > 16384
+            || host_id.is_empty()
+        {
+            return Err("Invalid Preview metadata envelope".into());
+        }
+        let parsed = crate::plugin_preview::PluginPreviewManifest::parse(manifest)?;
+        let proof = verify_proof(host_proof)?;
+        let digest = self.source.manifest_sha256();
+        if proof.host_id != host_id
+            || proof.env != env
+            || proof.manifest_sha256 != digest
+            || parsed.plugin.node_type != self.node_type
+            || parsed.plugin.service_id != self.service_id
+            || parsed.service_version != self.service_version
+        {
+            return Err("Preview proof does not describe this Host and running service".into());
+        }
+        Ok(NodeBindingMetadata {
+            definition: parsed.plugin,
+            delivery: self.delivery,
+            version: parsed.service_version,
+            platform: parsed.platform,
+            manifest_sha256: digest,
+            core_protocol: parsed.core_protocol,
+            source: NodeSourceKind::Preview,
+            host_public_key: None,
         })
     }
 }
@@ -224,10 +318,12 @@ mod tests {
             node_type: "example-extension".into(),
             service_id: "example-extension".into(),
             service_version: "1.0.0".into(),
-            release_manifest: serde_json::from_str(include_str!(
-                "../fixtures/node-metadata/host.bundle.json"
-            ))
-            .unwrap(),
+            source: NodeSource::Published {
+                release_manifest: serde_json::from_str(include_str!(
+                    "../fixtures/node-metadata/host.bundle.json"
+                ))
+                .unwrap(),
+            },
         }
     }
     fn verify(bytes: &[u8], signature: &str) -> Result<(), String> {
@@ -243,6 +339,61 @@ mod tests {
         .map_err(|e| e.to_string())
     }
     #[test]
+    fn preview_is_explicit_and_bound_to_host_environment_and_complete_content() {
+        use crate::plugin_preview::*;
+        let mut metadata = host();
+        let published = metadata.verify(verify).unwrap();
+        let raw = serde_json::to_string(&PluginPreviewManifest {
+            format_version: 1,
+            plugin: published.definition,
+            platform: "linux-arm64".into(),
+            service_version: metadata.service_version.clone(),
+            core_protocol: None,
+            files_sha256: "a".repeat(64),
+        })
+        .unwrap();
+        metadata.source = NodeSource::Preview {
+            manifest: raw,
+            host_proof: "Host proof".into(),
+        };
+        assert!(metadata
+            .verify(|_, _| panic!("Preview is not a publisher manifest"))
+            .is_err());
+        let proof = PluginPreviewProof {
+            host_id: "desktop".into(),
+            env: crate::RuntimeEnv::Prod,
+            manifest_sha256: metadata.source.manifest_sha256(),
+        };
+        let verify = |metadata: &NodeMetadata, proof: PluginPreviewProof| {
+            metadata.verify_preview("desktop", crate::RuntimeEnv::Prod, |_| Ok(proof))
+        };
+        assert_eq!(
+            verify(&metadata, proof.clone()).unwrap().source,
+            NodeSourceKind::Preview
+        );
+        let mut wrong = proof.clone();
+        wrong.host_id = "other-host".into();
+        assert!(verify(&metadata, wrong).is_err());
+        let mut wrong = proof.clone();
+        wrong.env = crate::RuntimeEnv::Dev;
+        assert!(verify(&metadata, wrong).is_err());
+        let mut wrong = proof.clone();
+        wrong.manifest_sha256 = "b".repeat(64);
+        assert!(verify(&metadata, wrong).is_err());
+        assert!(metadata
+            .verify_preview("desktop", crate::RuntimeEnv::Prod, |_| Err(
+                "bad signature".into()
+            ))
+            .is_err());
+        let mut wrong = metadata.clone();
+        wrong.node_type = "other".into();
+        assert!(verify(&wrong, proof.clone()).is_err());
+        let mut wrong = metadata;
+        wrong.delivery = NodeDelivery::Firmware;
+        assert!(verify(&wrong, proof).is_err());
+    }
+
+    #[test]
     fn android_aar_firmware_metadata_uses_its_embedded_release_version() {
         // Generated by Plugin's Android manifest publisher with a disposable test key.
         let bundle: NodeReleaseManifestBundle = serde_json::from_str(include_str!(
@@ -255,7 +406,9 @@ mod tests {
             node_type: "camera".into(),
             service_id: "camera".into(),
             service_version: "1.0.5".into(),
-            release_manifest: bundle,
+            source: NodeSource::Published {
+                release_manifest: bundle,
+            },
         };
         let verify_android = |bytes: &[u8], signature: &str| {
             let key = minisign_verify::PublicKey::from_base64(
@@ -325,10 +478,10 @@ mod tests {
             );
         }
         let mut tampered = original;
-        tampered.release_manifest.manifest = tampered
-            .release_manifest
-            .manifest
-            .replace("single", "multiple");
+        let NodeSource::Published { release_manifest } = &mut tampered.source else {
+            unreachable!()
+        };
+        release_manifest.manifest = release_manifest.manifest.replace("single", "multiple");
         assert!(tampered.verify(verify).is_err());
     }
     #[test]

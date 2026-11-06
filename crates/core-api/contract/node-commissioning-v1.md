@@ -41,4 +41,4 @@ connections require matching environments before commissioning or admission.
 See [Local runtime environment](runtime-environment.md) for discovery namespaces,
 legacy prod compatibility, restored credentials and the cloud management boundary.
 
-Release identity and onboarding evidence follow [Node release metadata](node-metadata-v1.md).
+Release identity and onboarding evidence follow [Node release metadata](node-metadata-v2.md).

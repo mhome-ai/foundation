@@ -15,6 +15,7 @@ pub mod node;
 mod node_commissioning;
 mod node_metadata;
 mod node_service;
+pub mod plugin_preview;
 pub mod resource_transfer;
 pub mod runtime_space;
 pub mod space_access;
@@ -621,7 +622,8 @@ impl NodeAuthResponse {
             || metadata.definition.service_id != request.metadata.service_id
             || metadata.delivery != request.metadata.delivery
             || metadata.version != request.metadata.service_version
-            || metadata.manifest_sha256 != request.metadata.release_manifest.sha256()
+            || metadata.source != request.metadata.source.kind()
+            || metadata.manifest_sha256 != request.metadata.source.manifest_sha256()
         {
             return Err("Core did not acknowledge this Node release and contract revision".into());
         }

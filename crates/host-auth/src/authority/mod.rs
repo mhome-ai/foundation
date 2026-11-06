@@ -264,6 +264,26 @@ impl Authority {
     pub fn public_key(&self) -> PublicKey {
         public_key(self.key.verifying_key())
     }
+
+    /// Called by the local installer only after selecting a verified Preview.
+    /// This is Host provenance, not a publisher signature or a Space grant.
+    pub fn plugin_preview_proof(&self, manifest_sha256: String) -> Result<String> {
+        use core_api::plugin_preview::{is_sha256, PluginPreviewProof, PLUGIN_PREVIEW_PROOF_TYPE};
+        ensure!(
+            is_sha256(&manifest_sha256),
+            "Invalid Preview content digest"
+        );
+        let status = self.status()?;
+        sign_jws(
+            &self.key,
+            PLUGIN_PREVIEW_PROOF_TYPE,
+            &PluginPreviewProof {
+                host_id: self.host_id.clone(),
+                env: status.env,
+                manifest_sha256,
+            },
+        )
+    }
     pub async fn request_device_reset(&self) -> Result<()> {
         let state = self
             .state

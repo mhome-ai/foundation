@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "delivery",
+    "nodeType",
+    "serviceId",
+    "serviceVersion",
+    "source"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "meow.node.metadata.v2"
+    },
+    "delivery": {
+      "enum": [
+        "host",
+        "firmware"
+      ]
+    },
+    "nodeType": {
+      "type": "string",
+      "minLength": 1
+    },
+    "serviceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "serviceVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "releaseManifest"
+          ],
+          "properties": {
+            "kind": {
+              "const": "published"
+            },
+            "releaseManifest": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "schemaVersion",
+                "kind",
+                "manifest",
+                "signature"
+              ],
+              "properties": {
+                "schemaVersion": {
+                  "const": 1
+                },
+                "kind": {
+                  "enum": [
+                    "meow.plugin.manifest-bundle",
+                    "meow.node.firmware-manifest-bundle"
+                  ]
+                },
+                "manifest": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "signature": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "manifest",
+            "hostProof"
+          ],
+          "properties": {
+            "kind": {
+              "const": "preview"
+            },
+            "manifest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1048576
+            },
+            "hostProof": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "delivery": {
+            "const": "firmware"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "properties": {
+              "kind": {
+                "const": "published"
+              }
+            },
+            "type": "object"
+          }
+        }
+      }
+    }
+  ]
+}

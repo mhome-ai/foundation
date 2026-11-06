@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.68.0",
+  "contractVersion": "1.69.0",
   "protocols": {
     "extensionSources": {
       "contract": "contract/extension-sources-v1.md",
@@ -30,8 +30,10 @@
       "interactionFlowSubmissionRetryTarget": "/{nodeType}/interaction-flow/submission/retry",
       "interactionFlowCloseTarget": "/{nodeType}/interaction-flow/close",
       "metadataTarget": "/node/metadata",
-      "metadataSchema": "schema/node-metadata.v1.schema.json",
-      "metadataContract": "contract/node-metadata-v1.md"
+      "metadataSchema": "schema/node-metadata.v2.schema.json",
+      "metadataContract": "contract/node-metadata-v2.md",
+      "previewApplyLocalPath": "/v1/plugins/preview/apply",
+      "previewStatusLocalPath": "/v1/plugins/preview/status"
     },
     "audioBridgePlugin": {
       "version": "v1",

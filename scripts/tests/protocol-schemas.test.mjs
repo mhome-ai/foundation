@@ -219,3 +219,17 @@ test("Agent LLM settings shared corpus is strict and rejects credential leakage"
     }
   }
 });
+
+
+test("Node metadata v2 requires explicit source and rejects firmware Preview", () => {
+  const validate=compiler().compile(readJson(path.join(root,"crates/core-api/schema/node-metadata.v2.schema.json")));
+  const value={schemaVersion:"meow.node.metadata.v2",delivery:"host",nodeType:"garden",serviceId:"garden",serviceVersion:"1.0.0",
+    source:{kind:"preview",manifest:"{}",hostProof:"signed-local-Host-proof"}};
+  assert.equal(validate(value),true,JSON.stringify(validate.errors));
+  assert.equal(validate({...value,delivery:"firmware"}),false);
+  assert.equal(validate({...value,schemaVersion:"meow.node.metadata.v1"}),false);
+  assert.equal(validate({...value,source:{...value.source,releaseManifest:{}}}),false);
+  const published={kind:"published",releaseManifest:{schemaVersion:1,kind:"meow.plugin.manifest-bundle",manifest:"{}",signature:"signed"}};
+  assert.equal(validate({...value,source:published}),true);
+  assert.equal(validate({...value,source:{kind:"published",manifest:"{}",hostProof:"wrong fallback"}}),false);
+});
