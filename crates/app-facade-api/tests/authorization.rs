@@ -203,3 +203,55 @@ fn obsolete_widget_mutations_are_not_public_targets() {
         );
     }
 }
+
+#[test]
+fn room_has_only_the_canonical_public_facades() {
+    for target in [
+        "/app/room/list",
+        "/app/room/create",
+        "/app/room/rename",
+        "/app/room/delete",
+        "/app/room/reorder",
+        "/app/room/devices/move",
+        "/app/room/devices/remove",
+    ] {
+        assert_eq!(
+            app_facade_api::routing::route_policy_for_target(target)
+                .unwrap()
+                .execution,
+            app_facade_api::routing::ExecutionSelector::ScopeMode,
+            "{target}"
+        );
+    }
+    for target in [
+        "/room/list",
+        "/room/get",
+        "/room/save",
+        "/room/delete",
+        "/room/reorder",
+        "/room/moveDevice",
+        "/room/removeDevices",
+    ] {
+        assert!(
+            authorization::required(target).is_none(),
+            "Retired Room policy: {target}"
+        );
+    }
+    assert_eq!(
+        authorization::required("/app/room/list"),
+        Some(authorization::OperationPolicy::SpaceRead)
+    );
+    for target in [
+        "/app/room/create",
+        "/app/room/rename",
+        "/app/room/delete",
+        "/app/room/reorder",
+        "/app/room/devices/move",
+        "/app/room/devices/remove",
+    ] {
+        assert_eq!(
+            authorization::required(target),
+            Some(authorization::OperationPolicy::SpaceWrite)
+        );
+    }
+}

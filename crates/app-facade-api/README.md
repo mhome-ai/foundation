@@ -121,6 +121,16 @@ Room uses one `/app/room/list` read. Every Room has `roomId`, `roomName`,
 `index`, `deviceCount`, and `deviceIds`; full and essential keep all five fields.
 Membership IDs include Device groups without expanding their members or state.
 
+Room writes use `/app/room/create`, `/rename`, `/delete`, `/reorder`,
+`/devices/move`, and `/devices/remove` under the same `/app/room` prefix.
+Reorder accepts every current Room ID exactly once in the desired order.
+Moves require a destination for each unique member ID; removal explicitly unassigns
+members. Repeating a move or removal is a successful no-op. Deleting a Room
+unassigns its members without deleting Devices or Device groups. Only deletion
+supports the prepared confirmation flow; other writes execute directly.
+Room write inputs use their declared fields and JSON string IDs/names; legacy fields
+and numeric or boolean IDs/names are rejected rather than silently converted.
+
 Targets without a dedicated projection retain their business fields in YAML;
 essential does not promise a smaller field set for every domain. Targets own that selection.
 
