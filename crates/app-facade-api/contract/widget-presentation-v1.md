@@ -29,6 +29,8 @@ fetches inactive counts. Automation parameters are grouped by owning Automation;
 users can operate them and open the owner but cannot edit/delete their definition.
 Realtime changes update loaded rows, deletes remove them, and reconnect or
 incomplete presentation changes refresh only the relevant active tab. Space
-switches clear caches and reject late responses. Legacy public reads
-`/widget/list`, `/widget/circadian/list`, `/widget/names`, `/widget/default/get`
-are removed; legacy writes and `/widget/reportUpdate` remain separate protocols.
+switches clear caches and reject late responses. All public Widget request
+Controllers, including reads and writes, are removed. Writes use the shared
+`/app/widget/*` Facades described in `widget-writes-v1.md`.
+`/widget/reportUpdate` remains a push protocol; internal Automation dispatch
+remains separate from public request routing.
