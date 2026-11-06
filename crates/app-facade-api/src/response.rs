@@ -114,6 +114,7 @@ pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
             | "/app/automation/snapshot/rollback"
             | "/app/room/delete"
             | "/app/widget/delete"
+            | "/app/widget/circadian/runtime/update"
             | "/app/widget/data/update"
             | "/app/widget/button/trigger"
             | "/app/integration/install"
@@ -157,6 +158,7 @@ pub fn is_acknowledgement(target: &str) -> bool {
             | "/app/agent/llm/provider/credential/delete"
             | "/app/agent/llm/provider/auth/cancel"
             | "/app/widget/delete"
+            | "/app/widget/circadian/runtime/update"
             | "/app/widget/data/update"
             | "/app/widget/button/trigger"
     )

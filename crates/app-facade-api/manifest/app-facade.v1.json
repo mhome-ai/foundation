@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.104.0",
+  "contractVersion": "1.105.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -380,6 +380,21 @@
         "/app/automation/stop",
         "/app/automation/rename",
         "/app/automation/description/update"
+      ]
+    },
+    "widgetWrites": {
+      "contract": "contract/widget-writes-v1.md",
+      "requestTargets": [
+        "/app/widget/data/create",
+        "/app/widget/button/create",
+        "/app/widget/circadian/create",
+        "/app/widget/data/config/update",
+        "/app/widget/button/config/update",
+        "/app/widget/circadian/config/update",
+        "/app/widget/circadian/runtime/update",
+        "/app/widget/data/update",
+        "/app/widget/button/trigger",
+        "/app/widget/delete"
       ]
     }
   },

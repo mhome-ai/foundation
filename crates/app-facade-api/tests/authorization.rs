@@ -255,3 +255,27 @@ fn room_has_only_the_canonical_public_facades() {
         );
     }
 }
+
+#[test]
+fn all_legacy_widget_requests_are_retired_and_runtime_control_is_a_write() {
+    for target in [
+        "/widget/create",
+        "/widget/data/update",
+        "/widget/button/trigger",
+        "/widget/setting/update",
+        "/widget/circadian/save",
+        "/widget/circadian/updateConfig",
+        "/widget/circadian/delete",
+        "/widget/history/list",
+        "/widget/batchDelete",
+    ] {
+        assert_eq!(authorization::required(target), None, "{target}");
+    }
+    assert_eq!(
+        authorization::required("/app/widget/circadian/runtime/update"),
+        Some(authorization::OperationPolicy::SpaceWrite)
+    );
+    assert!(app_facade_api::response::is_acknowledgement(
+        "/app/widget/circadian/runtime/update"
+    ));
+}
