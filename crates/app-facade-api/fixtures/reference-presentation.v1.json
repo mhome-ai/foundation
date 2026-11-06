@@ -1,0 +1,5 @@
+{
+  "description": "Fictional picker business DTOs, excluding the Facade result envelope.",
+  "types": {"types":[{"entityType":"basic.device.Device","name":"Device","category":"device"},{"entityType":"basic.widget.ButtonWidget","name":"Button","category":"widget"}]},
+  "items": {"items":[{"id":"example:lamp","name":"Desk lamp","entityType":"basic.device.Device","category":"device","capabilities":["switch"],"group":false},{"id":"g:example-lights","name":"All lights","entityType":"basic.device.Device","category":"device","capabilities":[],"group":true}]}
+}
