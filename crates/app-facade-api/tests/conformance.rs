@@ -562,6 +562,7 @@ fn routing_manifest_matches_rust_policy() {
     let expected_rule_groups = [
         "cloudPrefixes",
         "cloudTargets",
+        "connectionTargets",
         "scopeModeTargets",
         "hubPrefixes",
         "requestPlacementPrefixes",
@@ -579,7 +580,12 @@ fn routing_manifest_matches_rust_policy() {
         expected_rule_groups
     );
 
-    let exact_groups = ["cloudTargets", "scopeModeTargets", "hubTargets"];
+    let exact_groups = [
+        "cloudTargets",
+        "scopeModeTargets",
+        "hubTargets",
+        "connectionTargets",
+    ];
     let mut exact_owners = std::collections::BTreeMap::new();
     for field in exact_groups {
         for target in strings(field) {
@@ -625,6 +631,12 @@ fn routing_manifest_matches_rust_policy() {
     for target in strings("cloudTargets") {
         let policy = route_policy_for_target(&target).unwrap();
         assert_eq!(policy.execution, ExecutionSelector::Cloud, "{target}");
+    }
+    for target in strings("connectionTargets") {
+        assert_eq!(
+            route_policy_for_target(&target).unwrap().execution,
+            ExecutionSelector::Connection
+        );
     }
     for target in strings("scopeModeTargets") {
         let policy = route_policy_for_target(&target).unwrap();

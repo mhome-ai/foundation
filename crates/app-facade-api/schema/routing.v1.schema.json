@@ -51,7 +51,8 @@
         "scopeModeTargets",
         "hubPrefixes",
         "requestPlacementPrefixes",
-        "hubTargets"
+        "hubTargets",
+        "connectionTargets"
       ],
       "properties": {
         "cloudPrefixes": {
@@ -70,6 +71,9 @@
           "$ref": "#/$defs/targetList"
         },
         "hubTargets": {
+          "$ref": "#/$defs/targetList"
+        },
+        "connectionTargets": {
           "$ref": "#/$defs/targetList"
         }
       }

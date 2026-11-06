@@ -9,6 +9,8 @@
 pub enum ExecutionSelector {
     /// Execute against the cloud control plane.
     Cloud,
+    /// Execute on the authenticated receiving connection; never forward to a Space owner.
+    Connection,
     /// Follow the active Space mode: cloud Space or its selected Hub.
     ScopeMode,
     /// Execute on the selected Space Hub, independent of Space mode.
@@ -21,6 +23,10 @@ pub enum ExecutionSelector {
 pub struct RoutePolicy {
     pub execution: ExecutionSelector,
 }
+
+const CONNECTION: RoutePolicy = RoutePolicy {
+    execution: ExecutionSelector::Connection,
+};
 
 const CLOUD: RoutePolicy = RoutePolicy {
     execution: ExecutionSelector::Cloud,
@@ -48,6 +54,9 @@ pub fn route_policy_for_target(target: &str) -> Option<RoutePolicy> {
     }
 
     // Every exact exception is resolved before any domain prefix.
+    if CONNECTION_TARGETS.contains(&target) {
+        return Some(CONNECTION);
+    }
     if SCOPE_MODE_TARGETS.contains(&target) {
         return Some(SCOPE);
     }

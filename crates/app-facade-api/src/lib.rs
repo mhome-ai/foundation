@@ -10,6 +10,7 @@ pub mod artifact;
 pub mod attention;
 pub mod automation_presentation;
 pub mod call;
+pub mod client_space;
 pub mod entity_presentation;
 pub mod group;
 pub mod host_provision;

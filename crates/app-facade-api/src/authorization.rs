@@ -13,6 +13,8 @@ use std::{
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum OperationPolicy {
+    /// Requires proof of the actual receiving Client connection, not Space facts.
+    ClientConnection,
     UserRead,
     UserWrite,
     SpaceRead,
@@ -24,7 +26,7 @@ pub enum OperationPolicy {
 impl OperationPolicy {
     pub fn required_space_level(self) -> Option<SpaceAccessLevel> {
         match self {
-            Self::UserRead | Self::UserWrite => None,
+            Self::UserRead | Self::UserWrite | Self::ClientConnection => None,
             Self::SpaceRead | Self::Node => Some(SpaceAccessLevel::Read),
             Self::SpaceWrite => Some(SpaceAccessLevel::Write),
             Self::SpaceManage => Some(SpaceAccessLevel::Manage),
@@ -32,6 +34,10 @@ impl OperationPolicy {
     }
 
     pub fn allows(self, facts: &SpaceAccessFacts<'_>) -> bool {
+        // Only a transport with the live authenticated connection can grant this policy.
+        if self == Self::ClientConnection {
+            return false;
+        }
         match self.required_space_level() {
             Some(level) => facts.allows(level),
             None => {

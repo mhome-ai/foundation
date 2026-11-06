@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.98.0",
+  "contractVersion": "1.99.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -401,7 +401,8 @@
     "/app/presentation/automation/placements/get": "spaceRead",
     "/app/presentation/widget/list": "spaceRead",
     "/app/presentation/widget/names/get": "spaceRead",
-    "/app/presentation/widget/defaults/get": "spaceRead"
+    "/app/presentation/widget/defaults/get": "spaceRead",
+    "/app/client/space/focus": "clientConnection"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

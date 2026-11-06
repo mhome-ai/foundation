@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.98.0",
+  "contractVersion": "1.99.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -353,6 +353,12 @@
         "/app/presentation/widget/names/get",
         "/app/presentation/widget/defaults/get"
       ]
+    },
+    "clientSpace": {
+      "requestTargets": [
+        "/app/client/space/focus"
+      ],
+      "contract": "contract/client-space-focus-v1.md"
     }
   },
   "authorization": "manifest/authorization.v1.json",

@@ -79,6 +79,11 @@ const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
     "/app/messaging/",
 ];
 
+/// Operations owned by the receiving authenticated connection; never forward.
+pub const CONNECTION_TARGETS: &[&str] = &[
+    "/app/client/space/focus",
+];
+
 /// Exact Hub-owned operations outside Hub-owned domains.
 pub const HUB_TARGETS: &[&str] = &[
     "/app/hub/restart",

@@ -57,6 +57,7 @@ fn shared_routing_cases_match_the_rust_executor_contract() {
             .execution
         {
             ExecutionSelector::Cloud => "cloud",
+            ExecutionSelector::Connection => "connection",
             ExecutionSelector::Hub => "hub",
             ExecutionSelector::ScopeMode => "scopeMode",
             ExecutionSelector::RequestPlacement => "requestPlacement",

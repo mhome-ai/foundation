@@ -11,6 +11,7 @@ const RULE_FIELDS = Object.freeze([
   "cloudPrefixes",
   "cloudTargets",
   "scopeModeTargets",
+  "connectionTargets",
   "hubPrefixes",
   "requestPlacementPrefixes",
   "hubTargets",
@@ -18,6 +19,7 @@ const RULE_FIELDS = Object.freeze([
 const EXACT_FIELDS = Object.freeze([
   "cloudTargets",
   "scopeModeTargets",
+  "connectionTargets",
   "hubTargets",
 ]);
 const PREFIX_FIELDS = Object.freeze([
@@ -113,6 +115,9 @@ ${rules.hubPrefixes.map((value) => `    ${rustString(value)},`).join("\n")}
 const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
 ${rules.requestPlacementPrefixes.map((value) => `    ${rustString(value)},`).join("\n")}
 ];
+
+/// Operations owned by the receiving authenticated connection; never forward.
+${rustSlice("CONNECTION_TARGETS", rules.connectionTargets, "pub const")}
 
 /// Exact Hub-owned operations outside Hub-owned domains.
 ${rustSlice("HUB_TARGETS", rules.hubTargets, "pub const")}

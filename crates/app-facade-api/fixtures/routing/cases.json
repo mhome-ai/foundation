@@ -862,5 +862,37 @@
     "hubReady": false,
     "cloudReady": false,
     "entry": "unavailable"
+  },
+  {
+    "target": "/app/client/space/focus",
+    "execution": "connection",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/client/space/focus",
+    "execution": "connection",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "hub"
+  },
+  {
+    "target": "/app/client/space/focus",
+    "execution": "connection",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/client/space/focus",
+    "execution": "connection",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
   }
 ]
