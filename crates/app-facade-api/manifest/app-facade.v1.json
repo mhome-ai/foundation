@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.105.0",
+  "contractVersion": "1.106.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -57,7 +57,8 @@
         "/app/plugin/profile/update",
         "/app/plugin/install/prepare",
         "/app/plugin/install/start",
-        "/app/plugin/install/status"
+        "/app/plugin/install/status",
+        "/app/plugin/preview/check"
       ],
       "eventTargets": [
         "/app/plugin/settings/changed"
@@ -65,7 +66,8 @@
       "extensionFamily": "/app/plugin/{nodeType}/{route...}",
       "extensionPriority": "after_exact",
       "installSchema": "schema/plugin-install.v1.schema.json",
-      "installContract": "contract/plugin-install-v1.md"
+      "installContract": "contract/plugin-install-v1.md",
+      "previewContract": "contract/plugin-preview-v1.md"
     },
     "runtime": {
       "contract": "mhome.runtime.status.v1",

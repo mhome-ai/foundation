@@ -10,6 +10,8 @@ pub const ENABLE_START_TARGET: &str = "/app/plugin/enable/start";
 pub const ENABLE_STATUS_TARGET: &str = "/app/plugin/enable/status";
 pub const DISABLE_TARGET: &str = "/app/plugin/disable";
 pub const PROFILE_UPDATE_TARGET: &str = "/app/plugin/profile/update";
+/// Read-only Local Space management check before the CLI changes its local Host.
+pub const PREVIEW_CHECK_TARGET: &str = "/app/plugin/preview/check";
 pub const SETTINGS_CHANGED_TARGET: &str = "/app/plugin/settings/changed";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,4 +55,15 @@ pub struct StartPluginEnableInput {
     pub candidate_id: String,
     pub host_id: Option<String>,
     pub preview: Option<core_api::plugin_preview::PluginPreviewExpectation>,
+}
+
+/// This check does not create an installation or reserve permission for later calls.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CheckPluginPreviewInput {}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CheckPluginPreviewOutput {
+    pub space_id: String,
 }
