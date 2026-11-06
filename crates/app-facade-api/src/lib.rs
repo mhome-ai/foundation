@@ -20,6 +20,7 @@ pub mod integration;
 pub mod integration_presentation;
 pub mod interaction_flow;
 pub mod messaging;
+pub mod nfc;
 pub mod plugin;
 pub mod pod;
 pub mod pod_call;

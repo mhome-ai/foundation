@@ -278,3 +278,5 @@ still applies. Local file download remains a client workflow over ordinary resol
 
 Agent Profile Markdown image ownership and canonical read-back are specified in
 [Agent Profile media](contract/agent-profile-media-v1.md).
+
+NFC management: [contract](contract/nfc-v1.md), [schema](schema/nfc.v1.schema.json).

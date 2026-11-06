@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/app/nfc.v1.schema.json",
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceType",
+        "sourceId"
+      ],
+      "properties": {
+        "sourceType": {
+          "const": "phone"
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "sourceName": {
+          "type": "string"
+        }
+      }
+    },
+    "list": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "createState": {
+          "enum": [
+            "active",
+            "pending",
+            "all"
+          ]
+        }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "create": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "policy"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "description": {
+          "type": "string"
+        },
+        "policy": {
+          "enum": [
+            "ALL_PHONE",
+            "CUSTOM_PHONE"
+          ]
+        },
+        "trustedSources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        }
+      }
+    },
+    "activate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tagId"
+      ],
+      "properties": {
+        "tagId": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      }
+    },
+    "update": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tagId"
+      ],
+      "properties": {
+        "tagId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "description": {
+          "type": "string"
+        },
+        "policy": {
+          "enum": [
+            "ALL_PHONE",
+            "CUSTOM_PHONE"
+          ]
+        },
+        "trustedSources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "name"
+          ]
+        },
+        {
+          "required": [
+            "description"
+          ]
+        },
+        {
+          "required": [
+            "policy"
+          ]
+        },
+        {
+          "required": [
+            "trustedSources"
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tagIds"
+      ],
+      "properties": {
+        "tagIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

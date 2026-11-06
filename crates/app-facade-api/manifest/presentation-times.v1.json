@@ -147,5 +147,11 @@
       "items.*.resource.lastRunAt",
       "items.*.resource.expireAt"
     ]
+  },
+  "/app/nfc/list": {
+    "ms": [
+      "nfcTags.*.createdAt",
+      "nfcTags.*.lastUsedAt"
+    ]
   }
 }

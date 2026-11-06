@@ -1,0 +1,442 @@
+[
+  {
+    "target": "/app/nfc/list",
+    "input": {
+      "createState": "active"
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/list",
+    "input": {
+      "createState": "pending"
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/list",
+    "input": {
+      "createState": "all"
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/list",
+    "input": {},
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/list",
+    "input": {
+      "createState": null
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/list",
+    "input": {
+      "tenantId": "t"
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/sources/list",
+    "input": {},
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/sources/list",
+    "input": {
+      "all": true
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/create",
+    "input": {
+      "name": " Entry ",
+      "policy": "ALL_PHONE"
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/create",
+    "input": {
+      "name": "Entry",
+      "policy": "CUSTOM_PHONE",
+      "trustedSources": [
+        {
+          "sourceType": "phone",
+          "sourceId": "p1",
+          "sourceName": "Phone"
+        }
+      ]
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/create",
+    "input": {
+      "name": "",
+      "policy": "ALL_PHONE"
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/create",
+    "input": {
+      "name": "Entry",
+      "policy": "ANY"
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/create",
+    "input": {
+      "name": "Entry",
+      "policy": "CUSTOM_PHONE"
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/create",
+    "input": {
+      "name": "Entry",
+      "policy": "ALL_PHONE",
+      "description": null
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/create",
+    "input": {
+      "name": "Entry",
+      "policy": "ALL_PHONE",
+      "createState": "active"
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/create",
+    "input": {
+      "name": "Entry",
+      "policy": "CUSTOM_PHONE",
+      "trustedSources": [
+        {
+          "sourceType": "phone",
+          "sourceId": "p",
+          "unknown": 1
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/activate",
+    "input": {
+      "tagId": "a"
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/activate",
+    "input": {
+      "tagIds": [
+        "a"
+      ]
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "name": "Renamed"
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "description": ""
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "policy": "ALL_PHONE"
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "trustedSources": []
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a"
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "name": null
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "description": null
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "policy": null
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "trustedSources": null
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "createdAt": 1
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "name": 3
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "trustedSources": [
+        {
+          "sourceType": "phone",
+          "sourceId": "p",
+          "unknown": true
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/delete",
+    "input": {
+      "tagIds": [
+        "a"
+      ]
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/delete",
+    "input": {
+      "tagIds": [
+        "a",
+        "b"
+      ]
+    },
+    "valid": true
+  },
+  {
+    "target": "/app/nfc/delete",
+    "input": {
+      "tagIds": []
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/delete",
+    "input": {
+      "tagIds": [
+        ""
+      ]
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/delete",
+    "input": {
+      "tagIds": [
+        "a",
+        " a "
+      ]
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/delete",
+    "input": {
+      "tagIds": [
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a",
+        "a"
+      ]
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/delete",
+    "input": {
+      "tagId": "a"
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "trustedSources": [
+        {
+          "sourceType": "pod",
+          "sourceId": "a"
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "target": "/app/nfc/update",
+    "input": {
+      "tagId": "a",
+      "trustedSources": [
+        {
+          "sourceType": "phone",
+          "sourceId": "p"
+        },
+        {
+          "sourceType": "phone",
+          "sourceId": " p "
+        }
+      ]
+    },
+    "valid": false
+  }
+]

@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.106.1",
+  "contractVersion": "1.107.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode"
@@ -38,7 +38,8 @@
       "/app/artifact/external/resolve",
       "/app/presentation/space/list",
       "/app/presentation/space/get",
-      "/app/resource/transfer/prepare"
+      "/app/resource/transfer/prepare",
+      "/app/nfc/sources/list"
     ],
     "scopeModeTargets": [
       "/app/artifact/resolve",
