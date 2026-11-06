@@ -3029,56 +3029,6 @@
     "code": "INVALID_RESPONSE"
   },
   {
-    "name": "/app/automation/start acknowledgement True",
-    "target": "/app/automation/start",
-    "data": {
-      "success": true
-    },
-    "status": "success",
-    "acknowledgement": true
-  },
-  {
-    "name": "/app/automation/start acknowledgement False",
-    "target": "/app/automation/start",
-    "data": {
-      "success": false
-    },
-    "status": "error",
-    "code": "OPERATION_FAILED"
-  },
-  {
-    "name": "/app/automation/start acknowledgement None",
-    "target": "/app/automation/start",
-    "data": {},
-    "status": "error",
-    "code": "INVALID_RESPONSE"
-  },
-  {
-    "name": "/app/automation/stop acknowledgement True",
-    "target": "/app/automation/stop",
-    "data": {
-      "success": true
-    },
-    "status": "success",
-    "acknowledgement": true
-  },
-  {
-    "name": "/app/automation/stop acknowledgement False",
-    "target": "/app/automation/stop",
-    "data": {
-      "success": false
-    },
-    "status": "error",
-    "code": "OPERATION_FAILED"
-  },
-  {
-    "name": "/app/automation/stop acknowledgement None",
-    "target": "/app/automation/stop",
-    "data": {},
-    "status": "error",
-    "code": "INVALID_RESPONSE"
-  },
-  {
     "name": "/app/widget/delete acknowledgement True",
     "target": "/app/widget/delete",
     "data": {
@@ -3908,5 +3858,53 @@
         }
       ]
     }
+  },
+  {
+    "name": "/app/automation/start control state",
+    "target": "/app/automation/start",
+    "data": {
+      "automationId": "a",
+      "enabled": true,
+      "running": false
+    },
+    "status": "success",
+    "essential": {
+      "automationId": "a",
+      "enabled": true,
+      "running": false
+    }
+  },
+  {
+    "name": "/app/automation/start rejects acknowledgement",
+    "target": "/app/automation/start",
+    "data": {
+      "success": true
+    },
+    "status": "error",
+    "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "/app/automation/stop control state",
+    "target": "/app/automation/stop",
+    "data": {
+      "automationId": "a",
+      "enabled": false,
+      "running": false
+    },
+    "status": "success",
+    "essential": {
+      "automationId": "a",
+      "enabled": false,
+      "running": false
+    }
+  },
+  {
+    "name": "/app/automation/stop rejects acknowledgement",
+    "target": "/app/automation/stop",
+    "data": {
+      "success": true
+    },
+    "status": "error",
+    "code": "INVALID_RESPONSE"
   }
 ]

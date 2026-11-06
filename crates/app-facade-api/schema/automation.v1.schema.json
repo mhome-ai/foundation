@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/automation.v1.schema.json",
+  "$defs": {
+    "startInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "timezone": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "locationSymbol": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "automationId"
+      ]
+    },
+    "stopInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "automationId"
+      ]
+    },
+    "controlOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "running": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "automationId",
+        "enabled",
+        "running"
+      ]
+    },
+    "renameInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "automationId",
+        "name"
+      ]
+    },
+    "renameOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "automationId",
+        "name"
+      ]
+    },
+    "descriptionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "expectedScriptHash": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "description": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "varDescription": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        }
+      },
+      "required": [
+        "automationId",
+        "expectedScriptHash"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "description"
+          ]
+        },
+        {
+          "required": [
+            "varDescription"
+          ],
+          "properties": {
+            "varDescription": {
+              "minProperties": 1
+            }
+          }
+        }
+      ]
+    }
+  }
+}

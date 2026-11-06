@@ -51,6 +51,14 @@ pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
         }
         return FacadeResponse::success(data);
     }
+    if matches!(target, crate::automation::START | crate::automation::STOP) {
+        return match serde_json::from_value::<crate::automation::ControlOutput>(data.clone()) {
+            Ok(_) => FacadeResponse::success(data),
+            Err(_) => {
+                FacadeResponse::error("INVALID_RESPONSE", "Expected Automation control state")
+            }
+        };
+    }
     if is_acknowledgement(target) {
         return match data.get("success").and_then(Value::as_bool) {
             Some(true) => FacadeResponse::acknowledged(),
@@ -102,8 +110,6 @@ pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
             | "/app/agent/memory/save"
             | "/app/automation/save"
             | "/app/automation/description/update"
-            | "/app/automation/start"
-            | "/app/automation/stop"
             | "/app/automation/delete"
             | "/app/automation/snapshot/rollback"
             | "/app/room/delete"
@@ -148,8 +154,6 @@ pub fn is_acknowledgement(target: &str) -> bool {
             | "/app/agent/llm/provider/credential/save"
             | "/app/agent/llm/provider/credential/delete"
             | "/app/agent/llm/provider/auth/cancel"
-            | "/app/automation/start"
-            | "/app/automation/stop"
             | "/app/widget/delete"
             | "/app/widget/data/update"
             | "/app/widget/button/trigger"

@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.99.0",
+  "contractVersion": "1.100.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -359,6 +359,16 @@
         "/app/client/space/focus"
       ],
       "contract": "contract/client-space-focus-v1.md"
+    },
+    "automation": {
+      "schema": "schema/automation.v1.schema.json",
+      "contract": "contract/automation-v1.md",
+      "requestTargets": [
+        "/app/automation/start",
+        "/app/automation/stop",
+        "/app/automation/rename",
+        "/app/automation/description/update"
+      ]
     }
   },
   "authorization": "manifest/authorization.v1.json",
