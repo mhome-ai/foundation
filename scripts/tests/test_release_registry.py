@@ -82,6 +82,17 @@ class RegistryTests(unittest.TestCase):
                 r.wait("npm", "fixture", "1.0.0", seconds=6)
         self.assertEqual(6, now[0])
 
+    def test_npm_scanning_can_exceed_the_old_ten_minute_metadata_wait(self):
+        now = [0.0]
+        identity = {"name": "fixture", "version": "1.0.0"}
+        def scanning(*args, **kwargs):
+            return identity if now[0] >= 15 * 60 else None
+        with patch.object(r, "metadata", side_effect=scanning), \
+                patch.object(r.time, "monotonic", side_effect=lambda: now[0]), \
+                patch.object(r.time, "sleep", side_effect=lambda seconds: now.__setitem__(0, now[0] + seconds)):
+            self.assertEqual(identity, r.wait("npm", "fixture", "1.0.0"))
+        self.assertEqual(15 * 60, now[0])
+
     def test_registry_metadata_must_match_exact_identity(self):
         for kind, data in (("crate", {"version": {"crate": "other", "num": "1.0.0"}}),
                            ("npm", {"name": "fixture", "version": "2.0.0"}), ("npm", {})):
@@ -115,6 +126,42 @@ class RegistryTests(unittest.TestCase):
         with self.assertRaisesRegex(r.RegistryError, "Occupied version"):
             self.verify("npm", archive({"protocol.json": b"local"}, "package"),
                         archive({"protocol.json": b"other"}, "package"))
+
+    def test_visible_npm_metadata_waits_for_the_archive_before_verifying_it(self):
+        contents = archive({"protocol.json": b"same"}, "package")
+        identity = {"dist": {"tarball": "https://fixture/archive.tgz", "integrity": "sha512-" +
+                            base64.b64encode(hashlib.sha512(contents).digest()).decode()}}
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "package.tgz"
+            path.write_bytes(contents)
+            with patch.object(r, "metadata", return_value=identity) as metadata, \
+                    patch.object(r, "fetch", side_effect=[None, contents]) as fetch, \
+                    patch.object(r.time, "monotonic", return_value=10), \
+                    patch.object(r.time, "sleep") as sleep:
+                r.verify("npm", "fixture", "1.0.0", path)
+                metadata.assert_called_once_with("npm", "fixture", "1.0.0", deadline=1210)
+                self.assertEqual(2, fetch.call_count)
+                for call in fetch.call_args_list:
+                    self.assertEqual({"deadline": 1210, "request_seconds": 60}, call.kwargs)
+                sleep.assert_called_once_with(5)
+
+    def test_missing_archive_wait_has_one_bounded_deadline(self):
+        now = [0.0]
+        with patch.object(r, "fetch", return_value=None) as fetch, \
+                patch.object(r.time, "monotonic", side_effect=lambda: now[0]), \
+                patch.object(r.time, "sleep", side_effect=lambda seconds: now.__setitem__(0, now[0] + seconds)):
+            with self.assertRaisesRegex(r.RegistryError, "archive did not appear.*deadline"):
+                r.wait_for_archive("https://fixture/archive.tgz", deadline=6)
+        self.assertEqual(6, now[0])
+        self.assertEqual(2, fetch.call_count)
+
+    def test_archive_read_errors_are_not_treated_as_propagation_delays(self):
+        with patch.object(r, "fetch", side_effect=r.RegistryError("HTTP 403")) as fetch, \
+                patch.object(r.time, "sleep") as sleep:
+            with self.assertRaisesRegex(r.RegistryError, "HTTP 403"):
+                r.wait_for_archive("https://fixture/archive.tgz", deadline=r.time.monotonic() + 600)
+        self.assertEqual(1, fetch.call_count)
+        sleep.assert_not_called()
 
     def test_bad_registry_checksums_do_not_establish_equivalence(self):
         contents = archive({"src/lib.rs": b"same"})

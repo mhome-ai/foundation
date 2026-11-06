@@ -18,6 +18,11 @@ class RegistryError(Exception):
     pass
 
 
+# npm publish-time scanning commonly takes five minutes and can exceed fifteen.
+# This is a deadline, not a fixed delay; stop waiting as soon as the data appears.
+NPM_READINESS_SECONDS = 20 * 60
+
+
 def fetch(url, *, deadline=None, request_seconds=15):
     """404 alone means absent. Bound connect, body, retries and the subprocess."""
     for attempt in range(3):
@@ -75,7 +80,9 @@ def metadata(kind, name, version, *, deadline=None):
         raise RegistryError(f"Invalid registry metadata for {name} {version}: {error}") from error
 
 
-def wait(kind, name, version, *, seconds=600):
+def wait(kind, name, version, *, seconds=None):
+    if seconds is None:
+        seconds = NPM_READINESS_SECONDS if kind == "npm" else 600
     if seconds <= 0:
         raise RegistryError("Registry wait timeout must be positive")
     deadline = time.monotonic() + seconds
@@ -112,8 +119,23 @@ def archive_files(contents, prefix, *, crate=False):
     return files
 
 
+def wait_for_archive(url, *, deadline):
+    """Registry metadata can become visible before its immutable archive."""
+    announced = False
+    while time.monotonic() < deadline:
+        contents = fetch(url, deadline=deadline, request_seconds=60)
+        if contents is not None:
+            return contents
+        if not announced:
+            print(f"Published package archive not yet available; waiting: {url}", file=sys.stderr)
+            announced = True
+        time.sleep(min(5, max(0, deadline - time.monotonic())))
+    raise RegistryError(f"Published package archive did not appear before the registry deadline: {url}")
+
+
 def verify(kind, name, version, local):
-    info = metadata(kind, name, version)
+    deadline = time.monotonic() + (NPM_READINESS_SECONDS if kind == "npm" else 600)
+    info = metadata(kind, name, version, deadline=deadline)
     if info is None:
         raise RegistryError(f"Cannot verify missing published package {name} {version}")
     if kind == "crate":
@@ -121,8 +143,8 @@ def verify(kind, name, version, local):
         if not re.fullmatch(r"[a-f0-9]{64}", checksum):
             raise RegistryError("Missing published crate checksum")
         url = f"https://static.crates.io/crates/{name}/{name}-{version}.crate"
-        remote = fetch(url, request_seconds=60)
-        if remote is None or hashlib.sha256(remote).hexdigest() != checksum:
+        remote = wait_for_archive(url, deadline=deadline)
+        if hashlib.sha256(remote).hexdigest() != checksum:
             raise RegistryError("Published crate checksum mismatch")
         prefix = name + "-" + version
     else:
@@ -130,8 +152,8 @@ def verify(kind, name, version, local):
         integrity, url = dist.get("integrity", ""), dist.get("tarball", "")
         if not integrity.startswith("sha512-") or not url.startswith("https://"):
             raise RegistryError("Missing npm SHA-512 integrity or HTTPS tarball")
-        remote = fetch(url, request_seconds=60)
-        if remote is None or integrity != "sha512-" + base64.b64encode(hashlib.sha512(remote).digest()).decode():
+        remote = wait_for_archive(url, deadline=deadline)
+        if integrity != "sha512-" + base64.b64encode(hashlib.sha512(remote).digest()).decode():
             raise RegistryError("Published npm archive integrity mismatch")
         prefix = "package"
     actual = archive_files(remote, prefix, crate=kind == "crate")
