@@ -1,0 +1,34 @@
+# Widget UI presentation reads
+
+These are UI App Facades with the standard Full/Essential response and Space read
+policy. They are not Agent/CLI/MCP tools. Inputs reject unknown fields.
+
+| Target | Input | Business output and read boundary |
+| --- | --- | --- |
+| `/app/presentation/widget/list` | Required `{type: "data" \| "button" \| "circadian"}` | `{items, automationNames}`. Reads only that type's Widget table. Global standalone Widgets, defaults and Automation-owned parameters are included; card interiors, Twin and weather internals are excluded. Owner labels use one selected metadata batch, only for returned Automation owners. No script, relation, history or all-type reads. |
+| `/app/presentation/widget/names/get` | `{ids}`: 1–100 selected, trimmed, deduplicated IDs | `{names: {id: displayName}}`. Missing/blank names omitted. Only selected Widget rows; no legacy `name` fallback. |
+| `/app/presentation/widget/defaults/get` | `{}` | `{items, automationNames:{}}`. Preserves the existing default Widget lookup and lazy initialization, then reads the selected Data Widgets. |
+
+Rows carry ID, revision, displayName, description, source/baseId, global, tag,
+current value, and type-specific control configuration. Circadian rows contain
+only `curve`, `curvePreview` (active curve's UI points), current/next values and
+`nextTimestamp`; they omit complete schedules, location and internal state.
+Complete configuration uses `/app/widget/detail/get`; runtime uses
+`/app/widget/value/get`, both selected-ID reads. Full timestamps are milliseconds;
+Essential renders explicit timestamps and typed Timestamp values in Home timezone.
+
+`/app/widget/list` remains the shared summary catalog. Optional `type` limits the
+physical Widget-table read; optional `excludeSources` filters known sources
+(`widget`, `automation`, `special`, `twin`, `weather`). Omitted filters preserve
+the existing global supported-type catalog. It never returns control values or
+full definitions. Dashboard selection excludes Automation-owned parameters and
+adds selected IDs directly without definition/value reads.
+
+The UI loads only the active type, caches visited tabs within the Space and never
+fetches inactive counts. Automation parameters are grouped by owning Automation;
+users can operate them and open the owner but cannot edit/delete their definition.
+Realtime changes update loaded rows, deletes remove them, and reconnect or
+incomplete presentation changes refresh only the relevant active tab. Space
+switches clear caches and reject late responses. Legacy public reads
+`/widget/list`, `/widget/circadian/list`, `/widget/names`, `/widget/default/get`
+are removed; legacy writes and `/widget/reportUpdate` remain separate protocols.

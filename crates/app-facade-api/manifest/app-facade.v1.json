@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.97.0",
+  "contractVersion": "1.98.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -344,6 +344,14 @@
     "resourceTransfer": {
       "requestTargets": [
         "/app/resource/transfer/prepare"
+      ]
+    },
+    "widgetPresentation": {
+      "contract": "contract/widget-presentation-v1.md",
+      "uiRequestTargets": [
+        "/app/presentation/widget/list",
+        "/app/presentation/widget/names/get",
+        "/app/presentation/widget/defaults/get"
       ]
     }
   },

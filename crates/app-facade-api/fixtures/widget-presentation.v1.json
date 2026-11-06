@@ -1,0 +1,96 @@
+{
+  "description": "Fictional Widget presentation conformance examples; expectedFields are business-field excerpts.",
+  "cases": [
+    {
+      "type": "data",
+      "id": "flags-d",
+      "displayName": "Flags",
+      "value": false,
+      "expectedFields": {
+        "id": "flags-d",
+        "type": "data",
+        "displayName": "Flags",
+        "source": "widget",
+        "baseId": "flags-d",
+        "global": true,
+        "revision": 7,
+        "dataType": "Bool",
+        "repeated": false,
+        "value": false
+      },
+      "absentFields": [
+        "schedules",
+        "location",
+        "tenantId",
+        "scopeId",
+        "items"
+      ]
+    },
+    {
+      "type": "button",
+      "id": "run-b",
+      "displayName": "Run",
+      "expectedFields": {
+        "id": "run-b",
+        "type": "button",
+        "displayName": "Run",
+        "label": "Run",
+        "value": null
+      },
+      "absentFields": [
+        "dataType",
+        "repeated",
+        "schedules",
+        "location",
+        "tenantId",
+        "scopeId",
+        "items"
+      ]
+    },
+    {
+      "type": "circadian",
+      "id": "day-c",
+      "displayName": "Day",
+      "value": 0.0,
+      "preview": [
+        {
+          "time": {
+            "hour": 6.0,
+            "minute": 0.0
+          },
+          "value": 10.0,
+          "transition": "linear"
+        }
+      ],
+      "expectedFields": {
+        "id": "day-c",
+        "type": "circadian",
+        "displayName": "Day",
+        "dataType": "Number",
+        "value": 0.0,
+        "next": 10.0,
+        "nextTimestamp": 1794000000000,
+        "curve": "Day",
+        "curvePreview": [
+          {
+            "time": {
+              "hour": 6.0,
+              "minute": 0.0
+            },
+            "value": 10.0,
+            "transition": "linear"
+          }
+        ]
+      },
+      "absentFields": [
+        "repeated",
+        "schedules",
+        "location",
+        "tenantId",
+        "scopeId",
+        "items",
+        "offsetPrev"
+      ]
+    }
+  ]
+}

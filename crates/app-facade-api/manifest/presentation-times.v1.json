@@ -113,5 +113,29 @@
       "automations.*.updatedAt",
       "automations.*.enabledAt"
     ]
+  },
+  "/app/presentation/widget/list": {
+    "ms": [
+      "items.*.nextTimestamp"
+    ],
+    "typedMs": [
+      "items.*.value",
+      "items.*.next",
+      "items.*.options",
+      "items.*.min",
+      "items.*.max"
+    ]
+  },
+  "/app/presentation/widget/defaults/get": {
+    "ms": [
+      "items.*.nextTimestamp"
+    ],
+    "typedMs": [
+      "items.*.value",
+      "items.*.next",
+      "items.*.options",
+      "items.*.min",
+      "items.*.max"
+    ]
   }
 }

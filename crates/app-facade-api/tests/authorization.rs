@@ -163,3 +163,25 @@ fn dashboard_layout_read_is_space_read() {
     );
     assert!(authorization::required("/app/dashboard/canvas/layout/get").is_some());
 }
+
+#[test]
+fn widget_presentation_uses_space_reads_and_retires_the_old_controllers() {
+    for target in [
+        "/app/presentation/widget/list",
+        "/app/presentation/widget/names/get",
+        "/app/presentation/widget/defaults/get",
+    ] {
+        assert_eq!(
+            authorization::required(target),
+            Some(authorization::OperationPolicy::SpaceRead)
+        );
+    }
+    for target in [
+        "/widget/list",
+        "/widget/names",
+        "/widget/default/get",
+        "/widget/circadian/list",
+    ] {
+        assert!(authorization::required(target).is_none());
+    }
+}

@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.97.0",
+  "contractVersion": "1.98.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -370,15 +370,11 @@
     "/widget/batchDelete": "spaceWrite",
     "/widget/button/trigger": "spaceWrite",
     "/widget/circadian/delete": "spaceWrite",
-    "/widget/circadian/list": "spaceRead",
     "/widget/circadian/save": "spaceWrite",
     "/widget/circadian/updateConfig": "spaceWrite",
     "/widget/create": "spaceWrite",
     "/widget/data/update": "spaceWrite",
-    "/widget/default/get": "spaceRead",
     "/widget/history/list": "spaceRead",
-    "/widget/list": "spaceRead",
-    "/widget/names": "spaceRead",
     "/widget/setting/update": "spaceWrite",
     "/app/group/create": "spaceWrite",
     "/app/group/rename": "spaceWrite",
@@ -402,7 +398,10 @@
     "/app/resource/transfer/prepare": "spaceWrite",
     "/app/presentation/automation/list": "spaceRead",
     "/app/presentation/automation/overview/get": "spaceRead",
-    "/app/presentation/automation/placements/get": "spaceRead"
+    "/app/presentation/automation/placements/get": "spaceRead",
+    "/app/presentation/widget/list": "spaceRead",
+    "/app/presentation/widget/names/get": "spaceRead",
+    "/app/presentation/widget/defaults/get": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [
