@@ -87,6 +87,11 @@ A publisher verification failure never tries this path.
 The small manifest contains formatVersion=1, Plugin definition, platform,
 serviceVersion, optional coreProtocol and filesSha256. The complete file inventory
 stays on Host in `preview-files.json`; its hash is covered by the manifest/proof.
+The manifest also carries an explicit `requires` map (possibly empty), keyed by
+`host`/`client` with version requirements. The installing Host parses and checks
+these against installed platform versions before stopping the current service.
+It persists them with installed compatibility for subsequent platform update
+planning. Preview does not silently upgrade Host or Client.
 The inventory contains safe relative paths and each file's size and SHA-256.
 The Host copies and verifies a complete candidate before selection. Proofs never
 include private keys, account credentials or native payload bytes.

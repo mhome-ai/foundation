@@ -27,6 +27,8 @@ pub struct PluginPreviewManifest {
     /// Diagnostic package version, never the identity of a Preview build.
     pub service_version: String,
     pub core_protocol: Option<u32>,
+    /// Local platform requirements, checked by the installing Host.
+    pub requires: BTreeMap<String, String>,
     pub files_sha256: String,
 }
 
@@ -49,6 +51,11 @@ impl PluginPreviewManifest {
 
     pub fn validate(&self) -> Result<(), String> {
         self.plugin.validate()?;
+        if self.requires.iter().any(|(component, requirement)| {
+            !matches!(component.as_str(), "host" | "client") || requirement.trim().is_empty()
+        }) {
+            return Err("Invalid Preview platform requirements".into());
+        }
         if self.format_version != 1
             || self.service_version.trim().is_empty()
             || !matches!(
@@ -157,6 +164,7 @@ mod tests {
             platform: "linux-arm64".into(),
             service_version: "1.0.0".into(),
             core_protocol: None,
+            requires: Default::default(),
             files_sha256: "a".repeat(64),
         }
     }
@@ -193,6 +201,23 @@ mod tests {
         candidate.core_protocol = Some(1);
         assert!(candidate.validate().is_err());
     }
+    #[test]
+    fn preview_requires_explicit_supported_platform_requirements() {
+        let mut candidate = manifest();
+        candidate
+            .requires
+            .insert("host".into(), ">=2.0.0, <3.0.0".into());
+        let raw = serde_json::to_string(&candidate).unwrap();
+        assert_eq!(PluginPreviewManifest::parse(&raw).unwrap(), candidate);
+        let mut wire: serde_json::Value = serde_json::from_str(&raw).unwrap();
+        wire.as_object_mut().unwrap().remove("requires");
+        assert!(PluginPreviewManifest::parse(&wire.to_string()).is_err());
+        candidate
+            .requires
+            .insert("node-other".into(), "=1.0.0".into());
+        assert!(candidate.validate().is_err());
+    }
+
     #[test]
     fn same_version_changed_bytes_have_different_content_identity() {
         let before = manifest();

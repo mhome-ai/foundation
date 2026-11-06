@@ -349,6 +349,7 @@ mod tests {
             platform: "linux-arm64".into(),
             service_version: metadata.service_version.clone(),
             core_protocol: None,
+            requires: Default::default(),
             files_sha256: "a".repeat(64),
         })
         .unwrap();
