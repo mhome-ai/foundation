@@ -1132,33 +1132,6 @@ pub struct ServiceCoreOutput {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserSetting {
-    #[serde(default)]
-    pub script_mode: bool,
-    #[serde(default)]
-    pub debug_mode: bool,
-    #[serde(default)]
-    pub eng_account: bool,
-}
-
-impl UserSetting {
-    pub fn new() -> Self {
-        Self {
-            script_mode: false,
-            debug_mode: false,
-            eng_account: false,
-        }
-    }
-}
-
-impl Default for UserSetting {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct UserInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
@@ -1166,10 +1139,6 @@ pub struct UserInfo {
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub setting: Option<UserSetting>,
-    #[serde(default)]
-    pub eng: bool,
 }
 
 impl UserInfo {
@@ -1178,8 +1147,6 @@ impl UserInfo {
             id: Some(id),
             name: None,
             email: None,
-            setting: None,
-            eng: false,
         }
     }
 }
