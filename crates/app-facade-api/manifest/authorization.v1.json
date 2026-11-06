@@ -361,8 +361,6 @@
     "/pod/talk/speech/prepare": "spaceWrite",
     "/pod/talk/turn/submit": "spaceWrite",
     "/pod/talk/view/get": "spaceRead",
-    "/quickword/standard/list": "spaceRead",
-    "/quickword/standard/listRelatedAutomations": "spaceRead",
     "/schedule/list": "spaceRead",
     "/twin/batchDisable": "spaceWrite",
     "/twin/batchGetLatest": "spaceRead",

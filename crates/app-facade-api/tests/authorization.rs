@@ -138,6 +138,12 @@ fn quickword_has_one_read_and_one_direct_write() {
         Some(OperationPolicy::SpaceWrite)
     );
     assert_eq!(authorization::required("/app/quickword/brief/list"), None);
+    for target in [
+        "/quickword/standard/list",
+        "/quickword/standard/listRelatedAutomations",
+    ] {
+        assert_eq!(authorization::required(target), None, "{target}");
+    }
 }
 
 #[test]
