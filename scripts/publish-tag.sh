@@ -155,6 +155,7 @@ crate_archive="$cargo_target/package/${package}-${version}.crate"
 staging_root=""
 protocol_tarball=""
 protocol_provenance=""
+npm_already_published=0
 if [[ -n "${protocol}" ]]; then
   npm run test:protocol-packages
   staging_root="$(mktemp -d)"
@@ -166,7 +167,14 @@ if [[ -n "${protocol}" ]]; then
     echo "failed to build ${npm_package} ${version}" >&2
     exit 1
   fi
-  npm publish "${protocol_tarball}" --dry-run --access public --tag latest >/dev/null
+  # npm rejects publish --dry-run too when this version already exists. Verify
+  # the existing archive instead, before allowing either registry to be changed.
+  if registry_exists npm "$npm_package" "$version"; then
+    python3 -B "$registry_script" verify npm "$npm_package" "$version" "$protocol_tarball"
+    npm_already_published=1
+  else
+    npm publish "${protocol_tarball}" --dry-run --access public --tag latest >/dev/null
+  fi
 fi
 
 if [[ "${publish}" != "--publish" ]]; then
@@ -185,8 +193,10 @@ if [[ -n "${npm_package}" ]]; then
     echo "Protocol publication requires npm 12.2.1 for supplied provenance" >&2
     exit 1
   fi
-  protocol_provenance="${staging_root}/provenance.sigstore.json"
-  node scripts/protocol-provenance.mjs "${npm_package}" "${version}" "${protocol_tarball}" "${protocol_provenance}"
+  if [[ "$npm_already_published" -eq 0 ]]; then
+    protocol_provenance="${staging_root}/provenance.sigstore.json"
+    node scripts/protocol-provenance.mjs "${npm_package}" "${version}" "${protocol_tarball}" "${protocol_provenance}"
+  fi
 fi
 
 if registry_exists crate "$package" "$version"; then
@@ -206,7 +216,9 @@ node "$readiness_script" "$package" "$version"
 python3 -B "$registry_script" verify crate "$package" "$version" "$crate_archive"
 
 if [[ -n "${npm_package}" ]]; then
-  if registry_exists npm "$npm_package" "$version"; then
+  if [[ "$npm_already_published" -eq 1 ]]; then
+    echo "${npm_package} ${version} is already published and verified"
+  elif registry_exists npm "$npm_package" "$version"; then
     python3 -B "$registry_script" verify npm "$npm_package" "$version" "$protocol_tarball"
     echo "${npm_package} ${version} is already published"
   else

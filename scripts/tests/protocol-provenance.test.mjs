@@ -129,7 +129,7 @@ test("a recovered entry cannot bypass signature or proof verification failure", 
   });
 });
 
-for (const outcome of ["success", "proof-failure", "rejected", "lost-response"]) {
+for (const outcome of ["success", "proof-failure", "rejected", "lost-response", "already-published", "npm-already-published", "crate-already-published", "mismatched-published", "registry-error"]) {
   test(`protocol publication preserves verified proof and handles ${outcome}`, () => {
     const failProof = outcome === "proof-failure";
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "foundation-publish-proof-"));
@@ -148,6 +148,10 @@ if (tool === 'cargo' && args[0] === 'package') {
 }
 if (tool === 'npm' && args[0] === '--version') console.log('12.2.1');
 if (tool === 'npm' && args[0] === 'pack') fs.writeFileSync(path.join(args[args.indexOf('--pack-destination')+1], 'protocol.tgz'), 'tarball');
+if (tool === 'npm' && args[0] === 'publish' && args.includes('--dry-run') && ['already-published', 'npm-already-published'].includes(process.env.UPLOAD_OUTCOME)) {
+  console.error('You cannot publish over the previously published versions');
+  process.exit(1);
+}
 if ((tool === 'npm' && args[0] === 'view') || tool === 'curl') process.exit(1);
 if (tool === 'node' && args[0] === 'scripts/protocol-provenance.mjs') {
   if (process.env.FAIL_PROOF === 'true') process.exit(1);
@@ -160,7 +164,7 @@ if (tool === 'node' && args[0].endsWith('/upload-npm.mjs')) {
 if (tool === 'npm' && args[0] === 'publish' && !args.includes('--dry-run')) {
   if (!args.includes('--provenance-file') || args.includes('--provenance')) process.exit(2);
   if (fs.readFileSync(args[args.indexOf('--provenance-file')+1], 'utf8') !== 'verified bundle') process.exit(3);
-  if (process.env.UPLOAD_OUTCOME !== 'success') {
+  if (['rejected', 'lost-response'].includes(process.env.UPLOAD_OUTCOME)) {
     console.log(JSON.stringify({error:{code:process.env.UPLOAD_OUTCOME === 'rejected' ? 'E404' : 'ECONNRESET'}}));
     process.exit(1);
   }
@@ -169,7 +173,14 @@ if (tool === 'npm' && args[0] === 'publish' && !args.includes('--dry-run')) {
     for (const tool of ["cargo", "curl", "node", "npm"]) fs.writeFileSync(path.join(bin, tool), mock, { mode: 0o755 });
     fs.writeFileSync(path.join(bin, "python3"), registryPythonFixture(`
 require('node:fs').appendFileSync(process.env.CALL_LOG, JSON.stringify(['python3', ...args]) + '\\n');
-if (operation === 'exists') process.exit(3);
+const outcome = process.env.UPLOAD_OUTCOME;
+if (operation === 'exists') {
+  if (outcome === 'registry-error' && args[3] === 'npm') process.exit(2);
+  if (outcome === 'npm-already-published') process.exit(args[3] === 'npm' ? 0 : 3);
+  if (outcome === 'crate-already-published') process.exit(args[3] === 'crate' ? 0 : 3);
+  process.exit(['already-published', 'mismatched-published'].includes(outcome) ? 0 : 3);
+}
+if (operation === 'verify' && args[3] === 'npm' && outcome === 'mismatched-published') process.exit(2);
 `), { mode: 0o755 });
     const callLog = path.join(root, "calls.jsonl");
     try {
@@ -179,12 +190,19 @@ if (operation === 'exists') process.exit(3);
       const calls = fs.readFileSync(callLog, "utf8").trim().split("\n").map(JSON.parse);
       const proof = calls.findIndex(([tool, arg]) => tool === "node" && arg === "scripts/protocol-provenance.mjs");
       const uploads = calls.map((call, i) => ({ call, i })).filter(({ call }) => ["cargo", "npm"].includes(call[0]) && call[1] === "publish" && !call.includes("--dry-run"));
-      assert.ok(proof >= 0);
-      assert.equal(result.status, failProof || outcome === "rejected" ? 1 : 0, result.stderr);
-      assert.equal(uploads.length, failProof ? 0 : 2);
-      assert.ok(uploads.every(({ i }) => i > proof));
+      const existingOrError = ["already-published", "npm-already-published", "mismatched-published", "registry-error"].includes(outcome);
+      assert.equal(proof >= 0, !existingOrError);
+      assert.equal(result.status, outcome === "registry-error" || outcome === "mismatched-published" ? 2 : failProof || outcome === "rejected" ? 1 : 0, result.stderr);
+      const partial = ["npm-already-published", "crate-already-published"].includes(outcome);
+      assert.equal(uploads.length, partial ? 1 : failProof || existingOrError ? 0 : 2);
+      if (!existingOrError) assert.ok(uploads.every(({ i }) => i > proof));
+      if (partial) assert.equal(uploads[0].call[0], outcome === 'npm-already-published' ? 'cargo' : 'npm');
       const waits = calls.filter(call => call[0] === 'python3' && call[3] === 'wait' && call[4] === 'npm');
-      assert.equal(waits.length, failProof || outcome === 'rejected' ? 0 : 1);
+      assert.equal(waits.length, failProof || existingOrError || outcome === 'rejected' ? 0 : 1);
+      if (['already-published', 'npm-already-published'].includes(outcome)) {
+        assert.equal(calls.some(call => call[0] === 'npm' && call[1] === 'publish'), false);
+        assert.ok(calls.some(call => call[0] === 'python3' && call[3] === 'verify' && call[4] === 'npm'));
+      }
       if (outcome === 'rejected') assert.match(result.stderr, /npm rejected publication \(E404\)/);
     } finally { fs.rmSync(root, { recursive: true, force: true }); }
   });
