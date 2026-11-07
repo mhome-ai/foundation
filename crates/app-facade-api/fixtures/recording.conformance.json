@@ -1,0 +1,393 @@
+[
+  {
+    "target": "/app/widget/data/update",
+    "input": {
+      "widgetId": "lamp-d",
+      "typedValue": 0,
+      "internal": "secret"
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": {
+      "event": "widget.value.set",
+      "widgetId": "lamp-d",
+      "typedValue": 0,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/widget/data/update",
+    "input": {
+      "widgetId": "lamp-d",
+      "typedValue": null
+    },
+    "outcome": {
+      "status": "error",
+      "error": {
+        "code": "UNREACHABLE",
+        "message": "private",
+        "details": {
+          "token": "secret"
+        }
+      }
+    },
+    "expected": {
+      "event": "widget.value.set",
+      "widgetId": "lamp-d",
+      "typedValue": null,
+      "status": "error",
+      "errorCode": "UNREACHABLE"
+    }
+  },
+  {
+    "target": "/app/widget/delete",
+    "input": {
+      "widgetIds": [
+        "x-d",
+        "wake-c"
+      ]
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": {
+      "event": "circadian.deleted",
+      "widgetIds": [
+        "wake-c"
+      ],
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/widget/delete",
+    "input": {
+      "widgetIds": [
+        "x-d"
+      ]
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/widget/circadian/config/update",
+    "input": {
+      "widgetId": "wake-c",
+      "displayName": "Wake"
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/widget/circadian/runtime/update",
+    "input": {
+      "widgetId": "wake-c",
+      "offset": 0,
+      "multiplier": 1
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": {
+      "event": "circadian.adjusted",
+      "widgetId": "wake-c",
+      "offset": 0,
+      "multiplier": 1,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/automation/start",
+    "input": {
+      "automationId": "a",
+      "timezone": "Asia/Shanghai"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "enabled": true,
+        "running": false
+      }
+    },
+    "expected": {
+      "event": "automation.start",
+      "automationId": "a",
+      "enabled": true,
+      "running": false,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/dialog/reply",
+    "input": {
+      "dialogId": "d",
+      "value": {
+        "choice": false
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "accepted": true,
+        "dialog": {
+          "images": [
+            "private"
+          ]
+        }
+      }
+    },
+    "expected": {
+      "event": "dialog.answered",
+      "dialogId": "d",
+      "value": {
+        "choice": false
+      },
+      "accepted": true,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "mlinkHue.device.command.onOff",
+      "request": {
+        "device": "device1",
+        "command": "off",
+        "internal": "secret"
+      }
+    },
+    "outcome": {
+      "status": "partial",
+      "data": {}
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "mlinkHue.device.command.onOff",
+      "parameters": {
+        "device": "device1",
+        "command": "off"
+      },
+      "status": "partial"
+    }
+  },
+  {
+    "target": "/app/capability/invoke",
+    "input": {
+      "capabilityId": "basic.device.command.onOff",
+      "request": "device: lamp\ncommand: 'off'"
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.onOff",
+      "parameters": {
+        "device": "lamp",
+        "command": "off"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/device/disable",
+    "input": {},
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/room/rename",
+    "input": {},
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/plugin/camera/device/settings/update",
+    "input": {},
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/agent/memory/save",
+    "input": {},
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/automation/list",
+    "input": {},
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.getImageSnapshot",
+      "request": {}
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.prepareWebrtcSession",
+      "request": {}
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.identify",
+      "request": {}
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.onOff",
+      "request": {
+        "device": {
+          "uid": "lamp",
+          "name": "Desk lamp",
+          "attributes": {
+            "private": "hidden"
+          }
+        },
+        "command": "on"
+      }
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.onOff",
+      "parameters": {
+        "device": {
+          "uid": "lamp",
+          "name": "Desk lamp"
+        },
+        "command": "on"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/presentation/automation/copy",
+    "input": {
+      "automationId": "old",
+      "name": "Bedtime"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "automationId": "new"
+      }
+    },
+    "expected": {
+      "event": "automation.copy",
+      "fromAutomationId": "old",
+      "automationId": "new",
+      "name": "Bedtime",
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke",
+    "input": {
+      "capabilityId": "basic.device.command.onOff",
+      "request": "device: lamp\ncommand: on"
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.onOff",
+      "parameters": {
+        "device": "lamp",
+        "command": "on"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke",
+    "input": {
+      "capabilityId": "basic.device.command.setBrightness",
+      "request": "device: lamp\nbrightness: 08"
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setBrightness",
+      "parameters": {
+        "device": "lamp",
+        "brightness": "08"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke",
+    "input": {
+      "capabilityId": "basic.device.command.setBrightness",
+      "request": "device: lamp\nbrightness: 010"
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setBrightness",
+      "parameters": {
+        "device": "lamp",
+        "brightness": "010"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/widget/circadian/config/update",
+    "input": {
+      "widget_id": "w-c",
+      "location_id": "home"
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": {
+      "event": "circadian.configured",
+      "widgetId": "w-c",
+      "locationId": "home",
+      "status": "success"
+    }
+  }
+]

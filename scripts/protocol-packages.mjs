@@ -62,6 +62,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "manifest/authorization.v1.json",
       "manifest/presentation-times.v1.json",
       "manifest/attention-policy.v1.json",
+      "manifest/recording.v1.json",
+      "contract/household-recording-v1.md",
       "contract/now-attention-v1.md",
       "manifest/hub-targets.v1.json",
       "manifest/pod-targets.v1.json",
@@ -97,6 +99,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     ]),
     schemas: Object.freeze({
       storage: "schema/storage.v1.schema.json",
+      householdRecording: "schema/household-recording.v1.schema.json",
       nowAttention: "schema/now-attention.v1.schema.json",
       billing: "schema/billing.v1.schema.json",
       pluginInstall: "schema/plugin-install.v1.schema.json",

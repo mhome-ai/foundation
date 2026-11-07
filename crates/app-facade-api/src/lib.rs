@@ -24,11 +24,12 @@ pub mod nfc;
 pub mod plugin;
 pub mod pod;
 pub mod pod_call;
+pub mod recording;
 pub mod routing;
 pub mod runtime;
 pub mod topology;
 
-pub use call::{ActionMode, FacadeCall, FacadeControl, ResponseDetail};
+pub use call::{ActionMode, FacadeCall, FacadeControl, FacadeSource, ResponseDetail, SourceKind};
 
 pub const PROTOCOL_VERSION: &str = "app-facade.v1";
 

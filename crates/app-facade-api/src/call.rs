@@ -68,6 +68,9 @@ impl FacadeControl {
 pub struct FacadeCall {
     pub control: FacadeControl,
     pub input: Value,
+    /// Attribution hints only. Authority and actor always come from verified ingress.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<FacadeSource>,
 }
 
 impl FacadeCall {
@@ -76,6 +79,7 @@ impl FacadeCall {
         Self {
             control: FacadeControl::default(),
             input,
+            source: None,
         }
     }
 
@@ -109,6 +113,17 @@ mod tests {
     }
 
     #[test]
+    fn source_is_optional_and_survives_serialization() {
+        let value = serde_json::json!({"control":{"mode":"direct"},"input":{},"source":{"kind":"skill","cardId":"card"}});
+        let call: FacadeCall = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(serde_json::to_value(call).unwrap(), value);
+        assert!(serde_json::from_value::<FacadeCall>(
+            serde_json::json!({"control":{"mode":"direct"},"input":{},"source":{"kind":"unknown"}})
+        )
+        .is_err());
+    }
+
+    #[test]
     fn action_credentials_are_mode_specific() {
         let invalid = FacadeControl {
             mode: ActionMode::Commit,
@@ -124,4 +139,25 @@ mod tests {
         };
         assert!(whitespace.validate().is_err());
     }
+}
+
+/// Single origin surface; forwarded unchanged. Agent/MCP ingress overrides public hints.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FacadeSource {
+    pub kind: SourceKind,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub page: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub card_id: Option<String>,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SourceKind {
+    Ui,
+    Agent,
+    Messaging,
+    Cli,
+    Skill,
+    Mcp,
 }

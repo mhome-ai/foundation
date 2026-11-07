@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Household behavior record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "occurredAtMs",
+    "finishedAtMs",
+    "actor",
+    "source",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "occurredAtMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "finishedAtMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "actor": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "userId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "user"
+            },
+            "userId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "space"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "agent"
+            },
+            "agentId": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "ui",
+            "agent",
+            "messaging",
+            "cli",
+            "skill",
+            "mcp"
+          ]
+        },
+        "appClientId": {
+          "type": "string"
+        },
+        "page": {
+          "type": "string"
+        },
+        "cardId": {
+          "type": "string"
+        },
+        "surfaceId": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "event",
+        "status"
+      ],
+      "properties": {
+        "event": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "success",
+            "partial",
+            "error",
+            "cancelled"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -4,44 +4,158 @@
   "title": "App Facade call",
   "type": "object",
   "additionalProperties": false,
-  "required": ["control", "input"],
+  "required": [
+    "control",
+    "input"
+  ],
   "properties": {
     "control": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["mode"],
+      "required": [
+        "mode"
+      ],
       "properties": {
-        "mode": { "enum": ["direct", "prepare", "commit", "reject"] },
-        "preparedActionId": { "type": "string", "minLength": 1, "pattern": ".*\\S.*" },
-        "approvalToken": { "type": "string", "minLength": 1, "pattern": ".*\\S.*" },
-        "responseDetail": { "enum": ["full", "essential"] }
+        "mode": {
+          "enum": [
+            "direct",
+            "prepare",
+            "commit",
+            "reject"
+          ]
+        },
+        "preparedActionId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": ".*\\S.*"
+        },
+        "approvalToken": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": ".*\\S.*"
+        },
+        "responseDetail": {
+          "enum": [
+            "full",
+            "essential"
+          ]
+        }
       },
       "allOf": [
         {
-          "if": { "properties": { "mode": { "enum": ["direct", "prepare"] } } },
+          "if": {
+            "properties": {
+              "mode": {
+                "enum": [
+                  "direct",
+                  "prepare"
+                ]
+              }
+            }
+          },
           "then": {
             "not": {
               "anyOf": [
-                { "properties": { "preparedActionId": {} }, "required": ["preparedActionId"] },
-                { "properties": { "approvalToken": {} }, "required": ["approvalToken"] }
+                {
+                  "properties": {
+                    "preparedActionId": {}
+                  },
+                  "required": [
+                    "preparedActionId"
+                  ]
+                },
+                {
+                  "properties": {
+                    "approvalToken": {}
+                  },
+                  "required": [
+                    "approvalToken"
+                  ]
+                }
               ]
             }
           }
         },
         {
-          "if": { "properties": { "mode": { "const": "commit" } } },
-          "then": { "properties": { "preparedActionId": {}, "approvalToken": {} }, "required": ["preparedActionId", "approvalToken"] }
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "commit"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "preparedActionId": {},
+              "approvalToken": {}
+            },
+            "required": [
+              "preparedActionId",
+              "approvalToken"
+            ]
+          }
         },
         {
-          "if": { "properties": { "mode": { "const": "reject" } } },
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "reject"
+              }
+            }
+          },
           "then": {
-            "properties": { "preparedActionId": {} },
-            "required": ["preparedActionId"],
-            "not": { "properties": { "approvalToken": {} }, "required": ["approvalToken"] }
+            "properties": {
+              "preparedActionId": {}
+            },
+            "required": [
+              "preparedActionId"
+            ],
+            "not": {
+              "properties": {
+                "approvalToken": {}
+              },
+              "required": [
+                "approvalToken"
+              ]
+            }
           }
         }
       ]
     },
-    "input": true
+    "input": true,
+    "source": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "ui",
+            "agent",
+            "messaging",
+            "cli",
+            "skill",
+            "mcp"
+          ]
+        },
+        "page": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cardId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
   }
 }

@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "target": "/app/capability/invoke",
+      "event": "device.command",
+      "input": [],
+      "output": [],
+      "hook": "capability"
+    },
+    {
+      "target": "/app/capability/invoke/json",
+      "event": "device.command",
+      "input": [],
+      "output": [],
+      "hook": "capability"
+    },
+    {
+      "target": "/app/widget/data/update",
+      "event": "widget.value.set",
+      "input": [
+        "widgetId",
+        "typedValue",
+        "value",
+        "values"
+      ],
+      "output": []
+    },
+    {
+      "target": "/app/widget/button/trigger",
+      "event": "widget.button.pressed",
+      "input": [
+        "widgetId",
+        "clickType"
+      ],
+      "output": []
+    },
+    {
+      "target": "/app/widget/circadian/runtime/update",
+      "event": "circadian.adjusted",
+      "input": [
+        "widgetId",
+        "curve",
+        "offset",
+        "multiplier"
+      ],
+      "output": []
+    },
+    {
+      "target": "/app/automation/start",
+      "event": "automation.start",
+      "input": [
+        "automationId"
+      ],
+      "output": [
+        "enabled",
+        "running"
+      ]
+    },
+    {
+      "target": "/app/automation/stop",
+      "event": "automation.stop",
+      "input": [
+        "automationId"
+      ],
+      "output": [
+        "enabled",
+        "running"
+      ]
+    },
+    {
+      "target": "/app/presentation/automation/generated/enable",
+      "event": "automation.enable",
+      "input": [
+        "automationId"
+      ],
+      "output": [
+        "automationId",
+        "enabled",
+        "running"
+      ]
+    },
+    {
+      "target": "/app/presentation/automation/generated/disable",
+      "event": "automation.disable",
+      "input": [
+        "automationId"
+      ],
+      "output": [
+        "automationId",
+        "enabled",
+        "running"
+      ]
+    },
+    {
+      "target": "/app/presentation/automation/generated/run",
+      "event": "automation.run",
+      "input": [
+        "automationId"
+      ],
+      "output": [
+        "automationId",
+        "enabled",
+        "running"
+      ]
+    },
+    {
+      "target": "/app/quickword/run",
+      "event": "quickword.invoked",
+      "input": [
+        "quickWord",
+        "values"
+      ],
+      "output": [
+        "dispatched"
+      ]
+    },
+    {
+      "target": "/app/dialog/reply",
+      "event": "dialog.answered",
+      "input": [
+        "dialogId",
+        "value"
+      ],
+      "output": [
+        "accepted"
+      ]
+    },
+    {
+      "target": "/app/automation/save",
+      "event": "automation.saved",
+      "input": [
+        "automationId",
+        "singleUse",
+        "restoreEnabled"
+      ],
+      "output": [
+        "automationId"
+      ],
+      "hook": "automationSource"
+    },
+    {
+      "target": "/app/presentation/automation/overview/save",
+      "event": "automation.saved",
+      "input": [
+        "automationId"
+      ],
+      "output": [
+        "automationId",
+        "enabled"
+      ]
+    },
+    {
+      "target": "/app/presentation/automation/copy",
+      "event": "automation.copy",
+      "input": [
+        "name"
+      ],
+      "output": [
+        "automationId"
+      ],
+      "hook": "automationCopy"
+    },
+    {
+      "target": "/app/presentation/automation/enroll",
+      "event": "automation.enroll",
+      "input": [
+        "name"
+      ],
+      "output": [
+        "automationId"
+      ],
+      "hook": "automationCopy"
+    },
+    {
+      "target": "/app/automation/delete",
+      "event": "automation.deleted",
+      "input": [
+        "automationId",
+        "automationIds"
+      ],
+      "output": []
+    },
+    {
+      "target": "/app/automation/snapshot/rollback",
+      "event": "automation.restored",
+      "input": [
+        "automationId",
+        "snapshotId"
+      ],
+      "output": [
+        "automationId"
+      ]
+    },
+    {
+      "target": "/app/widget/circadian/create",
+      "event": "circadian.configured",
+      "input": [
+        "widgetId",
+        "locationId",
+        "schedules",
+        "curve",
+        "offset",
+        "multiplier"
+      ],
+      "output": [
+        "widgetId"
+      ],
+      "hook": "circadian"
+    },
+    {
+      "target": "/app/widget/circadian/config/update",
+      "event": "circadian.configured",
+      "input": [
+        "widgetId",
+        "locationId",
+        "schedules",
+        "curve",
+        "offset",
+        "multiplier"
+      ],
+      "output": [
+        "widgetId"
+      ],
+      "hook": "circadian"
+    },
+    {
+      "target": "/app/widget/delete",
+      "event": "circadian.deleted",
+      "input": [
+        "widgetIds"
+      ],
+      "output": [],
+      "hook": "circadianDelete"
+    }
+  ],
+  "deviceCommands": {
+    "onOff": [
+      "device",
+      "command"
+    ],
+    "setBrightness": [
+      "device",
+      "brightness",
+      "transitionDuration"
+    ],
+    "setColorTemperature": [
+      "device",
+      "colorTemperature",
+      "transitionDuration"
+    ],
+    "setColorRGB": [
+      "device",
+      "hue",
+      "saturation",
+      "transitionDuration"
+    ],
+    "setThermostatTemperature": [
+      "device",
+      "coolingSetpoint",
+      "heatingSetpoint"
+    ],
+    "setThermostatMode": [
+      "device",
+      "hvacMode",
+      "presetMode"
+    ],
+    "setFan": [
+      "device",
+      "mode",
+      "speed"
+    ],
+    "coverOpenClose": [
+      "device",
+      "command",
+      "position",
+      "transitionDuration"
+    ],
+    "lockUnlock": [
+      "device",
+      "command"
+    ],
+    "playMedia": [
+      "device",
+      "providerMediaContentId",
+      "mediaContent"
+    ],
+    "controlMediaPlayback": [
+      "device",
+      "command"
+    ],
+    "seekMediaPlayback": [
+      "device",
+      "position"
+    ],
+    "setAudioVolume": [
+      "device",
+      "volume"
+    ],
+    "setAudioMute": [
+      "device",
+      "command"
+    ],
+    "broadcastAudio": [
+      "device",
+      "audio",
+      "volume",
+      "priority"
+    ],
+    "chime": [
+      "device",
+      "command"
+    ],
+    "dispensePetFood": [
+      "device",
+      "portions",
+      "weight"
+    ],
+    "cameraPtz": [
+      "device",
+      "command",
+      "preset",
+      "speed",
+      "duration"
+    ],
+    "setCameraRecording": [
+      "device",
+      "mode"
+    ],
+    "setCameraSetting": [
+      "device",
+      "monitoringMode",
+      "personRecognitionMode"
+    ],
+    "startAudioRecording": [
+      "device"
+    ],
+    "stopAudioRecording": [
+      "device"
+    ]
+  },
+  "deviceCapabilities": {
+    "audioBridge.device.command.broadcastAudio": "broadcastAudio",
+    "audioBridge.device.command.controlMediaPlayback": "controlMediaPlayback",
+    "audioBridge.device.command.playMedia": "playMedia",
+    "audioBridge.device.command.seekMediaPlayback": "seekMediaPlayback",
+    "audioBridge.device.command.setAudioMute": "setAudioMute",
+    "audioBridge.device.command.setAudioVolume": "setAudioVolume",
+    "audioBridge.device.command.startAudioRecording": "startAudioRecording",
+    "audioBridge.device.command.stopAudioRecording": "stopAudioRecording",
+    "basic.device.command.broadcastAudio": "broadcastAudio",
+    "basic.device.command.cameraPtz": "cameraPtz",
+    "basic.device.command.chime": "chime",
+    "basic.device.command.controlMediaPlayback": "controlMediaPlayback",
+    "basic.device.command.coverOpenClose": "coverOpenClose",
+    "basic.device.command.dispensePetFood": "dispensePetFood",
+    "basic.device.command.lockUnlock": "lockUnlock",
+    "basic.device.command.onOff": "onOff",
+    "basic.device.command.playMedia": "playMedia",
+    "basic.device.command.seekMediaPlayback": "seekMediaPlayback",
+    "basic.device.command.setAudioMute": "setAudioMute",
+    "basic.device.command.setAudioVolume": "setAudioVolume",
+    "basic.device.command.setBrightness": "setBrightness",
+    "basic.device.command.setCameraRecording": "setCameraRecording",
+    "basic.device.command.setCameraSetting": "setCameraSetting",
+    "basic.device.command.setColorRGB": "setColorRGB",
+    "basic.device.command.setColorTemperature": "setColorTemperature",
+    "basic.device.command.setFan": "setFan",
+    "basic.device.command.setThermostatMode": "setThermostatMode",
+    "basic.device.command.setThermostatTemperature": "setThermostatTemperature",
+    "basic.device.command.startAudioRecording": "startAudioRecording",
+    "basic.device.command.stopAudioRecording": "stopAudioRecording",
+    "camera.device.command.cameraPtz": "cameraPtz",
+    "camera.device.command.onOff": "onOff",
+    "camera.device.command.setCameraSetting": "setCameraSetting",
+    "mlinkGoogleCast.device.command.broadcastAudio": "broadcastAudio",
+    "mlinkGoogleCast.device.command.controlMediaPlayback": "controlMediaPlayback",
+    "mlinkGoogleCast.device.command.playMedia": "playMedia",
+    "mlinkGoogleCast.device.command.setAudioMute": "setAudioMute",
+    "mlinkGoogleCast.device.command.setAudioVolume": "setAudioVolume",
+    "mlinkHomeAssistant.device.command.broadcastAudio": "broadcastAudio",
+    "mlinkHomeAssistant.device.command.chime": "chime",
+    "mlinkHomeAssistant.device.command.controlMediaPlayback": "controlMediaPlayback",
+    "mlinkHomeAssistant.device.command.coverOpenClose": "coverOpenClose",
+    "mlinkHomeAssistant.device.command.lockUnlock": "lockUnlock",
+    "mlinkHomeAssistant.device.command.onOff": "onOff",
+    "mlinkHomeAssistant.device.command.playMedia": "playMedia",
+    "mlinkHomeAssistant.device.command.setAudioMute": "setAudioMute",
+    "mlinkHomeAssistant.device.command.setAudioVolume": "setAudioVolume",
+    "mlinkHomeAssistant.device.command.setBrightness": "setBrightness",
+    "mlinkHomeAssistant.device.command.setColorRGB": "setColorRGB",
+    "mlinkHomeAssistant.device.command.setColorTemperature": "setColorTemperature",
+    "mlinkHomeAssistant.device.command.setFan": "setFan",
+    "mlinkHomeAssistant.device.command.setThermostatMode": "setThermostatMode",
+    "mlinkHomeAssistant.device.command.setThermostatTemperature": "setThermostatTemperature",
+    "mlinkHue.device.command.onOff": "onOff",
+    "mlinkHue.device.command.setBrightness": "setBrightness",
+    "mlinkHue.device.command.setColorRGB": "setColorRGB",
+    "mlinkHue.device.command.setColorTemperature": "setColorTemperature",
+    "mlinkLutron.device.command.coverOpenClose": "coverOpenClose",
+    "mlinkLutron.device.command.onOff": "onOff",
+    "mlinkLutron.device.command.setBrightness": "setBrightness",
+    "mlinkLutron.device.command.setFan": "setFan",
+    "mlinkMatter.device.command.coverOpenClose": "coverOpenClose",
+    "mlinkMatter.device.command.lockUnlock": "lockUnlock",
+    "mlinkMatter.device.command.onOff": "onOff",
+    "mlinkMatter.device.command.setAudioMute": "setAudioMute",
+    "mlinkMatter.device.command.setAudioVolume": "setAudioVolume",
+    "mlinkMatter.device.command.setBrightness": "setBrightness",
+    "mlinkMatter.device.command.setColorRGB": "setColorRGB",
+    "mlinkMatter.device.command.setColorTemperature": "setColorTemperature",
+    "mlinkMatter.device.command.setFan": "setFan",
+    "mlinkMatter.device.command.setThermostatMode": "setThermostatMode",
+    "mlinkMatter.device.command.setThermostatTemperature": "setThermostatTemperature",
+    "mlinkShelly.device.command.coverOpenClose": "coverOpenClose",
+    "mlinkShelly.device.command.onOff": "onOff",
+    "mlinkShelly.device.command.setBrightness": "setBrightness",
+    "mlinkShelly.device.command.setColorRGB": "setColorRGB",
+    "mlinkShelly.device.command.setColorTemperature": "setColorTemperature",
+    "mlinkSmartThings.device.command.broadcastAudio": "broadcastAudio",
+    "mlinkSmartThings.device.command.chime": "chime",
+    "mlinkSmartThings.device.command.controlMediaPlayback": "controlMediaPlayback",
+    "mlinkSmartThings.device.command.coverOpenClose": "coverOpenClose",
+    "mlinkSmartThings.device.command.lockUnlock": "lockUnlock",
+    "mlinkSmartThings.device.command.onOff": "onOff",
+    "mlinkSmartThings.device.command.setAudioMute": "setAudioMute",
+    "mlinkSmartThings.device.command.setAudioVolume": "setAudioVolume",
+    "mlinkSmartThings.device.command.setBrightness": "setBrightness",
+    "mlinkSmartThings.device.command.setColorRGB": "setColorRGB",
+    "mlinkSmartThings.device.command.setColorTemperature": "setColorTemperature",
+    "mlinkSmartThings.device.command.setFan": "setFan",
+    "mlinkSmartThings.device.command.setThermostatMode": "setThermostatMode",
+    "mlinkSmartThings.device.command.setThermostatTemperature": "setThermostatTemperature",
+    "mlinkSonos.device.command.broadcastAudio": "broadcastAudio",
+    "mlinkSonos.device.command.controlMediaPlayback": "controlMediaPlayback",
+    "mlinkSonos.device.command.playMedia": "playMedia",
+    "mlinkSonos.device.command.setAudioMute": "setAudioMute",
+    "mlinkSonos.device.command.setAudioVolume": "setAudioVolume",
+    "playground.device.command.broadcastAudio": "broadcastAudio",
+    "playground.device.command.chime": "chime",
+    "playground.device.command.controlMediaPlayback": "controlMediaPlayback",
+    "playground.device.command.coverOpenClose": "coverOpenClose",
+    "playground.device.command.lockUnlock": "lockUnlock",
+    "playground.device.command.onOff": "onOff",
+    "playground.device.command.playMedia": "playMedia",
+    "playground.device.command.setAudioMute": "setAudioMute",
+    "playground.device.command.setAudioVolume": "setAudioVolume",
+    "playground.device.command.setBrightness": "setBrightness",
+    "playground.device.command.setColorRGB": "setColorRGB",
+    "playground.device.command.setColorTemperature": "setColorTemperature",
+    "playground.device.command.setFan": "setFan",
+    "playground.device.command.setThermostatMode": "setThermostatMode",
+    "playground.device.command.setThermostatTemperature": "setThermostatTemperature",
+    "smartLife.device.command.onOff": "onOff",
+    "smartLife.device.command.setBrightness": "setBrightness",
+    "smartLife.device.command.setColorRGB": "setColorRGB",
+    "smartLife.device.command.setColorTemperature": "setColorTemperature",
+    "smartLife.device.command.setFan": "setFan",
+    "xiaomi.device.command.onOff": "onOff",
+    "xiaomi.device.command.setBrightness": "setBrightness",
+    "xiaomi.device.command.setColorRGB": "setColorRGB",
+    "xiaomi.device.command.setColorTemperature": "setColorTemperature",
+    "xiaomi.device.command.setFan": "setFan"
+  }
+}

@@ -12,7 +12,10 @@ or forwarded by authenticated Cloud ingress. The separate Hub `/local/*`
 protocol carries domain input and never uses the public envelope.
 
 Every `/app/*` request uses the strict `FacadeCall` envelope. Invocation
-metadata lives in `control`; the domain request lives in `input`. The crate
+metadata lives in `control`; the domain request lives in `input`. Optional
+`source` hints identify the originating surface without selecting actor or authority.
+See [household behavior recording](contract/household-recording-v1.md) for the
+shared projection contract and runtime ownership. The crate
 owns public targets, request/response/event schemas, and stable operation
 identity. Core-to-Node routes and provider runtime models belong to
 `mhome-core-api` instead.
