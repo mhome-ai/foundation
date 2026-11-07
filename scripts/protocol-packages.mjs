@@ -180,6 +180,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     fixtures: Object.freeze({
       normalizedInbound: "fixtures/normalized-inbound.conformance.json",
       messagingCommands: "fixtures/messaging-commands.conformance.json",
+      messagingRedemption: "fixtures/messaging-redemption.json",
       interactionFlowNode: "fixtures/interaction-flow-node.conformance.json",
       recipientId: "fixtures/recipient-id.conformance.json",
       extensionSources: "fixtures/extension-sources.conformance.json",

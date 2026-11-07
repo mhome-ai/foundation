@@ -116,6 +116,16 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
       assert.equal(packed.name, config.npmName);
       assert.ok(fs.statSync(path.join(tempRoot, packed.filename)).isFile());
       const packedFiles = new Set(packed.files.map((file) => file.path));
+      if (name === "core") {
+        // The JVM conformance test loads this fixture directly from the npm package.
+        const fixturePath = "fixtures/messaging-redemption.json";
+        assert.equal(staged.descriptor.fixtures.messagingRedemption, fixturePath);
+        assert.ok(packedFiles.has(fixturePath), `${fixturePath} missing from npm package`);
+        assert.deepEqual(
+          JSON.parse(execFileSync("tar", ["-xOf", path.join(tempRoot, packed.filename), `package/${fixturePath}`], { encoding: "utf8" })),
+          JSON.parse(fs.readFileSync(new URL(`../../${config.crateDir}/${fixturePath}`, import.meta.url), "utf8"))
+        );
+      }
       if (name === "appFacade") {
         // Cloud response presentation loads this resource directly, not through a $ref.
         const timesPath = "manifest/presentation-times.v1.json";
