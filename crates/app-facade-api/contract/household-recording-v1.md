@@ -13,7 +13,9 @@ A call may carry optional `source: {kind, page?, cardId?}` beside `control` and
 `input`. Kinds are `ui`, `agent` (built-in Agent), `messaging`, `cli`, `skill`, `mcp`.
 Source hints never select authorization or actor. Trusted Agent/MCP ingress overrides
 hints; a canonical Messaging Agent surface keeps `messaging`, including through
-Cloud-to-Hub forwarding. CLI defaults to `cli`; external Skills explicitly pass
+Cloud-to-Hub forwarding. Direct Messaging Dialog replies use the verified external sender
+and a Messaging-only forwarding binding; they create no Agent run and can only invoke
+`/app/dialog/reply` in direct mode. CLI defaults to `cli`; external Skills explicitly pass
 `meow --source skill`. UI sets `ui`. `appClientId` comes only from the verified
 Client identity, not connection routing IDs or an input hint.
 
@@ -35,11 +37,22 @@ not a claim that all its physical effects completed. Failures keep intent and er
 code, never raw exception messages, internal details, complete request/response or
 source scripts. Runtime completion/Twin observations belong to their own sources.
 
+Facades may contribute frozen business facts through an execution-scoped hook. The
+hook runs in the background writer and cannot replace canonical event/status/error
+fields. Automation save and Overview save contribute the resolved YAML document
+already obtained by the business flow. Their projection keeps name, description,
+root `$` parameter values and input-variable references; task/action bodies, compiler
+models, attached scripts and diagnostics are excluded. Hook failure leaves the
+business response unchanged.
+
 Space mode determines the single storage owner: Local -> Hub SQLite, Cloud ->
 Lion's configured cloud store. Routing/forwarding creates no second record.
 The existing Space cleanup removes this partition. Hub queued deliveries retain
 the existing runtime fence so revoked/replaced generations cannot recreate records
-after cleanup; Cloud writes use the existing Space admission guard.
+after cleanup. Cloud writers register with Space admission before reading the
+authoritative Space identity; only ACTIVE Cloud Spaces accept queued records.
+Terminal deletion marks the identity first, drains admitted work, then deletes the
+partition, so other instances and delayed queue entries cannot recreate it.
 The physical row has `pk`, `sk`, `schemaVersion=1`, `payloadYaml` only:
 
 - `pk = tenant|space`.
@@ -47,6 +60,10 @@ The physical row has `pk`, `sk`, `schemaVersion=1`, `payloadYaml` only:
 - Fixed string order supports `[start,end)` queries in one partition. Pagination
   uses the last returned SK exclusively. No secondary index is required.
 - Inserts never replace an existing key. Retrying persistence reuses the same row.
+- `household/behavior` participates in ordinary Cloud/Hub DataSync. Mode switches
+  merge immutable rows, preserve original keys/schema/YAML bytes, reject foreign
+  partitions and conflicting existing rows, and rely on the existing successful
+  import acknowledgement before source cleanup. A retry does not clear history.
 - YAML retains null, false, zero and typed values; no custom tags or raw JSON copy.
 
 Recording is best effort. Request code only captures immutable facts and offers

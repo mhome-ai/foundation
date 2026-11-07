@@ -1,0 +1,28 @@
+[
+  {
+    "source": "name: Bedtime\ndescription: Good night\ninputVars:\n  - name: $time\n    type: Time\n    description: Bedtime\n    internal: omit\n$time: \"23:00\"\n$enabled: false\n$count: 0\n$reset: null\ntask: internal-code\nscripts: secret-source\n",
+    "expected": {
+      "definition": {
+        "name": "Bedtime",
+        "description": "Good night",
+        "inputVariables": [
+          {
+            "name": "$time",
+            "type": "Time",
+            "description": "Bedtime"
+          }
+        ],
+        "parameters": {
+          "$time": "23:00",
+          "$enabled": false,
+          "$count": 0,
+          "$reset": null
+        }
+      }
+    }
+  },
+  {
+    "source": "task: internal-code",
+    "expected": null
+  }
+]

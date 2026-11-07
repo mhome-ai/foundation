@@ -144,6 +144,41 @@ fn capability(input: &Value, out: &mut Map<String, Value>) -> Option<()> {
     Some(())
 }
 
+/// Saved business configuration: resolved household parameters, without executable source.
+/// Invoked by a Facade-owned background hook, including editor saves whose public input is a session ID.
+pub fn automation_facts(yaml: &str) -> Option<Value> {
+    let source: Value = serde_yaml::from_str(yaml).ok()?;
+    let object = source.as_object()?;
+    let mut definition = Map::new();
+    select(&mut definition, &source, &json!(["name", "description"]));
+    let parameters: Map<String, Value> = object
+        .iter()
+        .filter(|(key, _)| key.starts_with('$'))
+        .map(|(key, value)| (key.clone(), value.clone()))
+        .collect();
+    if !parameters.is_empty() {
+        definition.insert("parameters".into(), Value::Object(parameters));
+    }
+    if let Some(input_vars) = object.get("inputVars").and_then(Value::as_array) {
+        let variables: Vec<_> = input_vars
+            .iter()
+            .filter_map(|variable| {
+                let mut reference = Map::new();
+                select(
+                    &mut reference,
+                    variable,
+                    &json!(["name", "type", "description"]),
+                );
+                (!reference.is_empty()).then_some(Value::Object(reference))
+            })
+            .collect();
+        if !variables.is_empty() {
+            definition.insert("inputVariables".into(), json!(variables));
+        }
+    }
+    (!definition.is_empty()).then_some(json!({"definition":definition}))
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct BehaviorRecord {
@@ -185,6 +220,35 @@ mod tests {
                 case["expected"],
                 "{}",
                 case["target"]
+            );
+        }
+    }
+    #[test]
+    fn every_registered_facade_has_a_projection_case() {
+        let cases: Value =
+            serde_json::from_str(include_str!("../fixtures/recording.conformance.json")).unwrap();
+        for operation in SPEC["operations"].as_array().unwrap() {
+            assert!(
+                cases
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|c| c["target"] == operation["target"]),
+                "{}",
+                operation["target"]
+            );
+        }
+    }
+    #[test]
+    fn saved_configuration_facts_keep_values_without_source() {
+        let cases: Value = serde_json::from_str(include_str!(
+            "../fixtures/recording-automation.conformance.json"
+        ))
+        .unwrap();
+        for case in cases.as_array().unwrap() {
+            assert_eq!(
+                automation_facts(case["source"].as_str().unwrap()).unwrap_or(Value::Null),
+                case["expected"]
             );
         }
     }

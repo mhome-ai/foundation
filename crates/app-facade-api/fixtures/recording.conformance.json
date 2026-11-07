@@ -389,5 +389,256 @@
       "locationId": "home",
       "status": "success"
     }
+  },
+  {
+    "target": "/app/widget/button/trigger",
+    "input": {
+      "widgetId": "button-b",
+      "clickType": "single"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {}
+    },
+    "expected": {
+      "event": "widget.button.pressed",
+      "widgetId": "button-b",
+      "clickType": "single",
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/automation/stop",
+    "input": {
+      "automationId": "A-1"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "enabled": false,
+        "running": false
+      }
+    },
+    "expected": {
+      "event": "automation.stop",
+      "automationId": "A-1",
+      "enabled": false,
+      "running": false,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/presentation/automation/generated/enable",
+    "input": {
+      "automationId": "P-1"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "enabled": true,
+        "running": false
+      }
+    },
+    "expected": {
+      "event": "automation.enable",
+      "automationId": "P-1",
+      "enabled": true,
+      "running": false,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/presentation/automation/generated/disable",
+    "input": {
+      "automationId": "P-1"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "enabled": false,
+        "running": false
+      }
+    },
+    "expected": {
+      "event": "automation.disable",
+      "automationId": "P-1",
+      "enabled": false,
+      "running": false,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/presentation/automation/generated/run",
+    "input": {
+      "automationId": "P-1"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "enabled": false,
+        "running": true
+      }
+    },
+    "expected": {
+      "event": "automation.run",
+      "automationId": "P-1",
+      "enabled": false,
+      "running": true,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/quickword/run",
+    "input": {
+      "quickWord": "good night",
+      "values": {
+        "time": "23:00"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "dispatched": true
+      }
+    },
+    "expected": {
+      "event": "quickword.invoked",
+      "quickWord": "good night",
+      "values": {
+        "time": "23:00"
+      },
+      "dispatched": true,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/automation/save",
+    "input": {
+      "singleUse": false,
+      "restoreEnabled": true,
+      "script": {
+        "script": "name: Bedtime\ndescription: Good night\n$time: \"23:00\"\ntask: internal-code"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "automationId": "A-new"
+      }
+    },
+    "expected": {
+      "event": "automation.saved",
+      "singleUse": false,
+      "restoreEnabled": true,
+      "automationId": "A-new",
+      "definition": {
+        "name": "Bedtime",
+        "description": "Good night"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/presentation/automation/overview/save",
+    "input": {
+      "sessionId": "editor",
+      "automationId": "A-1"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "enabled": true
+      }
+    },
+    "expected": {
+      "event": "automation.saved",
+      "automationId": "A-1",
+      "enabled": true,
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/presentation/automation/enroll",
+    "input": {
+      "automationId": "S-source",
+      "name": "Bedtime"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "automationId": "A-new"
+      }
+    },
+    "expected": {
+      "event": "automation.enroll",
+      "fromAutomationId": "S-source",
+      "name": "Bedtime",
+      "automationId": "A-new",
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/automation/delete",
+    "input": {
+      "automationIds": [
+        "A-1",
+        "A-2"
+      ]
+    },
+    "outcome": {
+      "status": "success",
+      "data": {}
+    },
+    "expected": {
+      "event": "automation.deleted",
+      "automationIds": [
+        "A-1",
+        "A-2"
+      ],
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/automation/snapshot/rollback",
+    "input": {
+      "automationId": "A-1",
+      "snapshotId": "snap"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "automationId": "A-1"
+      }
+    },
+    "expected": {
+      "event": "automation.restored",
+      "automationId": "A-1",
+      "snapshotId": "snap",
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/widget/circadian/create",
+    "input": {
+      "locationId": "home",
+      "curve": "daylight",
+      "offset": 0,
+      "multiplier": 1.0
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "widgetId": "new-c"
+      }
+    },
+    "expected": {
+      "event": "circadian.configured",
+      "locationId": "home",
+      "curve": "daylight",
+      "offset": 0,
+      "multiplier": 1.0,
+      "widgetId": "new-c",
+      "status": "success"
+    }
   }
 ]

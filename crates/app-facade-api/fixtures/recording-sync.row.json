@@ -1,0 +1,6 @@
+{
+  "pk": "t|s",
+  "sk": "0000000000100|on",
+  "schemaVersion": 1,
+  "payloadYaml": "id: on\noccurredAtMs: 100\nfinishedAtMs: 105\nactor:\n  kind: user\n  userId: user\nsource:\n  kind: ui\ndata:\n  event: widget.value.set\n  status: success\n  widgetId: w-d\n  typedValue: false\n"
+}

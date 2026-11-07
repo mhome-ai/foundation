@@ -65,3 +65,22 @@ fn shared_routing_cases_match_the_rust_executor_contract() {
         assert_eq!(actual, case["execution"], "{case}");
     }
 }
+
+#[test]
+fn messaging_dialog_binding_needs_no_invented_agent_run() {
+    let value = json!({"principal":{"kind":"user","userId":"sender"},
+      "caller":{"kind":"messaging","surfaceId":"cs1:mp:telegram:bot:chat","operationId":"dialog:event"},
+      "call":{"control":{"mode":"direct"},"input":{"dialogId":"dialog","value":{"choice":"yes"}}}});
+    let call: ForwardedCall = serde_json::from_value(value.clone()).unwrap();
+    assert_eq!(serde_json::to_value(call).unwrap(), value);
+    let binding = ActionInvocation::Messaging {
+        surface_id: "cs1:mp:telegram:bot:chat".into(),
+        operation_id: "dialog:event".into(),
+    };
+    binding.validate().unwrap();
+    assert!(binding.run_id().is_none());
+    assert!(binding.thread_id().is_none());
+    let mut invalid = value;
+    invalid["caller"]["runId"] = json!("invented");
+    assert!(serde_json::from_value::<ForwardedCall>(invalid).is_err());
+}

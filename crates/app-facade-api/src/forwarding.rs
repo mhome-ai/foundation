@@ -14,6 +14,13 @@ pub enum ForwardedCaller {
     Client {
         identity: AuthenticatedClient,
     },
+    /// A verified provider Dialog response; no Agent run or approval workflow.
+    Messaging {
+        #[serde(rename = "surfaceId")]
+        surface_id: String,
+        #[serde(rename = "operationId")]
+        operation_id: String,
+    },
     Mcp {
         #[serde(rename = "surfaceId")]
         surface_id: String,
@@ -66,6 +73,13 @@ pub enum ActionInvocation {
         #[serde(rename = "operationId")]
         operation_id: String,
     },
+    /// A verified provider Dialog response; no Agent run or approval workflow.
+    Messaging {
+        #[serde(rename = "surfaceId")]
+        surface_id: String,
+        #[serde(rename = "operationId")]
+        operation_id: String,
+    },
     Mcp {
         #[serde(rename = "surfaceId")]
         surface_id: String,
@@ -77,24 +91,28 @@ pub enum ActionInvocation {
 impl ActionInvocation {
     pub fn surface_id(&self) -> &str {
         match self {
-            Self::Agent { surface_id, .. } | Self::Mcp { surface_id, .. } => surface_id,
+            Self::Agent { surface_id, .. }
+            | Self::Mcp { surface_id, .. }
+            | Self::Messaging { surface_id, .. } => surface_id,
         }
     }
     pub fn operation_id(&self) -> &str {
         match self {
-            Self::Agent { operation_id, .. } | Self::Mcp { operation_id, .. } => operation_id,
+            Self::Agent { operation_id, .. }
+            | Self::Mcp { operation_id, .. }
+            | Self::Messaging { operation_id, .. } => operation_id,
         }
     }
     pub fn thread_id(&self) -> Option<&str> {
         match self {
             Self::Agent { thread_id, .. } => Some(thread_id),
-            Self::Mcp { .. } => None,
+            Self::Mcp { .. } | Self::Messaging { .. } => None,
         }
     }
     pub fn run_id(&self) -> Option<&str> {
         match self {
             Self::Agent { run_id, .. } => Some(run_id),
-            Self::Mcp { .. } => None,
+            Self::Mcp { .. } | Self::Messaging { .. } => None,
         }
     }
     pub fn validate(&self) -> Result<(), &'static str> {
