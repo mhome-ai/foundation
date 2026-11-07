@@ -80,7 +80,7 @@ fn billing_schema_and_fixture_inputs_agree() {
         serde_json::from_str(include_str!("../schema/billing.v1.schema.json")).unwrap();
     let fixtures: Value =
         serde_json::from_str(include_str!("../fixtures/billing.conformance.json")).unwrap();
-    for key in ["emptyInput", "usageInput"] {
+    for key in ["emptyInput", "usageInput", "productInput"] {
         let mut root = schema.clone();
         root["$ref"] = Value::String(format!("#/$defs/{key}"));
         let validator = jsonschema::validator_for(&root).unwrap();
@@ -90,11 +90,60 @@ fn billing_schema_and_fixture_inputs_agree() {
             }
         }
     }
-    for key in ["summary", "payments", "creditUsage"] {
+    for key in [
+        "summary",
+        "payments",
+        "creditUsage",
+        "checkout",
+        "subscription",
+    ] {
         let mut root = schema.clone();
         root["$ref"] = Value::String(format!("#/$defs/{key}"));
         assert!(jsonschema::validator_for(&root)
             .unwrap()
             .is_valid(&fixtures[key]));
     }
+}
+
+#[test]
+fn subscription_commands_are_user_writes_in_cloud_with_shared_results() {
+    let f: Value =
+        serde_json::from_str(include_str!("../fixtures/billing.conformance.json")).unwrap();
+    for (target, key) in [
+        (CHECKOUT_CREATE, "checkout"),
+        (SUBSCRIPTION_CANCEL, "subscription"),
+        (SUBSCRIPTION_RESUME, "subscription"),
+        (SUBSCRIPTION_CHANGE, "subscription"),
+    ] {
+        assert_eq!(required(target), Some(OperationPolicy::UserWrite));
+        assert_eq!(
+            route_policy_for_target(target).unwrap().execution,
+            ExecutionSelector::Cloud
+        );
+        for detail in [ResponseDetail::Full, ResponseDetail::Essential] {
+            let result = serde_json::to_value(
+                app_facade_api::response::present(target, f[key].clone(), detail).unwrap(),
+            )
+            .unwrap();
+            let data = if detail == ResponseDetail::Full {
+                result["data"].clone()
+            } else {
+                serde_yaml::from_str::<Value>(result["data"].as_str().unwrap()).unwrap()
+            };
+            assert_eq!(data, f[key]);
+        }
+    }
+    for (kind, valid) in [("valid", true), ("invalid", false)] {
+        for input in f["productInput"][kind].as_array().unwrap() {
+            assert_eq!(
+                serde_json::from_value::<ProductInput>(input.clone()).is_ok(),
+                valid,
+                "{input}"
+            );
+        }
+    }
+    let state: Subscription = serde_json::from_value(f["subscription"].clone()).unwrap();
+    assert_eq!(serde_json::to_value(state).unwrap(), f["subscription"]);
+    let checkout: Checkout = serde_json::from_value(f["checkout"].clone()).unwrap();
+    assert_eq!(serde_json::to_value(checkout).unwrap(), f["checkout"]);
 }

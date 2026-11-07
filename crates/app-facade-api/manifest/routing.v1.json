@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.111.0",
+  "contractVersion": "1.112.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode"
@@ -41,7 +41,11 @@
       "/app/nfc/sources/list",
       "/app/billing/summary/get",
       "/app/billing/payment/list",
-      "/app/billing/credit/usage"
+      "/app/billing/credit/usage",
+      "/app/billing/subscription/checkout/create",
+      "/app/billing/subscription/cancel",
+      "/app/billing/subscription/resume",
+      "/app/billing/subscription/change"
     ],
     "scopeModeTargets": [
       "/app/artifact/resolve",

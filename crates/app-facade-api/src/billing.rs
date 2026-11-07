@@ -1,8 +1,46 @@
-//! Current authenticated user's cloud-owned Billing reads. No Space or caller-supplied user ID.
+//! Current authenticated user's cloud-owned Billing. No Space or caller-supplied user ID.
 use serde::{Deserialize, Serialize};
 pub const SUMMARY: &str = "/app/billing/summary/get";
 pub const PAYMENT_LIST: &str = "/app/billing/payment/list";
 pub const CREDIT_USAGE: &str = "/app/billing/credit/usage";
+pub const CHECKOUT_CREATE: &str = "/app/billing/subscription/checkout/create";
+pub const SUBSCRIPTION_CANCEL: &str = "/app/billing/subscription/cancel";
+pub const SUBSCRIPTION_RESUME: &str = "/app/billing/subscription/resume";
+pub const SUBSCRIPTION_CHANGE: &str = "/app/billing/subscription/change";
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProductInput {
+    #[serde(deserialize_with = "deserialize_product")]
+    pub product_id: String,
+}
+
+fn deserialize_product<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<String, D::Error> {
+    let value = String::deserialize(deserializer)?;
+    if ["go", "plus", "pro", "max"].contains(&value.to_ascii_lowercase().as_str()) {
+        Ok(value)
+    } else {
+        Err(serde::de::Error::custom("Unsupported subscription product"))
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Checkout {
+    pub url: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Subscription {
+    pub current_tier: Option<String>,
+    pub cancel_at_period_end: bool,
+    pub current_period_end_timestamp: i64,
+    pub scheduled_tier: Option<String>,
+    pub scheduled_tier_start_timestamp: i64,
+}
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct EmptyInput {}

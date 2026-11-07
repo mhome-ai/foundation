@@ -38,6 +38,10 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/billing/summary/get",
     "/app/billing/payment/list",
     "/app/billing/credit/usage",
+    "/app/billing/subscription/checkout/create",
+    "/app/billing/subscription/cancel",
+    "/app/billing/subscription/resume",
+    "/app/billing/subscription/change",
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[

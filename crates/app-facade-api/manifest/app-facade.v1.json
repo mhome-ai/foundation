@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.111.0",
+  "contractVersion": "1.112.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -406,7 +406,11 @@
       "requestTargets": [
         "/app/billing/summary/get",
         "/app/billing/payment/list",
-        "/app/billing/credit/usage"
+        "/app/billing/credit/usage",
+        "/app/billing/subscription/checkout/create",
+        "/app/billing/subscription/cancel",
+        "/app/billing/subscription/resume",
+        "/app/billing/subscription/change"
       ]
     }
   },

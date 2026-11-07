@@ -170,6 +170,66 @@
         "trackedFrom",
         "rows"
       ]
+    },
+    "productInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "productId": {
+          "type": "string",
+          "pattern": "^([gG][oO]|[pP][rR][oO]|[pP][lL][uU][sS]|[mM][aA][xX])$"
+        }
+      },
+      "required": [
+        "productId"
+      ]
+    },
+    "checkout": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
+    "subscription": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currentTier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cancelAtPeriodEnd": {
+          "type": "boolean"
+        },
+        "currentPeriodEndTimestamp": {
+          "type": "integer"
+        },
+        "scheduledTier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scheduledTierStartTimestamp": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "currentTier",
+        "cancelAtPeriodEnd",
+        "currentPeriodEndTimestamp",
+        "scheduledTier",
+        "scheduledTierStartTimestamp"
+      ]
     }
   }
 }

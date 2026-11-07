@@ -69,5 +69,61 @@
         "fromDate": 42
       }
     ]
+  },
+  "productInput": {
+    "valid": [
+      {
+        "productId": "go"
+      },
+      {
+        "productId": "plus"
+      },
+      {
+        "productId": "pro"
+      },
+      {
+        "productId": "max"
+      },
+      {
+        "productId": "Go"
+      },
+      {
+        "productId": "PLUS"
+      }
+    ],
+    "invalid": [
+      {},
+      null,
+      {
+        "productId": null
+      },
+      {
+        "productId": 42
+      },
+      {
+        "productId": ""
+      },
+      {
+        "productId": "free"
+      },
+      {
+        "productId": "go",
+        "userId": "other"
+      },
+      {
+        "productId": "go",
+        "scopeId": "home"
+      }
+    ]
+  },
+  "checkout": {
+    "url": "https://checkout.stripe.com/c/pay/cs_test_fictional"
+  },
+  "subscription": {
+    "currentTier": "V2",
+    "cancelAtPeriodEnd": false,
+    "currentPeriodEndTimestamp": 1796083200000,
+    "scheduledTier": "V1",
+    "scheduledTierStartTimestamp": 1796083200000
   }
 }

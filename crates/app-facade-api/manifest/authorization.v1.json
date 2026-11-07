@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.111.0",
+  "contractVersion": "1.112.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -355,7 +355,11 @@
     "/pod/talk/request/get": "spaceRead",
     "/pod/talk/speech/prepare": "spaceWrite",
     "/pod/talk/turn/submit": "spaceWrite",
-    "/pod/talk/view/get": "spaceRead"
+    "/pod/talk/view/get": "spaceRead",
+    "/app/billing/subscription/checkout/create": "userWrite",
+    "/app/billing/subscription/cancel": "userWrite",
+    "/app/billing/subscription/resume": "userWrite",
+    "/app/billing/subscription/change": "userWrite"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

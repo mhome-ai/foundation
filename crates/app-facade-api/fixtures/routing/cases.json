@@ -990,5 +990,133 @@
     "hubReady": false,
     "cloudReady": false,
     "entry": "unavailable"
+  },
+  {
+    "target": "/app/billing/subscription/checkout/create",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/billing/subscription/checkout/create",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/billing/subscription/checkout/create",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/billing/subscription/checkout/create",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/billing/subscription/cancel",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/billing/subscription/cancel",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/billing/subscription/cancel",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/billing/subscription/cancel",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/billing/subscription/resume",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/billing/subscription/resume",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/billing/subscription/resume",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/billing/subscription/resume",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/billing/subscription/change",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/billing/subscription/change",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": true,
+    "cloudReady": false,
+    "entry": "unavailable"
+  },
+  {
+    "target": "/app/billing/subscription/change",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": true,
+    "entry": "cloud"
+  },
+  {
+    "target": "/app/billing/subscription/change",
+    "execution": "cloud",
+    "placement": null,
+    "hubReady": false,
+    "cloudReady": false,
+    "entry": "unavailable"
   }
 ]
