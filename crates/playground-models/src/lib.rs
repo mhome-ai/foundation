@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, ensure, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
@@ -598,7 +598,8 @@ pub fn project_discovery(
             "max": number_attr(attrs, "maxColorTemperature")?
         }))?),
         "state.coverOpenClose" | "command.coverOpenClose" => Ok(object_map(json!({
-            "supportPosition": bool_attr(attrs, "supportPosition")?
+            "supportPosition": bool_attr(attrs, "supportPosition")?,
+            "supportedCommands": ["open", "close", "stop"]
         }))?),
         "state.fan" | "command.setFan" => Ok(object_map(json!({
             "availableModes": attrs.get("availableFanModes").cloned().unwrap_or_else(|| Value::Array(Vec::new())),
@@ -917,6 +918,22 @@ fn cover_open_close(
     attrs: &mut Map<String, Value>,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
+    if request.get("command").and_then(Value::as_str) == Some("stop") {
+        ensure!(
+            request.get("position").is_none_or(Value::is_null),
+            "stop cannot include a target position"
+        );
+        let position = required_number(attrs, "coverPosition")?;
+        let state = if position <= 0.0 {
+            "closed"
+        } else if position >= 100.0 {
+            "open"
+        } else {
+            "partially open"
+        };
+        attrs.insert("coverState".to_string(), json!(state));
+        return projected_event(attrs, "state.coverOpenClose");
+    }
     let position = request
         .get("position")
         .and_then(Value::as_f64)
@@ -1346,6 +1363,45 @@ fn duration_unit_multiplier(unit: &str) -> Option<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cover_stop_retains_position_and_does_not_move_the_simulated_device() {
+        for model in [COVER_SHADE_V1, COVER_GARAGE_DOOR_V1] {
+            let mut attrs = default_attributes(model).unwrap();
+            let discovery =
+                project_discovery(model, &attrs, "command.coverOpenClose", "$f1").unwrap();
+            assert_eq!(
+                discovery["supportedCommands"],
+                json!(["open", "close", "stop"])
+            );
+            for (position, state) in [(0, "closed"), (35, "partially open"), (100, "open")] {
+                attrs.insert("coverPosition".into(), json!(position));
+                attrs.insert("coverState".into(), json!("closing"));
+                let outcome = handle_command(
+                    model,
+                    &mut attrs,
+                    "command.coverOpenClose",
+                    &object_map(json!({"command":"stop"})).unwrap(),
+                )
+                .unwrap();
+                assert_eq!(attrs["coverPosition"], json!(position));
+                assert_eq!(
+                    outcome.events[0].payload["position"].as_f64(),
+                    Some(f64::from(position))
+                );
+                assert_eq!(outcome.events[0].payload["state"], json!(state));
+            }
+            let before = attrs.clone();
+            assert!(handle_command(
+                model,
+                &mut attrs,
+                "command.coverOpenClose",
+                &object_map(json!({"command":"stop", "position":0})).unwrap()
+            )
+            .is_err());
+            assert_eq!(attrs, before);
+        }
+    }
 
     #[test]
     fn button_catalog_and_events_use_the_canonical_contract() {
