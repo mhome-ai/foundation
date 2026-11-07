@@ -1569,7 +1569,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "1.15.4"
+version = "1.15.5"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1630,7 +1630,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "1.4.57"
+version = "1.4.58"
 dependencies = [
  "cc",
  "mhome-core-api",

@@ -14,7 +14,7 @@ include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
 name = "ble_commission"
 
 [dependencies]
-host-protocol = { package = "mhome-host-auth", version = "=1.15.4", path = "../host-auth" }
+host-protocol = { package = "mhome-host-auth", version = "=1.15.5", path = "../host-auth" }
 app-facade-api = { package = "mhome-app-facade-api", version = "=1.115.0", path = "../app-facade-api" }
 async-trait = "0.1"
 core-api = { package = "mhome-core-api", version = "=1.73.1", path = "../core-api" }

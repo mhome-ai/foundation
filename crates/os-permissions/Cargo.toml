@@ -1,6 +1,6 @@
 [package]
 name = "mhome-os-permissions"
-version = "1.4.57"
+version = "1.4.58"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
