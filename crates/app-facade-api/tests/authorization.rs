@@ -304,6 +304,8 @@ fn migrated_business_controllers_have_no_independent_authorization_entries() {
     for target in [
         "/core/restart",
         "/integration/disconnect",
+        "/integration/composite/refresh",
+        "/integration/providerEnv/refresh",
         "/integration/entity/getHistory",
         "/integration/install",
         "/integration/model/get",

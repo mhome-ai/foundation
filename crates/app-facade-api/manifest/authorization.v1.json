@@ -331,8 +331,6 @@
     "/identity/node/list": "spaceManage",
     "/identity/node/onboarding/start": "spaceManage",
     "/identity/node/revoke": "spaceManage",
-    "/integration/composite/refresh": "spaceWrite",
-    "/integration/providerEnv/refresh": "spaceWrite",
     "/llm/asr/transcribe": "spaceWrite",
     "/llm/capabilities": "spaceRead",
     "/llm/decision/decide": "spaceWrite",
