@@ -255,7 +255,6 @@ impl MwsSource {
     pub const MAC: &'static str = "macos";
     pub const LINUX: &'static str = "linux";
     pub const WEB: &'static str = "web";
-    pub const PWA: &'static str = "pwa";
     pub const MESSAGING: &'static str = "messaging";
 
     pub fn is_desktop(source: &str) -> bool {
