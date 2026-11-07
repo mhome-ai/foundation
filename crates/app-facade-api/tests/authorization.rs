@@ -298,3 +298,46 @@ fn manual_card_sync_is_retired_without_removing_program_control_or_entity_presen
         Some(authorization::OperationPolicy::SpaceRead)
     );
 }
+
+#[test]
+fn migrated_business_controllers_have_no_independent_authorization_entries() {
+    for target in [
+        "/core/restart",
+        "/integration/disconnect",
+        "/integration/entity/getHistory",
+        "/integration/install",
+        "/integration/model/get",
+        "/integration/uninstall",
+        "/kg/entityAutomationRelation/get",
+        "/schedule/list",
+        "/twin/batchDisable",
+        "/twin/batchGetLatest",
+        "/twin/batchUpsert",
+        "/twin/getHistory",
+        "/ui/canvas/delete",
+        "/ui/canvas/getContent",
+        "/ui/canvas/list",
+        "/ui/canvas/reorder",
+        "/ui/canvas/save",
+        "/ui/card/batchDelete",
+        "/ui/card/batchMove",
+        "/ui/card/copy",
+        "/ui/card/delete",
+        "/ui/card/move",
+        "/ui/card/update",
+        "/ui/card/layout/organize",
+        "/ui/card/layout/update",
+    ] {
+        assert_eq!(authorization::required(target), None, "{target}");
+    }
+    for target in [
+        "/app/dashboard/canvas/layout/get",
+        "/app/device/enable",
+        "/app/device/disable",
+        "/app/entity/history/list",
+        "/app/integration/install",
+        "/app/hub/restart",
+    ] {
+        assert!(authorization::required(target).is_some(), "{target}");
+    }
+}
