@@ -127,8 +127,7 @@ fn capability(input: &Value, out: &mut Map<String, Value>) -> Option<()> {
     };
     if name == "setCameraSetting" {
         // Generic camera settings may also contain transport/codec configuration.
-        if !request.get("monitoringMode").is_some()
-            && !request.get("personRecognitionMode").is_some()
+        if request.get("monitoringMode").is_none() && request.get("personRecognitionMode").is_none()
         {
             return None;
         }
