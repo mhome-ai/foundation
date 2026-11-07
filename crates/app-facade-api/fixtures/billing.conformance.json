@@ -1,13 +1,13 @@
 {
   "summary": {
     "userId": "fictional-user",
-    "currentTier": "plus",
-    "refreshTier": "plus",
+    "currentTier": "V2",
+    "refreshTier": "V2",
     "stripeSubscriptionStatus": "active",
-    "totalBalance": 1000,
-    "usedAutomation": 10,
-    "usedChat": 20,
-    "usedIntegration": 30,
+    "totalBalance": 300000,
+    "usedAutomation": 100,
+    "usedChat": 200,
+    "usedIntegration": 300,
     "nextRefreshTimestamp": 1796083200000
   },
   "payments": {

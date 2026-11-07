@@ -56,20 +56,27 @@ pub struct CreditUsageInput {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Summary {
     pub user_id: String,
+    /// Current codes: E (Internal), T/V0 (Free), V1 (Go), V2 (Plus). Null is unknown.
     pub current_tier: Option<String>,
+    /// Plan at the next refresh; same codes as current_tier. Null is unknown.
     pub refresh_tier: Option<String>,
     pub stripe_subscription_status: Option<String>,
+    /// Period allowance in raw account credits, not remaining credits. 100 credits = 1 App product token.
     pub total_balance: i32,
+    /// Used raw account credits; product tokens are distinct from LLM input/output tokens.
     pub used_automation: i32,
+    /// Used raw account credits (100 per App product token).
     pub used_chat: i32,
+    /// Used raw account credits (100 per App product token).
     pub used_integration: i32,
+    /// Unix milliseconds.
     pub next_refresh_timestamp: i64,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Payment {
     pub description: Option<String>,
-    /// Signed currency minor units. Refunds are negative.
+    /// Signed Stripe invoice/refund minor units for currency. Refunds are negative.
     pub amount: i32,
     pub currency: String,
     pub timestamp: i64,
@@ -84,6 +91,7 @@ pub struct PaymentList {
 pub struct CreditRow {
     pub date: String,
     pub source: String,
+    /// Raw account credits (100 per App product token), not LLM input/output tokens.
     pub credits: i64,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]

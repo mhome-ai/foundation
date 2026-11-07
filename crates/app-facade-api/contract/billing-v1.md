@@ -10,6 +10,29 @@ All three read App Facades run in the cloud under UserRead, using the authentica
 
 Summary retains the existing consistent plan/balance read; it does not query payments or daily history. Payment list retains successful invoices and refunds. Daily usage defaults to the 30 days ending today in UTC, permits ordered ranges of at most 366 inclusive days, and clamps the start to tracking availability. Errors are not replaced with zero usage. The existing `/app/agent/credit/usage` is Space-wide and remains distinct.
 
+## Account units and plan codes
+
+`totalBalance` is the period's credit allowance, not the remaining balance. The
+remaining credits are `totalBalance - usedAutomation - usedChat - usedIntegration`.
+These four summary fields and daily `rows[].credits` are raw account credit units:
+**100 credits = 1 product token displayed by the App**. For example, `100000`
+credits is 1000 product tokens; 100 used credits is 1 used product token. These
+product tokens are not an LLM's input/output tokens. Keep the wire values intact;
+convert only when explaining the product-token amounts to a user.
+
+The current tier codes are `E` (Internal), `T` (shown as Free), `V0` (Free), `V1`
+(Go), and `V2` (Plus). `currentTier` describes the current plan; `refreshTier`
+describes the plan at the next refresh. Either field and
+`stripeSubscriptionStatus` can be null; null means unavailable/absent, not a
+confirmed Free plan or active subscription. `nextRefreshTimestamp` is Unix
+milliseconds. Product names such as `plus` are not tier codes.
+
+Payment `amount` uses Stripe invoice/refund minor units for the returned
+`currency`, independently of account credits. Preserve the refund sign. Follow
+[Stripe's currency rules](https://docs.stripe.com/currencies), including zero-
+decimal currencies and the ISK/UGX two-decimal API exceptions; do not assume USD
+or divide all amounts by 100.
+
 Full returns the business DTO. Essential encodes the same DTO as YAML without extra reads. UI, Agent, MCP and CLI use these same targets and identity rules. Schemas and fictional examples are in `schema/billing.v1.schema.json` and `fixtures/billing.conformance.json`.
 
 ## Subscription commands
