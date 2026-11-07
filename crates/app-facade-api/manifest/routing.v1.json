@@ -10,7 +10,6 @@
   "rules": {
     "cloudPrefixes": [
       "/app/space/",
-      "/app/inspire/",
       "/app/user/",
       "/app/ui/customize/cards/catalog/"
     ],

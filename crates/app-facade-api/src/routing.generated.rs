@@ -4,7 +4,6 @@ const TARGET_PREFIX: &str = "/app/";
 
 const CLOUD_PREFIXES: &[&str] = &[
     "/app/space/",
-    "/app/inspire/",
     "/app/user/",
     "/app/ui/customize/cards/catalog/",
 ];

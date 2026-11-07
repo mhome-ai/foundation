@@ -117,8 +117,6 @@
     "/app/hub/remove": "spaceManage",
     "/app/hub/restart": "spaceManage",
     "/app/hub/status": "spaceRead",
-    "/app/inspire/search": "spaceRead",
-    "/app/inspire/verify": "spaceWrite",
     "/app/integration/capability/detail/get": "spaceRead",
     "/app/integration/connect": "spaceWrite",
     "/app/integration/detail/batch": "spaceRead",

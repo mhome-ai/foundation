@@ -341,3 +341,23 @@ fn migrated_business_controllers_have_no_independent_authorization_entries() {
         assert!(authorization::required(target).is_some(), "{target}");
     }
 }
+
+#[test]
+fn inspire_discovery_is_retired_without_removing_automation_configuration_or_sharing() {
+    for target in [
+        "/inspire/getDetail",
+        "/inspire/batchGet",
+        "/inspire/premade/rank",
+        "/app/inspire/search",
+        "/app/inspire/verify",
+    ] {
+        assert_eq!(authorization::required(target), None, "{target}");
+    }
+    for target in [
+        "/app/presentation/automation/overview/init",
+        "/app/presentation/automation/overview/save",
+        "/app/presentation/automation/share",
+    ] {
+        assert!(authorization::required(target).is_some(), "{target}");
+    }
+}
