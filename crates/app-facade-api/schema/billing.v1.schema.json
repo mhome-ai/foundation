@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meowlink.app/protocol/billing.v1.schema.json",
+  "$defs": {
+    "emptyInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {},
+      "required": []
+    },
+    "usageInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fromDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "toDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": []
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "currentTier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "refreshTier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stripeSubscriptionStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "totalBalance": {
+          "type": "integer"
+        },
+        "usedAutomation": {
+          "type": "integer"
+        },
+        "usedChat": {
+          "type": "integer"
+        },
+        "usedIntegration": {
+          "type": "integer"
+        },
+        "nextRefreshTimestamp": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userId",
+        "currentTier",
+        "refreshTier",
+        "stripeSubscriptionStatus",
+        "totalBalance",
+        "usedAutomation",
+        "usedChat",
+        "usedIntegration",
+        "nextRefreshTimestamp"
+      ]
+    },
+    "payments": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "payments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "amount": {
+                "type": "integer"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "description",
+              "amount",
+              "currency",
+              "timestamp"
+            ]
+          }
+        }
+      },
+      "required": [
+        "payments"
+      ]
+    },
+    "creditUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "audience": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "fromDate": {
+          "type": "string"
+        },
+        "toDate": {
+          "type": "string"
+        },
+        "trackedFrom": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "credits": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "date",
+              "source",
+              "credits"
+            ]
+          }
+        }
+      },
+      "required": [
+        "audience",
+        "timezone",
+        "fromDate",
+        "toDate",
+        "trackedFrom",
+        "rows"
+      ]
+    }
+  }
+}

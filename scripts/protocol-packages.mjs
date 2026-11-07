@@ -77,6 +77,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/automation-v1.md",
       "contract/widget-presentation-v1.md",
       "contract/widget-writes-v1.md",
+      "contract/billing-v1.md",
       "contract/reference-presentation-v1.md",
       "contract/client-space-focus-v1.md",
       "schema/automation.v1.schema.json",
@@ -97,6 +98,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     schemas: Object.freeze({
       storage: "schema/storage.v1.schema.json",
       nowAttention: "schema/now-attention.v1.schema.json",
+      billing: "schema/billing.v1.schema.json",
       pluginInstall: "schema/plugin-install.v1.schema.json",
       hostAuthorization: "schema/host-authorization.v1.schema.json",
       hostAccess: "schema/host-access.v1.schema.json",
@@ -127,6 +129,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     fixtures: Object.freeze({
       attention: "fixtures/attention/conformance.json",
       agentLlm: "fixtures/agent-llm.conformance.json",
+      billing: "fixtures/billing.conformance.json",
       entityPresentation: "fixtures/entity-presentation.conformance.json",
       integrationPresentation: "fixtures/integration-presentation.conformance.json",
       group: "fixtures/group.conformance.json",

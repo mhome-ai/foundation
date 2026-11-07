@@ -1,0 +1,73 @@
+{
+  "summary": {
+    "userId": "fictional-user",
+    "currentTier": "plus",
+    "refreshTier": "plus",
+    "stripeSubscriptionStatus": "active",
+    "totalBalance": 1000,
+    "usedAutomation": 10,
+    "usedChat": 20,
+    "usedIntegration": 30,
+    "nextRefreshTimestamp": 1796083200000
+  },
+  "payments": {
+    "payments": [
+      {
+        "description": "Fictional refund",
+        "amount": -500,
+        "currency": "usd",
+        "timestamp": 1794009600000
+      }
+    ]
+  },
+  "creditUsage": {
+    "audience": "personal",
+    "timezone": "UTC",
+    "fromDate": "2026-11-01",
+    "toDate": "2026-11-07",
+    "trackedFrom": "2026-11-01T00:00:00Z",
+    "rows": [
+      {
+        "date": "2026-11-07",
+        "source": "agent",
+        "credits": 20
+      }
+    ]
+  },
+  "emptyInput": {
+    "valid": [
+      {}
+    ],
+    "invalid": [
+      {
+        "userId": "other"
+      },
+      {
+        "spaceId": "home"
+      },
+      {
+        "fromDate": "2026-11-01"
+      }
+    ]
+  },
+  "usageInput": {
+    "valid": [
+      {},
+      {
+        "fromDate": "2026-11-01",
+        "toDate": "2026-11-07"
+      }
+    ],
+    "invalid": [
+      {
+        "userId": "other"
+      },
+      {
+        "scopeId": "home"
+      },
+      {
+        "fromDate": 42
+      }
+    ]
+  }
+}

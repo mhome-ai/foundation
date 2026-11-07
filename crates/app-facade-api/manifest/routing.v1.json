@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.110.0",
+  "contractVersion": "1.111.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode"
@@ -39,7 +39,10 @@
       "/app/presentation/space/list",
       "/app/presentation/space/get",
       "/app/resource/transfer/prepare",
-      "/app/nfc/sources/list"
+      "/app/nfc/sources/list",
+      "/app/billing/summary/get",
+      "/app/billing/payment/list",
+      "/app/billing/credit/usage"
     ],
     "scopeModeTargets": [
       "/app/artifact/resolve",

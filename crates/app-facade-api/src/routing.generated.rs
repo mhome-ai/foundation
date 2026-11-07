@@ -36,6 +36,9 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/presentation/space/get",
     "/app/resource/transfer/prepare",
     "/app/nfc/sources/list",
+    "/app/billing/summary/get",
+    "/app/billing/payment/list",
+    "/app/billing/credit/usage",
 ];
 
 const SCOPE_MODE_TARGETS: &[&str] = &[

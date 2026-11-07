@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.110.0",
+  "contractVersion": "1.111.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -398,6 +398,15 @@
         "/app/widget/data/update",
         "/app/widget/button/trigger",
         "/app/widget/delete"
+      ]
+    },
+    "billing": {
+      "contract": "contract/billing-v1.md",
+      "schema": "schema/billing.v1.schema.json",
+      "requestTargets": [
+        "/app/billing/summary/get",
+        "/app/billing/payment/list",
+        "/app/billing/credit/usage"
       ]
     }
   },

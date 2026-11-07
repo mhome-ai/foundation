@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.110.0",
+  "contractVersion": "1.111.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -46,6 +46,9 @@
     "/app/automation/status": "spaceRead",
     "/app/automation/stop": "spaceWrite",
     "/app/automation/verify": "spaceWrite",
+    "/app/billing/credit/usage": "userRead",
+    "/app/billing/payment/list": "userRead",
+    "/app/billing/summary/get": "userRead",
     "/app/capability/invoke": "spaceWrite",
     "/app/capability/invoke/json": "spaceWrite",
     "/app/client/appearance/report": "spaceRead",
@@ -88,7 +91,6 @@
     "/app/entity/detail/get": "spaceRead",
     "/app/entity/history/list": "spaceRead",
     "/app/entity/list": "spaceRead",
-    "/app/presentation/entity/get": "spaceRead",
     "/app/graph/relations/get": "spaceRead",
     "/app/group/create": "spaceWrite",
     "/app/group/delete": "spaceWrite",
@@ -129,7 +131,6 @@
     "/app/integration/installed/list": "spaceRead",
     "/app/integration/list": "spaceRead",
     "/app/integration/official/list": "spaceRead",
-    "/app/presentation/integration/get": "spaceRead",
     "/app/integration/preview/apply": "spaceWrite",
     "/app/integration/preview/status": "spaceRead",
     "/app/integration/scope/list": "spaceRead",
@@ -230,6 +231,9 @@
     "/app/presentation/automation/placements/get": "spaceRead",
     "/app/presentation/automation/share": "spaceWrite",
     "/app/presentation/automation/summaries/get": "spaceRead",
+    "/app/presentation/entity/get": "spaceRead",
+    "/app/presentation/entity/meta/get": "spaceRead",
+    "/app/presentation/integration/get": "spaceRead",
     "/app/presentation/reference/item/list": "spaceRead",
     "/app/presentation/reference/type/list": "spaceRead",
     "/app/presentation/space/get": "spaceRead",
@@ -353,8 +357,7 @@
     "/pod/talk/request/get": "spaceRead",
     "/pod/talk/speech/prepare": "spaceWrite",
     "/pod/talk/turn/submit": "spaceWrite",
-    "/pod/talk/view/get": "spaceRead",
-    "/app/presentation/entity/meta/get": "spaceRead"
+    "/pod/talk/view/get": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [
