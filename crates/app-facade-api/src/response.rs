@@ -268,6 +268,8 @@ fn device_briefs(data: &Value) -> Value {
                             | "capabilities"
                             | "group"
                             | "integration"
+                            | "parent"
+                            | "setupStatus"
                             | "availabilityStatus"
                             | "blueprintIds"
                     )
@@ -493,6 +495,20 @@ pub use conversation_api::execution::tool_result_text as tool_text;
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn device_discovery_keeps_parent_without_exposing_private_identity() {
+        let rows = device_briefs(&json!({"devices":[{
+            "entityId":"d1", "integration":"mlinkShelly.device",
+            "parent":"shelly://aabbccddeeff", "setupStatus":"failed", "connectId":"node1",
+            "manufacturerId":"shelly", "password":"secret"
+        }, {"entityId":"g:1", "group":true}]}));
+        assert_eq!(rows["devices"][0]["parent"], "shelly://aabbccddeeff");
+        assert_eq!(rows["devices"][0]["setupStatus"], "failed");
+        assert!(rows["devices"][0].get("connectId").is_none());
+        assert!(rows["devices"][0].get("manufacturerId").is_none());
+        assert!(rows["devices"][0].get("password").is_none());
+        assert!(rows["devices"][1].get("parent").is_none());
+    }
     #[test]
     fn widget_display_name_survives_full_and_essential_without_touching_object_fields() {
         let widget = json!({"id":"w-d","type":"data","displayName":"目标温度","dataType":"Person",

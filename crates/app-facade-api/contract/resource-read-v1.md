@@ -124,3 +124,10 @@ values, Duration values and schedule wall-clock times are not inferred to be dat
 Widget resources use `displayName` as their only human-readable name. Display names
 may repeat; identity and references use Widget IDs. Configuration patches may omit
 `displayName` to preserve it. Essential and Full both retain this name.
+
+Device definition list/detail rows may carry `parent`, a provider-local physical
+device grouping key scoped by Space, Integration and Connection. It does not name
+a Core Device Group or require a separate parent Entity. Optional `setupStatus`
+(`pending`, `failed`, `ready`) describes initial provider admission independently
+of user enablement and subsequent online/offline observations. Essential device
+lists retain both fields.
