@@ -1,8 +1,10 @@
 # JavaScript script contract v1
 
-This is the accepted replacement contract for Integration functions and Automation
-scripts. It describes the target; the presence of these models does not advertise
-implemented Core or cloud execution. There is no Wasm compatibility mode.
+This contract defines TypeScript-authored Integration functions and Automation
+scripts. Core executes both through the shared native JavaScript runtime. Cloud JS
+execution and script-bearing Space mode switches remain disabled; shared models
+and a hostless HTTP executor do not enable those product paths. There is no Wasm
+compatibility mode.
 
 ## Ownership and execution
 
@@ -11,10 +13,15 @@ emits ESM JavaScript source. Runtime loads source, never uploaded QuickJS byteco
 Integration builds run in developer/CI tooling. Automation verification and saving
 use the cloud TypeScript build service; installed local scripts run offline.
 
-Core embeds native QuickJS-NG through rquickjs. Cloud uses the same Rust execution
-library through an internal HTTP runtime service. The cloud build service uses
-TypeScript tooling and does not require Rust compiler jobs or Docker per build.
-The services share SDK/protocol versions but have independent admission budgets.
+Foundation owns this protocol and its fixtures. The separate
+[Script repository](https://github.com/mhome-ai/script) owns `mhome-script-runtime`,
+the `@mhome/script` SDK and `@mhome/script-build`. Core embeds that runtime's native
+QuickJS-NG through rquickjs and supplies trusted Space host capabilities.
+[Tiger](https://github.com/mhome-ai/tiger) owns the cloud TypeScript build service
+and an opt-in hostless HTTP executor using the same Rust runtime. The hostless
+executor does not supply the Space host adapter required for cloud script execution.
+Builds use TypeScript tooling, without Rust compiler jobs or Docker per build.
+Build and runtime services have independent admission budgets.
 
 Published Integration source belongs to an immutable package version. Preview
 uses `kind: integrationPreview`, `packageId`, `snapshot`, `function` and `sha256`;
@@ -170,7 +177,8 @@ Limits retain 100 Automation entries, 256 KiB YAML, 256 KiB source per entry and
 cap. Use bounded streaming and the existing large-payload transport instead of
 holding every entry in memory or forcing all bytes into bridge messages.
 
-Old Rust source, Wasm artifact schemas, guest ABIs, compiler containers and execution
-branches are removed after consumer cutover. Regenerate execution plans and stage
-new versions. Never overwrite immutable released content or silently rebuild a live
-database on startup. Source changes, local tests and remote publication are separate.
+Current consumers use TypeScript source and JavaScript artifacts; old Rust/Wasm
+source, artifacts, guest ABIs and instruction layouts are not compatibility inputs.
+Regenerate execution plans and stage new versions when updating older content.
+Never overwrite immutable released content or silently rebuild a live database on
+startup. Source changes, local tests and remote publication are separate.
