@@ -88,6 +88,8 @@ function assertRoutingContract(manifest) {
 
 const rustString = (value) => JSON.stringify(value);
 const rustSlice = (name, values, visibility = "const") => {
+  const compact = `${visibility} ${name}: &[&str] = &[${values.map(rustString).join(", ")}];`;
+  if (values.length <= 1 && compact.length <= 100) return compact;
   const entries = values.map((value) => `    ${rustString(value)},`).join("\n");
   return `${visibility} ${name}: &[&str] = &[\n${entries}\n];`;
 };
@@ -104,17 +106,11 @@ ${rustSlice("CLOUD_PREFIXES", rules.cloudPrefixes)}
 /// Exact Cloud-owned operations outside Cloud-owned domains.
 ${rustSlice("CLOUD_TARGETS", rules.cloudTargets, "pub const")}
 
-const SCOPE_MODE_TARGETS: &[&str] = &[
-${rules.scopeModeTargets.map((value) => `    ${rustString(value)},`).join("\n")}
-];
+${rustSlice("SCOPE_MODE_TARGETS", rules.scopeModeTargets)}
 
-const HUB_PREFIXES: &[&str] = &[
-${rules.hubPrefixes.map((value) => `    ${rustString(value)},`).join("\n")}
-];
+${rustSlice("HUB_PREFIXES", rules.hubPrefixes)}
 
-const REQUEST_PLACEMENT_PREFIXES: &[&str] = &[
-${rules.requestPlacementPrefixes.map((value) => `    ${rustString(value)},`).join("\n")}
-];
+${rustSlice("REQUEST_PLACEMENT_PREFIXES", rules.requestPlacementPrefixes)}
 
 /// Operations owned by the receiving authenticated connection; never forward.
 ${rustSlice("CONNECTION_TARGETS", rules.connectionTargets, "pub const")}
