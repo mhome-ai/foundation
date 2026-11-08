@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.117.0",
+  "contractVersion": "1.118.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -412,6 +412,19 @@
         "/app/billing/subscription/resume",
         "/app/billing/subscription/change"
       ]
+    },
+    "developerContracts": {
+      "contract": "contract/developer-contracts-v1.md",
+      "requestTargets": [
+        "/app/developer/contracts/list",
+        "/app/developer/contracts/export"
+      ],
+      "bridgeTargets": [
+        "/bridge/schema/contracts/list",
+        "/bridge/schema/contracts/export"
+      ],
+      "owner": "cloudStandardCatalog",
+      "transport": "authorizedHub"
     }
   },
   "authorization": "manifest/authorization.v1.json",

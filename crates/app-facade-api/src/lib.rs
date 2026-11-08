@@ -41,6 +41,7 @@ pub mod user;
 
 pub mod authorization;
 pub mod delegation;
+pub mod developer_contracts;
 pub mod forwarding;
 
 pub use conversation_api::execution::{FacadeProblem, FacadeResponse, FacadeStatus};

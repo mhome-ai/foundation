@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.117.0",
+  "contractVersion": "1.118.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "scopeMode"
@@ -90,7 +90,9 @@
       "/app/hub/restart",
       "/app/hub/status",
       "/app/integration/preview/apply",
-      "/app/integration/preview/status"
+      "/app/integration/preview/status",
+      "/app/developer/contracts/list",
+      "/app/developer/contracts/export"
     ],
     "connectionTargets": [
       "/app/client/space/focus"

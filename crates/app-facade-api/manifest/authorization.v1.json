@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.117.0",
+  "contractVersion": "1.118.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -48,6 +48,10 @@
     "/app/automation/verify": "spaceWrite",
     "/app/billing/credit/usage": "userRead",
     "/app/billing/payment/list": "userRead",
+    "/app/billing/subscription/cancel": "userWrite",
+    "/app/billing/subscription/change": "userWrite",
+    "/app/billing/subscription/checkout/create": "userWrite",
+    "/app/billing/subscription/resume": "userWrite",
     "/app/billing/summary/get": "userRead",
     "/app/capability/invoke": "spaceWrite",
     "/app/capability/invoke/json": "spaceWrite",
@@ -73,6 +77,8 @@
     "/app/dashboard/card/list": "spaceRead",
     "/app/dashboard/card/main-view/update": "spaceWrite",
     "/app/dashboard/card/move": "spaceWrite",
+    "/app/developer/contracts/export": "spaceRead",
+    "/app/developer/contracts/list": "spaceRead",
     "/app/device/activity/recent/list": "spaceRead",
     "/app/device/detail/get": "spaceRead",
     "/app/device/disable": "spaceWrite",
@@ -353,11 +359,7 @@
     "/pod/talk/request/get": "spaceRead",
     "/pod/talk/speech/prepare": "spaceWrite",
     "/pod/talk/turn/submit": "spaceWrite",
-    "/pod/talk/view/get": "spaceRead",
-    "/app/billing/subscription/checkout/create": "userWrite",
-    "/app/billing/subscription/cancel": "userWrite",
-    "/app/billing/subscription/resume": "userWrite",
-    "/app/billing/subscription/change": "userWrite"
+    "/pod/talk/view/get": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [
