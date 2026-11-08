@@ -36,7 +36,7 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
         staged.packageJson.version,
         staged.descriptor.contractVersion
       );
-      assert.equal(staged.packageJson.license, "MIT");
+      assert.equal(staged.packageJson.license, "Apache-2.0");
       assert.deepEqual(staged.packageJson.repository, {
         type: "git",
         url: "git+https://github.com/mhome-ai/foundation.git",

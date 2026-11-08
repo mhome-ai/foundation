@@ -1,6 +1,6 @@
 [package]
 name = "mhome-protocomm"
-version = "0.2.1"
+version = "0.2.2"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 description = "ESP-IDF protocomm security 2 and Wi-Fi provisioning messages, commissioner and device side"
 readme = "README.md"
 publish = ["crates-io"]
-include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
+include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE", "NOTICE"]
 
 [lib]
 name = "protocomm"

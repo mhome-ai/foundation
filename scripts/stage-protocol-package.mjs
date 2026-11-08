@@ -57,6 +57,7 @@ export function stageProtocolPackage(name, outputDir) {
     ...Object.values(config.fixtures),
     "README.md",
     "LICENSE",
+    "NOTICE",
   ]);
   for (const relativePath of paths) {
     const shared = config.sharedFiles?.[relativePath];
@@ -75,7 +76,7 @@ export function stageProtocolPackage(name, outputDir) {
     name: config.npmName,
     version,
     description: `Build-time protocol artifacts for ${config.protocol}`,
-    license: "MIT",
+    license: "Apache-2.0",
     repository: {
       type: "git",
       url: "git+https://github.com/mhome-ai/foundation.git",
@@ -95,6 +96,7 @@ export function stageProtocolPackage(name, outputDir) {
       "fixtures",
       "README.md",
       "LICENSE",
+      "NOTICE",
     ],
     exports: {
       "./package.json": "./package.json",

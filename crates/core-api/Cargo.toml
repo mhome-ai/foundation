@@ -1,6 +1,6 @@
 [package]
 name = "mhome-core-api"
-version = "1.73.2"
+version = "1.73.3"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -8,20 +8,20 @@ repository.workspace = true
 description = "Shared wire types and service contracts for the mHome core"
 readme = "README.md"
 publish = ["crates-io"]
-include = ["src/**", "tests/**", "contract/**", "manifest/**", "schema/**", "fixtures/**", "Cargo.toml", "README.md", "LICENSE"]
+include = ["src/**", "tests/**", "contract/**", "manifest/**", "schema/**", "fixtures/**", "Cargo.toml", "README.md", "LICENSE", "NOTICE"]
 
 [lib]
 name = "core_api"
 
 [dependencies]
-script-api = { package = "mhome-script-api", version = "=0.3.1", path = "../script-api" }
-storage-api = { package = "mhome-storage-api", version = "=0.4.1", path = "../storage-api" }
-runtime-paths = { package = "mhome-runtime-paths", version = "=1.2.0", path = "../runtime-paths" }
-llm-api = { package = "mhome-llm-api", version = "=3.5.0", path = "../llm-api" }
+script-api = { package = "mhome-script-api", version = "=0.3.2", path = "../script-api" }
+storage-api = { package = "mhome-storage-api", version = "=0.4.2", path = "../storage-api" }
+runtime-paths = { package = "mhome-runtime-paths", version = "=1.2.1", path = "../runtime-paths" }
+llm-api = { package = "mhome-llm-api", version = "=3.5.1", path = "../llm-api" }
 base64 = "0.22"
 sha2 = "0.10"
-artifact-api = { package = "mhome-artifact-api", version = "=1.16.0", path = "../artifact" }
-conversation-api = { package = "mhome-conversation-api", version = "=5.3.0", path = "../conversation-api" }
+artifact-api = { package = "mhome-artifact-api", version = "=1.16.1", path = "../artifact" }
+conversation-api = { package = "mhome-conversation-api", version = "=5.3.1", path = "../conversation-api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 

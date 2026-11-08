@@ -1,6 +1,6 @@
 [package]
 name = "mhome-playground-models"
-version = "1.3.0"
+version = "1.3.1"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 description = "Deterministic playground device models and state projections for mHome"
 readme = "README.md"
 publish = ["crates-io"]
-include = ["src/**", "Cargo.toml", "README.md", "LICENSE"]
+include = ["src/**", "Cargo.toml", "README.md", "LICENSE", "NOTICE"]
 
 [lib]
 name = "playground_models"

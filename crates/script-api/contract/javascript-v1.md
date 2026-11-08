@@ -65,6 +65,28 @@ element types. YAML validation uses the emitted contract, including result field
 visibility and existing variable/cycle rules. Runtime checks actual values against
 the verified contract. No duplicate user-authored contract goes into YAML.
 
+## SDK versions and compatibility
+
+`sdkVersion` in build, artifact and contract metadata is the exact SDK release
+actually used to compile the source. Preserve it as provenance; do not replace it
+with a constant compatibility label. Those fields must agree within a build and
+remain covered by the existing hashes and immutable metadata.
+
+SDK releases are backward compatible within their major: a runtime supporting
+1.12.0 accepts artifacts built with 1.2.9. An older runtime is not required to
+accept a newer SDK. Cross-major compatibility is an explicit release decision;
+no cross-major compatibility is currently declared. Do not use exact version
+string equality as the execution gate or silently rewrite stored artifacts.
+
+A build request's `sdkVersion` states the SDK required by the source. A newer
+managed SDK of that major may build it; the response records the actual managed
+SDK version. Project dependencies and installed files must still agree with the
+exact lockfile. Compatible older SDK project pins may use the newer managed SDK,
+whose bytes participate in build identity. Storage validates known metadata
+contracts without pinning them to one SDK patch; runtime admission checks the
+actual runtime's supported SDK. Tenant authorization and content verification
+are independent and remain mandatory.
+
 ## Instruction
 
 `SCRIPT_CALL` uses opcode **0x1d** with four operands:

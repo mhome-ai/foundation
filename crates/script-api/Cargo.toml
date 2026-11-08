@@ -1,13 +1,13 @@
 [package]
 name = "mhome-script-api"
-version = "0.3.1"
+version = "0.3.2"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
 description = "Shared JavaScript resource identity and typed Automation script contracts"
 readme = "README.md"
-include = ["src/**", "tests/**", "fixtures/**", "contract/**", "Cargo.toml", "README.md"]
+include = ["src/**", "tests/**", "fixtures/**", "contract/**", "Cargo.toml", "README.md", "LICENSE", "NOTICE"]
 
 [dependencies]
 base64 = "0.22"
