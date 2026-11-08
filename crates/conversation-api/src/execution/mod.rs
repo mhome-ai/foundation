@@ -1,7 +1,7 @@
 //! Consumer-owned contracts for the Agent runtime.
 //!
 //! This crate contains transport-neutral domain types and ports. Implementations live in the local
-//! `MeowCore` composition or the private `agent-cloud` composition.
+//! `MeowCore` composition or the private Tiger cloud composition.
 
 pub mod agent;
 pub mod context;

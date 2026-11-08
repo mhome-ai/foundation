@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.conversation.targets.v1",
-  "contractVersion": "5.3.1",
+  "contractVersion": "5.3.2",
   "requestTargets": [
     "/chat/control/get",
     "/chat/thread/list",

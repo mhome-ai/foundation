@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:mhome:agent-cloud:protocol:envelope:v1",
+  "$id": "urn:mhome:conversation-api:execution:envelope:v1",
   "title": "Agent transport envelope v1",
   "$ref": "#/$defs/envelope",
   "$defs": {

@@ -57,7 +57,7 @@ pub struct FacadeResult {
 
 /// Environment-specific implementation of the App Facade boundary.
 ///
-/// Implementations may execute in-process (`MeowCore`) or through RPC (agent-cloud/Lion), but they
+/// Implementations may execute in-process (`MeowCore`) or through RPC (Tiger/Lion), but they
 /// cannot supply prompts, tools, workflows, or model-facing schemas.
 #[async_trait]
 pub trait AppFacade: Send + Sync {
