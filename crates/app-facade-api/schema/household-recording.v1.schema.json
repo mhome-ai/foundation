@@ -84,7 +84,6 @@
             "agent",
             "messaging",
             "cli",
-            "skill",
             "mcp"
           ]
         },

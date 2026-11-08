@@ -430,6 +430,33 @@ fn invalid_frames_are_rejected() {
 }
 
 #[test]
+fn facade_and_record_sources_share_the_current_origin_kinds() {
+    let call_schema: Value =
+        serde_json::from_str(include_str!("../schema/facade-call.v1.schema.json")).unwrap();
+    let record_schema: Value =
+        serde_json::from_str(include_str!("../schema/household-recording.v1.schema.json")).unwrap();
+    let calls = jsonschema::validator_for(&call_schema).unwrap();
+    let records = jsonschema::validator_for(&record_schema).unwrap();
+    for kind in ["ui", "agent", "messaging", "cli", "mcp", "skill"] {
+        let accepted = kind != "skill";
+        let source = serde_json::json!({"kind": kind});
+        let call = serde_json::json!({"control":{"mode":"direct"},"input":{},"source":source});
+        let record = serde_json::json!({
+            "id":"operation", "occurredAtMs":100,"finishedAtMs":105,
+            "actor":{"kind":"user","userId":"user"},"source":source,
+            "data":{"event":"widget.value.set","status":"success"}
+        });
+        assert_eq!(calls.is_valid(&call), accepted, "call source {kind}");
+        assert_eq!(records.is_valid(&record), accepted, "record source {kind}");
+        assert_eq!(
+            serde_json::from_value::<app_facade_api::FacadeCall>(call).is_ok(),
+            accepted,
+            "Rust source {kind}"
+        );
+    }
+}
+
+#[test]
 fn facade_call_credentials_are_mode_specific() {
     let schema: Value =
         serde_json::from_str(include_str!("../schema/facade-call.v1.schema.json")).unwrap();

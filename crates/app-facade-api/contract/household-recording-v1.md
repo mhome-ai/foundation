@@ -10,13 +10,14 @@ hooks and share `fixtures/recording.conformance.json`. The Lion runtime definiti
 is a packaged mirror verified against this canonical manifest in joint-source tests.
 
 A call may carry optional `source: {kind, page?, cardId?}` beside `control` and
-`input`. Kinds are `ui`, `agent` (built-in Agent), `messaging`, `cli`, `skill`, `mcp`.
+`input`. Kinds are `ui`, `agent` (built-in Agent), `messaging`, `cli`, `mcp`.
 Source hints never select authorization or actor. Trusted Agent/MCP ingress overrides
 hints; a canonical Messaging Agent surface keeps `messaging`, including through
 Cloud-to-Hub forwarding. Direct Messaging Dialog replies use the verified external sender
 and a Messaging-only forwarding binding; they create no Agent run and can only invoke
-`/app/dialog/reply` in direct mode. CLI defaults to `cli`; external Skills explicitly pass
-`meow --source skill`. UI sets `ui`. `appClientId` comes only from the verified
+`/app/dialog/reply` in direct mode. CLI calls, including external Skills using the CLI,
+are always attributed as `cli`; no caller-supplied CLI source option is needed.
+UI sets `ui`. `appClientId` comes only from the verified
 Client identity, not connection routing IDs or an input hint.
 
 The runtime derives actor from verified initiation: User -> `{kind: user,userId}`;

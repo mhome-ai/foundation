@@ -114,13 +114,15 @@ mod tests {
 
     #[test]
     fn source_is_optional_and_survives_serialization() {
-        let value = serde_json::json!({"control":{"mode":"direct"},"input":{},"source":{"kind":"skill","cardId":"card"}});
+        let value = serde_json::json!({"control":{"mode":"direct"},"input":{},"source":{"kind":"cli","cardId":"card"}});
         let call: FacadeCall = serde_json::from_value(value.clone()).unwrap();
         assert_eq!(serde_json::to_value(call).unwrap(), value);
-        assert!(serde_json::from_value::<FacadeCall>(
-            serde_json::json!({"control":{"mode":"direct"},"input":{},"source":{"kind":"unknown"}})
-        )
-        .is_err());
+        for kind in ["skill", "unknown"] {
+            assert!(serde_json::from_value::<FacadeCall>(
+                serde_json::json!({"control":{"mode":"direct"},"input":{},"source":{"kind":kind}})
+            )
+            .is_err());
+        }
     }
 
     #[test]
@@ -158,6 +160,5 @@ pub enum SourceKind {
     Agent,
     Messaging,
     Cli,
-    Skill,
     Mcp,
 }
