@@ -233,9 +233,72 @@ mod tests {
                     .as_array()
                     .unwrap()
                     .iter()
-                    .any(|c| c["target"] == operation["target"]),
+                    .any(|c| c["target"] == operation["target"] && c["expected"].is_object()),
                 "{}",
                 operation["target"]
+            );
+        }
+    }
+    #[test]
+    fn every_command_family_and_retained_field_has_a_positive_case() {
+        let cases: Value =
+            serde_json::from_str(include_str!("../fixtures/recording.conformance.json")).unwrap();
+        for (name, fields) in SPEC["deviceCommands"].as_object().unwrap() {
+            for field in fields.as_array().unwrap() {
+                assert!(
+                    cases.as_array().unwrap().iter().any(|case| {
+                        case["expected"]["event"] == "device.command"
+                            && SPEC["deviceCapabilities"]
+                                .get(case["input"]["capabilityId"].as_str().unwrap_or_default())
+                                == Some(&json!(name))
+                            && case["expected"]["parameters"]
+                                .get(field.as_str().unwrap())
+                                .is_some()
+                    }),
+                    "missing positive projection for {name}.{field}"
+                );
+            }
+        }
+    }
+    #[test]
+    fn all_provider_ids_preserve_each_family_case_in_json_and_yaml() {
+        let cases: Value =
+            serde_json::from_str(include_str!("../fixtures/recording.conformance.json")).unwrap();
+        for (id, family) in SPEC["deviceCapabilities"].as_object().unwrap() {
+            let mut positive_cases = 0;
+            for case in cases.as_array().unwrap().iter().filter(|case| {
+                case["input"]["capabilityId"]
+                    == format!("basic.device.command.{}", family.as_str().unwrap())
+            }) {
+                let mut input = case["input"].clone();
+                input["capabilityId"] = json!(id);
+                let mut expected = case["expected"].clone();
+                if expected.is_object() {
+                    positive_cases += 1;
+                    expected["capabilityId"] = json!(id);
+                }
+                let outcome = serde_json::from_value(case["outcome"].clone()).unwrap();
+                let request = if input["request"].is_string() {
+                    serde_yaml::from_str(input["request"].as_str().unwrap()).unwrap()
+                } else {
+                    input["request"].clone()
+                };
+                input["request"] = request.clone();
+                assert_eq!(
+                    project("/app/capability/invoke/json", &input, &outcome).unwrap_or(Value::Null),
+                    expected,
+                    "{id} JSON"
+                );
+                input["request"] = json!(serde_yaml::to_string(&request).unwrap());
+                assert_eq!(
+                    project("/app/capability/invoke", &input, &outcome).unwrap_or(Value::Null),
+                    expected,
+                    "{id} YAML"
+                );
+            }
+            assert!(
+                positive_cases > 0,
+                "missing canonical positive case for {id}"
             );
         }
     }

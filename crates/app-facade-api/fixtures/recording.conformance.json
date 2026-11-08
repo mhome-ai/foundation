@@ -640,5 +640,755 @@
       "widgetId": "new-c",
       "status": "success"
     }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setBrightness",
+      "request": {
+        "device": "lamp",
+        "brightness": 0,
+        "transitionDuration": "0sec",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setBrightness",
+      "parameters": {
+        "device": "lamp",
+        "brightness": 0,
+        "transitionDuration": "0sec"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setColorTemperature",
+      "request": {
+        "device": "lamp",
+        "colorTemperature": 2700,
+        "transitionDuration": "2sec",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setColorTemperature",
+      "parameters": {
+        "device": "lamp",
+        "colorTemperature": 2700,
+        "transitionDuration": "2sec"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setColorRGB",
+      "request": {
+        "device": "lamp",
+        "hue": 0,
+        "saturation": 80,
+        "transitionDuration": "1sec",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setColorRGB",
+      "parameters": {
+        "device": "lamp",
+        "hue": 0,
+        "saturation": 80,
+        "transitionDuration": "1sec"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setThermostatTemperature",
+      "request": {
+        "device": "thermostat",
+        "coolingSetpoint": "24C",
+        "heatingSetpoint": "20C",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setThermostatTemperature",
+      "parameters": {
+        "device": "thermostat",
+        "coolingSetpoint": "24C",
+        "heatingSetpoint": "20C"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setThermostatMode",
+      "request": {
+        "device": "thermostat",
+        "hvacMode": "heat",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setThermostatMode",
+      "parameters": {
+        "device": "thermostat",
+        "hvacMode": "heat"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setThermostatMode",
+      "request": {
+        "device": "thermostat",
+        "presetMode": "eco",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setThermostatMode",
+      "parameters": {
+        "device": "thermostat",
+        "presetMode": "eco"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setFan",
+      "request": {
+        "device": "fan",
+        "mode": "auto",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setFan",
+      "parameters": {
+        "device": "fan",
+        "mode": "auto"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setFan",
+      "request": {
+        "device": "fan",
+        "speed": 0,
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setFan",
+      "parameters": {
+        "device": "fan",
+        "speed": 0
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.coverOpenClose",
+      "request": {
+        "device": "curtain",
+        "command": "close",
+        "position": 0,
+        "transitionDuration": "3sec",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.coverOpenClose",
+      "parameters": {
+        "device": "curtain",
+        "command": "close",
+        "position": 0,
+        "transitionDuration": "3sec"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.lockUnlock",
+      "request": {
+        "device": "front-door",
+        "command": "lock",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.lockUnlock",
+      "parameters": {
+        "device": "front-door",
+        "command": "lock"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.playMedia",
+      "request": {
+        "device": "speaker",
+        "providerMediaContentId": "favorite:rain",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.playMedia",
+      "parameters": {
+        "device": "speaker",
+        "providerMediaContentId": "favorite:rain"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.playMedia",
+      "request": {
+        "device": "speaker",
+        "mediaContent": {
+          "uri": "meow-artifact://v1/tenant/space/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/encoded"
+        },
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.playMedia",
+      "parameters": {
+        "device": "speaker",
+        "mediaContent": {
+          "uri": "meow-artifact://v1/tenant/space/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/encoded"
+        }
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.controlMediaPlayback",
+      "request": {
+        "device": "speaker",
+        "command": "pause",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.controlMediaPlayback",
+      "parameters": {
+        "device": "speaker",
+        "command": "pause"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.seekMediaPlayback",
+      "request": {
+        "device": "speaker",
+        "position": 0,
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.seekMediaPlayback",
+      "parameters": {
+        "device": "speaker",
+        "position": 0
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setAudioVolume",
+      "request": {
+        "device": "speaker",
+        "volume": 0,
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setAudioVolume",
+      "parameters": {
+        "device": "speaker",
+        "volume": 0
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setAudioMute",
+      "request": {
+        "device": "speaker",
+        "command": "unmute",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setAudioMute",
+      "parameters": {
+        "device": "speaker",
+        "command": "unmute"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.broadcastAudio",
+      "request": {
+        "device": "speaker",
+        "audio": {
+          "uri": "meow-artifact://v1/tenant/space/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/encoded"
+        },
+        "volume": 25,
+        "priority": "high",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.broadcastAudio",
+      "parameters": {
+        "device": "speaker",
+        "audio": {
+          "uri": "meow-artifact://v1/tenant/space/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/encoded"
+        },
+        "volume": 25,
+        "priority": "high"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.chime",
+      "request": {
+        "device": "doorbell",
+        "command": "off",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.chime",
+      "parameters": {
+        "device": "doorbell",
+        "command": "off"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.dispensePetFood",
+      "request": {
+        "device": "feeder",
+        "portions": 2,
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.dispensePetFood",
+      "parameters": {
+        "device": "feeder",
+        "portions": 2
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.dispensePetFood",
+      "request": {
+        "device": "feeder",
+        "weight": "20g",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.dispensePetFood",
+      "parameters": {
+        "device": "feeder",
+        "weight": "20g"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.cameraPtz",
+      "request": {
+        "device": "camera",
+        "command": "left",
+        "speed": 50,
+        "duration": "0sec",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.cameraPtz",
+      "parameters": {
+        "device": "camera",
+        "command": "left",
+        "speed": 50,
+        "duration": "0sec"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.cameraPtz",
+      "request": {
+        "device": "camera",
+        "preset": "entryway",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.cameraPtz",
+      "parameters": {
+        "device": "camera",
+        "preset": "entryway"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setCameraRecording",
+      "request": {
+        "device": "camera",
+        "mode": "off",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setCameraRecording",
+      "parameters": {
+        "device": "camera",
+        "mode": "off"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setCameraSetting",
+      "request": {
+        "device": "camera",
+        "monitoringMode": "record only",
+        "internal": "private-request",
+        "analysisDetail": "high",
+        "watchStream": "internal-low",
+        "recordingStream": "internal-high"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setCameraSetting",
+      "parameters": {
+        "device": "camera",
+        "monitoringMode": "record only"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setCameraSetting",
+      "request": {
+        "device": "camera",
+        "personRecognitionMode": "off",
+        "internal": "private-request",
+        "analysisDetail": "high",
+        "watchStream": "internal-low",
+        "recordingStream": "internal-high"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setCameraSetting",
+      "parameters": {
+        "device": "camera",
+        "personRecognitionMode": "off"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.startAudioRecording",
+      "request": {
+        "device": "microphone",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.startAudioRecording",
+      "parameters": {
+        "device": "microphone"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.stopAudioRecording",
+      "request": {
+        "device": "microphone",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.stopAudioRecording",
+      "parameters": {
+        "device": "microphone"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setCameraSetting",
+      "request": {
+        "device": "camera",
+        "analysisDetail": "high",
+        "watchStream": "low",
+        "recordingStream": "high"
+      }
+    },
+    "outcome": {
+      "status": "success"
+    },
+    "expected": null
   }
 ]
