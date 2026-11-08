@@ -75,6 +75,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/entity-presentation-v1.md",
       "contract/integration-presentation-v1.md",
       "contract/resource-read-v1.md",
+      "contract/developer-contracts-v1.md",
       "contract/space-presentation-v1.md",
       "contract/automation-v1.md",
       "contract/widget-presentation-v1.md",
