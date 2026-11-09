@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.120.0",
+  "contractVersion": "1.121.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -285,6 +285,7 @@
     "/app/system/hosts/runtime": "userWrite",
     "/app/system/instances/get": "spaceRead",
     "/app/timeline/entity/latest/list": "spaceRead",
+    "/app/trace/get": "spaceRead",
     "/app/ui/customize/cards/catalog/package/create": "userWrite",
     "/app/ui/customize/cards/catalog/package/get": "userRead",
     "/app/ui/customize/cards/catalog/package/update": "userWrite",

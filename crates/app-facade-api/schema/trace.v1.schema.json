@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Linear execution trace",
+  "type": "array",
+  "maxItems": 256,
+  "items": {
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp",
+          "userId",
+          "source"
+        ],
+        "properties": {
+          "type": {
+            "const": "USER"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "enum": [
+              "ui",
+              "agent",
+              "cli",
+              "mcp",
+              "messaging"
+            ]
+          },
+          "appClientId": {
+            "type": "string"
+          },
+          "page": {
+            "type": "string"
+          },
+          "cardId": {
+            "type": "string"
+          },
+          "surfaceId": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp",
+          "spaceId",
+          "source"
+        ],
+        "properties": {
+          "type": {
+            "const": "SPACE"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "spaceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "enum": [
+              "ui",
+              "agent",
+              "cli",
+              "mcp",
+              "messaging"
+            ]
+          },
+          "appClientId": {
+            "type": "string"
+          },
+          "page": {
+            "type": "string"
+          },
+          "cardId": {
+            "type": "string"
+          },
+          "surfaceId": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp",
+          "automationId"
+        ],
+        "properties": {
+          "type": {
+            "const": "AUTOMATION_IGNITE"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "automationId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp",
+          "automationId"
+        ],
+        "properties": {
+          "type": {
+            "const": "AUTOMATION_TRIGGER"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "automationId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp",
+          "automationId"
+        ],
+        "properties": {
+          "type": {
+            "const": "AUTOMATION_RESUME"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "automationId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp",
+          "widgetId"
+        ],
+        "properties": {
+          "type": {
+            "const": "WIDGET"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "widgetId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp",
+          "groupId"
+        ],
+        "properties": {
+          "type": {
+            "const": "GROUP"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "groupId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp",
+          "quickWord"
+        ],
+        "properties": {
+          "type": {
+            "const": "QUICK_WORD"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "quickWord": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp"
+        ],
+        "properties": {
+          "type": {
+            "const": "SCHEDULE"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scheduleId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "type",
+          "timestamp"
+        ],
+        "properties": {
+          "type": {
+            "const": "EXTERNAL"
+          },
+          "timestamp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "integrationId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    ]
+  }
+}

@@ -28,6 +28,7 @@ pub mod recording;
 pub mod routing;
 pub mod runtime;
 pub mod topology;
+pub mod trace;
 
 pub use call::{ActionMode, FacadeCall, FacadeControl, FacadeSource, ResponseDetail, SourceKind};
 

@@ -1,0 +1,6 @@
+[
+  {"type":"USER","timestamp":1794225600000,"userId":"u1","source":"ui"},
+  {"type":"AUTOMATION_IGNITE","timestamp":1794225600010,"automationId":"a1"},
+  {"type":"AUTOMATION_RESUME","timestamp":1794226200000,"automationId":"a1"},
+  {"type":"GROUP","timestamp":1794226200020,"groupId":"g1"}
+]
