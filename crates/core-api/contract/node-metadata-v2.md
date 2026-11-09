@@ -116,3 +116,21 @@ This v2 envelope replaces v1; Host, Core, native SDK consumers and firmware must
 consume the matching protocol together. No legacy reader or database conversion
 is provided. Runtime business data and binding identities remain unchanged by a
 normal Preview replacement.
+
+## Community published service provenance
+
+A verified Host release may include `publication` with `kind: community`,
+`publisherId` and `integrations` (at most 100 distinct qualified package IDs).
+The authenticated stable account ID owns `u-<first 32 lowercase hex SHA-256>-<slug>`;
+community definitions must use that namespace and `kind: extension`. This field
+is interpreted only after validating the enclosing platform signature. It is
+retained in `NodeBindingMetadata` for Space source acquisition and native updates.
+Absence retains ordinary official release behavior; Preview never claims this
+provenance. The signature does not grant Space, Host or operation permissions.
+
+Host validates the release's artifact digest before choosing the community macOS
+payload policy: intact ad-hoc signatures are allowed without an Apple Team
+requirement. Official payload verification retains its existing Team requirement.
+The Dev Kit supplies missing ad-hoc signatures; publishers manage no keys. The
+community test fixture is signed with a discarded ephemeral test key and is never
+a production trust source.

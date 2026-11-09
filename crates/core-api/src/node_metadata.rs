@@ -176,6 +176,9 @@ pub struct NodeBindingMetadata {
     pub source: NodeSourceKind,
     /// Captured from the verified onboarding challenge; a reconnect cannot replace it.
     pub host_public_key: Option<crate::host::auth::PublicKey>,
+    /// Verified platform attestation; absent for official releases and local Preview.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub publication: Option<crate::plugin_publication::PluginPublication>,
 }
 
 impl NodeMetadata {
@@ -216,6 +219,21 @@ impl NodeMetadata {
             serde_json::from_value(component["nodeMetadata"]["plugin"].clone())
                 .map_err(|e| format!("Invalid signed Plugin definition: {e}"))?;
         definition.validate()?;
+        let publication = manifest
+            .get("publication")
+            .map(|value| {
+                serde_json::from_value::<crate::plugin_publication::PluginPublication>(
+                    value.clone(),
+                )
+                .map_err(|e| format!("Invalid Plugin publication: {e}"))
+            })
+            .transpose()?;
+        if let Some(publication) = &publication {
+            if self.delivery != NodeDelivery::Host {
+                return Err("Community publication requires Host delivery".into());
+            }
+            publication.validate(&definition)?;
+        }
         let version = component["version"]
             .as_str()
             .ok_or("Node manifest version missing")?;
@@ -257,6 +275,7 @@ impl NodeMetadata {
             core_protocol,
             source: NodeSourceKind::Published,
             host_public_key: None,
+            publication,
         })
     }
 
@@ -303,6 +322,7 @@ impl NodeMetadata {
             core_protocol: parsed.core_protocol,
             source: NodeSourceKind::Preview,
             host_public_key: None,
+            publication: None,
         })
     }
 }
@@ -337,6 +357,42 @@ mod tests {
             false,
         )
         .map_err(|e| e.to_string())
+    }
+    #[test]
+    fn community_release_retains_only_verified_publication_identity() {
+        let mut metadata = host();
+        metadata.node_type = "u-252beb16094f8b00bc706b2b3c6bc819-garden".into();
+        metadata.service_id = metadata.node_type.clone();
+        metadata.source = NodeSource::Published {
+            release_manifest: serde_json::from_str(include_str!(
+                "../fixtures/node-metadata/community.bundle.json"
+            ))
+            .unwrap(),
+        };
+        let verify = |bytes: &[u8], signature: &str| {
+            minisign_verify::PublicKey::from_base64(
+                include_str!("../fixtures/node-metadata/community-public-key.txt").trim(),
+            )
+            .unwrap()
+            .verify(
+                bytes,
+                &minisign_verify::Signature::decode(signature).map_err(|e| e.to_string())?,
+                false,
+            )
+            .map_err(|e| e.to_string())
+        };
+        let binding = metadata.verify(verify).unwrap();
+        assert_eq!(
+            binding.publication.unwrap().integrations(),
+            &["U-example-publisher_garden.light"]
+        );
+        let NodeSource::Published { release_manifest } = &mut metadata.source else {
+            unreachable!()
+        };
+        release_manifest.manifest = release_manifest
+            .manifest
+            .replace("example-publisher", "another-publisher");
+        assert!(metadata.verify(verify).is_err());
     }
     #[test]
     fn preview_is_explicit_and_bound_to_host_environment_and_complete_content() {
