@@ -16,6 +16,7 @@ pub const SETTINGS_CHANGED_TARGET: &str = "/app/plugin/settings/changed";
 pub const CONTRIBUTION_READ_TARGET: &str = "/app/plugin/contribution/read";
 pub const OPERATIONS_LIST_TARGET: &str = "/app/plugin/operations/list";
 pub const OPERATION_INVOKE_TARGET: &str = "/app/plugin/operation/invoke";
+pub const OPERATION_SUBMIT_TARGET: &str = "/app/plugin/operation/submit";
 pub const OPERATION_STATUS_TARGET: &str = "/app/plugin/operation/status";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -64,6 +65,14 @@ pub struct PluginOperationInput {
     pub contract_id: String,
     pub operation_id: String,
     pub arguments: serde_json::Value,
+}
+
+/// Private final input from the interaction host; never a model function argument.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PluginOperationSubmitInput {
+    pub invocation: PluginOperationInput,
+    pub input: serde_json::Value,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

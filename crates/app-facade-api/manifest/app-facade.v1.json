@@ -53,6 +53,7 @@
         "/app/plugin/contribution/read",
         "/app/plugin/operations/list",
         "/app/plugin/operation/invoke",
+        "/app/plugin/operation/submit",
         "/app/plugin/operation/status",
         "/app/plugin/candidate/list",
         "/app/plugin/enable/start",

@@ -207,6 +207,7 @@
     "/app/plugin/contribution/read": "spaceRead",
     "/app/plugin/operations/list": "spaceRead",
     "/app/plugin/operation/invoke": "spaceRead",
+    "/app/plugin/operation/submit": "spaceRead",
     "/app/plugin/operation/status": "spaceRead",
     "/app/plugin/disable": "spaceManage",
     "/app/plugin/enable/start": "spaceManage",

@@ -1,13 +1,15 @@
 //! Core-owned context for a declared public operation. Never part of business arguments.
 use serde::{Deserialize, Serialize};
 
-pub const PUBLIC_OPERATIONS_VERSION: u32 = 1;
+pub const PUBLIC_OPERATIONS_VERSION: u32 = 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum PublicOperationPhase {
     Prepare,
     Invoke,
+    Submit,
+    Status,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
