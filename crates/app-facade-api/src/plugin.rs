@@ -14,6 +14,57 @@ pub const PROFILE_UPDATE_TARGET: &str = "/app/plugin/profile/update";
 pub const PREVIEW_CHECK_TARGET: &str = "/app/plugin/preview/check";
 pub const SETTINGS_CHANGED_TARGET: &str = "/app/plugin/settings/changed";
 pub const CONTRIBUTION_READ_TARGET: &str = "/app/plugin/contribution/read";
+pub const OPERATIONS_LIST_TARGET: &str = "/app/plugin/operations/list";
+pub const OPERATION_INVOKE_TARGET: &str = "/app/plugin/operation/invoke";
+pub const OPERATION_STATUS_TARGET: &str = "/app/plugin/operation/status";
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PluginOperationsInput {
+    pub node_id: String,
+    pub node_type: String,
+}
+
+/// Resolved by Core from the verified installed contract. Surface metadata never grants access.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PluginPublicOperation {
+    pub contract_id: String,
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub binding: serde_json::Value,
+    pub interaction: String,
+    pub allow_direct: bool,
+    pub access: core_api::space_access::SpaceAccessLevel,
+    pub surfaces: serde_json::Value,
+    pub input_schema: serde_json::Value,
+    pub output_schema: serde_json::Value,
+    pub wire_version: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PluginOperationsOutput {
+    pub node_id: String,
+    pub node_type: String,
+    pub source_manifest_sha256: String,
+    pub binding_revision: String,
+    pub operations: Vec<PluginPublicOperation>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PluginOperationInput {
+    pub invocation_id: String,
+    pub node_id: String,
+    pub node_type: String,
+    pub source_manifest_sha256: String,
+    pub binding_revision: String,
+    pub contract_id: String,
+    pub operation_id: String,
+    pub arguments: serde_json::Value,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

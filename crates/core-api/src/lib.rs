@@ -16,6 +16,7 @@ mod node_commissioning;
 mod node_metadata;
 mod node_service;
 pub mod plugin_contributions;
+pub mod plugin_operations;
 pub mod plugin_preview;
 pub mod plugin_publication;
 pub mod resource_transfer;
@@ -579,6 +580,8 @@ pub struct NodeAuthRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeAuthResponse {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub public_operations_version: Option<u32>,
     /// Exact release admitted by this authentication. Required when `ok` is true.
     /// Transports carry this snapshot into connection registration unchanged.
     #[serde(default, skip_serializing_if = "Option::is_none")]
