@@ -1088,6 +1088,39 @@ fn set_thermostat_temperature(
     attrs: &mut Map<String, Value>,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
+    // The simulator's automatic thermostat requires a non-overlapping target pair.
+    // Validate the complete resulting pair before changing either stored target.
+    let cooling = request
+        .get("coolingSetpoint")
+        .or_else(|| attrs.get("coolingSetpoint"));
+    let heating = request
+        .get("heatingSetpoint")
+        .or_else(|| attrs.get("heatingSetpoint"));
+    let celsius = |field: &str, value: Option<&Value>| -> Result<f64> {
+        let value = value.ok_or_else(|| anyhow!("Thermostat {field} is unavailable"))?;
+        let number = value
+            .get("value")
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Thermostat {field} must have a numeric value"))?;
+        let result = match value.get("unit").and_then(Value::as_str) {
+            Some("C") => number,
+            Some("F") => (number - 32.0) / 9.0 * 5.0,
+            _ => return Err(anyhow!("Thermostat {field} requires C or F units")),
+        };
+        if !result.is_finite() {
+            return Err(anyhow!("Thermostat {field} is not finite"));
+        }
+        Ok(result)
+    };
+    let heat = celsius("heatingSetpoint", heating)?;
+    let cool = celsius("coolingSetpoint", cooling)?;
+    // Unit conversion may differ by a few floating-point rounding bits.
+    let tolerance = 4.0 * f64::EPSILON * heat.abs().max(cool.abs()).max(1.0);
+    if heat - cool > tolerance {
+        return Err(anyhow!(
+            "heatingSetpoint ({heat} C) must not exceed coolingSetpoint ({cool} C)"
+        ));
+    }
     if let Some(value) = request.get("coolingSetpoint") {
         attrs.insert("coolingSetpoint".to_string(), value.clone());
     }
@@ -1590,6 +1623,81 @@ mod tests {
             project_state(THERMOSTAT_FAN_V1, &attrs, "state.thermostat").unwrap()["runningState"],
             "idle"
         );
+    }
+
+    #[test]
+    fn thermostat_rejects_crossed_targets_before_mutating_state() {
+        for request in [
+            json!({"heatingSetpoint":temperature(25.0,"C"),"coolingSetpoint":temperature(20.0,"C")}),
+            json!({"heatingSetpoint":temperature(26.0,"C")}),
+            json!({"coolingSetpoint":temperature(19.0,"C")}),
+            json!({"heatingSetpoint":temperature(78.8,"F"),"coolingSetpoint":temperature(25.0,"C")}),
+            json!({"heatingSetpoint":temperature(20.430000001,"C"),"coolingSetpoint":temperature(68.774,"F")}),
+        ] {
+            let mut attrs = default_attributes(THERMOSTAT_FAN_V1).unwrap();
+            let before = attrs.clone();
+            let result = handle_command(
+                THERMOSTAT_FAN_V1,
+                &mut attrs,
+                "command.setThermostatTemperature",
+                &object_map(request).unwrap(),
+            );
+            assert!(result.is_err(), "crossed targets must fail");
+            assert_eq!(attrs, before, "rejection must leave both targets unchanged");
+        }
+    }
+
+    #[test]
+    fn thermostat_single_target_preserves_the_other_target_and_accepts_equal_temperatures() {
+        let mut attrs = default_attributes(THERMOSTAT_FAN_V1).unwrap();
+        let old_cooling = attrs["coolingSetpoint"].clone();
+        let outcome = handle_command(
+            THERMOSTAT_FAN_V1,
+            &mut attrs,
+            "command.setThermostatTemperature",
+            &object_map(json!({"heatingSetpoint":temperature(77.0,"F")})).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(attrs["coolingSetpoint"], old_cooling);
+        assert_eq!(attrs["heatingSetpoint"], temperature(77.0, "F"));
+        assert_eq!(
+            outcome.events[0].payload["heatingSetpoint"],
+            temperature(77.0, "F")
+        );
+        for (heating, cooling) in [
+            (temperature(20.43, "C"), temperature(68.774, "F")),
+            (temperature(68.774, "F"), temperature(20.43, "C")),
+        ] {
+            handle_command(
+                THERMOSTAT_FAN_V1,
+                &mut attrs,
+                "command.setThermostatTemperature",
+                &object_map(json!({"heatingSetpoint":heating,"coolingSetpoint":cooling})).unwrap(),
+            )
+            .unwrap();
+        }
+    }
+
+    #[test]
+    fn thermostat_coupled_validation_requires_known_valid_target_units() {
+        for other in [Value::Null, json!({"value":20,"unit":"K"}), json!("20C")] {
+            let mut attrs = default_attributes(THERMOSTAT_FAN_V1).unwrap();
+            attrs.insert("heatingSetpoint".into(), other);
+            let before = attrs.clone();
+            assert!(handle_command(
+                THERMOSTAT_FAN_V1,
+                &mut attrs,
+                "command.setThermostatTemperature",
+                &object_map(json!({"coolingSetpoint":temperature(22.0,"C")})).unwrap()
+            )
+            .is_err());
+            assert_eq!(attrs, before);
+        }
+        let mut attrs = default_attributes(THERMOSTAT_FAN_V1).unwrap();
+        attrs.insert("heatingSetpoint".into(), Value::Null);
+        assert!(handle_command(THERMOSTAT_FAN_V1, &mut attrs,
+            "command.setThermostatTemperature",
+            &object_map(json!({"heatingSetpoint":temperature(20.0,"C"),"coolingSetpoint":temperature(22.0,"C")})).unwrap()).is_ok());
     }
 
     #[test]
