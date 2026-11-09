@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.74.0",
+  "contractVersion": "1.75.0",
   "protocols": {
     "extensionSources": {
       "contract": "contract/extension-sources-v1.md",
@@ -16,6 +16,8 @@
       "completeTarget": "/llm/complete"
     },
     "node": {
+      "contributionsReadTarget": "/node/contributions/read",
+      "contributionsContract": "contract/plugin-contributions-v1.md",
       "managementEventTarget": "/node/app/event",
       "managementEventAppTarget": "/app/plugin/event",
       "managementContract": "contract/plugin-management-v1.md",

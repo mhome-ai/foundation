@@ -50,6 +50,7 @@
         "/app/plugin/catalog/list",
         "/app/plugin/enabled/list",
         "/app/plugin/detail/get",
+        "/app/plugin/contribution/read",
         "/app/plugin/candidate/list",
         "/app/plugin/enable/start",
         "/app/plugin/enable/status",

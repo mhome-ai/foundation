@@ -13,6 +13,24 @@ pub const PROFILE_UPDATE_TARGET: &str = "/app/plugin/profile/update";
 /// Read-only Local Space management check before the CLI changes its local Host.
 pub const PREVIEW_CHECK_TARGET: &str = "/app/plugin/preview/check";
 pub const SETTINGS_CHANGED_TARGET: &str = "/app/plugin/settings/changed";
+pub const CONTRIBUTION_READ_TARGET: &str = "/app/plugin/contribution/read";
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReadPluginContributionInput {
+    pub node_id: String,
+    pub node_type: String,
+    pub source_manifest_sha256: String,
+    pub resource: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReadPluginContributionOutput {
+    pub node_id: String,
+    pub node_type: String,
+    pub content: core_api::plugin_contributions::NodeContributionContent,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

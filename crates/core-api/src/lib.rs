@@ -15,6 +15,7 @@ pub mod node;
 mod node_commissioning;
 mod node_metadata;
 mod node_service;
+pub mod plugin_contributions;
 pub mod plugin_preview;
 pub mod plugin_publication;
 pub mod resource_transfer;

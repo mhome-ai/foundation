@@ -204,6 +204,7 @@
     "/app/plugin/candidate/list": "spaceRead",
     "/app/plugin/catalog/list": "spaceRead",
     "/app/plugin/detail/get": "spaceRead",
+    "/app/plugin/contribution/read": "spaceRead",
     "/app/plugin/disable": "spaceManage",
     "/app/plugin/enable/start": "spaceManage",
     "/app/plugin/enable/status": "spaceManage",

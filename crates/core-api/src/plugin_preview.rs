@@ -160,6 +160,7 @@ mod tests {
                 binding_cardinality: crate::NodeBindingCardinality::Multiple,
                 display_name: "Garden".into(),
                 description: "Garden controls".into(),
+                contributions: None,
             },
             platform: "linux-arm64".into(),
             service_version: "1.0.0".into(),

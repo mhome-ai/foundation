@@ -59,10 +59,19 @@ pub struct PluginDefinition {
     pub binding_cardinality: NodeBindingCardinality,
     pub display_name: String,
     pub description: String,
+    /// Digest of the fixed public contribution index, covered by release/Host proof.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub contributions: Option<crate::plugin_contributions::ContributionFile>,
 }
 
 impl PluginDefinition {
     pub fn validate(&self) -> Result<(), String> {
+        if let Some(reference) = &self.contributions {
+            if reference.size == 0 {
+                return Err("Plugin contribution index cannot be empty".into());
+            }
+            reference.validate(crate::plugin_contributions::CONTRIBUTIONS_INDEX_MAX_BYTES)?;
+        }
         let valid_id = !self.id.is_empty()
             && self.id.len() <= 80
             && self.id.starts_with(|c: char| c.is_ascii_lowercase())
@@ -358,6 +367,28 @@ mod tests {
         )
         .map_err(|e| e.to_string())
     }
+    #[test]
+    fn contribution_reference_is_captured_from_verified_source_and_cannot_bypass_signature() {
+        let mut metadata = host();
+        let NodeSource::Published { release_manifest } = &mut metadata.source else {
+            unreachable!()
+        };
+        let mut manifest: Value = serde_json::from_str(&release_manifest.manifest).unwrap();
+        manifest["component"]["nodeMetadata"]["plugin"]["contributions"] =
+            serde_json::json!({"size":128,"sha256":"a".repeat(64)});
+        release_manifest.manifest = manifest.to_string();
+        assert!(
+            metadata.verify(verify).is_err(),
+            "an altered installed declaration must fail signature verification"
+        );
+        // Admission projection is tested separately from cryptographic fixtures.
+        let binding = metadata.verify(|_, _| Ok(())).unwrap();
+        assert_eq!(
+            binding.definition.contributions.unwrap().sha256,
+            "a".repeat(64)
+        );
+    }
+
     #[test]
     fn community_release_retains_only_verified_publication_identity() {
         let mut metadata = host();

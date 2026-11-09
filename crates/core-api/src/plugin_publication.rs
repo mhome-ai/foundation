@@ -112,6 +112,7 @@ mod tests {
             binding_cardinality: crate::NodeBindingCardinality::Single,
             display_name: "Garden".into(),
             description: "Example community service".into(),
+            contributions: None,
         }
     }
     #[test]
