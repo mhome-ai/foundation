@@ -867,8 +867,10 @@
         "device": "curtain",
         "command": "close",
         "position": 0,
-        "transitionDuration": "3sec",
-        "internal": "private-request"
+        "internal": "private-request",
+        "positionTransitionDuration": "3sec",
+        "tiltPosition": 35.5,
+        "tiltTransitionDuration": "0sec"
       }
     },
     "outcome": {
@@ -884,7 +886,9 @@
         "device": "curtain",
         "command": "close",
         "position": 0,
-        "transitionDuration": "3sec"
+        "positionTransitionDuration": "3sec",
+        "tiltPosition": 35.5,
+        "tiltTransitionDuration": "0sec"
       },
       "status": "success"
     }
@@ -892,11 +896,12 @@
   {
     "target": "/app/capability/invoke/json",
     "input": {
-      "capabilityId": "basic.device.command.lockUnlock",
+      "capabilityId": "basic.device.command.doorLock",
       "request": {
         "device": "front-door",
         "command": "lock",
-        "internal": "private-request"
+        "internal": "private-request",
+        "pinCode": "0012"
       }
     },
     "outcome": {
@@ -907,7 +912,7 @@
     },
     "expected": {
       "event": "device.command",
-      "capabilityId": "basic.device.command.lockUnlock",
+      "capabilityId": "basic.device.command.doorLock",
       "parameters": {
         "device": "front-door",
         "command": "lock"

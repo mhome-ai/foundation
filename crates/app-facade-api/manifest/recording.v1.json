@@ -274,9 +274,11 @@
       "device",
       "command",
       "position",
-      "transitionDuration"
+      "tiltPosition",
+      "positionTransitionDuration",
+      "tiltTransitionDuration"
     ],
-    "lockUnlock": [
+    "doorLock": [
       "device",
       "command"
     ],
@@ -354,7 +356,7 @@
     "basic.device.command.controlMediaPlayback": "controlMediaPlayback",
     "basic.device.command.coverOpenClose": "coverOpenClose",
     "basic.device.command.dispensePetFood": "dispensePetFood",
-    "basic.device.command.lockUnlock": "lockUnlock",
+    "basic.device.command.doorLock": "doorLock",
     "basic.device.command.onOff": "onOff",
     "basic.device.command.playMedia": "playMedia",
     "basic.device.command.seekMediaPlayback": "seekMediaPlayback",
@@ -382,7 +384,7 @@
     "mlinkHomeAssistant.device.command.chime": "chime",
     "mlinkHomeAssistant.device.command.controlMediaPlayback": "controlMediaPlayback",
     "mlinkHomeAssistant.device.command.coverOpenClose": "coverOpenClose",
-    "mlinkHomeAssistant.device.command.lockUnlock": "lockUnlock",
+    "mlinkHomeAssistant.device.command.doorLock": "doorLock",
     "mlinkHomeAssistant.device.command.onOff": "onOff",
     "mlinkHomeAssistant.device.command.playMedia": "playMedia",
     "mlinkHomeAssistant.device.command.setAudioMute": "setAudioMute",
@@ -402,7 +404,7 @@
     "mlinkLutron.device.command.setBrightness": "setBrightness",
     "mlinkLutron.device.command.setFan": "setFan",
     "mlinkMatter.device.command.coverOpenClose": "coverOpenClose",
-    "mlinkMatter.device.command.lockUnlock": "lockUnlock",
+    "mlinkMatter.device.command.doorLock": "doorLock",
     "mlinkMatter.device.command.onOff": "onOff",
     "mlinkMatter.device.command.setAudioMute": "setAudioMute",
     "mlinkMatter.device.command.setAudioVolume": "setAudioVolume",
@@ -421,7 +423,7 @@
     "mlinkSmartThings.device.command.chime": "chime",
     "mlinkSmartThings.device.command.controlMediaPlayback": "controlMediaPlayback",
     "mlinkSmartThings.device.command.coverOpenClose": "coverOpenClose",
-    "mlinkSmartThings.device.command.lockUnlock": "lockUnlock",
+    "mlinkSmartThings.device.command.doorLock": "doorLock",
     "mlinkSmartThings.device.command.onOff": "onOff",
     "mlinkSmartThings.device.command.setAudioMute": "setAudioMute",
     "mlinkSmartThings.device.command.setAudioVolume": "setAudioVolume",
@@ -440,7 +442,7 @@
     "playground.device.command.chime": "chime",
     "playground.device.command.controlMediaPlayback": "controlMediaPlayback",
     "playground.device.command.coverOpenClose": "coverOpenClose",
-    "playground.device.command.lockUnlock": "lockUnlock",
+    "playground.device.command.doorLock": "doorLock",
     "playground.device.command.onOff": "onOff",
     "playground.device.command.playMedia": "playMedia",
     "playground.device.command.setAudioMute": "setAudioMute",

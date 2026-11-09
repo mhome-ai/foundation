@@ -143,14 +143,16 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "coverState": "closed",
             "coverPosition": 0,
             "coverDeviceType": "shade",
-            "supportPosition": true
+            "canSetPosition": true,
+            "canGetPosition": true
         })),
         COVER_GARAGE_DOOR_V1 => object_map(json!({
             "online": true,
             "coverState": "closed",
             "coverPosition": 0,
             "coverDeviceType": "garageDoor",
-            "supportPosition": true,
+            "canSetPosition": true,
+            "canGetPosition": true,
             "contactState": "closed"
         })),
         LOCK_DEADBOLT_V1 => object_map(json!({
@@ -352,7 +354,12 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "command.coverOpenClose",
             "state.contactSensor",
         ][..],
-        LOCK_DEADBOLT_V1 => &["state.lock", "state.battery", "command.lockUnlock"][..],
+        LOCK_DEADBOLT_V1 => &[
+            "state.doorLock",
+            "state.battery",
+            "command.doorLock",
+            "data.doorLockAttributes",
+        ][..],
         CONTACT_SENSOR_V1 => &["state.contactSensor", "state.battery", "state.tamper"][..],
         MOTION_SENSOR_V1 => &["state.motion", "state.battery", "state.tamper"][..],
         ILLUMINANCE_SENSOR_V1 => &["state.illuminance", "state.battery"][..],
@@ -469,15 +476,23 @@ pub fn project_state(
         "state.energy" => Ok(object_map(json!({
             "energy": number_attr(attrs, "energy")?
         }))?),
-        "state.coverOpenClose" => Ok(object_map(json!({
-            "state": string_attr(attrs, "coverState")?,
-            "position": number_attr(attrs, "coverPosition")?,
-            "deviceType": string_attr(attrs, "coverDeviceType")?
-        }))?),
+        "state.coverOpenClose" => {
+            let mut state = object_map(
+                json!({"state":string_attr(attrs,"coverState")?,"deviceType":string_attr(attrs,"coverDeviceType")?}),
+            )?;
+            if bool_attr(attrs, "canGetPosition")? {
+                state.insert(
+                    "position".into(),
+                    attrs.get("coverPosition").cloned().unwrap_or(Value::Null),
+                );
+            }
+            Ok(state)
+        }
         "state.contactSensor" => Ok(object_map(json!({
             "state": string_attr(attrs, "contactState")?
         }))?),
-        "state.lock" => Ok(object_map(json!({
+        "data.doorLockAttributes" => project_discovery(model_id, attrs, "state.doorLock", "$f1"),
+        "state.doorLock" => Ok(object_map(json!({
             "lockState": string_attr(attrs, "lockState")?
         }))?),
         "state.battery" => Ok(object_map(json!({
@@ -597,8 +612,18 @@ pub fn project_discovery(
             "min": number_attr(attrs, "minColorTemperature")?,
             "max": number_attr(attrs, "maxColorTemperature")?
         }))?),
+        "state.doorLock" | "command.doorLock" => Ok(object_map(json!({
+            "supportedCommands": ["lock", "unlock", "unlatch"],
+            "canGetDoorState": false,
+            "pinCodeRequirement": "unsupported"
+        }))?),
         "state.coverOpenClose" | "command.coverOpenClose" => Ok(object_map(json!({
-            "supportPosition": bool_attr(attrs, "supportPosition")?,
+            "canSetPosition": bool_attr(attrs, "canSetPosition")?,
+            "canGetPosition": bool_attr(attrs, "canGetPosition")?,
+            "canSetTiltPosition": false,
+            "canGetTiltPosition": false,
+            "canSetPositionTransitionDuration": false,
+            "canSetTiltTransitionDuration": false,
             "supportedCommands": ["open", "close", "stop"]
         }))?),
         "state.fan" | "command.setFan" => Ok(object_map(json!({
@@ -725,7 +750,7 @@ pub fn apply_observed_payload(
             );
         }
         "state.contactSensor" => copy_payload_field(attrs, payload, "state", "contactState")?,
-        "state.lock" => copy_payload_field(attrs, payload, "lockState", "lockState")?,
+        "state.doorLock" => copy_payload_field(attrs, payload, "lockState", "lockState")?,
         "state.battery" => {
             copy_payload_field(attrs, payload, "level", "batteryLevel")?;
             copy_optional_payload_fields(attrs, payload, &[("chargingState", "chargingState")]);
@@ -825,7 +850,7 @@ pub fn handle_command(
         "command.setColorTemperature" => set_color_temperature(attrs, request),
         "command.setColorRGB" => set_color_rgb(attrs, request),
         "command.coverOpenClose" => cover_open_close(attrs, request),
-        "command.lockUnlock" => lock_unlock(attrs, request),
+        "command.doorLock" => door_lock(attrs, request),
         "command.chime" => chime(attrs, request),
         "command.setFan" => set_fan(attrs, request),
         "command.setThermostatMode" => set_thermostat_mode(attrs, request),
@@ -918,76 +943,99 @@ fn cover_open_close(
     attrs: &mut Map<String, Value>,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
-    if request.get("command").and_then(Value::as_str) == Some("stop") {
-        ensure!(
-            request.get("position").is_none_or(Value::is_null),
-            "stop cannot include a target position"
-        );
-        let position = required_number(attrs, "coverPosition")?;
-        let state = if position <= 0.0 {
-            "closed"
-        } else if position >= 100.0 {
-            "open"
-        } else {
-            "partially open"
-        };
-        attrs.insert("coverState".to_string(), json!(state));
-        return projected_event(attrs, "state.coverOpenClose");
+    ensure!(
+        request.get("transitionDuration").is_none_or(Value::is_null),
+        "Use positionTransitionDuration or tiltTransitionDuration"
+    );
+    for field in ["positionTransitionDuration", "tiltTransitionDuration"] {
+        if let Some(value) = request.get(field).filter(|v| !v.is_null()) {
+            ensure!(
+                value["_type"] == "Duration"
+                    && matches!(
+                        value["unit"].as_str(),
+                        Some("ms" | "sec" | "min" | "hour" | "day")
+                    )
+                    && value["value"].as_f64() == Some(0.0),
+                "cover does not support {field}; omit or use zero"
+            );
+        }
     }
-    let position = request
+    ensure!(
+        request.get("tiltPosition").is_none_or(Value::is_null),
+        "cover does not support tiltPosition"
+    );
+    let target = request
         .get("position")
-        .and_then(Value::as_f64)
-        .map(|value| value.clamp(0.0, 100.0));
-    let state = if let Some(command) = request.get("command").and_then(Value::as_str) {
-        match command {
-            "open" => "open",
-            "close" => "closed",
-            _ => return Err(anyhow!("unsupported coverOpenClose command: {}", command)),
-        }
-    } else if let Some(position) = position {
-        if position <= 0.0 {
-            "closed"
-        } else if position >= 100.0 {
-            "open"
-        } else {
-            "partially open"
-        }
+        .filter(|v| !v.is_null())
+        .map(|v| {
+            ensure!(
+                bool_attr(attrs, "canSetPosition")?,
+                "cover does not support setting position"
+            );
+            let n = v
+                .as_f64()
+                .filter(|n| n.is_finite() && (0.0..=100.0).contains(n))
+                .ok_or_else(|| anyhow!("position must be between 0 and 100"))?;
+            Ok::<f64, anyhow::Error>(n)
+        })
+        .transpose()?;
+    let action = request.get("command").filter(|v| !v.is_null());
+    ensure!(
+        action.is_none_or(|v| matches!(v.as_str(), Some("open" | "close" | "stop"))),
+        "unsupported cover command"
+    );
+    ensure!(
+        target.is_some() || action.is_some(),
+        "cover requires command or position"
+    );
+    // The simulator accepts one motion: stop wins, then a target, then direction.
+    let position = if action.and_then(Value::as_str) == Some("stop") {
+        required_number(attrs, "coverPosition")?
+    } else if let Some(target) = target {
+        target
+    } else if action.and_then(Value::as_str) == Some("open") {
+        100.0
     } else {
-        return Err(anyhow!("coverOpenClose requires command or position"));
+        0.0
     };
-    attrs.insert("coverState".to_string(), Value::String(state.to_string()));
-    if let Some(position) = position {
-        attrs.insert("coverPosition".to_string(), json!(position));
+    let state = if position <= 0.0 {
+        "closed"
+    } else if position >= 100.0 {
+        "open"
     } else {
-        attrs.insert(
-            "coverPosition".to_string(),
-            json!(if state == "open" { 100.0 } else { 0.0 }),
-        );
-    }
+        "partially open"
+    };
+    attrs.insert("coverState".into(), json!(state));
+    attrs.insert("coverPosition".into(), json!(position));
     if attrs.contains_key("contactState") {
         attrs.insert(
-            "contactState".to_string(),
-            Value::String(if state == "closed" { "closed" } else { "open" }.to_string()),
+            "contactState".into(),
+            json!(if state == "closed" { "closed" } else { "open" }),
         );
     }
     projected_event(attrs, "state.coverOpenClose")
 }
 
-fn lock_unlock(
+fn door_lock(
     attrs: &mut Map<String, Value>,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
+    ensure!(
+        request.get("pinCode").is_none_or(Value::is_null),
+        "This door lock does not accept operation PINs"
+    );
     let command = required_string(request, "command")?;
     let lock_state = match command.as_str() {
         "lock" => "locked",
-        "unlock" | "unlatch" => "unlocked",
-        _ => return Err(anyhow!("unsupported lockUnlock command: {}", command)),
+        "unlock" => "unlocked",
+        "unlatch" => "unlatched",
+        _ => return Err(anyhow!("unsupported doorLock command: {}", command)),
     };
     attrs.insert(
         "lockState".to_string(),
         Value::String(lock_state.to_string()),
     );
-    projected_event(attrs, "state.lock")
+    projected_event(attrs, "state.doorLock")
 }
 
 fn chime(attrs: &mut Map<String, Value>, request: &Map<String, Value>) -> Result<CommandOutcome> {
@@ -1365,6 +1413,46 @@ mod tests {
     use super::*;
 
     #[test]
+    fn door_lock_inventory_discovery_commands_and_state_share_the_new_contract() {
+        let mut attrs = default_attributes(LOCK_DEADBOLT_V1).unwrap();
+        let caps = capabilities(LOCK_DEADBOLT_V1).unwrap();
+        assert!(caps.contains(&"data.doorLockAttributes".to_string()));
+        assert!(!caps
+            .iter()
+            .any(|s| s == "state.lock" || s == "command.lockUnlock"));
+        let facts = project_discovery(LOCK_DEADBOLT_V1, &attrs, "state.doorLock", "$f1").unwrap();
+        assert_eq!(facts,object_map(json!({"supportedCommands":["lock","unlock","unlatch"],"canGetDoorState":false,"pinCodeRequirement":"unsupported"})).unwrap());
+        assert_eq!(
+            project_state(LOCK_DEADBOLT_V1, &attrs, "data.doorLockAttributes").unwrap(),
+            facts
+        );
+        for (action, state) in [
+            ("lock", "locked"),
+            ("unlock", "unlocked"),
+            ("unlatch", "unlatched"),
+        ] {
+            let outcome = handle_command(
+                LOCK_DEADBOLT_V1,
+                &mut attrs,
+                "command.doorLock",
+                &object_map(json!({"command":action})).unwrap(),
+            )
+            .unwrap();
+            assert_eq!(outcome.events[0].payload["lockState"], state);
+            assert_eq!(outcome.events[0].capability, "state.doorLock");
+        }
+        let before = attrs.clone();
+        assert!(handle_command(
+            LOCK_DEADBOLT_V1,
+            &mut attrs,
+            "command.doorLock",
+            &object_map(json!({"command":"unlock","pinCode":"0012"})).unwrap()
+        )
+        .is_err());
+        assert_eq!(attrs, before);
+    }
+
+    #[test]
     fn cover_stop_retains_position_and_does_not_move_the_simulated_device() {
         for model in [COVER_SHADE_V1, COVER_GARAGE_DOOR_V1] {
             let mut attrs = default_attributes(model).unwrap();
@@ -1384,22 +1472,37 @@ mod tests {
                     &object_map(json!({"command":"stop"})).unwrap(),
                 )
                 .unwrap();
-                assert_eq!(attrs["coverPosition"], json!(position));
+                assert_eq!(attrs["coverPosition"].as_f64(), Some(f64::from(position)));
                 assert_eq!(
                     outcome.events[0].payload["position"].as_f64(),
                     Some(f64::from(position))
                 );
                 assert_eq!(outcome.events[0].payload["state"], json!(state));
             }
-            let before = attrs.clone();
-            assert!(handle_command(
+            let before = attrs["coverPosition"].as_f64();
+            handle_command(
                 model,
                 &mut attrs,
                 "command.coverOpenClose",
-                &object_map(json!({"command":"stop", "position":0})).unwrap()
+                &object_map(json!({"command":"stop","position":0})).unwrap(),
             )
-            .is_err());
-            assert_eq!(attrs, before);
+            .unwrap();
+            assert_eq!(attrs["coverPosition"].as_f64(), before);
+            let before = attrs.clone();
+            for request in [
+                json!({"command":"open","position":101}),
+                json!({"command":"open","tiltPosition":50}),
+                json!({"command":"open","positionTransitionDuration":{"_type":"Duration","value":1,"unit":"sec"}}),
+            ] {
+                assert!(handle_command(
+                    model,
+                    &mut attrs,
+                    "command.coverOpenClose",
+                    &object_map(request).unwrap()
+                )
+                .is_err());
+                assert_eq!(attrs, before);
+            }
         }
     }
 
