@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.119.1",
+  "contractVersion": "1.120.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -93,7 +93,6 @@
     "/app/dialog/get": "spaceRead",
     "/app/dialog/list": "spaceRead",
     "/app/dialog/reply": "spaceWrite",
-    "/app/entity/brief/list": "spaceRead",
     "/app/entity/detail/get": "spaceRead",
     "/app/entity/history/list": "spaceRead",
     "/app/entity/list": "spaceRead",
@@ -359,7 +358,8 @@
     "/pod/talk/request/get": "spaceRead",
     "/pod/talk/speech/prepare": "spaceWrite",
     "/pod/talk/turn/submit": "spaceWrite",
-    "/pod/talk/view/get": "spaceRead"
+    "/pod/talk/view/get": "spaceRead",
+    "/app/entity/state/get": "spaceRead"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

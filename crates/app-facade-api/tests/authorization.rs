@@ -76,6 +76,7 @@ fn current_conversation_and_talk_routes_are_all_declared() {
         "/app/widget/state/get",
         "/app/widget/brief/list",
         "/app/device/brief/list",
+        "/app/entity/brief/list",
         "/integration/fix",
         "/scope/list",
         "/scope/get",
@@ -361,5 +362,20 @@ fn inspire_discovery_is_retired_without_removing_automation_configuration_or_sha
         "/app/presentation/automation/share",
     ] {
         assert!(authorization::required(target).is_some(), "{target}");
+    }
+}
+
+#[test]
+fn general_entity_reads_share_space_read_policy() {
+    for target in [
+        "/app/entity/list",
+        "/app/entity/detail/get",
+        "/app/entity/state/get",
+        "/app/entity/history/list",
+    ] {
+        assert_eq!(
+            authorization::required(target),
+            Some(authorization::OperationPolicy::SpaceRead)
+        );
     }
 }

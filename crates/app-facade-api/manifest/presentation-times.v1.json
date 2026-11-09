@@ -153,5 +153,12 @@
       "nfcTags.*.createdAt",
       "nfcTags.*.lastUsedAt"
     ]
+  },
+  "/app/entity/state/get": {
+    "sec": [
+      "items.*.resource.latest.*.state.timestamp",
+      "items.*.resource.latest.*.event.timestamp",
+      "items.*.resource.latest.*.log.timestamp"
+    ]
   }
 }

@@ -11,6 +11,9 @@ follow the Space execution authority on both local Core and cloud.
 | --- | --- | --- |
 | `/app/device/detail/get` | `{ids}` | Existing ordered `items` with `device` definitions, capabilities, group membership, physical Twin enablement or Group application state, source metadata; no online or state fields |
 | `/app/device/state/get` | `{ids}` | Ordered `items` with `resource: {entityId, online?, onlineUpdatedAtSec?, latest}` |
+| `/app/entity/list` | `{entityType}` | Complete static directory metadata of the exact general Entity type; same-type Groups included; no list modes |
+| `/app/entity/detail/get` | `{entityType, ids}` | Selected metadata identical to list rows, under ordered `items[].entity` |
+| `/app/entity/state/get` | `{entityType, ids}` | Ordered `items` with `resource: {entityId, latest}`; no source refresh or derived online; see [Entity contract](entity-v1.md) |
 | `/app/widget/list` | `{}` | Summaries: id, displayName, description, type, tag; Data adds dataType/repeated. No list mode or full-definition catalog |
 | `/app/widget/detail/get` | `{ids}` | Existing ordered `items` with `widget` configuration; no value, next or nextTimestamp |
 | `/app/widget/value/get` | `{ids}` | Ordered `items` with `resource: {widgetId, revision, value, next?, nextTimestamp?}` |
@@ -30,7 +33,9 @@ Observation batches accept 1–100 IDs, reject blanks, trim and deduplicate pres
 request order. Every normalized ID gets `{requestedId, found, resource?}`; missing
 resources have `found: false, reason: "not_found"`. A known Device with no observations
 has `found: true` and `latest: []`. Unknown reachability omits `online`; it is not false.
-Device state supports visible physical devices and Device groups. Automation status
+Device state supports visible physical devices and Device groups. General Entity state
+also requires entityType, supports same-type Groups and respects source visibility;
+known Location/AppClient endpoints return empty latest without querying Twin. Automation status
 accepts user program IDs, including retained one-time programs, not groups or internal
 Twin programs. Widget value supports Data, Button and Circadian resources. JSON null
 is a value, not a missing resource. Button values may be null.

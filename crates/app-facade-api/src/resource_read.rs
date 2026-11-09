@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+pub const ENTITY_STATE: &str = "/app/entity/state/get";
 pub const DEVICE_STATE: &str = "/app/device/state/get";
 pub const DEVICE_SERIES: &str = "/app/presentation/device/history/series/get";
 pub const WIDGET_VALUE: &str = "/app/widget/value/get";
@@ -71,6 +72,26 @@ pub struct CapabilityObservation {
     pub log: Option<Value>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EntityStateInput {
+    pub entity_type: String,
+    pub ids: Vec<String>,
+}
+impl EntityStateInput {
+    pub fn normalized_ids(&self) -> Result<Vec<String>, &'static str> {
+        ResourceIdsInput {
+            ids: self.ids.clone(),
+        }
+        .normalized_ids()
+    }
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EntityObservation {
+    pub entity_id: String,
+    pub latest: Vec<CapabilityObservation>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceObservation {
     pub entity_id: String,
@@ -106,6 +127,34 @@ mod tests {
         }
         assert!(
             serde_json::from_str::<ResourceIdsInput>(r#"{"ids":["a"],"refresh":true}"#).is_err()
+        );
+    }
+    #[test]
+    fn entity_observations_require_typed_bounded_ids_without_runtime_options() {
+        for ids in [vec![], vec![" ".into()], vec!["x".into(); 101]] {
+            assert!(EntityStateInput {
+                entity_type: "Location".into(),
+                ids
+            }
+            .normalized_ids()
+            .is_err());
+        }
+        assert_eq!(
+            EntityStateInput {
+                entity_type: "Location".into(),
+                ids: vec![" home ".into(), "home".into()]
+            }
+            .normalized_ids()
+            .unwrap(),
+            ["home"]
+        );
+        assert!(serde_json::from_value::<EntityStateInput>(
+            serde_json::json!({"entityType":"Location","ids":["home"],"refresh":true})
+        )
+        .is_err());
+        assert!(
+            serde_json::from_value::<EntityStateInput>(serde_json::json!({"ids":["home"]}))
+                .is_err()
         );
     }
     #[test]

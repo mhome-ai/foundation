@@ -178,6 +178,8 @@ pub fn essential(target: &str, data: &Value) -> Value {
         result
     } else if let Some(result) = runtime::project(target, data) {
         result
+    } else if matches!(target, "/app/entity/list" | "/app/entity/detail/get") {
+        entity_metadata(target, data)
     } else if target == "/app/widget/list" {
         widget_list(data)
     } else if target == "/app/widget/detail/get" {
@@ -195,6 +197,61 @@ pub fn essential(target: &str, data: &Value) -> Value {
     } else {
         automation(target, data)
     }
+}
+
+// Directory metadata is shared by list and selected detail. Source-defined data
+// remains intact: a provider-local data.id is not the canonical entity ID.
+fn entity_metadata(target: &str, data: &Value) -> Value {
+    let mut result = data.clone();
+    let collection = if target == "/app/entity/list" {
+        "entities"
+    } else {
+        "items"
+    };
+    if let Some(rows) = result.get_mut(collection).and_then(Value::as_array_mut) {
+        for row in rows {
+            let entity = if collection == "items" {
+                row.get_mut("entity")
+            } else {
+                Some(row)
+            };
+            let Some(fields) = entity.and_then(Value::as_object_mut) else {
+                continue;
+            };
+            fields.remove("tags");
+            if fields.get("group").and_then(Value::as_bool) != Some(true) {
+                fields.remove("entityIds");
+            }
+            for field in ["integration", "availabilityStatus"] {
+                if fields.get(field).is_some_and(Value::is_null) {
+                    fields.remove(field);
+                }
+            }
+            let kind = fields
+                .get("entityType")
+                .and_then(Value::as_str)
+                .unwrap_or("")
+                .to_owned();
+            if let Some(data) = fields.get_mut("data").and_then(Value::as_object_mut) {
+                if kind == "Location" {
+                    data.retain(|key, _| {
+                        matches!(
+                            key.as_str(),
+                            "address"
+                                | "timezone"
+                                | "countryCode"
+                                | "latitude"
+                                | "longitude"
+                                | "altitude"
+                        )
+                    });
+                } else if kind == "AppClient" {
+                    data.retain(|key, _| key == "clientType");
+                }
+            }
+        }
+    }
+    result
 }
 
 // Omit only absent optional definition metadata, never runtime values or user objects.

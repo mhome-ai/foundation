@@ -3906,5 +3906,327 @@
     },
     "status": "error",
     "code": "INVALID_RESPONSE"
+  },
+  {
+    "name": "entity-metadata-list",
+    "target": "/app/entity/list",
+    "data": {
+      "entities": [
+        {
+          "id": "lamp-1",
+          "name": "Desk",
+          "entityType": "demo.light.Light",
+          "integration": "demo.light",
+          "active": false,
+          "capabilities": [
+            "state.onOff"
+          ],
+          "data": {
+            "id": "source-local-7",
+            "on": false,
+            "level": "0",
+            "observedAt": "1700000000"
+          },
+          "tags": [
+            "demo.blueprint"
+          ],
+          "availabilityStatus": "Unavailable",
+          "issue": true,
+          "group": false,
+          "entityIds": []
+        },
+        {
+          "id": "g:lights",
+          "name": "Lights",
+          "entityType": "demo.light.Light",
+          "integration": "demo.light",
+          "active": false,
+          "capabilities": [
+            "state.onOff"
+          ],
+          "data": {},
+          "tags": [],
+          "availabilityStatus": "Unavailable",
+          "issue": true,
+          "group": true,
+          "entityIds": [
+            "lamp-1"
+          ]
+        },
+        {
+          "id": "home",
+          "name": "Desk",
+          "entityType": "Location",
+          "integration": null,
+          "active": false,
+          "capabilities": [
+            "state.onOff"
+          ],
+          "data": {
+            "id": "home",
+            "displayName": "Home",
+            "latitude": 0,
+            "longitude": 0,
+            "altitude": 0,
+            "timezone": "Asia/Shanghai"
+          },
+          "tags": [
+            "demo.blueprint"
+          ],
+          "availabilityStatus": "Unavailable",
+          "issue": true,
+          "group": false,
+          "entityIds": []
+        },
+        {
+          "id": "a:phone",
+          "name": "Desk",
+          "entityType": "AppClient",
+          "integration": "demo.light",
+          "active": false,
+          "capabilities": [
+            "state.onOff"
+          ],
+          "data": {
+            "uid": "a:phone",
+            "id": "phone",
+            "displayName": "Phone",
+            "clientType": "iosPhone"
+          },
+          "tags": [
+            "demo.blueprint"
+          ],
+          "availabilityStatus": "Unavailable",
+          "issue": true,
+          "group": false,
+          "entityIds": []
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "entities": [
+        {
+          "id": "lamp-1",
+          "name": "Desk",
+          "entityType": "demo.light.Light",
+          "integration": "demo.light",
+          "active": false,
+          "capabilities": [
+            "state.onOff"
+          ],
+          "data": {
+            "id": "source-local-7",
+            "on": false,
+            "level": "0",
+            "observedAt": "1700000000"
+          },
+          "availabilityStatus": "Unavailable",
+          "issue": true,
+          "group": false
+        },
+        {
+          "id": "g:lights",
+          "name": "Lights",
+          "entityType": "demo.light.Light",
+          "integration": "demo.light",
+          "active": false,
+          "capabilities": [
+            "state.onOff"
+          ],
+          "data": {},
+          "availabilityStatus": "Unavailable",
+          "issue": true,
+          "group": true,
+          "entityIds": [
+            "lamp-1"
+          ]
+        },
+        {
+          "id": "home",
+          "name": "Desk",
+          "entityType": "Location",
+          "active": false,
+          "capabilities": [
+            "state.onOff"
+          ],
+          "data": {
+            "latitude": 0,
+            "longitude": 0,
+            "altitude": 0,
+            "timezone": "Asia/Shanghai"
+          },
+          "availabilityStatus": "Unavailable",
+          "issue": true,
+          "group": false
+        },
+        {
+          "id": "a:phone",
+          "name": "Desk",
+          "entityType": "AppClient",
+          "integration": "demo.light",
+          "active": false,
+          "capabilities": [
+            "state.onOff"
+          ],
+          "data": {
+            "clientType": "iosPhone"
+          },
+          "availabilityStatus": "Unavailable",
+          "issue": true,
+          "group": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "entity-selected-metadata",
+    "target": "/app/entity/detail/get",
+    "data": {
+      "items": [
+        {
+          "requestedId": "lamp-1",
+          "found": true,
+          "entity": {
+            "id": "lamp-1",
+            "name": "Desk",
+            "entityType": "demo.light.Light",
+            "integration": "demo.light",
+            "active": false,
+            "capabilities": [
+              "state.onOff"
+            ],
+            "data": {
+              "id": "source-local-7",
+              "on": false,
+              "level": "0",
+              "observedAt": "1700000000"
+            },
+            "tags": [
+              "demo.blueprint"
+            ],
+            "availabilityStatus": "Unavailable",
+            "issue": true,
+            "group": false,
+            "entityIds": []
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "items": [
+        {
+          "requestedId": "lamp-1",
+          "found": true,
+          "entity": {
+            "id": "lamp-1",
+            "name": "Desk",
+            "entityType": "demo.light.Light",
+            "integration": "demo.light",
+            "active": false,
+            "capabilities": [
+              "state.onOff"
+            ],
+            "data": {
+              "id": "source-local-7",
+              "on": false,
+              "level": "0",
+              "observedAt": "1700000000"
+            },
+            "availabilityStatus": "Unavailable",
+            "issue": true,
+            "group": false
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    }
+  },
+  {
+    "name": "entity-observations",
+    "target": "/app/entity/state/get",
+    "data": {
+      "items": [
+        {
+          "requestedId": "lamp-1",
+          "found": true,
+          "resource": {
+            "entityId": "lamp-1",
+            "latest": [
+              {
+                "capabilityId": "state.onOff",
+                "state": {
+                  "timestamp": 1700000000,
+                  "state": {
+                    "on": false,
+                    "level": 0
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "requestedId": "empty",
+          "found": true,
+          "resource": {
+            "entityId": "empty",
+            "latest": []
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "items": [
+        {
+          "requestedId": "lamp-1",
+          "found": true,
+          "resource": {
+            "entityId": "lamp-1",
+            "latest": [
+              {
+                "capabilityId": "state.onOff",
+                "state": {
+                  "timestamp": "2023-11-14 22:13:20 +00:00 (UTC)",
+                  "state": {
+                    "on": false,
+                    "level": 0
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "requestedId": "empty",
+          "found": true,
+          "resource": {
+            "entityId": "empty",
+            "latest": []
+          }
+        },
+        {
+          "requestedId": "missing",
+          "found": false,
+          "reason": "not_found"
+        }
+      ]
+    }
   }
 ]
