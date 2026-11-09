@@ -71,6 +71,7 @@ const SCOPE_MODE_TARGETS: &[&str] = &[
     "/app/pod/list",
     "/app/now/attention/list",
     "/app/space/location/list",
+    "/app/trace/get",
 ];
 
 const HUB_PREFIXES: &[&str] = &[

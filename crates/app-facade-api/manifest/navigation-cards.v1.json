@@ -1,0 +1,29 @@
+{
+  "contract": "mhome.user.navigation.v1",
+  "layouts": [
+    "compact",
+    "wide"
+  ],
+  "requiredCardIds": [
+    "dashboard",
+    "now",
+    "menu"
+  ],
+  "cardIds": [
+    "dashboard",
+    "now",
+    "menu",
+    "automation",
+    "device",
+    "integrationsList",
+    "messaging",
+    "house-floor-plan",
+    "storage",
+    "phone-setting",
+    "nfc",
+    "matter",
+    "person",
+    "camera",
+    "widgets"
+  ]
+}

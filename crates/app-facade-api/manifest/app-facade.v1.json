@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.121.0",
+  "contractVersion": "1.122.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -446,6 +446,19 @@
       "schema": "schema/trace.v1.schema.json",
       "requestTargets": [
         "/app/trace/get"
+      ]
+    },
+    "userNavigation": {
+      "contract": "mhome.user.navigation.v1",
+      "schema": "schema/user-navigation.v1.schema.json",
+      "catalog": "manifest/navigation-cards.v1.json",
+      "requestTargets": [
+        "/app/user/navigation/catalog",
+        "/app/user/navigation/get",
+        "/app/user/navigation/update"
+      ],
+      "eventTargets": [
+        "/user/navigation/changed"
       ]
     }
   },

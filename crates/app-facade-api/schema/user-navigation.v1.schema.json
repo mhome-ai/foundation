@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "User navigation",
+  "definitions": {
+    "layout": {
+      "type": "string",
+      "enum": [
+        "compact",
+        "wide"
+      ]
+    },
+    "cardIds": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 15,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "dashboard",
+          "now",
+          "menu",
+          "automation",
+          "device",
+          "integrationsList",
+          "messaging",
+          "house-floor-plan",
+          "storage",
+          "phone-setting",
+          "nfc",
+          "matter",
+          "person",
+          "camera",
+          "widgets"
+        ]
+      },
+      "allOf": [
+        {
+          "contains": {
+            "const": "dashboard"
+          }
+        },
+        {
+          "contains": {
+            "const": "now"
+          }
+        },
+        {
+          "contains": {
+            "const": "menu"
+          }
+        }
+      ]
+    },
+    "getRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layout"
+      ],
+      "properties": {
+        "layout": {
+          "$ref": "#/definitions/layout"
+        }
+      }
+    },
+    "updateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layout",
+        "cardIds"
+      ],
+      "properties": {
+        "layout": {
+          "$ref": "#/definitions/layout"
+        },
+        "cardIds": {
+          "$ref": "#/definitions/cardIds"
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layout",
+        "cardIds",
+        "revision"
+      ],
+      "properties": {
+        "layout": {
+          "$ref": "#/definitions/layout"
+        },
+        "cardIds": {
+          "$ref": "#/definitions/cardIds"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

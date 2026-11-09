@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.121.0",
+  "contractVersion": "1.122.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -300,6 +300,9 @@
     "/app/ui/customize/cards/selection/get": "spaceRead",
     "/app/ui/customize/cards/uninstall": "spaceWrite",
     "/app/ui/customize/cards/upgrade": "spaceWrite",
+    "/app/user/navigation/catalog": "userRead",
+    "/app/user/navigation/get": "userRead",
+    "/app/user/navigation/update": "userWrite",
     "/app/user/profile/avatar/commit": "userWrite",
     "/app/user/profile/avatar/prepare": "userWrite",
     "/app/user/profile/get": "userRead",
