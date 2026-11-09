@@ -225,3 +225,72 @@ pub struct GraphRelationsOutput {
 pub struct DeviceViewInput {
     pub device_id: String,
 }
+
+/// Onboarding maps Provider-local identities into stable current-Space Device IDs.
+/// This read never starts synchronization and never chooses an ambiguous match.
+pub const DEVICE_SOURCE_RESOLVE: &str = "/app/device/source/resolve";
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DeviceSourceResolveInput {
+    pub integration_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub connect_id: Option<String>,
+    pub source_ids: Vec<String>,
+}
+impl DeviceSourceResolveInput {
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if self.integration_id.trim().is_empty()
+            || self
+                .connect_id
+                .as_ref()
+                .is_some_and(|s| s.trim().is_empty())
+        {
+            return Err("integrationId and any supplied connectId must not be blank");
+        }
+        if self.source_ids.is_empty()
+            || self.source_ids.len() > 100
+            || self.source_ids.iter().any(|s| s.trim().is_empty())
+        {
+            return Err("sourceIds must contain 1 to 100 nonblank Provider-local IDs");
+        }
+        Ok(())
+    }
+}
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceSourceResolveItem {
+    pub requested_source_id: String,
+    pub found: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub entity_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeviceSourceResolveOutput {
+    pub items: Vec<DeviceSourceResolveItem>,
+}
+
+#[cfg(test)]
+mod device_source_tests {
+    use super::*;
+    #[test]
+    fn source_ids_are_opaque_bounded_and_strict() {
+        let input: DeviceSourceResolveInput = serde_json::from_value(serde_json::json!({"integrationId":"provider","connectId":"home","sourceIds":["  opaque  ", "\"quoted\""]})).unwrap();
+        assert!(input.validate().is_ok());
+        assert_eq!(input.source_ids[0], "  opaque  ");
+        for ids in [vec![], vec![" ".into()], vec!["a".into(); 101]] {
+            assert!(DeviceSourceResolveInput {
+                integration_id: "provider".into(),
+                connect_id: None,
+                source_ids: ids
+            }
+            .validate()
+            .is_err());
+        }
+        assert!(serde_json::from_value::<DeviceSourceResolveInput>(
+            serde_json::json!({"integrationId":"provider","sourceIds":["a"],"refresh":true})
+        )
+        .is_err());
+    }
+}

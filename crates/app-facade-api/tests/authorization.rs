@@ -379,3 +379,13 @@ fn general_entity_reads_share_space_read_policy() {
         );
     }
 }
+
+#[test]
+fn device_identity_lookup_is_space_read_and_old_catalog_is_not_public() {
+    assert_eq!(
+        authorization::required("/app/device/source/resolve"),
+        authorization::required("/app/device/list")
+    );
+    assert!(authorization::required("/app/device/source/resolve").is_some());
+    assert!(authorization::required("/app/integration/entity/list").is_none());
+}

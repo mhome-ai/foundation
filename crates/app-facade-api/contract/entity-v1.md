@@ -4,8 +4,10 @@ All reads use authenticated tenant and Space. Device, Automation and Widget type
 belong to their dedicated domains. Location and concrete AppClient endpoints are
 built-in Entity types; other types are Integration-defined.
 
-- `/app/entity/list`: `{entityType}` returns `{entities: [EntityMetadata]}` for the
-  exact type, including same-type Groups. There is one list, with no mode or refresh.
+- `/app/entity/list`: `{entityType, includeGroups?, integrationId?, connectId?}` returns `{entities: [EntityMetadata]}` for the
+  exact type, including same-type Groups by default. `includeGroups:false` reads only
+  ordinary entities. A Provider filter selects ordinary source resources only;
+  `connectId` requires `integrationId`. There is one list, with no mode or refresh.
 - `/app/entity/detail/get`: `{entityType, ids}` returns ordered deduplicated
   `{items: [{requestedId, found, reason?, entity?}]}`. `entity` is exactly the same
   metadata model as a list row; callers with known IDs need not list first.
@@ -18,7 +20,7 @@ built-in Entity types; other types are Integration-defined.
   `found: false, reason: "not_found"` and omit resource. No observations is not missing.
 - `/app/entity/history/list` remains independent and returns at most 100 records.
 
-Metadata contains id, name, entityType, integration?, active, capabilities, data,
+Metadata contains id, name, entityType, integration?, connectId?, active, capabilities, data,
 tags (Blueprint IDs), availabilityStatus?, issue, group and entityIds (Group members).
 It contains no current capability values. Full retains the complete metadata.
 Essential omits Blueprint tags, ordinary entityIds, absent optional values and
@@ -27,6 +29,25 @@ including Provider-local data.id, falsy values and Group entityIds. State payloa
 are not trimmed; only declared observation timestamps are localized by the shared
 presentation-time rules. No arbitrary business-data timestamp inference is used.
 
-List, detail and state respect source installation visibility. Built-ins are
-scoped to the current Space. `/app/integration/entity/list` and its callers are a
-separate source-catalog contract and are not changed by these reads.
+List, detail and state respect installed Provider and persisted source visibility.
+Ordinary reads accept Provider-owned Twins only. Groups are read from independent
+definitions; their derived Twins cannot masquerade as ordinary entities.
+Provider-defined types resolve installation through their parent Integration.
+Built-ins are scoped to the current Space and reject Provider filters.
+
+## Device sources
+
+`/app/device/list` accepts `{includeGroups?, integrationId?, connectId?}` with the
+same source filter semantics. Its rows contain standard Device metadata, never
+card relationships or current observations. UI Resources and House compose domain
+reads; they do not require a multi-type backend catalog.
+
+`/app/device/source/resolve` is a read-only onboarding helper. Input is
+`{integrationId, connectId?, sourceIds}` (1–100 nonblank opaque IDs before
+ordered deduplication). A connected Provider requires one exact Connection; a
+direct Provider omits it. Each result is `{requestedSourceId, found, entityId?,
+reason?}`. Missing IDs return `not_found`; multiple canonical IDs for one source
+identity fail the request. Only installed, visible Provider-owned Devices match.
+The operation never synchronizes sources or returns metadata, state or cards.
+Source synchronization remains `/app/integration/entity/refresh`; onboarding reads
+standard Device metadata only after an explicitly successful synchronization.

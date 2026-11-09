@@ -432,6 +432,10 @@
         "/app/presentation/device/online/list"
       ]
     },
+    "deviceSources": {
+      "contract": "contract/entity-v1.md",
+      "uiRequestTargets": ["/app/device/source/resolve"]
+    },
     "entity": {
       "contract": "contract/entity-v1.md",
       "requestTargets": [
