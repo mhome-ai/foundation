@@ -224,10 +224,11 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
         THERMOSTAT_FAN_V1 => object_map(json!({
             "online": true,
             "temperature": temperature(22.0, "C"),
-            "currentTemperature": temperature(22.0, "C"),
             "hvacMode": "auto",
             "presetMode": "home",
-            "runningMode": "off",
+            "runningState": "idle",
+            "supportCool": true,
+            "supportHeat": true,
             "coolingSetpoint": temperature(25.0, "C"),
             "heatingSetpoint": temperature(20.0, "C"),
             "minCoolingSetpoint": temperature(18.0, "C"),
@@ -552,10 +553,9 @@ pub fn project_state(
             "speed": number_attr(attrs, "fanSpeed")?
         }))?),
         "state.thermostat" => Ok(object_map(json!({
-            "currentTemperature": value_attr(attrs, "currentTemperature")?,
             "hvacMode": string_attr(attrs, "hvacMode")?,
             "presetMode": string_attr(attrs, "presetMode")?,
-            "runningMode": string_attr(attrs, "runningMode")?,
+            "runningState": string_attr(attrs, "runningState")?,
             "coolingSetpoint": value_attr(attrs, "coolingSetpoint")?,
             "heatingSetpoint": value_attr(attrs, "heatingSetpoint")?
         }))?),
@@ -633,6 +633,8 @@ pub fn project_discovery(
         }))?),
         "state.thermostat" | "command.setThermostatMode" | "command.setThermostatTemperature" => {
             Ok(object_map(json!({
+                "supportCool": bool_attr(attrs, "supportCool")?,
+                "supportHeat": bool_attr(attrs, "supportHeat")?,
                 "minCoolingSetpoint": value_attr(attrs, "minCoolingSetpoint")?,
                 "maxCoolingSetpoint": value_attr(attrs, "maxCoolingSetpoint")?,
                 "minHeatingSetpoint": value_attr(attrs, "minHeatingSetpoint")?,
@@ -793,10 +795,9 @@ pub fn apply_observed_payload(
                 attrs,
                 payload,
                 &[
-                    ("currentTemperature", "currentTemperature"),
                     ("hvacMode", "hvacMode"),
                     ("presetMode", "presetMode"),
-                    ("runningMode", "runningMode"),
+                    ("runningState", "runningState"),
                     ("coolingSetpoint", "coolingSetpoint"),
                     ("heatingSetpoint", "heatingSetpoint"),
                 ],
@@ -1072,8 +1073,8 @@ fn set_thermostat_mode(
         ensure_in_string_list(attrs, "availableHvacModes", mode)?;
         attrs.insert("hvacMode".to_string(), Value::String(mode.to_string()));
         attrs.insert(
-            "runningMode".to_string(),
-            Value::String(if mode == "off" { "off" } else { mode }.to_string()),
+            "runningState".to_string(),
+            Value::String(if mode == "off" { "off" } else { "idle" }.to_string()),
         );
     }
     if let Some(mode) = request.get("presetMode").and_then(Value::as_str) {
@@ -1555,6 +1556,39 @@ mod tests {
         assert_eq!(
             project_discovery(SMOKE_CO_ALARM_V1, &attrs, "event.chime", "$f1").unwrap(),
             catalog
+        );
+    }
+
+    #[test]
+    fn thermostat_feedback_and_ambient_temperature_have_separate_contracts() {
+        let mut attrs = default_attributes(THERMOSTAT_FAN_V1).unwrap();
+        let before = project_state(THERMOSTAT_FAN_V1, &attrs, "state.thermostat").unwrap();
+        assert!(!before.contains_key("currentTemperature"));
+        assert!(!before.contains_key("runningMode"));
+        assert_eq!(before["runningState"], "idle");
+        let facts =
+            project_discovery(THERMOSTAT_FAN_V1, &attrs, "state.thermostat", "$f1").unwrap();
+        assert_eq!(facts["supportCool"], true);
+        assert_eq!(facts["supportHeat"], true);
+        attrs.insert("temperature".into(), temperature(19.0, "C"));
+        assert_eq!(
+            project_state(THERMOSTAT_FAN_V1, &attrs, "state.thermostat").unwrap(),
+            before
+        );
+        assert_eq!(
+            project_state(THERMOSTAT_FAN_V1, &attrs, "state.temperature").unwrap()["temperature"],
+            temperature(19.0, "C")
+        );
+        handle_command(
+            THERMOSTAT_FAN_V1,
+            &mut attrs,
+            "command.setThermostatMode",
+            &object_map(json!({"hvacMode":"auto"})).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            project_state(THERMOSTAT_FAN_V1, &attrs, "state.thermostat").unwrap()["runningState"],
+            "idle"
         );
     }
 
