@@ -56,15 +56,10 @@ observation and graph reads preserve their bounded business fields in Essential.
 
 ## UI-only reads
 
-- `/app/device/view/get`, `{deviceId}`: `{deviceId, primaryViewId, views, widgets, twin}`.
-  Reads the unique hidden Device render definition, preserving exact Widget/Twin
-  bindings. Disabled devices can have empty definitions. Multiple anchors fail rather
-  than choosing an arbitrary visible Card. Widgets contain configuration, never values. The optional `twin` metadata is
-  returned even when a known device has no render anchor.
-- `/app/device/history/series/get`, `{deviceId, capabilityIds?: []}`:
-  `{deviceId, series}` with per-capability decoded `states`, `events`, `logs`. Empty
-  capability selection reads all series. This preserves chart structure; the shared
-  Device history Facade remains a bounded, merged business timeline.
+Device-specific rendering, chart series and selected online reads use the
+[`/app/presentation/device/*` contract](device-presentation-v1.md). They are UI
+adapters, separate from the shared definition/state/history contracts.
+
 - `/app/dashboard/canvas/content/get`, `{canvasId}`: Canvas metadata plus Cards' static
   titles, view bindings, layouts, settings, metadata and selected Widget definitions.
   Each entity Card includes the same `twin` metadata, loaded once per entity in the

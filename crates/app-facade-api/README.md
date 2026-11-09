@@ -22,6 +22,8 @@ identity. Core-to-Node routes and provider runtime models belong to
 
 See [resource definition, observation, history and relationship reads](contract/resource-read-v1.md)
 for shared business reads and the separate UI rendering boundary.
+Device-only rendering, online rows and chart series use the
+[Device UI presentation contract](contract/device-presentation-v1.md).
 
 See [Agent LLM settings](contract/agent-llm-v1.md) for active-mode reads,
 independent saved configuration and Provider Operation boundaries.

@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.118.4",
+  "contractVersion": "1.119.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -84,12 +84,12 @@
     "/app/device/disable": "spaceWrite",
     "/app/device/enable": "spaceWrite",
     "/app/device/history/list": "spaceRead",
-    "/app/device/history/series/get": "spaceRead",
+    "/app/presentation/device/history/series/get": "spaceRead",
     "/app/device/list": "spaceRead",
-    "/app/device/online/list": "spaceRead",
+    "/app/presentation/device/online/list": "spaceRead",
     "/app/device/refresh": "spaceWrite",
     "/app/device/state/get": "spaceRead",
-    "/app/device/view/get": "spaceRead",
+    "/app/presentation/device/view/get": "spaceRead",
     "/app/dialog/get": "spaceRead",
     "/app/dialog/list": "spaceRead",
     "/app/dialog/reply": "spaceWrite",

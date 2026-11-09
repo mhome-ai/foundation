@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.118.4",
+  "contractVersion": "1.119.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -276,11 +276,7 @@
         "/app/automation/status",
         "/app/graph/relations/get"
       ],
-      "contract": "contract/resource-read-v1.md",
-      "uiRequestTargets": [
-        "/app/device/view/get",
-        "/app/device/history/series/get"
-      ]
+      "contract": "contract/resource-read-v1.md"
     },
     "agentLlm": {
       "schema": "schema/agent-llm.v1.schema.json",
@@ -425,6 +421,14 @@
       ],
       "owner": "cloudStandardCatalog",
       "transport": "authorizedHub"
+    },
+    "devicePresentation": {
+      "contract": "contract/device-presentation-v1.md",
+      "uiRequestTargets": [
+        "/app/presentation/device/view/get",
+        "/app/presentation/device/history/series/get",
+        "/app/presentation/device/online/list"
+      ]
     }
   },
   "authorization": "manifest/authorization.v1.json",

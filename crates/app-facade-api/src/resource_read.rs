@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub const DEVICE_STATE: &str = "/app/device/state/get";
-pub const DEVICE_SERIES: &str = "/app/device/history/series/get";
+pub const DEVICE_SERIES: &str = "/app/presentation/device/history/series/get";
 pub const WIDGET_VALUE: &str = "/app/widget/value/get";
 pub const AUTOMATION_STATUSES: &str = "/app/automation/status";
 pub const GRAPH_RELATIONS: &str = "/app/graph/relations/get";
