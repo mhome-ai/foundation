@@ -27,9 +27,6 @@
   "/app/widget/history/list": {
     "sec": [
       "history.*.timestamp"
-    ],
-    "typedMs": [
-      "history.*.value"
     ]
   },
   "/app/notification/list": {
@@ -72,10 +69,6 @@
   "/app/widget/value/get": {
     "ms": [
       "items.*.resource.nextTimestamp"
-    ],
-    "typedMs": [
-      "items.*.resource.value",
-      "items.*.resource.next"
     ]
   },
   "/app/device/state/get": {
@@ -84,14 +77,6 @@
       "items.*.resource.latest.*.state.timestamp",
       "items.*.resource.latest.*.event.timestamp",
       "items.*.resource.latest.*.log.timestamp"
-    ]
-  },
-  "/app/widget/detail/get": {
-    "typedMs": [
-      "items.*.widget.options",
-      "items.*.widget.min",
-      "items.*.widget.max",
-      "items.*.widget.offset"
     ]
   },
   "/app/now/attention/list": {
@@ -117,25 +102,11 @@
   "/app/presentation/widget/list": {
     "ms": [
       "items.*.nextTimestamp"
-    ],
-    "typedMs": [
-      "items.*.value",
-      "items.*.next",
-      "items.*.options",
-      "items.*.min",
-      "items.*.max"
     ]
   },
   "/app/presentation/widget/defaults/get": {
     "ms": [
       "items.*.nextTimestamp"
-    ],
-    "typedMs": [
-      "items.*.value",
-      "items.*.next",
-      "items.*.options",
-      "items.*.min",
-      "items.*.max"
     ]
   },
   "/app/presentation/automation/summaries/get": {
@@ -159,6 +130,376 @@
       "items.*.resource.latest.*.state.timestamp",
       "items.*.resource.latest.*.event.timestamp",
       "items.*.resource.latest.*.log.timestamp"
+    ]
+  },
+  "/app/device/history/list": {
+    "unixMs": [
+      "timeline.*.timestamp"
+    ]
+  },
+  "/app/entity/history/list": {
+    "unixMs": [
+      "timeline.*.timestamp"
+    ]
+  },
+  "/app/automation/list": {
+    "ms": [
+      "automations.*.createdAt",
+      "automations.*.updatedAt",
+      "automations.*.enabledAt"
+    ]
+  },
+  "/app/automation/detail/get": {
+    "ms": [
+      "items.*.automation.createdAt",
+      "items.*.automation.updatedAt",
+      "items.*.automation.enabledAt"
+    ]
+  },
+  "/app/presentation/device/online/list": {
+    "sec": [
+      "devices.*.updatedAtSec"
+    ]
+  },
+  "/app/runtime/status/list": {
+    "ms": [
+      "observedAtMs",
+      "resources.*.observedAtMs"
+    ]
+  },
+  "/app/system/clients/get": {
+    "ms": [
+      "observedAtMs"
+    ]
+  },
+  "/app/system/instances/get": {
+    "ms": [
+      "observedAtMs",
+      "instances.*.health.observedAtMs",
+      "instances.*.health.lastAttemptAtMs"
+    ]
+  },
+  "/app/system/hosts/get": {
+    "ms": [
+      "observedAtMs",
+      "hosts.*.info.observedAtMs",
+      "hosts.*.info.lastAttemptAtMs"
+    ]
+  },
+  "/app/agent/llm/summary": {
+    "ms": [
+      "providers.*.configuration.expiresAtMs",
+      "defaultProviders.*.updatedAtMs",
+      "llmUseCases.*.updatedAtMs",
+      "llmUseCases.*.lastSeenAtMs"
+    ]
+  },
+  "/app/agent/llm/provider/list": {
+    "ms": [
+      "providers.*.configuration.expiresAtMs"
+    ]
+  },
+  "/app/agent/llm/provider/get": {
+    "ms": [
+      "provider.configuration.expiresAtMs"
+    ]
+  },
+  "/app/agent/llm/mapping/list": {
+    "ms": [
+      "defaultProviders.*.updatedAtMs",
+      "llmUseCases.*.updatedAtMs",
+      "llmUseCases.*.lastSeenAtMs"
+    ]
+  },
+  "/app/agent/llm/provider/auth/start": {
+    "ms": [
+      "expiresAtMs"
+    ]
+  },
+  "/app/agent/llm/provider/auth/complete": {
+    "ms": [
+      "expiresAtMs",
+      "nextPollAfterMs"
+    ]
+  },
+  "/app/agent/llm/provider/auth/status": {
+    "ms": [
+      "expiresAtMs",
+      "nextPollAfterMs"
+    ]
+  },
+  "/app/user/profile/get": {
+    "ms": [
+      "avatarExpiresAtMs"
+    ]
+  },
+  "/app/user/profile/update": {
+    "ms": [
+      "avatarExpiresAtMs"
+    ]
+  },
+  "/app/user/profile/avatar/commit": {
+    "ms": [
+      "avatarExpiresAtMs"
+    ]
+  },
+  "/app/user/profile/avatar/clear": {
+    "ms": [
+      "avatarExpiresAtMs"
+    ]
+  },
+  "/app/user/profile/avatar/prepare": {
+    "ms": [
+      "expiresAtMs"
+    ]
+  },
+  "/app/hub/get": {
+    "ms": [
+      "cloud.lastConnectedAt"
+    ]
+  },
+  "/app/billing/summary/get": {
+    "ms": [
+      "nextRefreshTimestamp"
+    ]
+  },
+  "/app/billing/payment/list": {
+    "ms": [
+      "payments.*.timestamp"
+    ]
+  },
+  "/app/billing/subscription/cancel": {
+    "ms": [
+      "currentPeriodEndTimestamp",
+      "scheduledTierStartTimestamp"
+    ]
+  },
+  "/app/billing/subscription/resume": {
+    "ms": [
+      "currentPeriodEndTimestamp",
+      "scheduledTierStartTimestamp"
+    ]
+  },
+  "/app/billing/subscription/change": {
+    "ms": [
+      "currentPeriodEndTimestamp",
+      "scheduledTierStartTimestamp"
+    ]
+  },
+  "/app/artifact/resolve": {
+    "ms": [
+      "expiresAtUnixMs"
+    ]
+  },
+  "/app/artifact/external/resolve": {
+    "ms": [
+      "expiresAtUnixMs"
+    ]
+  },
+  "/app/artifact/upload/start": {
+    "ms": [
+      "expiresAtUnixMs"
+    ]
+  },
+  "/app/integration/install": {
+    "ms": [
+      "expiresAt"
+    ]
+  },
+  "/app/integration/connect": {
+    "ms": [
+      "expiresAt"
+    ]
+  },
+  "/app/trace/get": {
+    "ms": [
+      "traces.*.*.timestamp"
+    ]
+  },
+  "/app/messaging/setup/start": {
+    "ms": [
+      "setup.expiresAtMs"
+    ]
+  },
+  "/app/messaging/setup/status": {
+    "ms": [
+      "setup.expiresAtMs"
+    ]
+  },
+  "/app/messaging/setup/submit": {
+    "ms": [
+      "setup.expiresAtMs"
+    ]
+  },
+  "/app/messaging/setup/cancel": {
+    "ms": [
+      "setup.expiresAtMs"
+    ]
+  },
+  "/app/messaging/bind/code/create": {
+    "ms": [
+      "challenge.expiresAtMs"
+    ]
+  },
+  "/app/messaging/link/code/create": {
+    "ms": [
+      "challenge.expiresAtMs"
+    ]
+  },
+  "/app/messaging/code/status": {
+    "ms": [
+      "status.expiresAtMs"
+    ]
+  },
+  "/app/messaging/shared-account-grant/list": {
+    "ms": [
+      "grants.*.createdAtMs",
+      "grants.*.updatedAtMs"
+    ]
+  },
+  "/app/messaging/binding/list": {
+    "ms": [
+      "bindings.*.createdAtMs"
+    ]
+  },
+  "/app/messaging/link/list": {
+    "ms": [
+      "links.*.createdAtMs",
+      "links.*.updatedAtMs"
+    ]
+  },
+  "/app/ui/customize/cards/catalog/publish/prepare": {
+    "ms": [
+      "expiresAt"
+    ]
+  },
+  "/app/host/directory/list": {
+    "ms": [
+      "observedAtMs"
+    ]
+  },
+  "/app/host/list": {
+    "ms": [
+      "observedAtMs",
+      "hosts.*.info.observedAtMs",
+      "hosts.*.info.lastAttemptAtMs",
+      "hosts.*.detail.data.services.observedAtMs",
+      "hosts.*.detail.data.operations.*.updatedAtMs"
+    ]
+  },
+  "/app/host/metrics": {
+    "ms": [
+      "sampledAtMs"
+    ]
+  },
+  "/app/host/permissions/get": {
+    "ms": [
+      "observedAtMs",
+      "permissions.*.observation.observedAtMs"
+    ]
+  },
+  "/app/system/hosts/permissions": {
+    "ms": [
+      "observedAtMs",
+      "permissions.*.observation.observedAtMs"
+    ]
+  },
+  "/app/person/list": {
+    "ms": [
+      "items.*.createdAtMs",
+      "items.*.updatedAtMs"
+    ]
+  },
+  "/app/person/get": {
+    "ms": [
+      "createdAtMs",
+      "updatedAtMs"
+    ]
+  },
+  "/app/object-storage/folders/list": {
+    "decimalMs": [
+      "folders.*.createdAtMs",
+      "folders.*.updatedAtMs"
+    ]
+  },
+  "/app/object-storage/folders/get": {
+    "decimalMs": [
+      "createdAtMs",
+      "updatedAtMs"
+    ]
+  },
+  "/app/object-storage/folders/create": {
+    "decimalMs": [
+      "createdAtMs",
+      "updatedAtMs"
+    ]
+  },
+  "/app/object-storage/folders/set-limit": {
+    "decimalMs": [
+      "createdAtMs",
+      "updatedAtMs"
+    ]
+  },
+  "/app/object-storage/session/acquire": {
+    "decimalMs": [
+      "expiresAtMs",
+      "folder.createdAtMs",
+      "folder.updatedAtMs"
+    ]
+  },
+  "/app/host/service/install": {
+    "ms": [
+      "updatedAtMs"
+    ]
+  },
+  "/app/host/service/restart": {
+    "ms": [
+      "updatedAtMs"
+    ]
+  },
+  "/app/ui/customize/cards/catalog/package/get": {
+    "ms": [
+      "value.createdAt"
+    ]
+  },
+  "/app/plugin/install/prepare": {
+    "ms": [
+      "expiresAtMs"
+    ]
+  },
+  "/app/plugin/install/start": {
+    "ms": [
+      "expiresAtMs"
+    ]
+  },
+  "/app/plugin/install/status": {
+    "ms": [
+      "expiresAtMs"
+    ]
+  },
+  "/app/artifact/put": {
+    "ms": [
+      "expiresAtUnixMs"
+    ]
+  },
+  "/app/artifact/import": {
+    "ms": [
+      "expiresAtUnixMs"
+    ]
+  },
+  "/app/artifact/upload/complete": {
+    "ms": [
+      "expiresAtUnixMs"
+    ]
+  },
+  "/app/timeline/entity/latest/list": {
+    "sec": [
+      "results.*.since",
+      "results.*.until",
+      "results.*.items.*.lastDataChangedAt",
+      "results.*.items.*.latest.state.timestamp",
+      "results.*.items.*.latest.event.timestamp",
+      "results.*.items.*.latest.log.timestamp"
     ]
   }
 }

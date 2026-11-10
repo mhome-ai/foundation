@@ -49,6 +49,25 @@ results and compose real Facade calls; they are not alternative DTOs for a singl
 Facade operation. A UI view model may derive display state after the SDK boundary.
 Composition does not imply a distributed transaction or automatic rollback.
 
+## Full values and Essential presentation
+
+Full preserves canonical typed values, numeric instants and source units. Business execution,
+caching, aggregation, media validation and UI consumers use Full. Only Essential replaces
+explicitly tagged runtime primitives with display text. Numeric timestamp fields use the
+shared `manifest/presentation-times.v1.json` paths and declared units; arbitrary numbers,
+field names and provider payloads are never guessed. Declared decimal-string Storage times
+are rendered at their explicit paths; Full keeps the Storage wire types.
+
+Timestamp text includes Home's IANA timezone, offset and millisecond precision when present.
+Missing or invalid Home timezone uses UTC. User/connection operations have no Space presentation context and use UTC/source units; an incidental Space ID never grants Home/preference reads. Scope temperature/length/weight preferences apply
+only to Essential unit display. Native Agent workflows extract typed facts and media from Full
+before rendering final model history with the same rules, using structured context facts tied
+to the user-scope generation. Prepared control objects are not business display data.
+
+Core and cloud direct calls resolve presentation context before executing an Essential write.
+MCP workflow projection preserves already settled outcomes if its optional context lookup fails:
+it adds a presentation warning, uses UTC and retains source units, without replaying the operation.
+
 ## App result contract
 
 `control.responseDetail` selects information depth: `full` (default) returns

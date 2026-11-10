@@ -1,4 +1,5 @@
-//! Explicit business timestamp paths and units. Never inspect arbitrary state/log values.
+//! Essential-only rendering of declared timestamp paths and explicitly tagged runtime primitives.
+//! Full DTOs never pass through this module; ordinary business values remain untouched.
 use chrono::{DateTime, Utc};
 use serde_json::Value;
 use std::sync::LazyLock;
@@ -8,6 +9,20 @@ static PATHS: LazyLock<Value> = LazyLock::new(|| {
 });
 pub fn requires_timezone(target: &str) -> bool {
     PATHS.get(target).is_some()
+}
+/// Typed values can occur in provider-defined business objects on any Facade.
+pub fn requires_timezone_for(target: &str, data: &Value) -> bool {
+    requires_timezone(target) || contains_timestamp(data)
+}
+fn contains_timestamp(value: &Value) -> bool {
+    match value {
+        Value::Array(items) => items.iter().any(contains_timestamp),
+        Value::Object(fields) => {
+            fields.get("_type").and_then(Value::as_str) == Some("Timestamp")
+                || fields.values().any(contains_timestamp)
+        }
+        _ => false,
+    }
 }
 /// Use the Home IANA zone, falling back to UTC for missing or invalid configuration.
 pub fn timezone(name: &str) -> chrono_tz::Tz {
@@ -49,34 +64,50 @@ pub fn format_millis(value: i64, home_timezone: &str) -> Option<String> {
     })
 }
 pub fn localize(target: &str, data: &mut Value, home_timezone: &str) {
-    let Some(units) = PATHS.get(target).and_then(Value::as_object) else {
-        return;
-    };
-    for (unit, paths) in units {
-        for path in paths.as_array().expect("timestamp paths") {
-            visit(
-                data,
-                &path
-                    .as_str()
-                    .expect("timestamp path")
-                    .split('.')
-                    .collect::<Vec<_>>(),
-                if unit == "sec" { 1000 } else { 1 },
-                unit == "typedMs",
-                home_timezone,
-            );
+    if let Some(units) = PATHS.get(target).and_then(Value::as_object) {
+        for (unit, paths) in units {
+            if unit == "typedMs" {
+                continue;
+            }
+            for path in paths.as_array().expect("timestamp paths") {
+                visit(
+                    data,
+                    &path
+                        .as_str()
+                        .expect("timestamp path")
+                        .split('.')
+                        .collect::<Vec<_>>(),
+                    if unit.ends_with("Sec") || unit == "sec" {
+                        1000
+                    } else {
+                        1
+                    },
+                    unit.starts_with("unix"),
+                    unit.starts_with("decimal"),
+                    home_timezone,
+                );
+            }
         }
     }
+    localize_typed(data, home_timezone);
 }
-fn visit(value: &mut Value, path: &[&str], multiplier: i64, typed: bool, zone: &str) {
+fn visit(
+    value: &mut Value,
+    path: &[&str],
+    multiplier: i64,
+    allow_epoch: bool,
+    decimal: bool,
+    zone: &str,
+) {
     let Some((key, remaining)) = path.split_first() else {
-        if typed {
-            localize_typed(value, zone);
-            return;
-        }
         if let Some(timestamp) = value
             .as_i64()
-            .filter(|v| *v > 0)
+            .or_else(|| {
+                decimal
+                    .then(|| value.as_str()?.parse::<i64>().ok())
+                    .flatten()
+            })
+            .filter(|v| allow_epoch || *v > 0)
             .and_then(|v| v.checked_mul(multiplier))
             .and_then(|v| format_millis(v, zone))
         {
@@ -85,13 +116,21 @@ fn visit(value: &mut Value, path: &[&str], multiplier: i64, typed: bool, zone: &
         return;
     };
     if *key == "*" {
-        if let Some(items) = value.as_array_mut() {
-            for item in items {
-                visit(item, remaining, multiplier, typed, zone);
+        match value {
+            Value::Array(items) => {
+                for item in items {
+                    visit(item, remaining, multiplier, allow_epoch, decimal, zone);
+                }
             }
+            Value::Object(items) => {
+                for item in items.values_mut() {
+                    visit(item, remaining, multiplier, allow_epoch, decimal, zone);
+                }
+            }
+            _ => {}
         }
     } else if let Some(item) = value.get_mut(*key) {
-        visit(item, remaining, multiplier, typed, zone);
+        visit(item, remaining, multiplier, allow_epoch, decimal, zone);
     }
 }
 #[cfg(test)]
@@ -145,19 +184,43 @@ mod tests {
     }
 }
 
-// Only explicitly typed business values are dates. Numeric values and durations stay intact.
-fn localize_typed(value: &mut Value, zone: &str) {
-    if let Some(items) = value.as_array_mut() {
-        for item in items {
-            localize_typed(item, zone);
-        }
-    } else if value["_type"] == "Timestamp" {
-        if let Some(text) = value["value"]
+// Only tagged runtime primitives are rendered. Never infer a date from a field
+// name, numeric magnitude, business string, or an arbitrary object with `value`.
+pub fn localize_typed(value: &mut Value, zone: &str) {
+    let rendered = match value.get("_type").and_then(Value::as_str) {
+        Some("Timestamp") => value["value"]
             .as_i64()
-            .and_then(|millis| format_millis(millis, zone))
-        {
-            value["value"] = Value::String(text);
+            .and_then(|millis| format_millis(millis, zone)),
+        Some(
+            "Temperature" | "TemperatureDiff" | "Duration" | "Length" | "Weight" | "Speed"
+            | "NumberUnit",
+        ) => value
+            .get("value")
+            .filter(|v| v.is_number())
+            .zip(value.get("unit").and_then(Value::as_str))
+            .map(|(number, unit)| format!("{number}{unit}")),
+        Some("Time" | "TimeGeneral" | "Date" | "DateGeneral") => value
+            .get("value")
+            .and_then(Value::as_str)
+            .map(str::to_owned),
+        _ => None,
+    };
+    if let Some(text) = rendered {
+        *value = Value::String(text);
+        return;
+    }
+    match value {
+        Value::Array(items) => {
+            for item in items {
+                localize_typed(item, zone);
+            }
         }
+        Value::Object(fields) => {
+            for item in fields.values_mut() {
+                localize_typed(item, zone);
+            }
+        }
+        _ => {}
     }
 }
 
@@ -176,8 +239,8 @@ mod widget_tests {
             resource["nextTimestamp"],
             "2024-11-03 01:30:00 -05:00 (America/New_York)"
         );
-        assert_eq!(resource["value"][0]["value"], resource["nextTimestamp"]);
-        assert_eq!(resource["value"][1]["value"], 30000);
+        assert_eq!(resource["value"][0], resource["nextTimestamp"]);
+        assert_eq!(resource["value"][1], "30000ms");
         assert_eq!(resource["value"][2], 1730615400000_i64);
     }
 }

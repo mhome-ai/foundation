@@ -125,5 +125,52 @@
     "currentPeriodEndTimestamp": 1796083200000,
     "scheduledTier": "V1",
     "scheduledTierStartTimestamp": 1796083200000
+  },
+  "essential": {
+    "summary": {
+      "userId": "fictional-user",
+      "currentTier": "V2",
+      "refreshTier": "V2",
+      "stripeSubscriptionStatus": "active",
+      "totalBalance": 300000,
+      "usedAutomation": 100,
+      "usedChat": 200,
+      "usedIntegration": 300,
+      "nextRefreshTimestamp": "2026-12-01 00:00:00 +00:00 (UTC)"
+    },
+    "payments": {
+      "payments": [
+        {
+          "description": "Fictional refund",
+          "amount": -500,
+          "currency": "usd",
+          "timestamp": "2026-11-07 00:00:00 +00:00 (UTC)"
+        }
+      ]
+    },
+    "creditUsage": {
+      "audience": "personal",
+      "timezone": "UTC",
+      "fromDate": "2026-11-01",
+      "toDate": "2026-11-07",
+      "trackedFrom": "2026-11-01T00:00:00Z",
+      "rows": [
+        {
+          "date": "2026-11-07",
+          "source": "agent",
+          "credits": 20
+        }
+      ]
+    },
+    "subscription": {
+      "currentTier": "V2",
+      "cancelAtPeriodEnd": false,
+      "currentPeriodEndTimestamp": "2026-12-01 00:00:00 +00:00 (UTC)",
+      "scheduledTier": "V1",
+      "scheduledTierStartTimestamp": "2026-12-01 00:00:00 +00:00 (UTC)"
+    },
+    "checkout": {
+      "url": "https://checkout.stripe.com/c/pay/cs_test_fictional"
+    }
   }
 }

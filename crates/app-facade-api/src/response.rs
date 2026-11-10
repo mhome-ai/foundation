@@ -6,6 +6,7 @@ use serde_json::{json, Value};
 mod agent;
 mod runtime;
 pub mod time;
+pub mod units;
 
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
 pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
@@ -496,18 +497,47 @@ pub fn render_in_timezone(
     detail: ResponseDetail,
     timezone: &str,
 ) -> Result<FacadeResponse, serde_yaml::Error> {
+    render_with_units(target, response, detail, timezone, &Default::default())
+}
+
+pub fn render_with_units(
+    target: &str,
+    mut response: FacadeResponse,
+    detail: ResponseDetail,
+    timezone: &str,
+    preferences: &std::collections::BTreeMap<String, String>,
+) -> Result<FacadeResponse, serde_yaml::Error> {
+    if detail == ResponseDetail::Essential {
+        let warnings = match &mut response {
+            FacadeResponse::Success { warnings, .. }
+            | FacadeResponse::Partial { warnings, .. }
+            | FacadeResponse::Cancelled { warnings } => Some(warnings),
+            FacadeResponse::Error { .. } => None,
+        };
+        if let Some(warnings) = warnings {
+            for warning in warnings {
+                if let Some(details) = &mut warning.details {
+                    units::localize(details, preferences);
+                    time::localize_typed(details, timezone);
+                }
+            }
+        }
+    }
     if detail == ResponseDetail::Essential {
         if let FacadeResponse::Error { error, data: None } = &response {
             let mut problem = serde_json::to_value(error).expect("serializable error");
             if let Some(details) = problem.get_mut("details") {
                 project_error_details(target, details);
             }
+            units::localize(&mut problem, preferences);
+            time::localize_typed(&mut problem, timezone);
             let text = essential_yaml(&json!({"status":"error","error":problem}))?;
             return Ok(response.with_essential_data(text));
         }
     }
     if detail == ResponseDetail::Essential && response.data().is_some() {
         let mut projected = essential(target, response.data().expect("outcome has data"));
+        units::localize(&mut projected, preferences);
         time::localize(target, &mut projected, timezone);
         let text = essential_yaml(&projected)?;
         Ok(response.with_essential_data(text))

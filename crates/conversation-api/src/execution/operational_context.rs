@@ -59,6 +59,9 @@ pub struct ContextInvalidation {
 /// prompt text and rendering order are owned by the Agent implementation.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct OperationalContext {
+    /// Authoritative Home IANA timezone for model-facing presentation; UTC when Home has none.
+    pub home_timezone: String,
+    pub display_units: std::collections::BTreeMap<String, String>,
     pub user_scope: String,
     pub identity: String,
     pub memory: String,
@@ -70,6 +73,11 @@ pub struct OperationalContext {
 /// Delta returned for sections whose generation differs from the caller's cached vector.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct OperationalContextDelta {
+    /// Refreshed with the user_scope generation, from the same scope snapshot.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub home_timezone: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub display_units: Option<std::collections::BTreeMap<String, String>>,
     pub generation: ContextGeneration,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub user_scope: Option<String>,

@@ -1246,7 +1246,7 @@
       "challenge": {
         "code": "DEMO123",
         "command": "/link DEMO123",
-        "expiresAtMs": 1800000300000,
+        "expiresAtMs": "2027-01-15 08:05:00 +00:00 (UTC)",
         "challengeId": "challenge-demo"
       }
     }
@@ -1346,7 +1346,7 @@
       "hostId": "host-demo",
       "state": "succeeded",
       "phase": "completed",
-      "updatedAtMs": 1800000000000,
+      "updatedAtMs": "2027-01-15 08:00:00 +00:00 (UTC)",
       "result": {
         "changed": true,
         "warnings": [
@@ -1390,7 +1390,7 @@
       "hostId": "host-demo",
       "state": "queued",
       "phase": "queued",
-      "updatedAtMs": 1800000000000,
+      "updatedAtMs": "2027-01-15 08:00:00 +00:00 (UTC)",
       "error": null,
       "result": null
     }
@@ -1413,7 +1413,7 @@
       "hostId": "host-demo",
       "state": "failed",
       "phase": "interrupted",
-      "updatedAtMs": 1800000000000,
+      "updatedAtMs": "2027-01-15 08:00:00 +00:00 (UTC)",
       "error": "Host operation interrupted",
       "result": null
     }
@@ -1608,7 +1608,7 @@
                   "hostId": "host-demo",
                   "state": "succeeded",
                   "phase": "completed",
-                  "updatedAtMs": 1800000000000,
+                  "updatedAtMs": "2027-01-15 08:00:00 +00:00 (UTC)",
                   "result": {
                     "changed": true,
                     "warnings": [
@@ -2034,7 +2034,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2062,7 +2062,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2098,7 +2098,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2169,7 +2169,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "configurable": true,
           "active": true,
           "requirements": {
@@ -2191,7 +2191,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2222,7 +2222,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2263,7 +2263,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2291,7 +2291,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2324,7 +2324,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2349,7 +2349,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "示例 Provider",
+          "displayName": "\u793a\u4f8b Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2394,7 +2394,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2452,7 +2452,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "示例对话模型",
+              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2503,7 +2503,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2545,7 +2545,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "对话",
+          "displayName": "\u5bf9\u8bdd",
           "configurable": true,
           "active": true,
           "requirements": {
@@ -2601,22 +2601,22 @@
     "name": "agent-memory-text",
     "target": "/app/agent/memory/get",
     "data": {
-      "content": "客厅空调设定为 26°C 前先征求用户同意。"
+      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
     },
     "status": "success",
     "essential": {
-      "content": "客厅空调设定为 26°C 前先征求用户同意。"
+      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
     }
   },
   {
     "name": "agent-identity-text",
     "target": "/app/agent/identity/get",
     "data": {
-      "content": "使用中文，回答简洁。"
+      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
     },
     "status": "success",
     "essential": {
-      "content": "使用中文，回答简洁。"
+      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
     }
   },
   {
@@ -3719,15 +3719,9 @@
             "dataType": "Timestamp",
             "repeated": false,
             "options": [
-              {
-                "_type": "Timestamp",
-                "value": "2024-11-03 06:30:00 +00:00 (UTC)"
-              }
+              "2024-11-03 06:30:00 +00:00 (UTC)"
             ],
-            "min": {
-              "_type": "Timestamp",
-              "value": "1970-01-01 00:00:00 +00:00 (UTC)"
-            },
+            "min": "1970-01-01 00:00:00 +00:00 (UTC)",
             "displayName": "UI name"
           }
         },
@@ -3817,10 +3811,7 @@
       "items": [
         {
           "resource": {
-            "value": {
-              "_type": "Timestamp",
-              "value": "2026-01-01 00:00:00.123 +00:00 (UTC)"
-            },
+            "value": "2026-01-01 00:00:00.123 +00:00 (UTC)",
             "widgetId": "value-d",
             "revision": 1
           },
@@ -4227,6 +4218,187 @@
           "reason": "not_found"
         }
       ]
+    }
+  },
+  {
+    "name": "capability-full-keeps-types-essential-renders-home",
+    "target": "/app/capability/invoke/json",
+    "timezone": "America/New_York",
+    "status": "success",
+    "data": {
+      "result": {
+        "recordings": [
+          {
+            "startAt": {
+              "_type": "Timestamp",
+              "value": 1730615400123
+            },
+            "endAt": {
+              "_type": "Timestamp",
+              "value": -1
+            },
+            "temperature": {
+              "_type": "Temperature",
+              "value": 21.5,
+              "unit": "C"
+            },
+            "duration": {
+              "_type": "Duration",
+              "value": 1500,
+              "unit": "ms"
+            },
+            "ordinary": 1730615400123,
+            "nullable": null
+          }
+        ]
+      },
+      "artifacts": []
+    },
+    "essential": {
+      "result": {
+        "recordings": [
+          {
+            "startAt": "2024-11-03 01:30:00.123 -05:00 (America/New_York)",
+            "endAt": "1969-12-31 18:59:59.999 -05:00 (America/New_York)",
+            "temperature": "21.5C",
+            "duration": "1500ms",
+            "ordinary": 1730615400123,
+            "nullable": null
+          }
+        ]
+      },
+      "artifacts": []
+    }
+  },
+  {
+    "name": "history-full-numeric-instant-essential-home",
+    "target": "/app/entity/history/list",
+    "timezone": "Asia/Shanghai",
+    "status": "success",
+    "data": {
+      "timeline": [
+        {
+          "timestamp": 0,
+          "data": {
+            "timestamp": 7
+          }
+        },
+        {
+          "timestamp": null
+        },
+        {
+          "timestamp": 1730615400123
+        }
+      ]
+    },
+    "essential": {
+      "timeline": [
+        {
+          "timestamp": "1970-01-01 08:00:00 +08:00 (Asia/Shanghai)",
+          "data": {
+            "timestamp": 7
+          }
+        },
+        {
+          "timestamp": null
+        },
+        {
+          "timestamp": "2024-11-03 14:30:00.123 +08:00 (Asia/Shanghai)"
+        }
+      ]
+    }
+  },
+  {
+    "name": "trace-map-instants-essential-home",
+    "target": "/app/trace/get",
+    "timezone": "Asia/Shanghai",
+    "status": "success",
+    "data": {
+      "traces": {
+        "42": [
+          {
+            "type": "USER",
+            "timestamp": 1730615400123
+          }
+        ]
+      },
+      "missingTraceIds": []
+    },
+    "essential": {
+      "traces": {
+        "42": [
+          {
+            "type": "USER",
+            "timestamp": "2024-11-03 14:30:00.123 +08:00 (Asia/Shanghai)"
+          }
+        ]
+      },
+      "missingTraceIds": []
+    }
+  },
+  {
+    "name": "typed-scalar-root-is-display-only",
+    "target": "/app/plugin/contribution/read",
+    "timezone": "Asia/Shanghai",
+    "status": "success",
+    "data": {
+      "_type": "Timestamp",
+      "value": 123
+    },
+    "essential": "1970-01-01 08:00:00.123 +08:00 (Asia/Shanghai)"
+  },
+  {
+    "name": "storage-decimal-timestamp-keeps-full-wire-string",
+    "target": "/app/object-storage/folders/list",
+    "timezone": "Asia/Shanghai",
+    "status": "success",
+    "data": {
+      "folders": [
+        {
+          "id": "pictures",
+          "createdAtMs": "1730615400123",
+          "updatedAtMs": "1730615400123",
+          "usedBytes": "1730615400123"
+        }
+      ]
+    },
+    "essential": {
+      "folders": [
+        {
+          "id": "pictures",
+          "createdAtMs": "2024-11-03 14:30:00.123 +08:00 (Asia/Shanghai)",
+          "updatedAtMs": "2024-11-03 14:30:00.123 +08:00 (Asia/Shanghai)",
+          "usedBytes": "1730615400123"
+        }
+      ]
+    }
+  },
+  {
+    "name": "card-skin-package-created-at-is-milliseconds",
+    "target": "/app/ui/customize/cards/catalog/package/get",
+    "timezone": "Asia/Shanghai",
+    "status": "success",
+    "data": {
+      "revision": "fictional-revision",
+      "value": {
+        "packageId": "example.cards",
+        "authorUserId": "user-1",
+        "name": "Example",
+        "description": "Example card package",
+        "baseUi": "default",
+        "createdAt": 1730615400123
+      }
+    },
+    "essential": {
+      "revision": "fictional-revision",
+      "value": {
+        "packageId": "example.cards",
+        "authorUserId": "user-1",
+        "name": "Example",
+        "description": "Example card package",
+        "baseUi": "default",
+        "createdAt": "2024-11-03 14:30:00.123 +08:00 (Asia/Shanghai)"
+      }
     }
   }
 ]

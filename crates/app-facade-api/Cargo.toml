@@ -1,6 +1,6 @@
 [package]
 name = "mhome-app-facade-api"
-version = "1.122.0"
+version = "1.123.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
@@ -18,9 +18,9 @@ pulldown-cmark = { version = "0.13.4", default-features = false }
 storage-api = { package = "mhome-storage-api", version = "=0.4.2", path = "../storage-api" }
 llm-api = { package = "mhome-llm-api", version = "=3.5.1", path = "../llm-api" }
 person-api = { package = "mhome-person-api", version = "=1.2.1", path = "../person-api" }
-core-api = { package = "mhome-core-api", version = "=1.75.0", path = "../core-api" }
+core-api = { package = "mhome-core-api", version = "=1.75.1", path = "../core-api" }
 artifact-api = { package = "mhome-artifact-api", version = "=1.16.1", path = "../artifact" }
-conversation-api = { package = "mhome-conversation-api", version = "=5.3.2", path = "../conversation-api" }
+conversation-api = { package = "mhome-conversation-api", version = "=5.4.0", path = "../conversation-api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"

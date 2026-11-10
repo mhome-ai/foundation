@@ -32,7 +32,7 @@ fn billing_uses_user_identity_cloud_routing_and_shared_projection() {
         assert_eq!(full["data"], f[key]);
         assert_eq!(
             serde_yaml::from_str::<Value>(essential["data"].as_str().unwrap()).unwrap(),
-            f[key]
+            f["essential"][key]
         );
     }
     for target in [
@@ -130,7 +130,15 @@ fn subscription_commands_are_user_writes_in_cloud_with_shared_results() {
             } else {
                 serde_yaml::from_str::<Value>(result["data"].as_str().unwrap()).unwrap()
             };
-            assert_eq!(data, f[key]);
+            assert_eq!(
+                data,
+                if detail == ResponseDetail::Full {
+                    &f[key]
+                } else {
+                    &f["essential"][key]
+                }
+                .clone()
+            );
         }
     }
     for (kind, valid) in [("valid", true), ("invalid", false)] {

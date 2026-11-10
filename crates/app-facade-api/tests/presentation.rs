@@ -1,5 +1,5 @@
 use app_facade_api::{response, ResponseDetail};
-use serde_json::Value;
+use serde_json::{json, Value};
 
 #[test]
 fn card_skin_projection_fixtures_match_the_business_wire_schema() {
@@ -47,7 +47,13 @@ fn shared_projection_and_outcome_contract() {
         )
         .unwrap();
         let essential = serde_json::to_value(
-            response::present(target, case["data"].clone(), ResponseDetail::Essential).unwrap(),
+            response::present_in_timezone(
+                target,
+                case["data"].clone(),
+                ResponseDetail::Essential,
+                case["timezone"].as_str().unwrap_or("UTC"),
+            )
+            .unwrap(),
         )
         .unwrap();
         for response in [&full, &essential] {
@@ -206,4 +212,36 @@ fn unset_widget_values_and_history_survive_final_warning_rendering() {
         response::time::localize(target, &mut expected, "UTC");
         assert_eq!(visible["result"], expected);
     }
+}
+
+#[test]
+fn warning_evidence_is_displayed_without_changing_full_or_outcome() {
+    let full = app_facade_api::FacadeResponse::success(json!({"saved":true})).with_warning(
+        app_facade_api::FacadeProblem {
+            code: "OBSERVATION".into(),
+            message: "Retained evidence".into(),
+            details: Some(json!({"at":{"_type":"Timestamp","value":123}})),
+        },
+    );
+    let before = serde_json::to_value(&full).unwrap();
+    let rendered = serde_json::to_value(
+        response::render_in_timezone(
+            "/app/example",
+            full.clone(),
+            ResponseDetail::Essential,
+            "Asia/Shanghai",
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(rendered["status"], "success");
+    assert_eq!(
+        rendered["warnings"][0]["details"]["at"],
+        "1970-01-01 08:00:00.123 +08:00 (Asia/Shanghai)"
+    );
+    assert_eq!(
+        serde_json::to_value(response::render("/app/example", full, ResponseDetail::Full).unwrap())
+            .unwrap(),
+        before
+    );
 }
