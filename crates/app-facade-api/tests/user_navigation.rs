@@ -32,6 +32,29 @@ fn only_catalog_cards_are_pinnable_and_all_required_entries_survive() {
 }
 
 #[test]
+fn menu_order_is_additive_and_only_accepts_optional_catalog_cards() {
+    let mut schema: Value =
+        serde_json::from_str(include_str!("../schema/user-navigation.v1.schema.json")).unwrap();
+    schema["$ref"] = json!("#/definitions/updateRequest");
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    assert!(validator.is_valid(&json!({
+        "layout":"wide", "cardIds":["dashboard","now","menu"],
+        "menuCardIds":["widgets","device","phone-setting"]
+    })));
+    for menu in [
+        json!(["dashboard"]),
+        json!(["menu"]),
+        json!(["widgets", "widgets"]),
+        json!(["/arbitrary"]),
+        Value::Null,
+    ] {
+        assert!(!validator.is_valid(&json!({
+            "layout":"wide", "cardIds":["dashboard","now","menu"], "menuCardIds":menu
+        })));
+    }
+}
+
+#[test]
 fn navigation_is_a_user_cloud_contract() {
     let manifest: Value =
         serde_json::from_str(include_str!("../manifest/app-facade.v1.json")).unwrap();
