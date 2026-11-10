@@ -683,6 +683,143 @@
     }
   },
   {
+    "name": "device-history-preserves-trace-reference",
+    "target": "/app/device/history/list",
+    "data": {
+      "deviceId": "d1",
+      "timeline": [
+        {
+          "type": "command",
+          "entityId": "d1",
+          "capabilityId": "command.onOff",
+          "data": {
+            "value": false,
+            "level": 0,
+            "optional": null
+          },
+          "traceSteps": [],
+          "r": "9007199254740993",
+          "timestamp": 1793066400000
+        }
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "deviceId": "d1",
+      "timeline": [
+        {
+          "type": "command",
+          "entityId": "d1",
+          "capabilityId": "command.onOff",
+          "data": {
+            "value": false,
+            "level": 0,
+            "optional": null
+          },
+          "traceSteps": [],
+          "r": "9007199254740993",
+          "timestamp": "2026-10-27 02:00:00 +00:00 (UTC)"
+        }
+      ]
+    }
+  },
+  {
+    "name": "entity-history-preserves-trace-reference",
+    "target": "/app/entity/history/list",
+    "data": {
+      "timeline": [
+        {
+          "type": "command",
+          "entityId": "d1",
+          "capabilityId": "command.onOff",
+          "data": {
+            "value": false,
+            "level": 0,
+            "optional": null
+          },
+          "traceSteps": [],
+          "r": "9007199254740993",
+          "timestamp": 1793066400000
+        }
+      ],
+      "entityId": "d1",
+      "entityType": "demo.entity",
+      "found": true,
+      "group": false
+    },
+    "status": "success",
+    "essential": {
+      "timeline": [
+        {
+          "type": "command",
+          "entityId": "d1",
+          "capabilityId": "command.onOff",
+          "data": {
+            "value": false,
+            "level": 0,
+            "optional": null
+          },
+          "traceSteps": [],
+          "r": "9007199254740993",
+          "timestamp": "2026-10-27 02:00:00 +00:00 (UTC)"
+        }
+      ],
+      "entityId": "d1",
+      "entityType": "demo.entity",
+      "found": true,
+      "group": false
+    }
+  },
+  {
+    "name": "trace-read-preserves-attribution-fields",
+    "target": "/app/trace/get",
+    "data": {
+      "traces": {
+        "9007199254740993": [
+          {
+            "type": "USER",
+            "timestamp": 12,
+            "userId": "u1",
+            "source": "cli",
+            "appClientId": "client1",
+            "page": "now"
+          },
+          {
+            "type": "AUTOMATION_IGNITE",
+            "timestamp": 13,
+            "automationId": "a1"
+          }
+        ]
+      },
+      "missingTraceIds": [
+        "42"
+      ]
+    },
+    "status": "success",
+    "essential": {
+      "traces": {
+        "9007199254740993": [
+          {
+            "type": "USER",
+            "timestamp": "1970-01-01 00:00:00.012 +00:00 (UTC)",
+            "userId": "u1",
+            "source": "cli",
+            "appClientId": "client1",
+            "page": "now"
+          },
+          {
+            "type": "AUTOMATION_IGNITE",
+            "timestamp": "1970-01-01 00:00:00.013 +00:00 (UTC)",
+            "automationId": "a1"
+          }
+        ]
+      },
+      "missingTraceIds": [
+        "42"
+      ]
+    }
+  },
+  {
     "name": "device-recent-preserves-window-truncation-and-values",
     "target": "/app/device/activity/recent/list",
     "data": {
