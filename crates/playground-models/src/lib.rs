@@ -349,12 +349,8 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "state.power",
             "state.energy",
         ][..],
-        COVER_SHADE_V1 => &["state.coverOpenClose", "command.coverOpenClose"][..],
-        COVER_GARAGE_DOOR_V1 => &[
-            "state.coverOpenClose",
-            "command.coverOpenClose",
-            "state.contactSensor",
-        ][..],
+        COVER_SHADE_V1 => &["state.cover", "command.controlCover"][..],
+        COVER_GARAGE_DOOR_V1 => &["state.cover", "command.controlCover", "state.contactSensor"][..],
         LOCK_DEADBOLT_V1 => &[
             "state.doorLock",
             "state.battery",
@@ -477,7 +473,7 @@ pub fn project_state(
         "state.energy" => Ok(object_map(json!({
             "importedEnergy": nullable_meter(attrs, "importedEnergy", true)?
         }))?),
-        "state.coverOpenClose" => {
+        "state.cover" => {
             let mut state = object_map(
                 json!({"state":string_attr(attrs,"coverState")?,"deviceType":string_attr(attrs,"coverDeviceType")?}),
             )?;
@@ -621,13 +617,16 @@ pub fn project_discovery(
             "canGetDoorState": false,
             "pinCodeRequirement": "unsupported"
         }))?),
-        "state.coverOpenClose" | "command.coverOpenClose" => Ok(object_map(json!({
+        "state.cover" | "command.controlCover" => Ok(object_map(json!({
             "canSetPosition": bool_attr(attrs, "canSetPosition")?,
             "canGetPosition": bool_attr(attrs, "canGetPosition")?,
             "canSetTiltPosition": false,
             "canGetTiltPosition": false,
             "canSetPositionTransitionDuration": false,
             "canSetTiltTransitionDuration": false,
+            "canGetLatch": false,
+            "canLatch": false,
+            "canUnlatch": false,
             "supportedCommands": ["open", "close", "stop"]
         }))?),
         "state.fan" | "command.setFan" => Ok(object_map(json!({
@@ -744,7 +743,7 @@ pub fn apply_observed_payload(
         }
         "state.power" => copy_payload_field(attrs, payload, "power", "power")?,
         "state.energy" => copy_payload_field(attrs, payload, "importedEnergy", "importedEnergy")?,
-        "state.coverOpenClose" => {
+        "state.cover" => {
             copy_payload_field(attrs, payload, "state", "coverState")?;
             copy_optional_payload_fields(
                 attrs,
@@ -854,7 +853,7 @@ pub fn handle_command(
         "command.setBrightness" => set_brightness(attrs, request),
         "command.setColorTemperature" => set_color_temperature(attrs, request),
         "command.setColorRGB" => set_color_rgb(attrs, request),
-        "command.coverOpenClose" => cover_open_close(attrs, request),
+        "command.controlCover" => control_cover(attrs, request),
         "command.doorLock" => door_lock(attrs, request),
         "command.chime" => chime(attrs, request),
         "command.setFan" => set_fan(attrs, request),
@@ -944,10 +943,14 @@ fn set_color_rgb(
     projected_event(attrs, "state.colorRGB")
 }
 
-fn cover_open_close(
+fn control_cover(
     attrs: &mut Map<String, Value>,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
+    ensure!(
+        request.get("latch").is_none_or(Value::is_null),
+        "cover does not support latch"
+    );
     ensure!(
         request.get("transitionDuration").is_none_or(Value::is_null),
         "Use positionTransitionDuration or tiltTransitionDuration"
@@ -1018,7 +1021,7 @@ fn cover_open_close(
             json!(if state == "closed" { "closed" } else { "open" }),
         );
     }
-    projected_event(attrs, "state.coverOpenClose")
+    projected_event(attrs, "state.cover")
 }
 
 fn door_lock(
@@ -1513,7 +1516,7 @@ mod tests {
         for model in [COVER_SHADE_V1, COVER_GARAGE_DOOR_V1] {
             let mut attrs = default_attributes(model).unwrap();
             let discovery =
-                project_discovery(model, &attrs, "command.coverOpenClose", "$f1").unwrap();
+                project_discovery(model, &attrs, "command.controlCover", "$f1").unwrap();
             assert_eq!(
                 discovery["supportedCommands"],
                 json!(["open", "close", "stop"])
@@ -1524,7 +1527,7 @@ mod tests {
                 let outcome = handle_command(
                     model,
                     &mut attrs,
-                    "command.coverOpenClose",
+                    "command.controlCover",
                     &object_map(json!({"command":"stop"})).unwrap(),
                 )
                 .unwrap();
@@ -1539,7 +1542,7 @@ mod tests {
             handle_command(
                 model,
                 &mut attrs,
-                "command.coverOpenClose",
+                "command.controlCover",
                 &object_map(json!({"command":"stop","position":0})).unwrap(),
             )
             .unwrap();
@@ -1553,7 +1556,7 @@ mod tests {
                 assert!(handle_command(
                     model,
                     &mut attrs,
-                    "command.coverOpenClose",
+                    "command.controlCover",
                     &object_map(request).unwrap()
                 )
                 .is_err());
@@ -1733,8 +1736,8 @@ mod tests {
             ),
             (
                 COVER_SHADE_V1,
-                "state.coverOpenClose",
-                "command.coverOpenClose",
+                "state.cover",
+                "command.controlCover",
                 json!({"command": "open"}),
             ),
             (
@@ -1976,6 +1979,24 @@ mod tests {
             .is_err());
             attrs.insert("importedEnergy".into(), json!(-1));
             assert!(project_state(model, &attrs, "state.energy").is_err());
+        }
+    }
+}
+
+#[cfg(test)]
+mod cover_contract_migration_tests {
+    use super::*;
+    #[test]
+    fn unsupported_latch_does_not_move_or_mutate_a_simulated_cover() {
+        for latch in [false, true] {
+            let mut attrs = Map::new();
+            let original = attrs.clone();
+            assert!(control_cover(
+                &mut attrs,
+                &object_map(json!({"command":"open","latch":latch})).unwrap()
+            )
+            .is_err());
+            assert_eq!(attrs, original);
         }
     }
 }

@@ -862,7 +862,7 @@
   {
     "target": "/app/capability/invoke/json",
     "input": {
-      "capabilityId": "basic.device.command.coverOpenClose",
+      "capabilityId": "basic.device.command.controlCover",
       "request": {
         "device": "curtain",
         "command": "close",
@@ -870,7 +870,8 @@
         "internal": "private-request",
         "positionTransitionDuration": "3sec",
         "tiltPosition": 35.5,
-        "tiltTransitionDuration": "0sec"
+        "tiltTransitionDuration": "0sec",
+        "latch": false
       }
     },
     "outcome": {
@@ -881,14 +882,15 @@
     },
     "expected": {
       "event": "device.command",
-      "capabilityId": "basic.device.command.coverOpenClose",
+      "capabilityId": "basic.device.command.controlCover",
       "parameters": {
         "device": "curtain",
         "command": "close",
         "position": 0,
         "positionTransitionDuration": "3sec",
         "tiltPosition": 35.5,
-        "tiltTransitionDuration": "0sec"
+        "tiltTransitionDuration": "0sec",
+        "latch": false
       },
       "status": "success"
     }
