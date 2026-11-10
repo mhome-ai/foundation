@@ -63,7 +63,7 @@
         "userId": "other"
       },
       {
-        "scopeId": "home"
+        "spaceId": "home"
       },
       {
         "fromDate": 42
@@ -112,7 +112,7 @@
       },
       {
         "productId": "go",
-        "scopeId": "home"
+        "spaceId": "home"
       }
     ]
   },

@@ -4,7 +4,7 @@ use serde_json::json;
 fn space_client() -> AuthenticatedClient {
     serde_json::from_value(json!({
         "appClientId": "a:device-1", "credentialId": "enrollment-2",
-        "principal": {"kind": "space", "tenantId": "tenant", "scopeId": "space"}
+        "principal": {"kind": "space", "tenantId": "tenant", "spaceId": "space"}
     }))
     .unwrap()
 }
@@ -46,8 +46,8 @@ fn personal_pod_keeps_user_authority_without_a_separate_pod_principal() {
 fn missing_kind_or_legacy_user_field_never_selects_a_user_fallback() {
     for principal in [
         json!({"userId":"user"}),
-        json!({"kind":"space","tenantId":"tenant","scopeId":"space","userId":"owner"}),
-        json!({"kind":"core","tenantId":"tenant","scopeId":"space"}),
+        json!({"kind":"space","tenantId":"tenant","spaceId":"space","userId":"owner"}),
+        json!({"kind":"core","tenantId":"tenant","spaceId":"space"}),
     ] {
         assert!(serde_json::from_value::<AuthenticatedClient>(json!({
             "appClientId":"a:device-1", "credentialId":"enrollment", "principal":principal
@@ -173,7 +173,7 @@ fn personal_clients_share_user_catalog_without_joining_space_group() {
 fn external_session_wire_carries_the_verified_principal_and_rejects_legacy_user_sessions() {
     let session = core_api::AuthenticatedSession {
         tenant_id: "tenant".into(),
-        scope_id: "space".into(),
+        space_id: "space".into(),
         client: space_client(),
         is_test: false,
     };
@@ -184,7 +184,7 @@ fn external_session_wire_carries_the_verified_principal_and_rejects_legacy_user_
     assert_eq!(decoded.client, session.client);
     assert!(
         serde_json::from_value::<core_api::AuthenticatedSession>(json!({
-            "tenantId":"tenant", "scopeId":"space", "userId":"owner", "isTest":false
+            "tenantId":"tenant", "spaceId":"space", "userId":"owner", "isTest":false
         }))
         .is_err()
     );

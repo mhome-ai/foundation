@@ -135,7 +135,7 @@ the response also carries `"mode":"reprovision"` and `wifiConfigured` is false
 
 `pod-credential` requests:
 
-- `{"op":"deliver","clientMode":"user","podId","loginGrant","scopeId","cloudApi","cloudWs"}` →
+- `{"op":"deliver","clientMode":"user","podId","loginGrant","spaceId","cloudApi","cloudWs"}` →
   `{"ok":true,"state":"activating"}`. Accepted only in `wifi_connected` outside a
   Wi-Fi change window; otherwise `{"ok":false,"state":<current pod state>,"reason"}`
   with `reason` `invalid_payload` (a missing or malformed field, including a
@@ -241,7 +241,7 @@ Lion returns `{podId, loginGrant, activateBefore}`. The random approval expires
 in ten minutes and is bound to this User and the Pod identity key. It is not a
 login refresh token. The helper must never deliver its own login credentials.
 
-The App delivers the approval through the paired LAN channel. `scopeId` in the
+The App delivers the approval through the paired LAN channel. `spaceId` in the
 device delivery selects the initial UI Space; it does not constrain the User
 identity or grant Space authority. The device independently redeems the approval
 at `POST /api/v1/pod/login/redeem` with `{podId, loginGrant, proof}`. The proof is
@@ -304,7 +304,7 @@ never show these values or `message` verbatim.
 | `invalid_wifi` | SSID not 1–32 bytes, or password not empty or 8–63 characters (64 hex digits) |
 | `bluetooth_unavailable` | no usable Bluetooth adapter |
 | `not_signed_in` | no signed-in MeowLink account |
-| `scope_not_offered` | the Space is not among those offered, or the account has no Space |
+| `space_not_offered` | the Space is not among those offered, or the account has no Space |
 | `cloud_unreachable_for_device` | the cloud address is loopback |
 | `busy` | the native Client cannot take the request now; retry |
 
@@ -318,7 +318,7 @@ never show these values or `message` verbatim.
 | `/local/pod/commission/code` | `{"sessionId","code"}` | session snapshot |
 | `/local/pod/commission/wifi` | `{"sessionId","ssid","password"?}` | session snapshot |
 | `/local/pod/commission/wifi/scan` | `{"sessionId"}` | session snapshot |
-| `/local/pod/commission/authorize` | `{"sessionId","scopeId"}` | session snapshot |
+| `/local/pod/commission/authorize` | `{"sessionId","spaceId"}` | session snapshot |
 | `/local/pod/commission/status` | `{}` | `{"session": snapshot or null}` |
 | `/local/pod/bluetooth/settings` | `{}` | `{"opened"}` |
 
@@ -346,7 +346,7 @@ page does not end setup; returning to it reads `status`. Waiting for user input
 also counts toward the deadline. Discovery leases still control scanning.
 
 Sign-in and Spaces are checked at `start` (`not_signed_in`,
-`scope_not_offered`) and again when the authorization prompt is built.
+`space_not_offered`) and again when the authorization prompt is built.
 
 A pod inside a Wi-Fi change window (`pod-info` `"mode":"reprovision"`) gets a
 Wi-Fi-only session. From `reading_info` on, its snapshots carry
@@ -409,7 +409,7 @@ The schemas are `schema/pod-discovery.v1.schema.json` and
 ## 8. Space Client local credential
 
 `POST /api/v1/pod/space/credential/issue` uses the assisting App's user
-`Authorization` and `ScopeId`, with the same device identity request as personal
+`Authorization` and `SpaceId`, with the same device identity request as personal
 issuance. Only the current Space owner may assist. The Space must be local and have one
 published Hub with business and Host TLS identities. Cloud Spaces must complete
 Hub setup first. The issuer derives `appClientId` from tenant, Space and the validated
@@ -417,12 +417,12 @@ persistent device-key fingerprint. The same device in the same Space retains thi
 ID across retries; a factory reset rotates its key. Candidate local JWTs use the
 existing Space signing key and local-client audience.
 
-Claims are `token_type: local_space_client_access`, `sub: <scopeId>`,
-`tenant_id`, `scope_id`, `hub_id`, `app_client_id`, `jti`, `iat`, `exp`, `is_test`.
+Claims are `token_type: local_space_client_access`, `sub: <spaceId>`,
+`tenant_id`, `space_id`, `hub_id`, `app_client_id`, `jti`, `iat`, `exp`, `is_test`.
 The expiry follows existing long-lived User local credentials. No `userId`,
-initializer identity, `podId` or `issuedScopeId` grants authority. User local
+initializer identity, `podId` or `issuedSpaceId` grants authority. User local
 credentials retain `local_client_access` and must not contain `app_client_id`.
-Personal Pod issuance no longer stores `issuedScopeId`.
+Personal Pod issuance no longer stores `issuedSpaceId`.
 
 Lion sends `{jwtToken, clientSource:"pod"}` to the authenticated Hub Bridge
 `/hub/client/space/register`. Core verifies signature, audience, issuer, current
@@ -437,12 +437,12 @@ The Bridge returns `{credentialId, appClientId, jwtToken, status, activateBefore
 Lion returns `{credentialId, appClientId, jwtToken, credentialState, activateBefore,
 hubIdentity}`. State is `pending` with its epoch-millisecond first-use deadline, or
 `active` with `activateBefore:null`. Issuance alone does not publish a device-list entry. The Hub identity includes its business P-256 key and
-Host TLS public key, bound to `tenantId`, `scopeId`, `hubId` and `hostId`.
+Host TLS public key, bound to `tenantId`, `spaceId`, `hubId` and `hostId`.
 
 The secured LAN `pod-credential` delivery is:
 
 ```json
-{"op":"deliver","clientMode":"space","credentialId":"…","appClientId":"a:…","jwtToken":"…","tenantId":"…","scopeId":"…","hubIdentity":{}}
+{"op":"deliver","clientMode":"space","credentialId":"…","appClientId":"a:…","jwtToken":"…","tenantId":"…","spaceId":"…","hubIdentity":{}}
 ```
 
 The actual `hubIdentity` is the complete issuer response. User credential fields

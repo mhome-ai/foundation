@@ -154,7 +154,7 @@ fn applicant_proof_only_binds_a_live_request_to_a_claimed_admin_host() {
             _ => {
                 c.binding.space = Some(core_api::runtime_space::SpaceIdentity {
                     tenant_id: "t".into(),
-                    scope_id: "s".into(),
+                    space_id: "s".into(),
                 })
             }
         }

@@ -9,7 +9,7 @@ pub const RELATIONSHIP_RESOURCE: &str = "messaging.relationships";
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MessagingCloudRequest {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub operation: MessagingIngressOperation,
 }
 
@@ -127,7 +127,7 @@ pub struct IngressUnregister {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MessagingRelationshipApply {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub resource_id: String,
     pub snapshot: MessagingRelationshipsSnapshot,
 }
@@ -159,7 +159,7 @@ pub struct MessagingGroupBinding {
     pub binding_id: String,
     pub conversation_id: String,
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub bound_by_user_id: String,
     pub display_name: Option<String>,
     pub created_at_ms: i64,
@@ -169,7 +169,7 @@ pub struct MessagingGroupBinding {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MessagingSpaceGrant {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub granted_by_user_id: String,
     pub created_at_ms: i64,
 }
@@ -178,14 +178,14 @@ pub struct MessagingSpaceGrant {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IngressGrant {
     pub resource_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub user_id: String,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IngressBindingUpdate {
     pub resource_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub user_id: String,
     pub conversation_id: String,
     pub projections: Value,
@@ -194,7 +194,7 @@ pub struct IngressBindingUpdate {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct IngressUnbind {
     pub resource_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub user_id: String,
     pub conversation_id: String,
     pub binding_id: String,

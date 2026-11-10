@@ -1,7 +1,7 @@
 # Reference picker presentation
 
 UI-only Space reads use the standard FacadeCall and success/data/error envelope.
-Both targets require spaceRead and follow scopeMode routing. They are not native
+Both targets require spaceRead and follow spaceMode routing. They are not native
 Agent, CLI or MCP tools. Full and Essential preserve the same business fields;
 Essential represents them as YAML.
 

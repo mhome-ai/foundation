@@ -42,11 +42,11 @@ fn app_directories_require_public_space_identity() {
         "hubGeneration":"g", "hubRevision":1, "observedAtMs":1,
         "resource":{"type":"nodeInstance","id":"n"}, "deleted":true
     }));
-    // Native local contracts are a separate boundary.
+    // Native local clients use the same public Space identity.
     assert!(
-        serde_json::from_value::<LocalHubState>(json!({"scopeId":"s","configured":false})).is_ok()
+        serde_json::from_value::<LocalHubState>(json!({"spaceId":"s","configured":false})).is_ok()
     );
     assert!(
-        serde_json::from_value::<LocalHubState>(json!({"spaceId":"s","configured":false})).is_err()
+        serde_json::from_value::<LocalHubState>(json!({"scopeId":"s","configured":false})).is_err()
     );
 }

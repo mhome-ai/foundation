@@ -10,7 +10,7 @@ const outputPath = path.join(crateRoot, "src", "routing.generated.rs");
 const RULE_FIELDS = Object.freeze([
   "cloudPrefixes",
   "cloudTargets",
-  "scopeModeTargets",
+  "spaceModeTargets",
   "connectionTargets",
   "hubPrefixes",
   "requestPlacementPrefixes",
@@ -18,7 +18,7 @@ const RULE_FIELDS = Object.freeze([
 ]);
 const EXACT_FIELDS = Object.freeze([
   "cloudTargets",
-  "scopeModeTargets",
+  "spaceModeTargets",
   "connectionTargets",
   "hubTargets",
 ]);
@@ -32,7 +32,7 @@ function assertRoutingContract(manifest) {
   if (
     manifest.manifest !== "mhome.app-facade.routing.v1" ||
     manifest.targetPrefix !== "/app/" ||
-    manifest.default?.execution !== "scopeMode" ||
+    manifest.default?.execution !== "spaceMode" ||
     manifest.matching !== "exactBeforePrefix" ||
     manifest.placementJsonPointer !== "/input/placement"
   ) {
@@ -106,7 +106,7 @@ ${rustSlice("CLOUD_PREFIXES", rules.cloudPrefixes)}
 /// Exact Cloud-owned operations outside Cloud-owned domains.
 ${rustSlice("CLOUD_TARGETS", rules.cloudTargets, "pub const")}
 
-${rustSlice("SCOPE_MODE_TARGETS", rules.scopeModeTargets)}
+${rustSlice("SPACE_MODE_TARGETS", rules.spaceModeTargets)}
 
 ${rustSlice("HUB_PREFIXES", rules.hubPrefixes)}
 

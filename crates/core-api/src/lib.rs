@@ -303,11 +303,11 @@ impl MwsClientInfo {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MwsMessage {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub scope_id: Option<String>,
+    pub space_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub from: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -329,16 +329,54 @@ pub struct MwsMessage {
     pub client_info: Option<MwsClientInfo>,
 }
 
+// Reject the retired Space selector without changing the transport's existing
+// handling of unrelated extension metadata (for example an upstream budget).
+impl<'de> Deserialize<'de> for MwsMessage {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        if value.get("scopeId").is_some() {
+            return Err(serde::de::Error::custom(
+                "Use spaceId for the Space selector",
+            ));
+        }
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Input {
+            space_id: Option<String>,
+            from: Option<String>,
+            target: Option<String>,
+            sig: Option<String>,
+            r#type: Option<String>,
+            payload: Option<String>,
+            control: Option<String>,
+            error: Option<ErrorResponse>,
+            client_info: Option<MwsClientInfo>,
+        }
+        let v: Input = serde_json::from_value(value).map_err(serde::de::Error::custom)?;
+        Ok(Self {
+            space_id: v.space_id,
+            from: v.from,
+            target: v.target,
+            sig: v.sig,
+            r#type: v.r#type,
+            payload: v.payload,
+            control: v.control,
+            error: v.error,
+            client_info: v.client_info,
+        })
+    }
+}
+
 impl MwsMessage {
     pub fn create(
-        scope_id: Option<String>,
+        space_id: Option<String>,
         target: String,
         sig: String,
         payload: String,
         msg_type: String,
     ) -> Self {
         Self {
-            scope_id,
+            space_id,
             target: Some(target),
             sig: Some(sig),
             payload: Some(payload),
@@ -352,7 +390,7 @@ impl MwsMessage {
 
     pub fn dummy() -> Self {
         Self {
-            scope_id: None,
+            space_id: None,
             from: None,
             target: None,
             sig: None,
@@ -371,7 +409,7 @@ impl MwsMessage {
         client_info: MwsClientInfo,
     ) -> Self {
         Self {
-            scope_id: None,
+            space_id: None,
             from: None,
             target: Some(target),
             sig: Some(sig),
@@ -390,7 +428,7 @@ impl MwsMessage {
         client_info: MwsClientInfo,
     ) -> Self {
         Self {
-            scope_id: None,
+            space_id: None,
             from: None,
             target: Some(target),
             sig: Some(sig),
@@ -402,13 +440,13 @@ impl MwsMessage {
         }
     }
 
-    pub fn unscoped_server_data(
+    pub fn connection_server_data(
         target: String,
         payload: String,
         client_info: MwsClientInfo,
     ) -> Self {
         Self {
-            scope_id: None,
+            space_id: None,
             from: None,
             target: Some(target),
             sig: None,
@@ -420,14 +458,14 @@ impl MwsMessage {
         }
     }
 
-    pub fn scoped_server_data(
-        scope_id: String,
+    pub fn space_server_data(
+        space_id: String,
         target: String,
         payload: String,
         client_info: Option<MwsClientInfo>,
     ) -> Self {
         Self {
-            scope_id: Some(scope_id),
+            space_id: Some(space_id),
             from: None,
             target: Some(target),
             sig: None,
@@ -446,7 +484,7 @@ impl MwsMessage {
         client_info: MwsClientInfo,
     ) -> Self {
         Self {
-            scope_id: None,
+            space_id: None,
             from: None,
             target: Some(target),
             sig: Some(sig),
@@ -465,7 +503,7 @@ impl MwsMessage {
         client_info: MwsClientInfo,
     ) -> Self {
         Self {
-            scope_id: None,
+            space_id: None,
             from: None,
             target: Some(target),
             sig: Some(sig),
@@ -478,23 +516,23 @@ impl MwsMessage {
     }
 
     pub fn hub_request(
-        scope_id: Option<String>,
+        space_id: Option<String>,
         target: String,
         sig: String,
         payload: String,
     ) -> Self {
-        Self::hub_request_with_control(scope_id, target, sig, payload, None)
+        Self::hub_request_with_control(space_id, target, sig, payload, None)
     }
 
     pub fn hub_request_with_control(
-        scope_id: Option<String>,
+        space_id: Option<String>,
         target: String,
         sig: String,
         payload: String,
         control: Option<String>,
     ) -> Self {
         Self {
-            scope_id,
+            space_id,
             from: None,
             target: Some(target),
             sig: Some(sig),
@@ -507,13 +545,13 @@ impl MwsMessage {
     }
 
     pub fn hub_data(
-        scope_id: Option<String>,
+        space_id: Option<String>,
         target: String,
         sig: String,
         payload: String,
     ) -> Self {
         Self {
-            scope_id,
+            space_id,
             from: None,
             target: Some(target),
             sig: Some(sig),
@@ -570,7 +608,7 @@ pub struct NodeAuthRequest {
     #[serde(default)]
     pub node_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub scope_id: Option<String>,
+    pub space_id: Option<String>,
     pub host_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub host_name: Option<String>,
@@ -597,7 +635,7 @@ pub struct NodeAuthResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tenant_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub scope_id: Option<String>,
+    pub space_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -777,7 +815,7 @@ pub struct HubConnectionProofRequest {
     pub protocol: String,
     pub hub_id: String,
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub nonce: String,
 }
 
@@ -789,7 +827,7 @@ pub struct HubConnectionProofResponse {
     pub protocol: String,
     pub hub_id: String,
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub nonce: String,
     pub key_id: String,
     pub signature: String,
@@ -802,7 +840,7 @@ pub fn hub_connection_proof_signing_payload(request: &HubConnectionProofRequest)
         request.protocol.as_str(),
         request.hub_id.as_str(),
         request.tenant_id.as_str(),
-        request.scope_id.as_str(),
+        request.space_id.as_str(),
         request.nonce.as_str(),
     ];
     let mut payload = Vec::new();
@@ -841,7 +879,7 @@ pub struct NodeChallengePayload {
     pub protocol: String,
     pub aud: String,
     pub nonce: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub node_type: String,
     pub host_id: String,
     pub fingerprint: String,
@@ -931,39 +969,39 @@ pub struct NodeInstanceListResponse {
 #[serde(rename_all = "camelCase")]
 pub struct AuthenticatedSession {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub client: client_identity::AuthenticatedClient,
     pub is_test: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum ScopeAccessRequirement {
+pub enum SpaceAccessRequirement {
     Member,
     Owner,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ScopeAuthorizationRequest {
+pub struct SpaceAuthorizationRequest {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub user_id: String,
-    pub requirement: ScopeAccessRequirement,
+    pub requirement: SpaceAccessRequirement,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ScopeMembershipListRequest {
+pub struct SpaceMembershipListRequest {
     pub tenant_id: String,
     pub user_id: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ScopeMembership {
+pub struct SpaceMembership {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub user_id: String,
 }
 
@@ -974,21 +1012,21 @@ pub struct ScopeMembership {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ServiceAppClientProjection {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub app_client_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub user_id: Option<String>,
     pub source: String,
     pub device_type: String,
     #[serde(default)]
-    pub scope_owned: bool,
+    pub space_owned: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ServiceAppClientProjectionKey {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub app_client_id: String,
 }
 
@@ -1000,14 +1038,14 @@ pub enum ServiceCoreInput {
     ClientAuth {
         message: MwsMessage,
         ws_id: String,
-        scope_id: String,
+        space_id: String,
     },
     ClientRequest {
         target: String,
         payload: String,
         ws_id: String,
         tenant_id: String,
-        scope_id: String,
+        space_id: String,
         client: client_identity::AuthenticatedClient,
         is_test: bool,
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1019,19 +1057,19 @@ pub enum ServiceCoreInput {
         target: String,
         payload: String,
         tenant_id: String,
-        scope_id: String,
+        space_id: String,
         actor_user_id: String,
         surface_id: String,
         is_test: bool,
     },
     /// Authorizes a trusted headless actor before a non-Conversation operation
     /// such as binding a shared messaging surface.
-    ScopeAuthorization {
-        request: ScopeAuthorizationRequest,
+    SpaceAuthorization {
+        request: SpaceAuthorizationRequest,
     },
     /// Lists authoritative scope memberships for a trusted headless principal.
-    ScopeMembershipList {
-        request: ScopeMembershipListRequest,
+    SpaceMembershipList {
+        request: SpaceMembershipListRequest,
     },
     /// Idempotently materializes a trusted service-owned AppClient.
     AppClientProjectionPut {
@@ -1055,7 +1093,7 @@ pub enum ServiceCoreInput {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         control: Option<String>,
         tenant_id: String,
-        scope_id: String,
+        space_id: String,
         node_type: String,
         node_id: String,
     },
@@ -1074,7 +1112,7 @@ pub enum ServiceCoreInput {
     },
     IssueLocalSessionToken {
         tenant_id: String,
-        scope_id: String,
+        space_id: String,
         user_id: String,
         app_client_id: String,
     },
@@ -1107,11 +1145,11 @@ pub enum ServiceCoreResponse {
     ConversationRequest {
         response_payload: Option<String>,
     },
-    ScopeAuthorization {
+    SpaceAuthorization {
         authorized: bool,
     },
-    ScopeMembershipList {
-        memberships: Vec<ScopeMembership>,
+    SpaceMembershipList {
+        memberships: Vec<SpaceMembership>,
     },
     AppClientProjection {
         applied: bool,
@@ -1157,7 +1195,7 @@ impl UserInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ScopeMember {
+pub struct SpaceMember {
     pub id: Option<String>,
     pub email: Option<String>,
     pub name: Option<String>,
@@ -1165,7 +1203,7 @@ pub struct ScopeMember {
     pub role: Option<String>,
 }
 
-impl Default for ScopeMember {
+impl Default for SpaceMember {
     fn default() -> Self {
         Self {
             id: None,
@@ -1179,11 +1217,11 @@ impl Default for ScopeMember {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ScopeInfo {
+pub struct SpaceInfo {
     pub name: Option<String>,
     pub id: Option<String>,
     pub pending: bool,
-    pub members: Option<Vec<ScopeMember>>,
+    pub members: Option<Vec<SpaceMember>>,
     pub execution_env: Option<String>,
     pub mode: Option<String>,
     pub connection_mode: Option<String>,
@@ -1193,7 +1231,7 @@ pub struct ScopeInfo {
     pub is_test: bool,
 }
 
-impl Default for ScopeInfo {
+impl Default for SpaceInfo {
     fn default() -> Self {
         Self {
             name: None,
@@ -1219,7 +1257,7 @@ pub struct AuthConfig {
     pub user_info: Option<UserInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub client: Option<client_identity::AuthenticatedClient>,
-    pub scope: ScopeInfo,
+    pub space: SpaceInfo,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hub_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1231,14 +1269,14 @@ impl AuthConfig {
         tenant_id: String,
         command_timeout: i32,
         user_info: UserInfo,
-        scope: ScopeInfo,
+        space: SpaceInfo,
     ) -> Self {
         Self {
             tenant_id,
             command_timeout,
             user_info: Some(user_info),
             client: None,
-            scope,
+            space,
             hub_id: None,
             jwt_token: None,
         }
@@ -1252,7 +1290,7 @@ impl Default for AuthConfig {
             command_timeout: 10,
             user_info: None,
             client: None,
-            scope: ScopeInfo::default(),
+            space: SpaceInfo::default(),
             hub_id: None,
             jwt_token: None,
         }
@@ -1264,7 +1302,7 @@ impl Default for AuthConfig {
 pub struct AuthRequest {
     pub token: String,
     pub source: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub device_id: String,
     pub client_source: String,
     #[serde(default)]
@@ -1277,9 +1315,9 @@ pub struct AuthRequest {
 #[serde(rename_all = "camelCase")]
 pub struct HubMdnsInstanceRecord {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub hub_id: String,
-    pub scope_name: String,
+    pub space_name: String,
 }
 
 /// Binds commissioning to the Host TLS identity, environment and immutable
@@ -1295,7 +1333,7 @@ pub fn hub_commission_tls_payload(
     let (mode, tenant, scope) = match policy {
         runtime_space::RuntimeSpacePolicy::Multi {} => ("multi", "", ""),
         runtime_space::RuntimeSpacePolicy::Single { space } => {
-            ("single", space.tenant_id.as_str(), space.scope_id.as_str())
+            ("single", space.tenant_id.as_str(), space.space_id.as_str())
         }
     };
     for field in [
@@ -1328,7 +1366,7 @@ mod tests {
             protocol: HUB_CONNECTION_PROOF_PROTOCOL.to_string(),
             hub_id: "hub-1".to_string(),
             tenant_id: "tenant-1".to_string(),
-            scope_id: "scope-1".to_string(),
+            space_id: "scope-1".to_string(),
             nonce: "nonce-1".to_string(),
         };
         let payload = hub_connection_proof_signing_payload(&request);
@@ -1341,14 +1379,14 @@ mod tests {
 
     #[test]
     fn scoped_server_data_builds_scope_envelope() {
-        let message = MwsMessage::scoped_server_data(
+        let message = MwsMessage::space_server_data(
             "scope-1".to_string(),
             "/dialog".to_string(),
             "{}".to_string(),
             None,
         );
 
-        assert_eq!(message.scope_id.as_deref(), Some("scope-1"));
+        assert_eq!(message.space_id.as_deref(), Some("scope-1"));
         assert_eq!(message.target.as_deref(), Some("/dialog"));
         assert_eq!(message.r#type.as_deref(), Some(MwsMessageType::SERVER_DATA));
         assert_eq!(message.payload.as_deref(), Some("{}"));
@@ -1379,3 +1417,23 @@ mod tests {
     }
 }
 pub mod device_binding;
+
+#[cfg(test)]
+mod space_envelope_regression {
+    use super::*;
+    #[test]
+    fn retired_selector_is_rejected_without_rejecting_transport_extensions() {
+        let value = serde_json::json!({"spaceId":"home","type":"arq","executionBudget":{"deadlineUnixMs":1}});
+        let message: MwsMessage = serde_json::from_value(value).unwrap();
+        assert_eq!(message.space_id.as_deref(), Some("home"));
+        let wire = serde_json::to_value(message).unwrap();
+        assert_eq!(wire["spaceId"], "home");
+        assert!(wire.get("scopeId").is_none());
+        for value in [
+            serde_json::json!({"scopeId":"other"}),
+            serde_json::json!({"scopeId":"other","spaceId":"home"}),
+        ] {
+            assert!(serde_json::from_value::<MwsMessage>(value).is_err());
+        }
+    }
+}

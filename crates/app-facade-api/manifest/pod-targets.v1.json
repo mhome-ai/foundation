@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.pod.targets.v1",
-  "contractVersion": "1.124.0",
+  "contractVersion": "1.125.0",
   "contract": "contract/pod-commissioning-v1.md",
   "localTargets": [
     "/local/pod/discovery/start",
@@ -92,7 +92,7 @@
     "invalid_wifi",
     "bluetooth_unavailable",
     "not_signed_in",
-    "scope_not_offered",
+    "space_not_offered",
     "cloud_unreachable_for_device",
     "busy"
   ],

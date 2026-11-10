@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::execution::{
-    ConversationSurface, DurableEvent, InvocationContext, Message, QueuedRun, RunId, Scope,
+    ConversationSurface, DurableEvent, InvocationContext, Message, QueuedRun, RunId, SpaceContext,
     ThreadId,
 };
 
@@ -29,7 +29,8 @@ impl Revision {
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 pub struct ThreadKey {
     /// Authorization and persistence scope.
-    pub scope: Scope,
+    #[serde(with = "super::stored::space")]
+    pub scope: SpaceContext,
     /// Canonical Conversation-space identity and delivery route.
     pub surface_id: ConversationSurface,
     /// Thread identifier within the scope.

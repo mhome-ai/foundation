@@ -1,17 +1,17 @@
-use conversation_api::execution::{Actor, Scope};
+use conversation_api::execution::{Actor, SpaceContext};
 use conversation_api::{ClientPrincipal, ConversationSurface};
 
-fn scope() -> Scope {
-    Scope {
+fn scope() -> SpaceContext {
+    SpaceContext {
         tenant_id: Some("tenant".into()),
-        scope_id: "space".into(),
+        space_id: "space".into(),
     }
 }
 fn actor() -> Actor {
     Actor {
         principal: ClientPrincipal::Space {
             tenant_id: "tenant".into(),
-            scope_id: "space".into(),
+            space_id: "space".into(),
         },
         client_id: Some("a:pod-one".into()),
         credential_id: Some("enrollment-one".into()),
@@ -45,7 +45,7 @@ fn a_space_actor_keeps_its_identity_and_requires_scope_bound_enrollment() {
     assert_eq!(actor.user_id(), None);
     assert!(actor.valid_for(&scope(), &ConversationSurface::space_clients()));
     let mut other = scope();
-    other.scope_id = "other".into();
+    other.space_id = "other".into();
     assert!(!actor.valid_for(&other, &ConversationSurface::space_clients()));
     other = scope();
     other.tenant_id = Some("other".into());
@@ -83,7 +83,7 @@ fn selecting_a_surface_cannot_change_actor_authority() {
 fn actor_wire_rejects_the_previous_user_only_shape_and_mixed_principals() {
     for wire in [
         serde_json::json!({"user_id":"owner","client_id":"a:pod"}),
-        serde_json::json!({"principal":{"kind":"space","tenantId":"tenant","scopeId":"space","userId":"owner"},"client_id":"a:pod","credential_id":"enrollment"}),
+        serde_json::json!({"principal":{"kind":"space","tenantId":"tenant","spaceId":"space","userId":"owner"},"client_id":"a:pod","credential_id":"enrollment"}),
     ] {
         assert!(serde_json::from_value::<Actor>(wire).is_err());
     }

@@ -197,7 +197,7 @@ pub fn normalize_sources(policy: Policy, sources: &mut Vec<TrustedSource>) -> Re
 #[serde(rename_all = "camelCase")]
 pub struct Tag {
     pub tag_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub name: String,
     pub description: String,
     pub policy: Policy,
@@ -227,6 +227,6 @@ pub struct CreateOutput {
     pub write_payload: String,
 }
 
-pub fn write_payload(scope_id: &str, tag_id: &str) -> String {
-    format!("mhomeai://nfc/{scope_id}:{tag_id}")
+pub fn write_payload(space_id: &str, tag_id: &str) -> String {
+    format!("mhomeai://nfc/{space_id}:{tag_id}")
 }

@@ -39,8 +39,8 @@ pub fn parse_messaging_command(input: &str) -> MessagingCommandParse {
     }
 }
 
-pub fn sort_scope_ids(scope_ids: &mut [String]) {
-    scope_ids.sort();
+pub fn sort_space_ids(space_ids: &mut [String]) {
+    space_ids.sort();
 }
 
 #[cfg(test)]

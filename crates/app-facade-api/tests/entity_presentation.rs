@@ -40,7 +40,7 @@ fn selected_metadata_is_bounded_ordered_and_keeps_missing_references() {
         app_facade_api::routing::route_policy_for_target(META_GET_TARGET)
             .unwrap()
             .execution,
-        app_facade_api::routing::ExecutionSelector::ScopeMode
+        app_facade_api::routing::ExecutionSelector::SpaceMode
     );
     let full = serde_json::to_value(
         app_facade_api::response::present(META_GET_TARGET, data.clone(), ResponseDetail::Full)

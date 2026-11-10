@@ -88,7 +88,7 @@ identity/connection/capabilities. Schema publication does not expire them. Expli
 device refresh rereads attributes and reconciles related Groups. These are write-side
 operations; definition reads remain cache-only.
 
-`/twin/entityUpdate` pushes `{scopeId, entityIds}` after cached metadata changes.
+`/twin/entityUpdate` pushes `{spaceId, entityIds}` after cached metadata changes.
 Open views refresh their definition batches; other Spaces and unrelated entities
 are ignored. A new definition owns its capability membership: old observations
 for removed capabilities must not be merged back into the current view. History

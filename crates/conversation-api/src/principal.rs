@@ -16,8 +16,8 @@ pub enum ClientPrincipal {
     Space {
         #[serde(rename = "tenantId")]
         tenant_id: String,
-        #[serde(rename = "scopeId")]
-        scope_id: String,
+        #[serde(rename = "spaceId")]
+        space_id: String,
     },
 }
 
@@ -30,16 +30,16 @@ impl ClientPrincipal {
         }
     }
 
-    pub fn validate_for(&self, tenant_id: &str, scope_id: &str) -> bool {
-        if !valid_id(tenant_id) || !valid_id(scope_id) {
+    pub fn validate_for(&self, tenant_id: &str, space_id: &str) -> bool {
+        if !valid_id(tenant_id) || !valid_id(space_id) {
             return false;
         }
         match self {
             Self::User { user_id } => valid_id(user_id),
             Self::Space {
                 tenant_id: tenant,
-                scope_id: scope,
-            } => tenant == tenant_id && scope == scope_id,
+                space_id: scope,
+            } => tenant == tenant_id && scope == space_id,
         }
     }
 
@@ -48,9 +48,9 @@ impl ClientPrincipal {
     pub fn client_surface(
         &self,
         tenant_id: &str,
-        scope_id: &str,
+        space_id: &str,
     ) -> Result<ConversationSurface, SurfaceParseError> {
-        if !self.validate_for(tenant_id, scope_id) {
+        if !self.validate_for(tenant_id, space_id) {
             return Err(SurfaceParseError);
         }
         match self {

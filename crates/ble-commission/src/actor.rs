@@ -308,10 +308,10 @@ impl Actor {
             Op::Scan { join: true } => {}
             Op::Scan { join: false } => self.scan().await,
             Op::Authorize {
-                scope_id,
+                space_id,
                 client_mode,
                 endpoints,
-            } => self.authorize(scope_id, client_mode, endpoints).await,
+            } => self.authorize(space_id, client_mode, endpoints).await,
         }
     }
 
@@ -795,23 +795,23 @@ impl Actor {
                 None,
             ));
         };
-        let Some(first) = account.scopes.first() else {
+        let Some(first) = account.spaces.first() else {
             return self.fail(error(
                 CommissionErrorCode::IssueFailed,
                 "Join a Space in MeowLink before adding a pod.",
                 None,
             ));
         };
-        let default_scope_id = account
-            .active_scope_id
+        let default_space_id = account
+            .active_space_id
             .clone()
-            .filter(|active| account.scopes.iter().any(|scope| &scope.scope_id == active))
-            .unwrap_or_else(|| first.scope_id.clone());
+            .filter(|active| account.spaces.iter().any(|scope| &scope.space_id == active))
+            .unwrap_or_else(|| first.space_id.clone());
         let prompt = AuthorizationPrompt {
             user_id: account.user_id,
             user_name: account.user_name,
-            scopes: account.scopes,
-            default_scope_id,
+            spaces: account.spaces,
+            default_space_id,
         };
         self.update(|live| {
             live.set(Phase::AwaitingAuthorization, None);
@@ -973,7 +973,7 @@ impl Actor {
 
     async fn authorize(
         &mut self,
-        scope_id: String,
+        space_id: String,
         client_mode: ClientMode,
         endpoints: CloudEndpoints,
     ) {
@@ -1019,9 +1019,9 @@ impl Actor {
         if dependent {
             if client_mode != ClientMode::Space
                 || !account
-                    .scopes
+                    .spaces
                     .iter()
-                    .any(|s| s.scope_id == scope_id && s.owner)
+                    .any(|s| s.space_id == space_id && s.owner)
             {
                 return self.fail(issue_failed(Some(
                     "Choose a Space you own for this device".into(),
@@ -1032,7 +1032,7 @@ impl Actor {
                 .race(crate::product::prepare(
                     &cloud,
                     &account.context,
-                    &scope_id,
+                    &space_id,
                     &info,
                     &client,
                 ))
@@ -1061,7 +1061,7 @@ impl Actor {
                     Err(failure) => return self.fail(issue_failed(Some(failure.to_string()))),
                 };
                 let deliver = json!({"op":"deliver", "clientMode":"user", "podId":issued.pod_id,
-                    "loginGrant":issued.login_grant, "scopeId":scope_id, "cloudApi":endpoints.api, "cloudWs":endpoints.ws});
+                    "loginGrant":issued.login_grant, "spaceId":space_id, "cloudApi":endpoints.api, "cloudWs":endpoints.ws});
                 (
                     Credential {
                         pod_id: issued.pod_id,
@@ -1072,8 +1072,8 @@ impl Actor {
                 )
             }
             ClientMode::Space => {
-                if !account.scopes.iter().any(|scope| {
-                    scope.scope_id == scope_id && (scope.local || dependent) && scope.owner
+                if !account.spaces.iter().any(|scope| {
+                    scope.space_id == space_id && (scope.local || dependent) && scope.owner
                 }) {
                     return self.fail(issue_failed(Some("Choose a local Space you own".into())));
                 }
@@ -1081,7 +1081,7 @@ impl Actor {
                     &cloud,
                     &account.context,
                     SPACE_CREDENTIAL_ISSUE_PATH,
-                    Some(&scope_id),
+                    Some(&space_id),
                     &request,
                 )
                 .await
@@ -1089,7 +1089,7 @@ impl Actor {
                     Ok(issued) => issued,
                     Err(failure) => return self.fail(issue_failed(Some(failure.to_string()))),
                 };
-                if issued.hub_identity.scope_id != scope_id {
+                if issued.hub_identity.space_id != space_id {
                     return self.fail(issue_failed(Some("Space binding mismatch".into())));
                 }
                 if !valid_space_credential_window(&issued, self.engine.now_ms()) {
@@ -1098,7 +1098,7 @@ impl Actor {
                     )));
                 }
                 let deliver = json!({"op":"deliver", "clientMode":"space", "credentialId":issued.credential_id,
-                    "appClientId":issued.app_client_id, "jwtToken":issued.jwt_token, "scopeId":scope_id,
+                    "appClientId":issued.app_client_id, "jwtToken":issued.jwt_token, "spaceId":space_id,
                     "tenantId":issued.hub_identity.tenant_id, "hubIdentity":issued.hub_identity});
                 (
                     Credential {

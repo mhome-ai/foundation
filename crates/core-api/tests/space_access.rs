@@ -16,7 +16,7 @@ fn all_membership_combinations_obey_the_same_hierarchy() {
         let facts = SpaceAccessFacts {
             principal: &user,
             tenant_id: "tenant",
-            scope_id: "space",
+            space_id: "space",
             member_role: role,
         };
         for required in [Level::Read, Level::Write, Level::Manage] {
@@ -32,13 +32,13 @@ fn all_membership_combinations_obey_the_same_hierarchy() {
 fn space_client_never_inherits_the_enrolling_users_owner_role() {
     let principal = ClientPrincipal::Space {
         tenant_id: "tenant".into(),
-        scope_id: "space".into(),
+        space_id: "space".into(),
     };
     for role in [None, Some(Role::Member), Some(Role::Owner)] {
         let facts = SpaceAccessFacts {
             principal: &principal,
             tenant_id: "tenant",
-            scope_id: "space",
+            space_id: "space",
             member_role: role,
         };
         assert!(facts.allows(Level::Read));
@@ -51,7 +51,7 @@ fn space_client_never_inherits_the_enrolling_users_owner_role() {
 fn space_and_tenant_are_both_authorization_boundaries() {
     let principal = ClientPrincipal::Space {
         tenant_id: "tenant".into(),
-        scope_id: "space".into(),
+        space_id: "space".into(),
     };
     for (tenant, space) in [
         ("other", "space"),
@@ -62,7 +62,7 @@ fn space_and_tenant_are_both_authorization_boundaries() {
         let facts = SpaceAccessFacts {
             principal: &principal,
             tenant_id: tenant,
-            scope_id: space,
+            space_id: space,
             member_role: Some(Role::Owner),
         };
         assert_eq!(facts.effective_level(), None);
@@ -77,7 +77,7 @@ fn an_empty_user_or_unknown_role_cannot_gain_access() {
     let facts = SpaceAccessFacts {
         principal: &principal,
         tenant_id: "tenant",
-        scope_id: "space",
+        space_id: "space",
         member_role: Some(Role::Owner),
     };
     assert!(!facts.allows(Level::Read));

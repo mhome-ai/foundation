@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use app_facade_api::pod::{
-    AdapterState, AdapterStatus, AuthorizationScope, BleAdvertisement, DeviceKind,
+    AdapterState, AdapterStatus, AuthorizationSpace, BleAdvertisement, DeviceKind,
     BLE_FLAG_COMMISSIONABLE, BLE_FLAG_WIFI_CONFIGURED, BLE_KIND_HOST, BLE_KIND_POD,
 };
 use async_trait::async_trait;
@@ -478,7 +478,7 @@ impl FakeDevice {
                 let grant: Value = serde_json::from_str(proof).unwrap();
                 let challenge = jws_payload_json(grant["challenge"].as_str().unwrap()).unwrap();
                 let mut status = challenge["status"].clone();
-                status["claim"] = json!({"kind":"space","space":{"tenantId":"tenant","scopeId":grant["scopeId"]}});
+                status["claim"] = json!({"kind":"space","space":{"tenantId":"tenant","spaceId":grant["spaceId"]}});
                 json!({"proof":sign_jws(&key,core_api::host::access::RECEIPT_TYPE,&json!({"proof":proof,"status":status,"userId":"user-1"})).unwrap()})
             }
             ("pod-credential", "deliver") => {
@@ -736,7 +736,7 @@ impl Radio for FakeRadio {
 pub struct CloudCall {
     pub context: String,
     pub path: String,
-    pub scope_id: Option<String>,
+    pub space_id: Option<String>,
     pub body: Value,
 }
 
@@ -792,21 +792,21 @@ pub fn account(context: &str) -> Account {
     Account {
         user_id: "user-1".into(),
         user_name: "Ada".into(),
-        scopes: vec![
-            AuthorizationScope {
-                scope_id: "scope-a".into(),
+        spaces: vec![
+            AuthorizationSpace {
+                space_id: "scope-a".into(),
                 name: "Home".into(),
                 local: true,
                 owner: true,
             },
-            AuthorizationScope {
-                scope_id: "scope-b".into(),
+            AuthorizationSpace {
+                space_id: "scope-b".into(),
                 name: "Cabin".into(),
                 local: false,
                 owner: false,
             },
         ],
-        active_scope_id: Some("scope-b".into()),
+        active_space_id: Some("scope-b".into()),
         context: context.into(),
     }
 }
@@ -821,13 +821,13 @@ impl Cloud for FakeCloud {
         &self,
         account_context: &str,
         path: &str,
-        scope_id: Option<&str>,
+        space_id: Option<&str>,
         body: &str,
     ) -> Result<CloudResponse, CloudError> {
         self.calls.lock().unwrap().push(CloudCall {
             context: account_context.into(),
             path: path.into(),
-            scope_id: scope_id.map(str::to_string),
+            space_id: space_id.map(str::to_string),
             body: serde_json::from_str(body).unwrap(),
         });
         note(&self.journal, format!("cloud:{path}"));
@@ -837,7 +837,7 @@ impl Cloud for FakeCloud {
             "pod/space/credential/issue" => json!({
                 "credentialState": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.0.clone()).unwrap_or("pending".into()), "credentialId":"space-credential", "appClientId":"a:space-device", "jwtToken":"space-jwt",
                 "activateBefore": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.1).unwrap_or(Some(self.clock.now_ms()+600_000)),
-                "hubIdentity":{"hubId":"hub","tenantId":"tenant","scopeId":scope_id.unwrap(),
+                "hubIdentity":{"hubId":"hub","tenantId":"tenant","spaceId":space_id.unwrap(),
                     "keyId":"p256:key", "algorithm":"ES256", "publicKeyX":"x", "publicKeyY":"y", "fingerprint":"key",
                     "hostId":"host", "hostPublicKey":{"x":"x","y":"y"}}
             }),
@@ -877,9 +877,9 @@ impl Cloud for FakeCloud {
             .unwrap()
             .as_mut()
             .unwrap()
-            .scopes
+            .spaces
             .iter_mut()
-            .find(|s| s.scope_id == scope)
+            .find(|s| s.space_id == scope)
             .unwrap()
             .local = true;
         Ok(())

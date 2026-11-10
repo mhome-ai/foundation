@@ -26,7 +26,7 @@ fn local_actions_do_not_accept_caller_asserted_locality_or_settings_urls() {
     assert!(serde_json::from_value::<HostPermissionRequest>(request.clone()).is_ok());
     for (key, value) in [
         ("isLocal", json!(true)),
-        ("scopeId", json!("s")),
+        ("spaceId", json!("s")),
         ("url", json!("https://example.com")),
     ] {
         let mut invalid = request.clone();

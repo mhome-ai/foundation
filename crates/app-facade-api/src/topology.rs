@@ -10,8 +10,7 @@ pub struct TopologyGetRequest {}
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TopologySnapshot {
     pub contract: String,
-    #[serde(rename = "spaceId")]
-    pub scope_id: String,
+    pub space_id: String,
     pub generation: String,
     pub revision: u64,
     pub observed_at_ms: i64,
@@ -149,8 +148,7 @@ pub enum TopologyObservationState {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TopologyChanged {
-    #[serde(rename = "spaceId")]
-    pub scope_id: String,
+    pub space_id: String,
     pub generation: String,
     pub revision: u64,
 }

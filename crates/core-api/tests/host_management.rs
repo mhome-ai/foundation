@@ -63,7 +63,7 @@ fn native_requests_match_shared_schema_and_action_manifest() {
             .get(value["action"].as_str().unwrap())
             .is_some());
         let mut scoped = value;
-        scoped["scopeId"] = "space".into();
+        scoped["spaceId"] = "space".into();
         assert!(!validator.is_valid(&scoped));
     }
 }

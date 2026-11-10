@@ -21,5 +21,5 @@ fn client_appearance_report_is_scoped_and_cannot_choose_identity() {
     let target = "/app/client/appearance/report";
     assert_eq!(required(target), Some(OperationPolicy::SpaceRead));
     let route = route_policy_for_target(target).unwrap();
-    assert_eq!(route.execution, ExecutionSelector::ScopeMode);
+    assert_eq!(route.execution, ExecutionSelector::SpaceMode);
 }

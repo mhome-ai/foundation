@@ -7,7 +7,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/device/list",
     "allowed": true
   },
@@ -19,7 +19,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/capability/invoke",
     "allowed": true
   },
@@ -31,7 +31,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/hub/restart",
     "allowed": true
   },
@@ -43,7 +43,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/user/profile/get",
     "allowed": true
   },
@@ -55,7 +55,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/plugin/camera/device/list",
     "allowed": true
   },
@@ -67,7 +67,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/unknown",
     "allowed": false
   },
@@ -79,7 +79,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/artifact/internal/read",
     "allowed": false
   },
@@ -91,7 +91,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/device/list",
     "allowed": true
   },
@@ -103,7 +103,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/capability/invoke",
     "allowed": true
   },
@@ -115,7 +115,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/hub/restart",
     "allowed": false
   },
@@ -127,7 +127,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/user/profile/get",
     "allowed": true
   },
@@ -139,7 +139,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/plugin/camera/device/list",
     "allowed": true
   },
@@ -151,7 +151,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/unknown",
     "allowed": false
   },
@@ -163,7 +163,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/artifact/internal/read",
     "allowed": false
   },
@@ -175,7 +175,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/device/list",
     "allowed": false
   },
@@ -187,7 +187,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/capability/invoke",
     "allowed": false
   },
@@ -199,7 +199,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/hub/restart",
     "allowed": false
   },
@@ -211,7 +211,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/user/profile/get",
     "allowed": true
   },
@@ -223,7 +223,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/plugin/camera/device/list",
     "allowed": false
   },
@@ -235,7 +235,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/unknown",
     "allowed": false
   },
@@ -247,7 +247,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/artifact/internal/read",
     "allowed": false
   },
@@ -256,11 +256,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/device/list",
     "allowed": true
   },
@@ -269,11 +269,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/capability/invoke",
     "allowed": true
   },
@@ -282,11 +282,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/hub/restart",
     "allowed": false
   },
@@ -295,11 +295,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/user/profile/get",
     "allowed": false
   },
@@ -308,11 +308,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/plugin/camera/device/list",
     "allowed": true
   },
@@ -321,11 +321,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/unknown",
     "allowed": false
   },
@@ -334,11 +334,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/artifact/internal/read",
     "allowed": false
   },
@@ -347,11 +347,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/device/list",
     "allowed": true
   },
@@ -360,11 +360,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/capability/invoke",
     "allowed": true
   },
@@ -373,11 +373,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/hub/restart",
     "allowed": false
   },
@@ -386,11 +386,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/user/profile/get",
     "allowed": false
   },
@@ -399,11 +399,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/plugin/camera/device/list",
     "allowed": true
   },
@@ -412,11 +412,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/unknown",
     "allowed": false
   },
@@ -425,11 +425,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/artifact/internal/read",
     "allowed": false
   },
@@ -438,11 +438,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "other"
+      "spaceId": "other"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/device/list",
     "allowed": false
   },
@@ -451,11 +451,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "other"
+      "spaceId": "other"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/capability/invoke",
     "allowed": false
   },
@@ -464,11 +464,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "other"
+      "spaceId": "other"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/hub/restart",
     "allowed": false
   },
@@ -477,11 +477,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "other"
+      "spaceId": "other"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/user/profile/get",
     "allowed": false
   },
@@ -490,11 +490,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "other"
+      "spaceId": "other"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/plugin/camera/device/list",
     "allowed": false
   },
@@ -503,11 +503,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "other"
+      "spaceId": "other"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/unknown",
     "allowed": false
   },
@@ -516,11 +516,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "other"
+      "spaceId": "other"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/artifact/internal/read",
     "allowed": false
   },
@@ -529,11 +529,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "other",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/device/list",
     "allowed": false
   },
@@ -542,11 +542,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "other",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/capability/invoke",
     "allowed": false
   },
@@ -555,11 +555,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "other",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/hub/restart",
     "allowed": false
   },
@@ -568,11 +568,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "other",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/user/profile/get",
     "allowed": false
   },
@@ -581,11 +581,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "other",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/plugin/camera/device/list",
     "allowed": false
   },
@@ -594,11 +594,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "other",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/unknown",
     "allowed": false
   },
@@ -607,11 +607,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "other",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/artifact/internal/read",
     "allowed": false
   },
@@ -623,7 +623,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/agent/credit/usage",
     "allowed": true
   },
@@ -635,7 +635,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/agent/credit/usage",
     "allowed": true
   },
@@ -647,7 +647,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/agent/credit/usage",
     "allowed": false
   },
@@ -659,7 +659,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/now/attention/list",
     "allowed": true
   },
@@ -671,7 +671,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/now/attention/list",
     "allowed": true
   },
@@ -683,7 +683,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/now/attention/list",
     "allowed": false
   },
@@ -692,11 +692,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/now/attention/list",
     "allowed": true
   },
@@ -705,11 +705,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/now/attention/list",
     "allowed": true
   },
@@ -718,11 +718,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "other"
+      "spaceId": "other"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/now/attention/list",
     "allowed": false
   },
@@ -731,11 +731,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "other",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/now/attention/list",
     "allowed": false
   },
@@ -747,7 +747,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/object-storage/folders/set-limit",
     "allowed": true
   },
@@ -759,7 +759,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/object-storage/folders/set-limit",
     "allowed": true
   },
@@ -771,7 +771,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/object-storage/folders/set-limit",
     "allowed": false
   },
@@ -780,11 +780,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/object-storage/folders/set-limit",
     "allowed": true
   },
@@ -793,11 +793,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/object-storage/folders/set-limit",
     "allowed": true
   },
@@ -806,11 +806,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "tenant",
-      "scopeId": "other"
+      "spaceId": "other"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/object-storage/folders/set-limit",
     "allowed": false
   },
@@ -819,11 +819,11 @@
     "principal": {
       "kind": "space",
       "tenantId": "other",
-      "scopeId": "space"
+      "spaceId": "space"
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/object-storage/folders/set-limit",
     "allowed": false
   },
@@ -835,7 +835,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/presentation/space/list",
     "allowed": true
   },
@@ -847,7 +847,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/presentation/space/get",
     "allowed": true
   },
@@ -859,7 +859,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/presentation/space/get",
     "allowed": false
   },
@@ -871,7 +871,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/space/location/list",
     "allowed": true
   },
@@ -883,7 +883,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/space/location/list",
     "allowed": false
   },
@@ -895,7 +895,7 @@
     },
     "memberRole": null,
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/space/delete/status",
     "allowed": true
   },
@@ -907,7 +907,7 @@
     },
     "memberRole": "MEMBER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/space/beta/update",
     "allowed": false
   },
@@ -919,7 +919,7 @@
     },
     "memberRole": "OWNER",
     "tenantId": "tenant",
-    "scopeId": "space",
+    "spaceId": "space",
     "target": "/app/space/beta/update",
     "allowed": true
   }

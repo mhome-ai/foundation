@@ -335,7 +335,7 @@
                             "additionalProperties": false,
                             "required": [
                               "tenantId",
-                              "scopeId"
+                              "spaceId"
                             ],
                             "properties": {
                               "tenantId": {
@@ -343,7 +343,7 @@
                                 "minLength": 1,
                                 "maxLength": 256
                               },
-                              "scopeId": {
+                              "spaceId": {
                                 "type": "string",
                                 "minLength": 1,
                                 "maxLength": 256

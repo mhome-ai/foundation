@@ -14,7 +14,7 @@
     { "name": "unknown-command", "input": "/usage", "result": { "kind": "not_command" } }
   ],
   "orderingCases": [
-    { "name": "stable-scope-id-order", "scopeIds": ["scope-z", "scope-a", "scope-m"], "expected": ["scope-a", "scope-m", "scope-z"] },
-    { "name": "lexical-order-is-case-sensitive", "scopeIds": ["scope-b", "Scope-a"], "expected": ["Scope-a", "scope-b"] }
+    { "name": "stable-scope-id-order", "spaceIds": ["scope-z", "scope-a", "scope-m"], "expected": ["scope-a", "scope-m", "scope-z"] },
+    { "name": "lexical-order-is-case-sensitive", "spaceIds": ["scope-b", "Scope-a"], "expected": ["Scope-a", "scope-b"] }
   ]
 }

@@ -147,7 +147,7 @@ pub struct RegisterNodeConnectionRequest {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub host_name: Option<String>,
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -255,7 +255,7 @@ pub enum ExternalCoreEventKind {
     ConnectionControlRequested,
     HostRuntimeRequest,
     ServiceAppFacadeRequest,
-    ScopeOwnedDataPurgeRequested,
+    SpaceOwnedDataPurgeRequested,
     MessagingRelationshipsRequested,
     ArtifactDeliveryProjectionRequested,
     ArtifactUploadProjectionRequested,
@@ -268,7 +268,7 @@ pub enum ExternalCoreEventKind {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MessagingDeliveryRequest {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub surface_id: String,
     pub target: String,
     pub payload: String,
@@ -284,7 +284,7 @@ pub struct MessagingDeliveryResponse {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExternalArtifactRequestContext {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub actor_user_id: String,
     pub client_id: String,
 }
@@ -408,7 +408,7 @@ pub struct ArtifactUploadProjectionResponse {
 pub struct ExternalServiceAppFacadeRequest {
     pub target: String,
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub user_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub client_id: Option<String>,
@@ -443,9 +443,9 @@ pub enum ExternalHostRuntimeMethod {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub struct ScopeOwnedDataPurgeRequest {
+pub struct SpaceOwnedDataPurgeRequest {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -577,7 +577,7 @@ mod tests {
 
     #[test]
     fn messaging_delivery_is_a_closed_request_response_contract() {
-        let request = serde_json::json!({"tenantId":"t", "scopeId":"s", "surfaceId":"m",
+        let request = serde_json::json!({"tenantId":"t", "spaceId":"s", "surfaceId":"m",
             "target":"/chat/event", "payload":"{}"});
         let decoded: MessagingDeliveryRequest = serde_json::from_value(request.clone()).unwrap();
         assert_eq!(serde_json::to_value(decoded).unwrap(), request);
@@ -618,10 +618,10 @@ mod tests {
     fn external_events_use_the_current_wire_shape() {
         let event = ExternalCoreEvent {
             event_id: "event-1".to_string(),
-            kind: ExternalCoreEventKind::ScopeOwnedDataPurgeRequested,
-            payload: serde_json::to_value(ScopeOwnedDataPurgeRequest {
+            kind: ExternalCoreEventKind::SpaceOwnedDataPurgeRequested,
+            payload: serde_json::to_value(SpaceOwnedDataPurgeRequest {
                 tenant_id: "tenant-1".to_string(),
-                scope_id: "scope-1".to_string(),
+                space_id: "scope-1".to_string(),
             })
             .unwrap(),
             expects_response: true,
@@ -629,9 +629,9 @@ mod tests {
 
         let value = serde_json::to_value(event).unwrap();
         assert_eq!(EXTERNAL_CORE_PROTOCOL_VERSION, 26);
-        assert_eq!(value["kind"], "scopeOwnedDataPurgeRequested");
+        assert_eq!(value["kind"], "spaceOwnedDataPurgeRequested");
         assert_eq!(value["payload"]["tenantId"], "tenant-1");
-        assert_eq!(value["payload"]["scopeId"], "scope-1");
+        assert_eq!(value["payload"]["spaceId"], "scope-1");
         assert_eq!(value["expectsResponse"], true);
 
         let facade = ExternalCoreEvent {
@@ -640,7 +640,7 @@ mod tests {
             payload: serde_json::to_value(ExternalServiceAppFacadeRequest {
                 target: "/app/messaging/provider/list".to_string(),
                 tenant_id: "tenant-1".to_string(),
-                scope_id: "scope-1".to_string(),
+                space_id: "scope-1".to_string(),
                 user_id: "user-1".to_string(),
                 client_id: None,
                 payload: serde_json::json!({"placement": "local"}),

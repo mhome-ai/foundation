@@ -71,12 +71,12 @@ impl BlockingCloud for ForeignCloud {
         &self,
         account_context: String,
         path: String,
-        scope_id: Option<String>,
+        space_id: Option<String>,
         body: String,
     ) -> Result<CloudResponse, CloudError> {
         self.0.run(
             self.1
-                .post_json(&account_context, &path, scope_id.as_deref(), &body),
+                .post_json(&account_context, &path, space_id.as_deref(), &body),
         )
     }
     fn client_id(&self) -> Option<String> {
@@ -170,7 +170,7 @@ fn a_blocking_platform_commissions_a_pod_on_its_own_runtime() {
     call(
         &core,
         "/local/pod/commission/authorize",
-        json!({ "sessionId": id, "scopeId": "scope-a", "clientMode": "user" }),
+        json!({ "sessionId": id, "spaceId": "scope-a", "clientMode": "user" }),
     );
     let done = wait(&core, "completed");
     assert_eq!(done["podId"], "pod-1");

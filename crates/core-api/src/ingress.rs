@@ -38,7 +38,7 @@ pub fn input_timeout(input: &ServiceCoreInput) -> Duration {
 pub struct NodeSession<'a> {
     pub connection_key: &'a str,
     pub tenant_id: &'a str,
-    pub scope_id: &'a str,
+    pub space_id: &'a str,
     pub node_type: &'a str,
     pub node_id: &'a str,
 }
@@ -76,7 +76,7 @@ pub fn node_input(
         payload: payload.into(),
         control: request.control.clone(),
         tenant_id: session.tenant_id.into(),
-        scope_id: session.scope_id.into(),
+        space_id: session.space_id.into(),
         node_type: session.node_type.into(),
         node_id: session.node_id.into(),
     })
@@ -93,7 +93,7 @@ pub fn node_reply<T>(message_type: &str, response: Option<T>) -> Option<T> {
 
 pub fn node_response(
     request: &MwsMessage,
-    scope_id: &str,
+    space_id: &str,
     result: Result<Option<ServiceCoreResponse>, ErrorResponse>,
 ) -> Option<MwsMessage> {
     let result = result.and_then(|response| match response {
@@ -117,7 +117,7 @@ pub fn node_response(
     node_reply(
         request.r#type.as_deref().unwrap_or_default(),
         Some(MwsMessage {
-            scope_id: Some(scope_id.into()),
+            space_id: Some(space_id.into()),
             from: None,
             target: request.target.clone(),
             sig: request.sig.clone(),
@@ -186,7 +186,7 @@ mod tests {
             payload: call.to_string(),
             control: None,
             tenant_id: "tenant".into(),
-            scope_id: "scope".into(),
+            space_id: "scope".into(),
             node_type: "test".into(),
             node_id: "node".into(),
         };
@@ -231,13 +231,13 @@ mod tests {
         }
     }
     fn request(target: &str, kind: &str, payload: &str) -> MwsMessage {
-        serde_json::from_value(serde_json::json!({"target":target,"type":kind,"payload":payload,"scopeId":"untrusted","sig":"s"})).unwrap()
+        serde_json::from_value(serde_json::json!({"target":target,"type":kind,"payload":payload,"spaceId":"untrusted","sig":"s"})).unwrap()
     }
     fn session() -> NodeSession<'static> {
         NodeSession {
             connection_key: "connection",
             tenant_id: "tenant",
-            scope_id: "scope",
+            space_id: "scope",
             node_type: "camera",
             node_id: "node",
         }
@@ -247,7 +247,7 @@ mod tests {
         match node_input(&request("/x", MwsMessageType::NODE_REQ, ""), session()).unwrap() {
             ServiceCoreInput::NodeRequest {
                 tenant_id,
-                scope_id,
+                space_id,
                 node_id,
                 payload,
                 ..
@@ -255,7 +255,7 @@ mod tests {
                 assert_eq!(
                     (
                         tenant_id.as_str(),
-                        scope_id.as_str(),
+                        space_id.as_str(),
                         node_id.as_str(),
                         payload.as_str()
                     ),
@@ -283,7 +283,7 @@ mod tests {
         let payload = serde_json::json!({
             "contract":crate::node::STATUS_CONTRACT,"serviceId":"camera","nodeType":"camera",
             "processGeneration":"process","revision":1,"process":"running","updatedAtMs":1,
-            "instance":{"nodeId":"node","runtimeId":"r","hubId":"h","tenantId":"tenant","scopeId":"scope",
+            "instance":{"nodeId":"node","runtimeId":"r","hubId":"h","tenantId":"tenant","spaceId":"scope",
                 "identity":"commissioned","hub":"resolved","connection":"connected","runtime":"ready",
                 "runtimeGeneration":1,"connectionGeneration":1,"revision":1,"effective":"online","updatedAtMs":1},
             "runtime":{"runtimeId":"r","runtime":"ready","generation":1,"revision":1,"updatedAtMs":1},

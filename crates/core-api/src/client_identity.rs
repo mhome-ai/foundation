@@ -44,10 +44,10 @@ impl AuthenticatedClient {
     /// Structural and target binding validation, after credential verification.
     /// A User principal still requires current membership/role authorization at
     /// the operation boundary. This check never grants access by itself.
-    pub fn validate_for(&self, tenant_id: &str, scope_id: &str) -> Result<(), ClientIdentityError> {
+    pub fn validate_for(&self, tenant_id: &str, space_id: &str) -> Result<(), ClientIdentityError> {
         let subject = self.app_client_id.strip_prefix("a:");
         if !valid_id(tenant_id)
-            || !valid_id(scope_id)
+            || !valid_id(space_id)
             || !subject.is_some_and(|value| {
                 valid_id(value) && !value.starts_with("a:") && !value.starts_with("p:")
             })
@@ -65,12 +65,12 @@ impl AuthenticatedClient {
             ClientPrincipal::User { .. } => Ok(()),
             ClientPrincipal::Space {
                 tenant_id: bound_tenant,
-                scope_id: bound_scope,
+                space_id: bound_scope,
             } => {
                 if self.credential_id.is_none() {
                     return Err(ClientIdentityError::MissingEnrollment);
                 }
-                if bound_tenant != tenant_id || bound_scope != scope_id {
+                if bound_tenant != tenant_id || bound_scope != space_id {
                     return Err(ClientIdentityError::SpaceMismatch);
                 }
                 Ok(())
@@ -83,11 +83,11 @@ impl AuthenticatedClient {
     pub fn conversation_surface(
         &self,
         tenant_id: &str,
-        scope_id: &str,
+        space_id: &str,
     ) -> Result<conversation_api::ConversationSurface, ClientIdentityError> {
-        self.validate_for(tenant_id, scope_id)?;
+        self.validate_for(tenant_id, space_id)?;
         self.principal
-            .client_surface(tenant_id, scope_id)
+            .client_surface(tenant_id, space_id)
             .map_err(|_| ClientIdentityError::InvalidIdentifier)
     }
 

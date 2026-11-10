@@ -9,12 +9,12 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SpaceIdentity {
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
 }
 
 impl SpaceIdentity {
     pub fn validate(&self) -> Result<(), &'static str> {
-        if valid_id(&self.tenant_id) && valid_id(&self.scope_id) {
+        if valid_id(&self.tenant_id) && valid_id(&self.space_id) {
             Ok(())
         } else {
             Err("invalid runtime Space identity")
@@ -42,7 +42,7 @@ impl RuntimeSpacePolicy {
             (Some("single"), Some(tenant), Some(scope)) => Self::Single {
                 space: SpaceIdentity {
                     tenant_id: tenant.into(),
-                    scope_id: scope.into(),
+                    space_id: scope.into(),
                 },
             },
             _ => return Err("missing or invalid runtime Space discovery policy"),
@@ -57,7 +57,7 @@ impl RuntimeSpacePolicy {
             Self::Single { space } => vec![
                 ("space_mode".into(), "single".into()),
                 ("space_tenant".into(), space.tenant_id.clone()),
-                ("space_id".into(), space.scope_id.clone()),
+                ("space_id".into(), space.space_id.clone()),
             ],
         }
     }
@@ -70,15 +70,15 @@ impl RuntimeSpacePolicy {
 
     /// Call for initial admission, persisted-identity recovery and credential
     /// refresh. A valid credential for another Space does not override this rule.
-    pub fn admit(&self, tenant_id: &str, scope_id: &str) -> Result<(), &'static str> {
+    pub fn admit(&self, tenant_id: &str, space_id: &str) -> Result<(), &'static str> {
         self.validate()?;
-        if !valid_id(tenant_id) || !valid_id(scope_id) {
+        if !valid_id(tenant_id) || !valid_id(space_id) {
             return Err("invalid requested Space identity");
         }
         match self {
             Self::Multi {} => Ok(()),
             Self::Single { space }
-                if space.tenant_id == tenant_id && space.scope_id == scope_id =>
+                if space.tenant_id == tenant_id && space.space_id == space_id =>
             {
                 Ok(())
             }
@@ -109,7 +109,7 @@ mod tests {
         let policy = RuntimeSpacePolicy::Single {
             space: SpaceIdentity {
                 tenant_id: "tenant-a".into(),
-                scope_id: "space-a".into(),
+                space_id: "space-a".into(),
             },
         };
         assert!(policy.admit("tenant-a", "space-a").is_ok());
@@ -127,7 +127,7 @@ mod tests {
         let single = RuntimeSpacePolicy::Single {
             space: SpaceIdentity {
                 tenant_id: "t".into(),
-                scope_id: "s".into(),
+                space_id: "s".into(),
             },
         };
         for policy in [multi, single] {
@@ -155,7 +155,7 @@ mod tests {
             "{}",
             "null",
             r#"{"mode":"single"}"#,
-            r#"{"mode":"multi","space":{"tenantId":"t","scopeId":"s"}}"#,
+            r#"{"mode":"multi","space":{"tenantId":"t","spaceId":"s"}}"#,
         ] {
             assert!(
                 serde_json::from_str::<RuntimeSpacePolicy>(input).is_err(),
@@ -165,10 +165,50 @@ mod tests {
         let invalid = RuntimeSpacePolicy::Single {
             space: SpaceIdentity {
                 tenant_id: "t".into(),
-                scope_id: " ".into(),
+                space_id: " ".into(),
             },
         };
         assert!(invalid.validate().is_err());
         assert!(invalid.admit("t", "s").is_err());
+    }
+}
+
+/// Fixed private file encoding, separate from the public Space wire identity.
+pub mod stored {
+    use super::*;
+    #[derive(Serialize, Deserialize)]
+    #[serde(
+        remote = "SpaceIdentity",
+        rename_all = "camelCase",
+        deny_unknown_fields
+    )]
+    struct Identity {
+        tenant_id: String,
+        #[serde(rename = "scopeId")]
+        space_id: String,
+    }
+    #[derive(Serialize, Deserialize)]
+    struct Encoded(#[serde(with = "Identity")] SpaceIdentity);
+    pub fn serialize_optional<S: serde::Serializer>(
+        value: &Option<SpaceIdentity>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        value.clone().map(Encoded).serialize(serializer)
+    }
+    pub fn deserialize_optional<'de, D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Option<SpaceIdentity>, D::Error> {
+        Option::<Encoded>::deserialize(deserializer).map(|value| value.map(|value| value.0))
+    }
+    pub fn serialize<S: serde::Serializer>(
+        value: &SpaceIdentity,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        Identity::serialize(value, serializer)
+    }
+    pub fn deserialize<'de, D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<SpaceIdentity, D::Error> {
+        Identity::deserialize(deserializer)
     }
 }

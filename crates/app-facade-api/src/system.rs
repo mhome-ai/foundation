@@ -118,8 +118,7 @@ pub struct Instance {
 #[serde(rename_all = "camelCase")]
 pub struct Instances {
     pub contract: String,
-    #[serde(rename = "spaceId")]
-    pub scope_id: String,
+    pub space_id: String,
     pub observed_at_ms: i64,
     pub instances: Vec<Instance>,
 }
@@ -137,8 +136,7 @@ pub struct ClientSession {
 #[serde(rename_all = "camelCase")]
 pub struct Clients {
     pub contract: String,
-    #[serde(rename = "spaceId")]
-    pub scope_id: String,
+    pub space_id: String,
     pub observed_at_ms: i64,
     pub sessions: Vec<ClientSession>,
 }
@@ -165,8 +163,7 @@ pub struct Host {
 #[serde(rename_all = "camelCase")]
 pub struct Hosts {
     pub contract: String,
-    #[serde(rename = "spaceId")]
-    pub scope_id: String,
+    pub space_id: String,
     pub observed_at_ms: i64,
     pub hosts: Vec<Host>,
 }
@@ -176,8 +173,7 @@ pub struct Hosts {
 #[serde(rename_all = "camelCase")]
 pub struct HostsRuntime {
     pub contract: String,
-    #[serde(rename = "spaceId")]
-    pub scope_id: String,
+    pub space_id: String,
     pub host_id: String,
     pub result: serde_json::Value,
 }

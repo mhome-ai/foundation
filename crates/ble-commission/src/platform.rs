@@ -7,7 +7,7 @@
 //! interfaces may block on their own I/O.
 use std::sync::Arc;
 
-use app_facade_api::pod::{AdapterStatus, AuthorizationScope, DeviceKind};
+use app_facade_api::pod::{AdapterStatus, AuthorizationSpace, DeviceKind};
 use async_trait::async_trait;
 
 /// Why a link operation failed.
@@ -101,8 +101,8 @@ pub trait Link: Send + Sync + 'static {
 pub struct Account {
     pub user_id: String,
     pub user_name: String,
-    pub scopes: Vec<AuthorizationScope>,
-    pub active_scope_id: Option<String>,
+    pub spaces: Vec<AuthorizationSpace>,
+    pub active_space_id: Option<String>,
     /// Opaque to the core and handed back on every cloud call made for this
     /// account (for example a token generation), so credential issuance stays
     /// bound to the account that authorized commissioning.
@@ -147,13 +147,13 @@ pub trait Cloud: Send + Sync + 'static {
         ))
     }
     async fn account(&self) -> Option<Account>;
-    /// `POST {api}/{path}` with the account's bearer token, the `ScopeId`
-    /// header when `scope_id` is set, and a JSON body.
+    /// `POST {api}/{path}` with the account's bearer token, the `SpaceId`
+    /// header when `space_id` is set, and a JSON body.
     async fn post_json(
         &self,
         account_context: &str,
         path: &str,
-        scope_id: Option<&str>,
+        space_id: Option<&str>,
         body: &str,
     ) -> Result<CloudResponse, CloudError>;
     async fn client_id(&self) -> Option<String>;
@@ -214,7 +214,7 @@ pub trait BlockingCloud: Send + Sync + 'static {
         &self,
         account_context: String,
         path: String,
-        scope_id: Option<String>,
+        space_id: Option<String>,
         body: String,
     ) -> Result<CloudResponse, CloudError>;
     fn client_id(&self) -> Option<String>;
@@ -333,17 +333,17 @@ impl<T: BlockingCloud + ?Sized> Cloud for Blocking<T> {
         &self,
         account_context: &str,
         path: &str,
-        scope_id: Option<&str>,
+        space_id: Option<&str>,
         body: &str,
     ) -> Result<CloudResponse, CloudError> {
-        let (context, path, scope_id, body) = (
+        let (context, path, space_id, body) = (
             account_context.to_string(),
             path.to_string(),
-            scope_id.map(str::to_string),
+            space_id.map(str::to_string),
             body.to_string(),
         );
         off_runtime(&self.0, move |cloud| {
-            cloud.post_json(context, path, scope_id, body)
+            cloud.post_json(context, path, space_id, body)
         })
         .await
         .unwrap_or_else(|| {

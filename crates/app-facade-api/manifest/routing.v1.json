@@ -1,9 +1,9 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.124.0",
+  "contractVersion": "1.125.0",
   "targetPrefix": "/app/",
   "default": {
-    "execution": "scopeMode"
+    "execution": "spaceMode"
   },
   "matching": "exactBeforePrefix",
   "placementJsonPointer": "/input/placement",
@@ -47,7 +47,7 @@
       "/app/billing/subscription/resume",
       "/app/billing/subscription/change"
     ],
-    "scopeModeTargets": [
+    "spaceModeTargets": [
       "/app/artifact/resolve",
       "/app/space/context/get",
       "/app/artifact/put",

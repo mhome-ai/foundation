@@ -43,7 +43,7 @@ fn nfc_permissions_routing_and_acknowledgements() {
     for target in [LIST, CREATE, ACTIVATE, UPDATE, DELETE] {
         assert_eq!(
             route_policy_for_target(target).unwrap().execution,
-            ExecutionSelector::ScopeMode
+            ExecutionSelector::SpaceMode
         );
     }
     assert_eq!(required(LIST), Some(OperationPolicy::SpaceRead));

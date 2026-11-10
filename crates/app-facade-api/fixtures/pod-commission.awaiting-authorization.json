@@ -25,14 +25,14 @@
   "authorization": {
     "userId": "user-1",
     "userName": "Ada",
-    "scopes": [
+    "spaces": [
       {
-        "scopeId": "scope-1",
+        "spaceId": "scope-1",
         "name": "Home",
         "local": true,
         "owner": true
       }
     ],
-    "defaultScopeId": "scope-1"
+    "defaultSpaceId": "scope-1"
   }
 }

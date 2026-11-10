@@ -35,6 +35,7 @@ pub struct HostPolicy {
     env: RuntimeEnv,
     mode: HostMode,
     generation: String,
+    #[serde(with = "stored_claim")]
     claim: Option<Claim>,
 }
 
@@ -253,5 +254,40 @@ impl HostPolicy {
             None => Err(Denied::Unclaimed),
             _ => Err(Denied::PrincipalMismatch),
         }
+    }
+}
+
+// HostPolicy is private authority storage; remote HostStatus is the public projection.
+mod stored_claim {
+    use super::*;
+    #[derive(Serialize, Deserialize)]
+    #[serde(
+        remote = "Claim",
+        tag = "kind",
+        rename_all = "camelCase",
+        deny_unknown_fields
+    )]
+    enum Stored {
+        Admin {
+            #[serde(rename = "userIds")]
+            user_ids: BTreeSet<String>,
+        },
+        Space {
+            #[serde(with = "core_api::runtime_space::stored")]
+            space: SpaceIdentity,
+        },
+    }
+    #[derive(Serialize, Deserialize)]
+    struct Encoded(#[serde(with = "Stored")] Claim);
+    pub fn serialize<S: serde::Serializer>(
+        value: &Option<Claim>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        value.clone().map(Encoded).serialize(serializer)
+    }
+    pub fn deserialize<'de, D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Option<Claim>, D::Error> {
+        Option::<Encoded>::deserialize(deserializer).map(|value| value.map(|value| value.0))
     }
 }

@@ -17,7 +17,7 @@ fn device_ui_routes_have_one_owner_and_space_read_admission() {
         assert_eq!(required(target), Some(OperationPolicy::SpaceRead));
         assert_eq!(
             route_policy_for_target(target).unwrap().execution,
-            ExecutionSelector::ScopeMode
+            ExecutionSelector::SpaceMode
         );
     }
     assert!(manifest["domains"]["resourceRead"]

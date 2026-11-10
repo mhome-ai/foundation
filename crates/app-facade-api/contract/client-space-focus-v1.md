@@ -15,7 +15,7 @@ Both request-response (`arq`) and one-way state synchronization (`ad`) use this
 same envelope. Native switch orchestration retains its existing ACK and session
 fences. Background synchronization remains per physical connection and is not
 an additional user switch. It never replays an obsolete clear after reconnect.
-For Cloud clear, the existing envelope `scopeId`, when non-empty, is a condition:
+For Cloud clear, the existing envelope `spaceId`, when non-empty, is a condition:
 a delayed clear for A cannot erase a newer focus on B. Omitted/blank scope clears
 unconditionally. Local connections can only focus/clear their bound Space.
 

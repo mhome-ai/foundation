@@ -33,7 +33,7 @@
   },
   {
     "target": "/app/room/delete",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -41,7 +41,7 @@
   },
   {
     "target": "/app/room/delete",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -49,7 +49,7 @@
   },
   {
     "target": "/app/room/delete",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -57,7 +57,7 @@
   },
   {
     "target": "/app/room/delete",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -65,7 +65,7 @@
   },
   {
     "target": "/app/system/instances/get",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -73,7 +73,7 @@
   },
   {
     "target": "/app/system/instances/get",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -81,7 +81,7 @@
   },
   {
     "target": "/app/system/instances/get",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -89,7 +89,7 @@
   },
   {
     "target": "/app/system/instances/get",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -97,7 +97,7 @@
   },
   {
     "target": "/app/system/clients/get",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -105,7 +105,7 @@
   },
   {
     "target": "/app/system/clients/get",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -113,7 +113,7 @@
   },
   {
     "target": "/app/system/clients/get",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -121,7 +121,7 @@
   },
   {
     "target": "/app/system/clients/get",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -321,7 +321,7 @@
   },
   {
     "target": "/app/artifact/resolve",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -329,7 +329,7 @@
   },
   {
     "target": "/app/artifact/resolve",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -337,7 +337,7 @@
   },
   {
     "target": "/app/artifact/resolve",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -345,7 +345,7 @@
   },
   {
     "target": "/app/artifact/resolve",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -481,7 +481,7 @@
   },
   {
     "target": "/app/pod/space/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -489,7 +489,7 @@
   },
   {
     "target": "/app/pod/space/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -497,7 +497,7 @@
   },
   {
     "target": "/app/pod/space/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -505,7 +505,7 @@
   },
   {
     "target": "/app/pod/space/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -513,7 +513,7 @@
   },
   {
     "target": "/app/pod/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -521,7 +521,7 @@
   },
   {
     "target": "/app/pod/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -529,7 +529,7 @@
   },
   {
     "target": "/app/pod/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -537,7 +537,7 @@
   },
   {
     "target": "/app/pod/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -545,7 +545,7 @@
   },
   {
     "target": "/app/host/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -553,7 +553,7 @@
   },
   {
     "target": "/app/host/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -561,7 +561,7 @@
   },
   {
     "target": "/app/host/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -569,7 +569,7 @@
   },
   {
     "target": "/app/host/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -577,7 +577,7 @@
   },
   {
     "target": "/app/host/metrics",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -585,7 +585,7 @@
   },
   {
     "target": "/app/host/metrics",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -593,7 +593,7 @@
   },
   {
     "target": "/app/host/metrics",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -601,7 +601,7 @@
   },
   {
     "target": "/app/host/metrics",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -609,7 +609,7 @@
   },
   {
     "target": "/app/host/service/restart",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -617,7 +617,7 @@
   },
   {
     "target": "/app/host/service/restart",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -625,7 +625,7 @@
   },
   {
     "target": "/app/host/service/restart",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -633,7 +633,7 @@
   },
   {
     "target": "/app/host/service/restart",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -673,7 +673,7 @@
   },
   {
     "target": "/app/now/attention/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -681,7 +681,7 @@
   },
   {
     "target": "/app/now/attention/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -689,7 +689,7 @@
   },
   {
     "target": "/app/now/attention/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -697,7 +697,7 @@
   },
   {
     "target": "/app/now/attention/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,
@@ -769,7 +769,7 @@
   },
   {
     "target": "/app/space/location/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": true,
@@ -777,7 +777,7 @@
   },
   {
     "target": "/app/space/location/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
     "cloudReady": false,
@@ -785,7 +785,7 @@
   },
   {
     "target": "/app/space/location/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": true,
@@ -793,7 +793,7 @@
   },
   {
     "target": "/app/space/location/list",
-    "execution": "scopeMode",
+    "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
     "cloudReady": false,

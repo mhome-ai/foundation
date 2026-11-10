@@ -79,6 +79,6 @@ fn contract_schema_and_rust_agree_on_ui_metadata() {
         app_facade_api::routing::route_policy_for_target(GET_TARGET)
             .unwrap()
             .execution,
-        app_facade_api::routing::ExecutionSelector::ScopeMode
+        app_facade_api::routing::ExecutionSelector::SpaceMode
     );
 }

@@ -27,7 +27,7 @@ fn navigation_snapshot_contract_is_scoped_and_excludes_caller_identity() {
     assert_eq!(required(target), Some(OperationPolicy::SpaceRead));
     assert_eq!(
         route_policy_for_target(target).unwrap().execution,
-        ExecutionSelector::ScopeMode
+        ExecutionSelector::SpaceMode
     );
 }
 
@@ -41,7 +41,7 @@ fn current_client_navigation_inputs_and_permissions_are_explicit() {
         assert_eq!(required(target), Some(policy));
         assert_eq!(
             route_policy_for_target(target).unwrap().execution,
-            ExecutionSelector::ScopeMode
+            ExecutionSelector::SpaceMode
         );
     }
     let mut schema: Value =

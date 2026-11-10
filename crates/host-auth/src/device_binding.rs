@@ -15,7 +15,8 @@ impl Reader {
         Self { path }
     }
     pub fn read(&self) -> Result<DeviceBinding> {
-        let value: DeviceBinding = crate::secure_file::read_snapshot(&self.path)?;
+        let value: StoredBinding = crate::secure_file::read_snapshot(&self.path)?;
+        let value = value.0;
         value.validate().map_err(anyhow::Error::msg)?;
         Ok(value)
     }
@@ -35,7 +36,7 @@ impl Reader {
 }
 
 pub struct Writer {
-    store: SecureFile<Option<DeviceBinding>>,
+    store: SecureFile<Option<StoredBinding>>,
 }
 impl Writer {
     pub fn new(path: PathBuf) -> Result<Self> {
@@ -62,7 +63,7 @@ impl Writer {
                     value.env == env && value.client == client && value.host == host,
                     "device installation identity changed; reset required"
                 );
-                return Ok(value.clone());
+                return Ok(value.0.clone());
             }
             let value = DeviceBinding {
                 version: DEVICE_BINDING_VERSION,
@@ -73,7 +74,7 @@ impl Writer {
                 space: None,
             };
             value.validate().map_err(anyhow::Error::msg)?;
-            *saved = Some(value.clone());
+            *saved = Some(StoredBinding(value.clone()));
             Ok(value)
         })
     }
@@ -99,7 +100,7 @@ impl Writer {
                 "device belongs to another Space; reset required"
             );
             current.space = Some(space);
-            Ok(current.clone())
+            Ok(current.0.clone())
         })
     }
 }
@@ -123,7 +124,7 @@ mod tests {
     fn space(id: &str) -> SpaceIdentity {
         SpaceIdentity {
             tenant_id: "tenant".into(),
-            scope_id: id.into(),
+            space_id: id.into(),
         }
     }
     #[test]
@@ -384,5 +385,71 @@ impl Writer {
         value.validate().map_err(anyhow::Error::msg)?;
         crate::secure_file::write_private_export(self.store.path(), &serde_json::to_vec(&value)?)?;
         Ok(value)
+    }
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(
+    remote = "DeviceBinding",
+    rename_all = "camelCase",
+    deny_unknown_fields
+)]
+struct StoredDeviceBinding {
+    version: u32,
+    env: RuntimeEnv,
+    client: DeviceComponentIdentity,
+    host: Option<DeviceComponentIdentity>,
+    generation: String,
+    #[serde(
+        serialize_with = "core_api::runtime_space::stored::serialize_optional",
+        deserialize_with = "core_api::runtime_space::stored::deserialize_optional"
+    )]
+    space: Option<SpaceIdentity>,
+}
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+struct StoredBinding(#[serde(with = "StoredDeviceBinding")] DeviceBinding);
+impl std::ops::Deref for StoredBinding {
+    type Target = DeviceBinding;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl std::ops::DerefMut for StoredBinding {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+#[cfg(test)]
+mod stored_space_regression {
+    use super::*;
+    #[test]
+    fn fixed_device_file_is_independent_of_network_identity_names() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("binding.json");
+        let writer = Writer::new(path.clone()).unwrap();
+        let identity = DeviceComponentIdentity {
+            id: "client".into(),
+            key_id: "key".into(),
+        };
+        let initial = writer.initialize(RuntimeEnv::Prod, identity, None).unwrap();
+        let bound = writer
+            .bind_verified(
+                &initial,
+                SpaceIdentity {
+                    tenant_id: "tenant".into(),
+                    space_id: "home".into(),
+                },
+            )
+            .unwrap();
+        let stored: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+        assert_eq!(stored["space"]["scopeId"], "home");
+        assert!(stored["space"].get("spaceId").is_none());
+        assert_eq!(writer.reader().read().unwrap(), bound);
+        let wire = serde_json::to_value(&bound).unwrap();
+        assert_eq!(wire["space"]["spaceId"], "home");
+        assert!(wire["space"].get("scopeId").is_none());
+        assert!(serde_json::from_value::<DeviceBinding>(stored).is_err());
     }
 }

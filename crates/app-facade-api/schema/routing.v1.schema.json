@@ -32,7 +32,7 @@
       ],
       "properties": {
         "execution": {
-          "const": "scopeMode"
+          "const": "spaceMode"
         }
       }
     },
@@ -48,7 +48,7 @@
       "required": [
         "cloudPrefixes",
         "cloudTargets",
-        "scopeModeTargets",
+        "spaceModeTargets",
         "hubPrefixes",
         "requestPlacementPrefixes",
         "hubTargets",
@@ -61,7 +61,7 @@
         "cloudTargets": {
           "$ref": "#/$defs/targetList"
         },
-        "scopeModeTargets": {
+        "spaceModeTargets": {
           "$ref": "#/$defs/targetList"
         },
         "hubPrefixes": {

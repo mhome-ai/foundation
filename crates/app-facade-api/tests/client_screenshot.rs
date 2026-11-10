@@ -9,7 +9,7 @@ fn support_report_is_scoped_strict_and_cannot_name_another_client() {
     assert_eq!(required(target), Some(OperationPolicy::SpaceRead));
     assert_eq!(
         route_policy_for_target(target).unwrap().execution,
-        ExecutionSelector::ScopeMode
+        ExecutionSelector::SpaceMode
     );
     let mut schema: Value =
         serde_json::from_str(include_str!("../schema/client-screenshot.v1.schema.json")).unwrap();

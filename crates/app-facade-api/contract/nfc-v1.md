@@ -10,7 +10,7 @@ also checks whitespace, source identity uniqueness and merged policy constraints
 
 | Target | Input | Full success data | Mode |
 | --- | --- | --- | --- |
-| `/app/nfc/list` | optional `createState`: active (default), pending, all | `{nfcTags:[{tagId,scopeId,name,description,policy,trustedSources,createState,createdAt,lastUsedAt}]}` | direct, Space read |
+| `/app/nfc/list` | optional `createState`: active (default), pending, all | `{nfcTags:[{tagId,spaceId,name,description,policy,trustedSources,createState,createdAt,lastUsedAt}]}` | direct, Space read |
 | `/app/nfc/sources/list` | `{}` | `{sources:[{sourceType,sourceId,sourceName}]}` | direct, Space read, cloud |
 | `/app/nfc/create` | required name, policy; optional description, trustedSources | `{tagId,createState:"pending",writePayload}` | direct, Space write |
 | `/app/nfc/activate` | `{tagId}` | no data; `{status:"success"}` | direct, Space write |
@@ -27,7 +27,7 @@ CUSTOM_PHONE requires at least one after patching. Source directory only include
 enabled registered phones advertising event.nfc. It is a discovery snapshot,
 not an online status or runtime permission guarantee.
 
-Create only creates a record. `writePayload` is `mhomeai://nfc/{scopeId}:{tagId}`.
+Create only creates a record. `writePayload` is `mhomeai://nfc/{spaceId}:{tagId}`.
 A phone writes that exact content; activate is called only on physical success.
 Only activation changes pending to active and sets createdAt. Repeating activation
 preserves createdAt and lastUsedAt. Cancelled/failed physical writes explicitly

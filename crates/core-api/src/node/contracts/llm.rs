@@ -217,7 +217,7 @@ mod tests {
         .expect("serialize import request");
         assert_eq!(value["artifactSha256"], "a".repeat(64));
         assert!(value.get("sourcePath").is_none());
-        assert!(value.get("scopeId").is_none());
+        assert!(value.get("spaceId").is_none());
 
         let mut invalid = value;
         invalid["sourcePath"] = serde_json::json!("/private/model.gguf");

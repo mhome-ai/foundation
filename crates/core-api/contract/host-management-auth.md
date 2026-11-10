@@ -9,7 +9,7 @@ one installation of one Host. Space Clients never receive Host management tokens
 The installed package fixes one of three modes; onboarding cannot change it:
 
 - `admin` stores User administrators and may run multiple Spaces.
-- `spaceSelf` stores its own immutable `{tenantId, scopeId}` claim.
+- `spaceSelf` stores its own immutable `{tenantId, spaceId}` claim.
 - `spaceDep` derives its claim from a colocated Space Client's canonical binding;
   it stores no separate Space claim or administrator ACL.
 
@@ -65,7 +65,7 @@ physical/local trust path.
 2. Client generates a canonical base64url 32-byte exchange secret and sends its
    SHA-256 digest in a fresh `/v1/auth/challenge` request. The secret stays local.
 3. Client sends the signed challenge, explicit reset recovery flag and optional
-   selected `scopeId` to Lion `/host/authorizations/claim`. Space mode requires
+   selected `spaceId` to Lion `/host/authorizations/claim`. Space mode requires
    the current owner; Lion derives the tenant from the User login. Admin mode
    has no Space selection. A Cloud Space can bind before its first Core exists.
 4. Lion signs a five-minute `meow-host-claim+jwt`, bound to that exact signed

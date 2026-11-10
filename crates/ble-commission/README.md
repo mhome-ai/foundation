@@ -60,7 +60,7 @@ trait Link {
 trait Cloud {
     async fn account(&self) -> Option<Account>;
     async fn post_json(&self, account_context: &str, path: &str,
-        scope_id: Option<&str>, body: &str) -> Result<CloudResponse, CloudError>;
+        space_id: Option<&str>, body: &str) -> Result<CloudResponse, CloudError>;
     async fn client_id(&self) -> Option<String>;
     async fn cloud_endpoints(&self) -> CloudEndpoints;
 }
@@ -80,7 +80,7 @@ trait EventSink {
   ATT error, including the Insufficient Authorization a locked Host returns);
   any other variant means the link is unusable.
 - `Cloud::post_json` posts to a path under the cloud API base with the account
-  identified by `account_context`, scoped to the Space `scope_id` when given. It
+  identified by `account_context`, scoped to the Space `space_id` when given. It
   returns `CloudError::AccountChanged` when that account is no longer signed in,
   so credential issuance is never sent with another account.
 - `cloud_endpoints` are the API and WebSocket bases the pod will use; loopback

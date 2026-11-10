@@ -8,7 +8,7 @@ use std::collections::BTreeSet;
 fn space() -> SpaceIdentity {
     SpaceIdentity {
         tenant_id: "tenant-a".into(),
-        scope_id: "space-a".into(),
+        space_id: "space-a".into(),
     }
 }
 fn unclaimed(mode: HostMode) -> HostPolicy {
@@ -96,7 +96,7 @@ fn space_mode_uses_verified_current_owner_without_persisting_that_user_as_owner(
         Err(Denied::PrincipalMismatch)
     );
     let other = SpaceIdentity {
-        scope_id: "space-b".into(),
+        space_id: "space-b".into(),
         ..space()
     };
     assert_eq!(
@@ -163,7 +163,7 @@ fn mode_and_space_binding_cannot_change_without_reset() {
     host.claim_verified("alice", Some(&space())).unwrap();
     host.claim_verified("bob", Some(&space())).unwrap();
     let other = SpaceIdentity {
-        scope_id: "other".into(),
+        space_id: "other".into(),
         ..space()
     };
     assert_eq!(

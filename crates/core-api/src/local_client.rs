@@ -13,7 +13,9 @@ pub struct LocalClientClaims {
     pub sub: String,
     pub token_type: String,
     pub tenant_id: String,
-    pub scope_id: String,
+    // Signed credentials retain their fixed private claim schema.
+    #[serde(rename = "scope_id")]
+    pub space_id: String,
     pub hub_id: String,
     pub jti: String,
     pub exp: usize,
@@ -33,12 +35,12 @@ impl LocalClientClaims {
                 user_id: self.sub.clone(),
             },
             SPACE_TOKEN_TYPE
-                if self.sub == self.scope_id
+                if self.sub == self.space_id
                     && self.app_client_id.as_deref() == Some(registered_id) =>
             {
                 ClientPrincipal::Space {
                     tenant_id: self.tenant_id.clone(),
-                    scope_id: self.scope_id.clone(),
+                    space_id: self.space_id.clone(),
                 }
             }
             _ => return Err(ClientIdentityError::InvalidIdentifier),
@@ -48,7 +50,7 @@ impl LocalClientClaims {
             principal,
             credential_id: Some(self.jti.clone()),
         };
-        client.validate_for(&self.tenant_id, &self.scope_id)?;
+        client.validate_for(&self.tenant_id, &self.space_id)?;
         Ok(client)
     }
 }
@@ -79,7 +81,7 @@ mod tests {
             sub: "scope".into(),
             token_type: kind.into(),
             tenant_id: "tenant".into(),
-            scope_id: "scope".into(),
+            space_id: "scope".into(),
             hub_id: "hub".into(),
             jti: "enrollment".into(),
             exp: 100,
@@ -110,5 +112,19 @@ mod tests {
         assert!(claims.client("a:device").is_err());
         claims.app_client_id = Some("a:device".into());
         assert!(claims.client("a:device").is_err());
+    }
+}
+
+#[cfg(test)]
+mod stored_claim_regression {
+    use super::*;
+    #[test]
+    fn opaque_credentials_keep_the_private_scope_claim() {
+        let old = serde_json::json!({"sub":"home","token_type":SPACE_TOKEN_TYPE,"tenant_id":"tenant","scope_id":"home","hub_id":"hub","jti":"id","exp":100,"iat":1,"app_client_id":"a:pod"});
+        let claims: LocalClientClaims = serde_json::from_value(old).unwrap();
+        assert!(claims.client("a:pod").is_ok());
+        let encoded = serde_json::to_value(claims).unwrap();
+        assert_eq!(encoded["scope_id"], "home");
+        assert!(encoded.get("space_id").is_none());
     }
 }

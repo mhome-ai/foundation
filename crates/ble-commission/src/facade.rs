@@ -233,9 +233,9 @@ async fn start(
     let account = engine.platform.cloud.account().await.ok_or_else(|| {
         RequestError::rejected(Reason::NotSignedIn, "sign in before adding a device")
     })?;
-    if kind == DeviceKind::Pod && account.scopes.is_empty() {
+    if kind == DeviceKind::Pod && account.spaces.is_empty() {
         return Err(RequestError::rejected(
-            Reason::ScopeNotOffered,
+            Reason::SpaceNotOffered,
             "the account has no Space",
         ));
     }
@@ -434,7 +434,7 @@ async fn authorize(
     request: CommissionAuthorizeRequest,
 ) -> Result<Value, RequestError> {
     let endpoints = engine.platform.cloud.cloud_endpoints().await;
-    let scope_id = request.scope_id;
+    let space_id = request.space_id;
     let client_mode = request.client_mode;
     self::request(engine, DeviceKind::Pod, &request.session_id, |live| {
         if live.phase != Phase::AwaitingAuthorization {
@@ -449,15 +449,15 @@ async fn authorize(
             .is_some_and(|device| device.dependent_host);
         let offered = (!dependent || client_mode == app_facade_api::pod::ClientMode::Space)
             && live.authorization.as_ref().is_some_and(|prompt| {
-                prompt.scopes.iter().any(|scope| {
-                    scope.scope_id == scope_id
+                prompt.spaces.iter().any(|scope| {
+                    scope.space_id == space_id
                         && (client_mode == app_facade_api::pod::ClientMode::User
                             || (scope.local || dependent) && scope.owner)
                 })
             });
         if !offered {
             return Err(RequestError::rejected(
-                Reason::ScopeNotOffered,
+                Reason::SpaceNotOffered,
                 "choose one of the offered Spaces",
             ));
         }
@@ -473,7 +473,7 @@ async fn authorize(
         live.set(Phase::Issuing, None);
         live.revision += 1;
         Ok(Some(Op::Authorize {
-            scope_id,
+            space_id,
             client_mode,
             endpoints,
         }))

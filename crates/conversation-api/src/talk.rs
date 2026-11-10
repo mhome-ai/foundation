@@ -43,7 +43,7 @@ pub const AUDIO_DURATION_MS: u32 = 30_000;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Context {
     pub owner_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub surface_id: ConversationSurface,
     pub thread_id: Option<String>,
     pub control_version: ControlVersion,
@@ -146,7 +146,7 @@ pub struct Receipt {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Changed {
     pub owner_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub surface_id: ConversationSurface,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -298,7 +298,7 @@ mod tests {
     fn changed_and_escaped_text_fit_the_wire_budget() {
         let changed = Changed {
             owner_id: "core:test".into(),
-            scope_id: "space".into(),
+            space_id: "space".into(),
             surface_id: ConversationSurface::client_personal("user").unwrap(),
         };
         assert!(encoded_payload_fits(&changed, CHANGED_BYTES));

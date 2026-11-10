@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.75.1",
+  "contractVersion": "1.76.0",
   "protocols": {
     "extensionSources": {
       "contract": "contract/extension-sources-v1.md",

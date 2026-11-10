@@ -149,7 +149,7 @@ impl Commissioning {
         let candidates = self.platform.candidates(&context, scope).await?;
         self.current(&context).await?;
         Ok(api::HubCandidatesResponse {
-            scope_id: scope.into(),
+            space_id: scope.into(),
             candidates: candidates.iter().map(Candidate::view).collect(),
         })
     }
@@ -324,7 +324,7 @@ impl Commissioning {
             .retain(|_, s| s.context != context || s.scope != scope);
         state.sessions.insert(id.clone(), session);
         Ok(api::HubSetupStartResponse::PairingRequired {
-            scope_id: scope.into(),
+            space_id: scope.into(),
             session_id: id,
             candidate: candidate.view(),
             pairing_code: code,
@@ -383,7 +383,7 @@ impl Commissioning {
         }
         match reply["outcome"].as_str() {
             Some("RUNNING") => Ok(Some(api::HubSetupStartResponse::Running {
-                scope_id: scope.into(),
+                space_id: scope.into(),
                 hub_id: hub.into(),
             })),
             Some("COMPLETED") => {
@@ -391,7 +391,7 @@ impl Commissioning {
                 // but do not let its stale failure obscure authoritative completion.
                 self.retire_pairing(context, scope, host, hub).await?;
                 Ok(Some(api::HubSetupStartResponse::Completed {
-                    scope_id: scope.into(),
+                    space_id: scope.into(),
                     hub_id: hub.into(),
                 }))
             }
@@ -755,7 +755,7 @@ impl Commissioning {
                     });
                 }
                 return Ok(api::HubSetupStatusResponse {
-                    scope_id: scope.into(),
+                    space_id: scope.into(),
                     session_id: id.into(),
                     complete: true,
                     pairing: None,
@@ -773,7 +773,7 @@ impl Commissioning {
             self.update(&key, id, |op| op.view = pairing.clone());
         }
         Ok(api::HubSetupStatusResponse {
-            scope_id: scope.into(),
+            space_id: scope.into(),
             session_id: id.into(),
             complete: false,
             pairing: Some(pairing),
@@ -799,7 +799,7 @@ impl Commissioning {
         }
         state.sessions.remove(id);
         Ok(api::HubSetupCancelResponse {
-            scope_id: scope.into(),
+            space_id: scope.into(),
             session_id: id.into(),
             cancelled: true,
         })
@@ -954,7 +954,7 @@ fn now_ms() -> i64 {
 }
 fn accepted(scope: &str, id: &str) -> api::HubSetupConfirmResponse {
     api::HubSetupConfirmResponse {
-        scope_id: scope.into(),
+        space_id: scope.into(),
         session_id: id.into(),
         accepted: true,
     }

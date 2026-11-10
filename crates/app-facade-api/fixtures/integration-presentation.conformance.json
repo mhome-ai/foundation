@@ -18,7 +18,7 @@
       },
       {
         "integrationId": "basic.device",
-        "scopeId": "other"
+        "spaceId": "other"
       },
       {
         "integrationId": 7

@@ -22,8 +22,7 @@ pub struct StatusResource {
 #[serde(rename_all = "camelCase")]
 pub struct StatusPayload {
     pub contract: String,
-    #[serde(rename = "spaceId")]
-    pub scope_id: String,
+    pub space_id: String,
     pub hub_generation: String,
     pub hub_revision: u64,
     pub observed_at_ms: i64,
@@ -48,8 +47,7 @@ pub struct StatusListRequest {
 #[serde(rename_all = "camelCase")]
 pub struct StatusListResponse {
     pub contract: String,
-    #[serde(rename = "spaceId")]
-    pub scope_id: String,
+    pub space_id: String,
     pub hub_generation: String,
     #[serde(default)]
     pub resources: Vec<StatusPayload>,

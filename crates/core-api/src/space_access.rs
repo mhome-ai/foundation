@@ -44,7 +44,7 @@ impl SpaceMemberRole {
 pub struct SpaceAccessFacts<'a> {
     pub principal: &'a ClientPrincipal,
     pub tenant_id: &'a str,
-    pub scope_id: &'a str,
+    pub space_id: &'a str,
     pub member_role: Option<SpaceMemberRole>,
 }
 
@@ -52,7 +52,7 @@ impl SpaceAccessFacts<'_> {
     /// Derives permissions without looking up the enrolling user of a Space
     /// Client. Supplying an OWNER role cannot promote a Space Client to MANAGE.
     pub fn effective_level(&self) -> Option<SpaceAccessLevel> {
-        if self.tenant_id.trim().is_empty() || self.scope_id.trim().is_empty() {
+        if self.tenant_id.trim().is_empty() || self.space_id.trim().is_empty() {
             return None;
         }
         let level = match self.principal {
@@ -61,8 +61,8 @@ impl SpaceAccessFacts<'_> {
             }
             ClientPrincipal::Space {
                 tenant_id,
-                scope_id,
-            } if tenant_id == self.tenant_id && scope_id == self.scope_id => {
+                space_id,
+            } if tenant_id == self.tenant_id && space_id == self.space_id => {
                 SpaceAccessLevel::Write
             }
             _ => return None,

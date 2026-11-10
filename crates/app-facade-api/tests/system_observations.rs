@@ -17,7 +17,7 @@ fn conforms(value: Value, schema: &str) {
 fn typed_system_responses_match_the_public_schemas() {
     let inventory = Instances {
         contract: INSTANCES_CONTRACT.into(),
-        scope_id: "s".into(),
+        space_id: "s".into(),
         observed_at_ms: 10,
         instances: vec![Instance {
             id: "n".into(),
@@ -41,7 +41,7 @@ fn typed_system_responses_match_the_public_schemas() {
     conforms(
         serde_json::to_value(Clients {
             contract: CLIENTS_CONTRACT.into(),
-            scope_id: "s".into(),
+            space_id: "s".into(),
             observed_at_ms: 10,
             sessions: vec![ClientSession {
                 app_client_id: "a".into(),
@@ -78,7 +78,7 @@ fn typed_system_responses_match_the_public_schemas() {
     conforms(
         serde_json::to_value(Hosts {
             contract: HOSTS_CONTRACT.into(),
-            scope_id: "s".into(),
+            space_id: "s".into(),
             observed_at_ms: 10,
             hosts: vec![Host {
                 host_id: "h".into(),
@@ -99,7 +99,7 @@ fn typed_system_responses_match_the_public_schemas() {
     conforms(
         serde_json::to_value(HostsRuntime {
             contract: HOSTS_RUNTIME_CONTRACT.into(),
-            scope_id: "s".into(),
+            space_id: "s".into(),
             host_id: "h".into(),
             result: serde_json::json!({"hostId":"h"}),
         })

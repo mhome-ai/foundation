@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn strict_inputs_reject_scope_overrides_and_legacy_aliases() {
-        assert!(serde_json::from_value::<TypeListInput>(json!({"scopeId":"other"})).is_err());
+        assert!(serde_json::from_value::<TypeListInput>(json!({"spaceId":"other"})).is_err());
         for input in [
             json!({}),
             json!({"type":"Device"}),
@@ -114,7 +114,7 @@ mod tests {
                 crate::routing::route_policy_for_target(target)
                     .unwrap()
                     .execution,
-                crate::routing::ExecutionSelector::ScopeMode
+                crate::routing::ExecutionSelector::SpaceMode
             );
             let data = fixture[if target == TYPE_LIST {
                 "types"

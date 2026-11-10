@@ -51,7 +51,7 @@ fn first_pairing_binds_environment_and_runtime_space() {
     let single = RuntimeSpacePolicy::Single {
         space: SpaceIdentity {
             tenant_id: "tenant".into(),
-            scope_id: "space".into(),
+            space_id: "space".into(),
         },
     };
     let prod = hub_commission_tls_payload("nonce", "host", &key, RuntimeEnv::Prod, &multi);

@@ -55,7 +55,7 @@ async fn authorize(harness: &Harness, id: &str) -> Value {
     harness
         .ok(
             "/local/pod/commission/authorize",
-            json!({ "sessionId": id, "scopeId": "scope-a", "clientMode": "user" }),
+            json!({ "sessionId": id, "spaceId": "scope-a", "clientMode": "user" }),
         )
         .await
 }
@@ -71,7 +71,7 @@ async fn commissions_a_pod_end_to_end() {
     let device = harness.add_device("pod-a", Script::pod());
     let id = to_authorization(&harness).await;
     let prompt = harness.wait_state(POD, "awaiting_authorization").await;
-    assert_eq!(prompt["authorization"]["defaultScopeId"], "scope-b");
+    assert_eq!(prompt["authorization"]["defaultSpaceId"], "scope-b");
     assert_eq!(prompt["authorization"]["userName"], "Ada");
     let issued = authorize(&harness, &id).await;
     assert_eq!(issued["state"], "delivering");
@@ -86,11 +86,11 @@ async fn commissions_a_pod_end_to_end() {
     assert_eq!(device.connects.load(Ordering::SeqCst), 2);
     let calls = harness.cloud.calls.lock().unwrap().clone();
     assert_eq!(calls[0].path, "pod/login/approve");
-    assert_eq!(calls[0].scope_id, None);
+    assert_eq!(calls[0].space_id, None);
     {
         let delivered = device.deliveries.lock().unwrap();
         assert_eq!(delivered[0]["loginGrant"], "login-approval-1");
-        assert_eq!(delivered[0]["scopeId"], "scope-a");
+        assert_eq!(delivered[0]["spaceId"], "scope-a");
         assert!(delivered[0].get("refreshToken").is_none());
     }
     assert_eq!(calls[0].context, "ctx-1");
@@ -193,13 +193,13 @@ async fn start_checks_account_device_and_radio() {
         "not_signed_in"
     );
     let mut empty = support::account("ctx-1");
-    empty.scopes.clear();
+    empty.spaces.clear();
     *harness.cloud.account.lock().unwrap() = Some(empty);
     assert_eq!(
         harness
             .reason("/local/pod/commission/start", start("pod-a"))
             .await,
-        "scope_not_offered"
+        "space_not_offered"
     );
     *harness.cloud.account.lock().unwrap() = Some(support::account("ctx-1"));
 
@@ -329,7 +329,7 @@ async fn requests_are_checked_against_the_session_state() {
         harness
             .reason(
                 "/local/pod/commission/authorize",
-                body(json!({ "clientMode": "user", "scopeId": "scope-a" }))
+                body(json!({ "clientMode": "user", "spaceId": "scope-a" }))
             )
             .await,
         "wrong_state"
@@ -367,10 +367,10 @@ async fn requests_are_checked_against_the_session_state() {
         harness
             .reason(
                 "/local/pod/commission/authorize",
-                body(json!({ "clientMode": "user", "scopeId": "scope-z" }))
+                body(json!({ "clientMode": "user", "spaceId": "scope-z" }))
             )
             .await,
-        "scope_not_offered"
+        "space_not_offered"
     );
 }
 
@@ -384,7 +384,7 @@ async fn a_loopback_cloud_is_refused_before_issuing() {
         harness
             .reason(
                 "/local/pod/commission/authorize",
-                json!({ "sessionId": id, "scopeId": "scope-a", "clientMode": "user" })
+                json!({ "sessionId": id, "spaceId": "scope-a", "clientMode": "user" })
             )
             .await,
         "cloud_unreachable_for_device"
@@ -489,7 +489,7 @@ async fn a_wifi_change_window_only_moves_the_pod_to_the_new_network() {
     assert!(harness
         .call(
             "/local/pod/commission/authorize",
-            json!({ "sessionId": id, "scopeId": "scope-a", "clientMode": "user" }),
+            json!({ "sessionId": id, "spaceId": "scope-a", "clientMode": "user" }),
         )
         .await
         .is_err());
@@ -850,14 +850,14 @@ async fn space_mode_uses_separate_issuance_and_only_offers_owned_local_spaces() 
         .core
         .handle(
             "/local/pod/commission/authorize",
-            &json!({"sessionId":id,"scopeId":"scope-b","clientMode":"space"}).to_string(),
+            &json!({"sessionId":id,"spaceId":"scope-b","clientMode":"space"}).to_string(),
         )
         .await;
     assert!(denied.is_err());
     harness
         .ok(
             "/local/pod/commission/authorize",
-            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
         )
         .await;
     let done = harness.wait_state(POD, "completed").await;
@@ -878,7 +878,7 @@ async fn member_cannot_initialize_a_space_client_even_when_the_space_is_local() 
     let harness = Harness::new();
     harness.add_device("pod-a", Script::pod());
     let mut member = account("user-generation");
-    for scope in &mut member.scopes {
+    for scope in &mut member.spaces {
         scope.owner = false;
     }
     *harness.cloud.account.lock().unwrap() = Some(member);
@@ -887,7 +887,7 @@ async fn member_cannot_initialize_a_space_client_even_when_the_space_is_local() 
         .core
         .handle(
             "/local/pod/commission/authorize",
-            &json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}).to_string(),
+            &json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}).to_string(),
         )
         .await;
     assert!(rejected.is_err());
@@ -904,7 +904,7 @@ async fn combined_product_binds_before_first_hub_and_space_credential() {
         .unwrap()
         .as_mut()
         .unwrap()
-        .scopes[0]
+        .spaces[0]
         .local = false;
     harness.add_device("pod-a", Script::product());
     let id = to_authorization(&harness).await;
@@ -913,21 +913,21 @@ async fn combined_product_binds_before_first_hub_and_space_credential() {
     assert!(harness
         .call(
             "/local/pod/commission/authorize",
-            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"user"})
+            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"user"})
         )
         .await
         .is_err());
     assert!(harness
         .call(
             "/local/pod/commission/authorize",
-            json!({"sessionId":id,"scopeId":"scope-b","clientMode":"space"})
+            json!({"sessionId":id,"spaceId":"scope-b","clientMode":"space"})
         )
         .await
         .is_err());
     harness
         .ok(
             "/local/pod/commission/authorize",
-            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
         )
         .await;
     let done = harness
@@ -962,7 +962,7 @@ async fn combined_product_rejects_a_different_client_before_cloud_claim() {
     harness
         .ok(
             "/local/pod/commission/authorize",
-            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
         )
         .await;
     harness.wait_state(POD, "failed").await;
@@ -977,7 +977,7 @@ async fn active_space_credential_has_a_fresh_confirmation_window_but_still_waits
     let id = to_authorization(&h).await;
     h.ok(
         "/local/pod/commission/authorize",
-        json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+        json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
     )
     .await;
     let done = h.wait_state(POD, "completed").await;
@@ -994,7 +994,7 @@ async fn invalid_space_credential_windows_never_reach_the_device() {
         let id = to_authorization(&h).await;
         h.ok(
             "/local/pod/commission/authorize",
-            json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
         )
         .await;
         h.wait_state(POD, "failed").await;
@@ -1012,7 +1012,7 @@ async fn active_space_credential_does_not_complete_a_device_that_never_authentic
     let id = to_authorization(&h).await;
     h.ok(
         "/local/pod/commission/authorize",
-        json!({"sessionId":id,"scopeId":"scope-a","clientMode":"space"}),
+        json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
     )
     .await;
     let failed = h

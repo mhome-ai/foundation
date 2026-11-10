@@ -8,7 +8,7 @@ pub const ENQUEUE_FIXTURE: &str = include_str!("../../../fixtures/execution/enqu
 
 use crate::execution::{
     AgentCommand, AgentObservation, ContextGeneration, ConversationSurface, DurableEvent, EventId,
-    FacadeRequest, FacadeResult, InvocationContext, PreparedAction, Revision, RunId, Scope,
+    FacadeRequest, FacadeResult, InvocationContext, PreparedAction, Revision, RunId, SpaceContext,
     ThreadId,
 };
 use serde::{Deserialize, Serialize};
@@ -160,7 +160,7 @@ pub struct EventAck {
 pub struct CheckpointPurgeRequest {
     pub purge_id: String,
     pub conversation_key: String,
-    pub scope: Scope,
+    pub space: SpaceContext,
     pub surface_id: ConversationSurface,
     pub thread_id: ThreadId,
 }
@@ -443,8 +443,8 @@ fn validate_purge_request(request: &CheckpointPurgeRequest) -> Result<(), Protoc
     if request.conversation_key.trim().is_empty() {
         return Err(ProtocolError::MissingIdentifier("conversation_key"));
     }
-    if request.scope.scope_id.as_str().trim().is_empty() {
-        return Err(ProtocolError::MissingIdentifier("scope_id"));
+    if request.space.space_id.as_str().trim().is_empty() {
+        return Err(ProtocolError::MissingIdentifier("space_id"));
     }
     if request.thread_id.as_str().trim().is_empty() {
         return Err(ProtocolError::MissingIdentifier("thread_id"));
@@ -593,7 +593,7 @@ fn validate_llm_plan(plan: &LlmExecutionPlan) -> Result<(), ProtocolError> {
 }
 
 fn validate_context(context: &InvocationContext) -> Result<(), ProtocolError> {
-    validate_scope(&context.scope)?;
+    validate_scope(&context.space)?;
     for (name, value) in [
         ("thread_id", context.thread_id.as_str()),
         ("run_id", context.run_id.as_str()),
@@ -603,7 +603,7 @@ fn validate_context(context: &InvocationContext) -> Result<(), ProtocolError> {
             return Err(ProtocolError::MissingIdentifier(name));
         }
     }
-    if !context.actor.valid_for(&context.scope, &context.surface_id) {
+    if !context.actor.valid_for(&context.space, &context.surface_id) {
         return Err(ProtocolError::InvalidBinding(
             "Actor does not match the conversation scope and surface".into(),
         ));
@@ -611,9 +611,9 @@ fn validate_context(context: &InvocationContext) -> Result<(), ProtocolError> {
     Ok(())
 }
 
-fn validate_scope(scope: &Scope) -> Result<(), ProtocolError> {
-    if scope.scope_id.as_str().trim().is_empty() {
-        return Err(ProtocolError::MissingIdentifier("scope_id"));
+fn validate_scope(scope: &SpaceContext) -> Result<(), ProtocolError> {
+    if scope.space_id.as_str().trim().is_empty() {
+        return Err(ProtocolError::MissingIdentifier("space_id"));
     }
     if scope
         .tenant_id
@@ -658,7 +658,7 @@ pub enum ProtocolError {
 mod tests {
     use crate::execution::{
         AccessMode, Actor, AgentEvent, ClientId, ContentPart, EventId, Message, MessageRole,
-        OperationId, RunId, RunOptions, Scope, ScopeId, TenantId, ThreadId, UseCase, UserId,
+        OperationId, RunId, RunOptions, SpaceContext, SpaceId, TenantId, ThreadId, UseCase, UserId,
     };
 
     use super::*;
@@ -679,9 +679,9 @@ mod tests {
                     id: EventId::from("event-1"),
                     sequence: 1,
                     context: InvocationContext {
-                        scope: Scope {
+                        space: SpaceContext {
                             tenant_id: None,
-                            scope_id: ScopeId::from("scope-1"),
+                            space_id: SpaceId::from("scope-1"),
                         },
                         actor: Actor::user(
                             UserId::from("user-1"),
@@ -725,9 +725,9 @@ mod tests {
             payload: Payload::Command(Box::new(CommandRequest {
                 command: AgentCommand::Enqueue {
                     context: InvocationContext {
-                        scope: Scope {
+                        space: SpaceContext {
                             tenant_id: Some(TenantId::from("tenant-1")),
-                            scope_id: ScopeId::from("scope-1"),
+                            space_id: SpaceId::from("scope-1"),
                         },
                         actor: Actor::user(
                             UserId::from("user-1"),
@@ -757,12 +757,12 @@ mod tests {
                     },
                 },
                 context_generation: Some(ContextGeneration {
-                    user_scope: "scope-1".to_owned(),
+                    user_space: "scope-1".to_owned(),
                     identity: "identity-1".to_owned(),
                     memory: "memory-1".to_owned(),
                     integration_guide: "guide-1".to_owned(),
                     installed_integrations: "installed-1".to_owned(),
-                    scope_integrations: "scope-integrations-1".to_owned(),
+                    space_integrations: "scope-integrations-1".to_owned(),
                 }),
                 llm_plan: Some(LlmExecutionPlan {
                     revision: Some("1700000000000".to_owned()),
@@ -927,10 +927,10 @@ mod tests {
         else {
             panic!("enqueue fixture changed family");
         };
-        context.scope.scope_id = ScopeId::from(" ");
+        context.space.space_id = SpaceId::from(" ");
         assert_eq!(
             envelope.validate(),
-            Err(ProtocolError::MissingIdentifier("scope_id"))
+            Err(ProtocolError::MissingIdentifier("space_id"))
         );
     }
 

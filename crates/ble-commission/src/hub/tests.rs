@@ -74,7 +74,7 @@ impl Platform for Fake {
     }
     async fn view(&self, _: &str, scope: &str) -> Result<api::LocalHubState, String> {
         let ready = self.ready.load(SeqCst);
-        serde_json::from_value(json!({"scopeId":scope,"configured":ready,"operation":self.operation.lock().unwrap().clone(),"hub":if ready{json!({"id":"hub-one","hostId":"host","type":"linux","isTest":false,"status":"ready","cloud":{},"local":{"discovered":true,"connected":true}})}else{Value::Null}})).map_err(|e|e.to_string())
+        serde_json::from_value(json!({"spaceId":scope,"configured":ready,"operation":self.operation.lock().unwrap().clone(),"hub":if ready{json!({"id":"hub-one","hostId":"host","type":"linux","isTest":false,"status":"ready","cloud":{},"local":{"discovered":true,"connected":true}})}else{Value::Null}})).map_err(|e|e.to_string())
     }
     async fn cloud(
         &self,
@@ -316,7 +316,7 @@ async fn signed_proof_rejects_changed_host_space_tls_key_nonce_and_signature() {
         ("hostPublicKey", json!({"x":"other","y":"y"})),
         (
             "runtimeSpacePolicy",
-            json!({"mode":"single","space":{"tenantId":"tenant","scopeId":"other"}}),
+            json!({"mode":"single","space":{"tenantId":"tenant","spaceId":"other"}}),
         ),
     ] {
         let mut changed = response.body.clone();

@@ -442,7 +442,7 @@
           "maxLength": 256,
           "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
         },
-        "scopeId": {
+        "spaceId": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
@@ -478,7 +478,7 @@
       },
       "required": [
         "ownerId",
-        "scopeId",
+        "spaceId",
         "surfaceId",
         "threadId",
         "controlVersion",
@@ -960,7 +960,7 @@
           "maxLength": 256,
           "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
         },
-        "scopeId": {
+        "spaceId": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
@@ -975,7 +975,7 @@
       },
       "required": [
         "ownerId",
-        "scopeId",
+        "spaceId",
         "surfaceId"
       ]
     },

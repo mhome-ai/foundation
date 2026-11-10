@@ -59,7 +59,7 @@ fn shared_routing_cases_match_the_rust_executor_contract() {
             ExecutionSelector::Cloud => "cloud",
             ExecutionSelector::Connection => "connection",
             ExecutionSelector::Hub => "hub",
-            ExecutionSelector::ScopeMode => "scopeMode",
+            ExecutionSelector::SpaceMode => "spaceMode",
             ExecutionSelector::RequestPlacement => "requestPlacement",
         };
         assert_eq!(actual, case["execution"], "{case}");

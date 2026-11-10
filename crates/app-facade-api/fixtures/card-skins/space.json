@@ -1,6 +1,6 @@
 {
   "tenantId": "mlink",
-  "scopeId": "space-a",
+  "spaceId": "space-a",
   "selection": {
     "installations": [
       {

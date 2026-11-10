@@ -582,7 +582,7 @@ fn routing_manifest_matches_rust_policy() {
 
     assert_eq!(manifest["contractVersion"], env!("CARGO_PKG_VERSION"));
     assert_eq!(manifest["targetPrefix"], "/app/");
-    assert_eq!(manifest["default"]["execution"], "scopeMode");
+    assert_eq!(manifest["default"]["execution"], "spaceMode");
     assert_eq!(manifest["matching"], "exactBeforePrefix");
     assert_eq!(manifest["placementJsonPointer"], "/input/placement");
 
@@ -590,7 +590,7 @@ fn routing_manifest_matches_rust_policy() {
         "cloudPrefixes",
         "cloudTargets",
         "connectionTargets",
-        "scopeModeTargets",
+        "spaceModeTargets",
         "hubPrefixes",
         "requestPlacementPrefixes",
         "hubTargets",
@@ -609,7 +609,7 @@ fn routing_manifest_matches_rust_policy() {
 
     let exact_groups = [
         "cloudTargets",
-        "scopeModeTargets",
+        "spaceModeTargets",
         "hubTargets",
         "connectionTargets",
     ];
@@ -665,9 +665,9 @@ fn routing_manifest_matches_rust_policy() {
             ExecutionSelector::Connection
         );
     }
-    for target in strings("scopeModeTargets") {
+    for target in strings("spaceModeTargets") {
         let policy = route_policy_for_target(&target).unwrap();
-        assert_eq!(policy.execution, ExecutionSelector::ScopeMode, "{target}");
+        assert_eq!(policy.execution, ExecutionSelector::SpaceMode, "{target}");
     }
     for target in strings("hubTargets") {
         let policy = route_policy_for_target(&target).unwrap();
@@ -701,7 +701,7 @@ fn topology_snapshot_matches_public_schema() {
 
     let snapshot = TopologySnapshot {
         contract: CONTRACT.to_string(),
-        scope_id: "space-1".to_string(),
+        space_id: "space-1".to_string(),
         generation: "generation-1".to_string(),
         revision: 1,
         observed_at_ms: 1,
@@ -822,7 +822,7 @@ fn artifact_is_registered_as_a_scope_mode_app_facade_domain() {
     );
     assert_eq!(RESOLVE_TARGET, "/app/artifact/resolve");
     let policy = route_policy_for_target(RESOLVE_TARGET).unwrap();
-    assert_eq!(policy.execution, ExecutionSelector::ScopeMode);
+    assert_eq!(policy.execution, ExecutionSelector::SpaceMode);
     assert_eq!(
         route_policy_for_target(EXTERNAL_RESOLVE_TARGET)
             .unwrap()
@@ -866,7 +866,7 @@ fn messaging_identity_codes_reject_the_retired_target_and_confirmation_contract(
     }))
     .is_err());
     assert!(serde_json::from_value::<BindCodeCreateRequest>(json!({
-        "provider":"telegram", "placement":"cloud", "scopeId":"space", "surfaceId":"group"
+        "provider":"telegram", "placement":"cloud", "spaceId":"space", "surfaceId":"group"
     }))
     .is_err());
     assert!(serde_json::from_value::<IdentityCodeStatusResponse>(json!({"claim":{}})).is_err());

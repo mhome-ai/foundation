@@ -9,6 +9,7 @@ pub mod error;
 pub mod event;
 pub mod facade;
 pub mod facade_response;
+pub mod stored;
 pub use facade_response::{FacadeProblem, FacadeResponse, FacadeStatus, ResponseDetail};
 pub mod id;
 pub mod llm;
@@ -25,14 +26,14 @@ pub use agent::{AccessMode, AgentCommand, Interaction, QueuedRun, RunOptions};
 pub use artifact_api::{
     ARTIFACT_URL_PREFIX, ArtifactKind, ArtifactMetadata, ArtifactReference, ArtifactUri,
 };
-pub use context::{Actor, InvocationContext, Scope};
+pub use context::{Actor, InvocationContext, SpaceContext};
 pub use error::{ExternalError, ExternalErrorKind};
 pub use event::{
     AgentEvent, AgentObservation, DurableEvent, EventPublisher, InteractionRequest, Observer,
 };
 pub use facade::{AppFacade, FacadeRequest, FacadeResult, PreparedAction};
 pub use id::{
-    ActionId, ClientId, EventId, MessageId, OperationId, RunId, ScopeId, TenantId, ThreadId, UserId,
+    ActionId, ClientId, EventId, MessageId, OperationId, RunId, SpaceId, TenantId, ThreadId, UserId,
 };
 pub use llm::{
     Completion, CompletionRequest, ContentPart, Continuation, FinishReason, INPUT_AUDIO,

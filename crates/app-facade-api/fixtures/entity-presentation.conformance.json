@@ -19,7 +19,7 @@
       {
         "entityType": "basic.device.Device",
         "entityId": "device-1",
-        "scopeId": "other"
+        "spaceId": "other"
       }
     ]
   },
@@ -204,7 +204,7 @@
           "missing",
           "lamp"
         ],
-        "scopeId": "other"
+        "spaceId": "other"
       }
     ]
   },

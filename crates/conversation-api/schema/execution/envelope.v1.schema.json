@@ -53,15 +53,15 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "user_scope",
+        "user_space",
         "identity",
         "memory",
         "integration_guide",
         "installed_integrations",
-        "scope_integrations"
+        "space_integrations"
       ],
       "properties": {
-        "user_scope": {
+        "user_space": {
           "$ref": "#/$defs/identifier"
         },
         "identity": {
@@ -76,7 +76,7 @@
         "installed_integrations": {
           "$ref": "#/$defs/identifier"
         },
-        "scope_integrations": {
+        "space_integrations": {
           "$ref": "#/$defs/identifier"
         }
       }
@@ -159,29 +159,6 @@
         }
       }
     },
-    "scope": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "tenant_id",
-        "scope_id"
-      ],
-      "properties": {
-        "tenant_id": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/identifier"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "scope_id": {
-          "$ref": "#/$defs/identifier"
-        }
-      }
-    },
     "actor": {
       "type": "object",
       "additionalProperties": false,
@@ -220,7 +197,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "scope",
+        "space",
         "actor",
         "surface_id",
         "thread_id",
@@ -230,9 +207,6 @@
         "traceparent"
       ],
       "properties": {
-        "scope": {
-          "$ref": "#/$defs/scope"
-        },
         "actor": {
           "$ref": "#/$defs/actor"
         },
@@ -269,6 +243,9 @@
               "type": "null"
             }
           ]
+        },
+        "space": {
+          "$ref": "#/$defs/space_context"
         }
       }
     },
@@ -1380,7 +1357,7 @@
       "required": [
         "purge_id",
         "conversation_key",
-        "scope",
+        "space",
         "surface_id",
         "thread_id"
       ],
@@ -1391,14 +1368,14 @@
         "conversation_key": {
           "$ref": "#/$defs/identifier"
         },
-        "scope": {
-          "$ref": "#/$defs/scope"
-        },
         "surface_id": {
           "$ref": "#/$defs/conversation_surface"
         },
         "thread_id": {
           "$ref": "#/$defs/identifier"
+        },
+        "space": {
+          "$ref": "#/$defs/space_context"
         }
       }
     },
@@ -1798,7 +1775,7 @@
           "required": [
             "kind",
             "tenantId",
-            "scopeId"
+            "spaceId"
           ],
           "properties": {
             "kind": {
@@ -1807,7 +1784,7 @@
             "tenantId": {
               "$ref": "#/$defs/identifier"
             },
-            "scopeId": {
+            "spaceId": {
               "$ref": "#/$defs/identifier"
             }
           }
@@ -2203,6 +2180,29 @@
             },
             "details": true
           }
+        }
+      }
+    },
+    "space_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tenant_id",
+        "space_id"
+      ],
+      "properties": {
+        "tenant_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "space_id": {
+          "$ref": "#/$defs/identifier"
         }
       }
     }

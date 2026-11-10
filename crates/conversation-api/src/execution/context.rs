@@ -3,17 +3,17 @@
 use serde::{Deserialize, Serialize};
 
 use crate::execution::{
-    ClientId, ConversationSurface, OperationId, RunId, ScopeId, TenantId, ThreadId, UserId,
+    ClientId, ConversationSurface, OperationId, RunId, SpaceId, TenantId, ThreadId, UserId,
 };
 
 /// Ownership boundary used for authorization and persistence partitioning.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Scope {
+pub struct SpaceContext {
     /// Optional tenant for multi-tenant deployments.
     pub tenant_id: Option<TenantId>,
     /// Application scope that owns Agent state and application capabilities.
-    pub scope_id: ScopeId,
+    pub space_id: SpaceId,
 }
 
 /// Authenticated actor that initiated an Agent run.
@@ -45,7 +45,7 @@ impl Actor {
     }
 
     /// Validate binding after transport authentication. This does not authorize tools.
-    pub fn valid_for(&self, scope: &Scope, surface: &ConversationSurface) -> bool {
+    pub fn valid_for(&self, scope: &SpaceContext, surface: &ConversationSurface) -> bool {
         if self
             .client_id
             .as_ref()
@@ -68,7 +68,7 @@ impl Actor {
                     && self.credential_id.is_some()
                     && self.principal.validate_for(
                         scope.tenant_id.as_ref().map_or("", |id| id.as_str()),
-                        scope.scope_id.as_str(),
+                        scope.space_id.as_str(),
                     )
                     && surface.is_space_clients()
             }
@@ -85,7 +85,7 @@ fn valid_id(value: &str) -> bool {
 #[serde(deny_unknown_fields)]
 pub struct InvocationContext {
     /// Authorization and persistence scope.
-    pub scope: Scope,
+    pub space: SpaceContext,
     /// Authenticated actor; never accepted from model-generated arguments.
     pub actor: Actor,
     /// Trusted, canonical conversation space. Runtime uses it only as thread identity.

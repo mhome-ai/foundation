@@ -207,7 +207,7 @@ async fn space_host_uses_current_cloud_owner_without_persisting_an_owner_account
     assert!(f.host.runtime_policy().unwrap().is_none());
     let space = SpaceIdentity {
         tenant_id: "tenant".into(),
-        scope_id: "home".into(),
+        space_id: "home".into(),
     };
     f.host
         .complete_claim(f.claim("old-owner", Some(space.clone())).await)
@@ -696,7 +696,7 @@ async fn dependent_host_reads_client_binding_and_reset_intent_immediately_invali
     assert!(f.host.runtime_policy().unwrap().is_none());
     let space = SpaceIdentity {
         tenant_id: "tenant".into(),
-        scope_id: "home".into(),
+        space_id: "home".into(),
     };
     let direct = f.claim("owner", Some(space.clone())).await;
     assert!(f.host.complete_claim(direct.clone()).await.is_err());

@@ -27,14 +27,14 @@ pub(crate) async fn post<T: DeserializeOwned>(
     cloud: &Arc<dyn Cloud>,
     context: &str,
     path: &str,
-    scope_id: Option<&str>,
+    space_id: Option<&str>,
     body: &impl Serialize,
 ) -> Result<T, CallError> {
     let body =
         serde_json::to_string(body).map_err(|error| CallError::Unreadable(error.to_string()))?;
     let response = tokio::time::timeout(
         REQUEST_TIMEOUT,
-        cloud.post_json(context, path, scope_id, &body),
+        cloud.post_json(context, path, space_id, &body),
     )
     .await
     .map_err(|_| CloudError::Unreachable(format!("{path} timed out")))??;

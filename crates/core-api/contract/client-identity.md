@@ -11,7 +11,7 @@ The connection identifier remains a separate, ephemeral routing value.
 code. Re-enrollment may keep the installation identifier while replacing the
 credential and key. Neither identifier proves possession of a credential.
 
-A Space Client is bound to one `(tenantId, scopeId)` and has a required enrollment
+A Space Client is bound to one `(tenantId, spaceId)` and has a required enrollment
 identifier. Its principal is not a Space owner, Core service, or user. User
 Clients may select different Spaces subject to current membership and operation
 authorization. Enrollment identity does not freeze a personal Pod to its initial
@@ -80,7 +80,7 @@ operation authorization, lifecycle safety or end-to-end runtime behavior.
 ## Shared Space Client conversations
 
 Conversation selection is derived by trusted ingress from the verified principal.
-The complete catalog key is `(tenantId, scopeId, surfaceId)`. A User selects its
+The complete catalog key is `(tenantId, spaceId, surfaceId)`. A User selects its
 existing personal surface. Every Space Client enrolled in one Space selects
 `cs1:cg:c3BhY2UtY2xpZW50cw` (`ClientGroup("space-clients")`). The same surface
 string in a different tenant/Space is a different catalog. It is not a Messaging

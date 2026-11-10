@@ -6,6 +6,9 @@
     "version": 2,
     "surfaceId": "cs1:mg:feishu:YWNjb3VudA:Y2hhdA",
     "occurredAt": "2026-08-22T00:00:00Z",
-    "data": { "idleTimeoutMinutes": 60, "updatedAtMs": 1787356800000 }
+    "data": {
+      "idleTimeoutMinutes": 60,
+      "updatedAtMs": 1787356800000
+    }
   }
 }

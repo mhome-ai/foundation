@@ -117,7 +117,7 @@
     "hostId": "non-empty string; endpoint resolved from native LAN discovery",
     "claimToken": "optional string from a completed Bluetooth setup; forwarded to the Host claim unchanged",
     "recoverIdentity": "optional boolean, default false; only an explicit user reauthorization may replace this account\u2019s old Host key; never enable for background/Bluetooth automatic claim",
-    "scopeId": "optional selected Space id; required for Space Hosts. Cloud derives the tenant from the authenticated user and checks ownership."
+    "spaceId": "optional selected Space id; required for Space Hosts. Cloud derives the tenant from the authenticated user and checks ownership."
   },
   "claimResponse": {
     "claimed": "true only after Host persistence and cloud receipt commit; false when explicit identity recovery submitted an administrator application awaiting approval/confirmation",

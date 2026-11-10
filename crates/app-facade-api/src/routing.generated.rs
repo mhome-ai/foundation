@@ -44,7 +44,7 @@ pub const CLOUD_TARGETS: &[&str] = &[
     "/app/billing/subscription/change",
 ];
 
-const SCOPE_MODE_TARGETS: &[&str] = &[
+const SPACE_MODE_TARGETS: &[&str] = &[
     "/app/artifact/resolve",
     "/app/space/context/get",
     "/app/artifact/put",

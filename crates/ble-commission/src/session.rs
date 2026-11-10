@@ -106,7 +106,7 @@ pub(crate) enum Op {
         join: bool,
     },
     Authorize {
-        scope_id: String,
+        space_id: String,
         client_mode: app_facade_api::pod::ClientMode,
         endpoints: CloudEndpoints,
     },

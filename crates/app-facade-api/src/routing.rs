@@ -12,7 +12,7 @@ pub enum ExecutionSelector {
     /// Execute on the authenticated receiving connection; never forward to a Space owner.
     Connection,
     /// Follow the active Space mode: cloud Space or its selected Hub.
-    ScopeMode,
+    SpaceMode,
     /// Execute on the selected Space Hub, independent of Space mode.
     Hub,
     /// Read `input.placement` from the canonical [`crate::FacadeCall`].
@@ -32,7 +32,7 @@ const CLOUD: RoutePolicy = RoutePolicy {
     execution: ExecutionSelector::Cloud,
 };
 const SCOPE: RoutePolicy = RoutePolicy {
-    execution: ExecutionSelector::ScopeMode,
+    execution: ExecutionSelector::SpaceMode,
 };
 const HUB: RoutePolicy = RoutePolicy {
     execution: ExecutionSelector::Hub,
@@ -57,7 +57,7 @@ pub fn route_policy_for_target(target: &str) -> Option<RoutePolicy> {
     if CONNECTION_TARGETS.contains(&target) {
         return Some(CONNECTION);
     }
-    if SCOPE_MODE_TARGETS.contains(&target) {
+    if SPACE_MODE_TARGETS.contains(&target) {
         return Some(SCOPE);
     }
     if CLOUD_TARGETS.contains(&target) {

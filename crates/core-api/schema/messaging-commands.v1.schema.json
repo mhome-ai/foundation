@@ -55,10 +55,10 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "scopeIds", "expected"],
+        "required": ["name", "spaceIds", "expected"],
         "properties": {
           "name": { "type": "string", "minLength": 1 },
-          "scopeIds": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "spaceIds": { "type": "array", "items": { "type": "string", "minLength": 1 } },
           "expected": { "type": "array", "items": { "type": "string", "minLength": 1 } }
         }
       }

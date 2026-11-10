@@ -14,10 +14,6 @@
     "family": "observation",
     "payload": {
       "context": {
-        "scope": {
-          "tenant_id": "tenant-1",
-          "scope_id": "scope-1"
-        },
         "actor": {
           "principal": {
             "kind": "user",
@@ -31,7 +27,11 @@
         "operation_id": "operation-1",
         "deadline_unix_ms": null,
         "traceparent": null,
-        "surface_id": "cs1:cp:dXNlci0x"
+        "surface_id": "cs1:cp:dXNlci0x",
+        "space": {
+          "tenant_id": "tenant-1",
+          "space_id": "scope-1"
+        }
       },
       "observation": {
         "type": "companion_text",

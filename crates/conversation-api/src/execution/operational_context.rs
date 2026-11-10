@@ -9,12 +9,12 @@ use crate::execution::{ExternalError, InvocationContext};
 /// Deployment-owned generation vector for independently cacheable context sections.
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Serialize, Deserialize)]
 pub struct ContextGeneration {
-    pub user_scope: String,
+    pub user_space: String,
     pub identity: String,
     pub memory: String,
     pub integration_guide: String,
     pub installed_integrations: String,
-    pub scope_integrations: String,
+    pub space_integrations: String,
 }
 
 impl ContextGeneration {
@@ -23,12 +23,12 @@ impl ContextGeneration {
     pub fn new(value: impl Into<String>) -> Self {
         let value = value.into();
         Self {
-            user_scope: value.clone(),
+            user_space: value.clone(),
             identity: value.clone(),
             memory: value.clone(),
             integration_guide: value.clone(),
             installed_integrations: value.clone(),
-            scope_integrations: value,
+            space_integrations: value,
         }
     }
 
@@ -36,12 +36,12 @@ impl ContextGeneration {
     #[must_use]
     pub fn is_complete(&self) -> bool {
         [
-            &self.user_scope,
+            &self.user_space,
             &self.identity,
             &self.memory,
             &self.integration_guide,
             &self.installed_integrations,
-            &self.scope_integrations,
+            &self.space_integrations,
         ]
         .into_iter()
         .all(|value| !value.trim().is_empty())
@@ -62,25 +62,25 @@ pub struct OperationalContext {
     /// Authoritative Home IANA timezone for model-facing presentation; UTC when Home has none.
     pub home_timezone: String,
     pub display_units: std::collections::BTreeMap<String, String>,
-    pub user_scope: String,
+    pub user_space: String,
     pub identity: String,
     pub memory: String,
     pub integration_guide: String,
     pub installed_integrations: String,
-    pub scope_integrations: String,
+    pub space_integrations: String,
 }
 
 /// Delta returned for sections whose generation differs from the caller's cached vector.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct OperationalContextDelta {
-    /// Refreshed with the user_scope generation, from the same scope snapshot.
+    /// Refreshed with the user_space generation, from the same scope snapshot.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub home_timezone: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub display_units: Option<std::collections::BTreeMap<String, String>>,
     pub generation: ContextGeneration,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub user_scope: Option<String>,
+    pub user_space: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub identity: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -90,7 +90,7 @@ pub struct OperationalContextDelta {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub installed_integrations: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub scope_integrations: Option<String>,
+    pub space_integrations: Option<String>,
 }
 
 /// Loads typed facts used by the canonical Agent prompt.

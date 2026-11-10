@@ -15,12 +15,12 @@
     "payload": {
       "purge_id": "purge-1",
       "conversation_key": "conversation-1",
-      "scope": {
-        "tenant_id": "tenant-1",
-        "scope_id": "scope-1"
-      },
       "thread_id": "thread-1",
-      "surface_id": "cs1:cp:dXNlci0x"
+      "surface_id": "cs1:cp:dXNlci0x",
+      "space": {
+        "tenant_id": "tenant-1",
+        "space_id": "scope-1"
+      }
     }
   }
 }

@@ -31,8 +31,7 @@ pub struct HubGetRequest {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HubState {
-    #[serde(rename = "spaceId")]
-    pub scope_id: String,
+    pub space_id: String,
     pub configured: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hub: Option<HubView>,
@@ -173,7 +172,7 @@ pub struct MutationResponse {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LocalHubState {
-    pub scope_id: String,
+    pub space_id: String,
     pub configured: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hub: Option<LocalHubView>,
@@ -239,7 +238,7 @@ pub struct HubPairingOperation {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HubCandidatesResponse {
-    pub scope_id: String,
+    pub space_id: String,
     #[serde(default)]
     pub candidates: Vec<HubCandidate>,
 }
@@ -280,18 +279,18 @@ pub struct HubSetupStartRequest {
 )]
 pub enum HubSetupStartResponse {
     PairingRequired {
-        scope_id: String,
+        space_id: String,
         session_id: String,
         candidate: HubCandidate,
         pairing_code: String,
         expires_at: i64,
     },
     Running {
-        scope_id: String,
+        space_id: String,
         hub_id: String,
     },
     Completed {
-        scope_id: String,
+        space_id: String,
         hub_id: String,
     },
 }
@@ -305,7 +304,7 @@ pub struct HubSetupSessionRequest {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HubSetupConfirmResponse {
-    pub scope_id: String,
+    pub space_id: String,
     pub session_id: String,
     pub accepted: bool,
 }
@@ -313,7 +312,7 @@ pub struct HubSetupConfirmResponse {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HubSetupStatusResponse {
-    pub scope_id: String,
+    pub space_id: String,
     pub session_id: String,
     pub complete: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -325,7 +324,7 @@ pub struct HubSetupStatusResponse {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HubSetupCancelResponse {
-    pub scope_id: String,
+    pub space_id: String,
     pub session_id: String,
     pub cancelled: bool,
 }
@@ -337,7 +336,7 @@ mod tests {
     #[test]
     fn cloud_state_enforces_published_and_exact_revocation_invariants() {
         let state = HubState {
-            scope_id: "scope-1".into(),
+            space_id: "scope-1".into(),
             configured: false,
             revocation: Some(HubRevocation {
                 hub_id: "hub-old".into(),

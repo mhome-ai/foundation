@@ -46,7 +46,7 @@ macro_rules! string_id {
 }
 
 string_id!(TenantId);
-string_id!(ScopeId);
+string_id!(SpaceId);
 string_id!(UserId);
 string_id!(ClientId);
 string_id!(ThreadId);

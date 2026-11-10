@@ -14,7 +14,7 @@ fn management_event_cannot_supply_publisher_identity() {
     assert!(v.is_valid(&event));
     for (field, value) in [
         ("nodeId", json!("other")),
-        ("scopeId", json!("other")),
+        ("spaceId", json!("other")),
         ("version", json!("v2")),
         ("event", json!("../platform")),
     ] {

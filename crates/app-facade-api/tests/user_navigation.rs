@@ -83,7 +83,7 @@ fn only_an_authenticated_user_can_read_or_write_personal_navigation() {
     };
     let space = ClientPrincipal::Space {
         tenant_id: "tenant".into(),
-        scope_id: "home".into(),
+        space_id: "home".into(),
     };
     for target in [
         "/app/user/navigation/catalog",
@@ -98,13 +98,13 @@ fn only_an_authenticated_user_can_read_or_write_personal_navigation() {
         assert!(policy.allows(&SpaceAccessFacts {
             principal: &user,
             tenant_id: "",
-            scope_id: "",
+            space_id: "",
             member_role: None
         }));
         assert!(!policy.allows(&SpaceAccessFacts {
             principal: &space,
             tenant_id: "tenant",
-            scope_id: "home",
+            space_id: "home",
             member_role: None
         }));
     }

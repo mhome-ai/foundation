@@ -290,7 +290,7 @@ pub struct CommissionSessionRequest {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CommissionAuthorizeRequest {
     pub session_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub client_mode: ClientMode,
 }
 
@@ -375,8 +375,8 @@ pub struct WifiNetwork {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct AuthorizationScope {
-    pub scope_id: String,
+pub struct AuthorizationSpace {
+    pub space_id: String,
     pub name: String,
     pub local: bool,
     /// UI eligibility only; Lion independently verifies current ownership.
@@ -388,8 +388,8 @@ pub struct AuthorizationScope {
 pub struct AuthorizationPrompt {
     pub user_id: String,
     pub user_name: String,
-    pub scopes: Vec<AuthorizationScope>,
-    pub default_scope_id: String,
+    pub spaces: Vec<AuthorizationSpace>,
+    pub default_space_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -494,7 +494,7 @@ pub enum RequestErrorReason {
     InvalidWifi,
     BluetoothUnavailable,
     NotSignedIn,
-    ScopeNotOffered,
+    SpaceNotOffered,
     CloudUnreachableForDevice,
     Busy,
 }
@@ -511,7 +511,7 @@ impl RequestErrorReason {
         Self::InvalidWifi,
         Self::BluetoothUnavailable,
         Self::NotSignedIn,
-        Self::ScopeNotOffered,
+        Self::SpaceNotOffered,
         Self::CloudUnreachableForDevice,
         Self::Busy,
     ];
@@ -528,7 +528,7 @@ impl RequestErrorReason {
             Self::InvalidWifi => "invalid_wifi",
             Self::BluetoothUnavailable => "bluetooth_unavailable",
             Self::NotSignedIn => "not_signed_in",
-            Self::ScopeNotOffered => "scope_not_offered",
+            Self::SpaceNotOffered => "space_not_offered",
             Self::CloudUnreachableForDevice => "cloud_unreachable_for_device",
             Self::Busy => "busy",
         }
@@ -625,7 +625,7 @@ pub enum SpaceCredentialState {
 pub struct HubIdentity {
     pub hub_id: String,
     pub tenant_id: String,
-    pub scope_id: String,
+    pub space_id: String,
     pub key_id: String,
     pub algorithm: String,
     pub public_key_x: String,

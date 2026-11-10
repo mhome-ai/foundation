@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.124.0",
+  "contractVersion": "1.125.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -136,7 +136,7 @@
     "/app/integration/official/list": "spaceRead",
     "/app/integration/preview/apply": "spaceWrite",
     "/app/integration/preview/status": "spaceRead",
-    "/app/integration/scope/list": "spaceRead",
+    "/app/integration/space/list": "spaceRead",
     "/app/integration/uninstall": "spaceWrite",
     "/app/interaction-flow/back": "spaceWrite",
     "/app/interaction-flow/cancel": "spaceWrite",

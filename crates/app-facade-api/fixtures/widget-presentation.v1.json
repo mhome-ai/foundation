@@ -22,7 +22,7 @@
         "schedules",
         "location",
         "tenantId",
-        "scopeId",
+        "spaceId",
         "items"
       ]
     },
@@ -43,7 +43,7 @@
         "schedules",
         "location",
         "tenantId",
-        "scopeId",
+        "spaceId",
         "items"
       ]
     },
@@ -87,7 +87,7 @@
         "schedules",
         "location",
         "tenantId",
-        "scopeId",
+        "spaceId",
         "items",
         "offsetPrev"
       ]

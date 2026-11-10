@@ -12,7 +12,7 @@ struct Case {
     principal: ClientPrincipal,
     member_role: Option<SpaceMemberRole>,
     tenant_id: String,
-    scope_id: String,
+    space_id: String,
     target: String,
     allowed: bool,
 }
@@ -25,7 +25,7 @@ fn shared_decision_matrix() {
         let facts = SpaceAccessFacts {
             principal: &case.principal,
             tenant_id: &case.tenant_id,
-            scope_id: &case.scope_id,
+            space_id: &case.space_id,
             member_role: case.member_role,
         };
         assert_eq!(
@@ -109,7 +109,7 @@ fn delegated_wire_schema_and_rust_agree_on_authority() {
     for authority in [
         json!({"kind":"service"}),
         json!({"kind":"caller","principal":{"kind":"user","userId":"u"}}),
-        json!({"kind":"caller","principal":{"kind":"space","tenantId":"t","scopeId":"s"}}),
+        json!({"kind":"caller","principal":{"kind":"space","tenantId":"t","spaceId":"s"}}),
     ] {
         let wire = json!({"authority":authority,"call":call});
         let typed: DelegatedCall = serde_json::from_value(wire.clone()).unwrap();
@@ -226,7 +226,7 @@ fn room_has_only_the_canonical_public_facades() {
             app_facade_api::routing::route_policy_for_target(target)
                 .unwrap()
                 .execution,
-            app_facade_api::routing::ExecutionSelector::ScopeMode,
+            app_facade_api::routing::ExecutionSelector::SpaceMode,
             "{target}"
         );
     }

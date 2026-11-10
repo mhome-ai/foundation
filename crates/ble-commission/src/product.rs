@@ -63,7 +63,7 @@ pub(crate) async fn prepare(
         context,
         "/host/authorizations/claim",
         None,
-        &json!({"challenge":compact,"scopeId":scope,"recoverIdentity":true}),
+        &json!({"challenge":compact,"spaceId":scope,"recoverIdentity":true}),
     )
     .await
     .map_err(|e| e.to_string())?;
@@ -85,7 +85,7 @@ pub(crate) async fn prepare(
         || verified.proof != proof
         || verified.status.host_id != challenge.status.host_id
         || verified.status.generation != binding.generation
-        || !matches!(&verified.status.claim, Some(Claim::Space {space}) if space.validate().is_ok() && space.scope_id == scope)
+        || !matches!(&verified.status.claim, Some(Claim::Space {space}) if space.validate().is_ok() && space.space_id == scope)
     {
         return Err("Product did not confirm the requested Space".into());
     }
