@@ -130,13 +130,13 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "colorHue": 35,
             "colorSaturation": 70,
             "power": 6.4,
-            "energy": 1.8
+            "importedEnergy": 1.8
         })),
         PLUG_ENERGY_V1 => object_map(json!({
             "online": true,
             "on": false,
             "power": 0,
-            "energy": 1.2
+            "importedEnergy": 1.2
         })),
         COVER_SHADE_V1 => object_map(json!({
             "online": true,
@@ -472,10 +472,10 @@ pub fn project_state(
             "saturation": number_attr(attrs, "colorSaturation")?
         }))?),
         "state.power" => Ok(object_map(json!({
-            "power": number_attr(attrs, "power")?
+            "power": nullable_meter(attrs, "power", false)?
         }))?),
         "state.energy" => Ok(object_map(json!({
-            "energy": number_attr(attrs, "energy")?
+            "importedEnergy": nullable_meter(attrs, "importedEnergy", true)?
         }))?),
         "state.coverOpenClose" => {
             let mut state = object_map(
@@ -597,6 +597,10 @@ pub fn project_discovery(
 ) -> Result<Map<String, Value>> {
     let _ = model_id;
     match capability {
+        "state.power" => Ok(object_map(
+            json!({"supportedMeasurements":["activePower"]}),
+        )?),
+        "state.energy" => Ok(object_map(json!({"supportedCounters":["importedEnergy"]}))?),
         "state.air" => {
             let fields = air_fields(model_id);
             let mut out = Map::new();
@@ -739,7 +743,7 @@ pub fn apply_observed_payload(
             copy_payload_field(attrs, payload, "saturation", "colorSaturation")?;
         }
         "state.power" => copy_payload_field(attrs, payload, "power", "power")?,
-        "state.energy" => copy_payload_field(attrs, payload, "energy", "energy")?,
+        "state.energy" => copy_payload_field(attrs, payload, "importedEnergy", "importedEnergy")?,
         "state.coverOpenClose" => {
             copy_payload_field(attrs, payload, "state", "coverState")?;
             copy_optional_payload_fields(
@@ -1307,6 +1311,24 @@ fn string_attr(attrs: &Map<String, Value>, key: &str) -> Result<String> {
         .and_then(Value::as_str)
         .map(ToString::to_string)
         .ok_or_else(|| anyhow!("playground attribute {} must be a string", key))
+}
+
+fn nullable_meter(attrs: &Map<String, Value>, key: &str, nonnegative: bool) -> Result<Value> {
+    let value = attrs
+        .get(key)
+        .ok_or_else(|| anyhow!("{} is required", key))?;
+    if value.is_null() {
+        return Ok(Value::Null);
+    }
+    let number = value
+        .as_f64()
+        .ok_or_else(|| anyhow!("{} must be a number or null", key))?;
+    ensure!(
+        number.is_finite() && (!nonnegative || number >= 0.0),
+        "invalid electrical reading {}",
+        key
+    );
+    Ok(json!(number))
 }
 
 fn number_attr(attrs: &Map<String, Value>, key: &str) -> Result<Value> {
@@ -1918,6 +1940,42 @@ mod tests {
                 state["pm25State"], "low",
                 "independent source category is preserved"
             );
+        }
+    }
+    #[test]
+    fn electrical_discovery_and_counter_reads_preserve_zero_unknowns_and_resets() {
+        for model in [LIGHT_RGB_DIMMER_V1, PLUG_ENERGY_V1] {
+            let mut attrs = default_attributes(model).unwrap();
+            assert_eq!(
+                project_discovery(model, &attrs, "state.energy", "$f1").unwrap(),
+                object_map(json!({"supportedCounters":["importedEnergy"]})).unwrap()
+            );
+            assert_eq!(
+                project_discovery(model, &attrs, "state.power", "$f1").unwrap(),
+                object_map(json!({"supportedMeasurements":["activePower"]})).unwrap()
+            );
+            for value in [json!(12.5), json!(0), json!(0.25), Value::Null] {
+                apply_observed_payload(
+                    model,
+                    &mut attrs,
+                    "state.energy",
+                    &object_map(json!({"importedEnergy":value})).unwrap(),
+                )
+                .unwrap();
+                let state = project_state(model, &attrs, "state.energy").unwrap();
+                assert_eq!(state.len(), 1);
+                assert_eq!(state["importedEnergy"].as_f64(), value.as_f64());
+                assert_eq!(state["importedEnergy"].is_null(), value.is_null());
+            }
+            assert!(apply_observed_payload(
+                model,
+                &mut attrs,
+                "state.energy",
+                &object_map(json!({"energy":1})).unwrap()
+            )
+            .is_err());
+            attrs.insert("importedEnergy".into(), json!(-1));
+            assert!(project_state(model, &attrs, "state.energy").is_err());
         }
     }
 }
