@@ -91,6 +91,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       hostAuthorization: "schema/host-authorization.v1.schema.json",
       hostAccess: "schema/host-access.v1.schema.json",
       agentLlm: "schema/agent-llm.v1.schema.json",
+      spaceMemberChanges: "schema/space-member-changes.v1.schema.json",
       entityPresentation: "schema/entity-presentation.v1.schema.json",
       integrationPresentation: "schema/integration-presentation.v1.schema.json",
       capabilityDescriptor: "schema/capability-descriptor.v1.schema.json",
