@@ -768,7 +768,7 @@
     "entry": "unavailable"
   },
   {
-    "target": "/app/space/location/list",
+    "target": "/app/presentation/space/location/list",
     "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
@@ -776,7 +776,7 @@
     "entry": "hub"
   },
   {
-    "target": "/app/space/location/list",
+    "target": "/app/presentation/space/location/list",
     "execution": "spaceMode",
     "placement": null,
     "hubReady": true,
@@ -784,7 +784,7 @@
     "entry": "hub"
   },
   {
-    "target": "/app/space/location/list",
+    "target": "/app/presentation/space/location/list",
     "execution": "spaceMode",
     "placement": null,
     "hubReady": false,
@@ -792,7 +792,7 @@
     "entry": "cloud"
   },
   {
-    "target": "/app/space/location/list",
+    "target": "/app/presentation/space/location/list",
     "execution": "spaceMode",
     "placement": null,
     "hubReady": false,

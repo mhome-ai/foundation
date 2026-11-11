@@ -70,7 +70,7 @@ const SPACE_MODE_TARGETS: &[&str] = &[
     "/app/host/service/restart",
     "/app/pod/list",
     "/app/now/attention/list",
-    "/app/space/location/list",
+    "/app/presentation/space/location/list",
     "/app/trace/get",
 ];
 

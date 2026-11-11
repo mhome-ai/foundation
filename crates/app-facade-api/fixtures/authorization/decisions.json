@@ -864,7 +864,7 @@
     "allowed": false
   },
   {
-    "name": "space-ui:MEMBER:/app/space/location/list",
+    "name": "space-ui:MEMBER:/app/presentation/space/location/list",
     "principal": {
       "kind": "user",
       "userId": "user"
@@ -872,11 +872,11 @@
     "memberRole": "MEMBER",
     "tenantId": "tenant",
     "spaceId": "space",
-    "target": "/app/space/location/list",
+    "target": "/app/presentation/space/location/list",
     "allowed": true
   },
   {
-    "name": "space-ui:unscoped:/app/space/location/list",
+    "name": "space-ui:unscoped:/app/presentation/space/location/list",
     "principal": {
       "kind": "user",
       "userId": "user"
@@ -884,7 +884,7 @@
     "memberRole": null,
     "tenantId": "tenant",
     "spaceId": "space",
-    "target": "/app/space/location/list",
+    "target": "/app/presentation/space/location/list",
     "allowed": false
   },
   {

@@ -331,9 +331,14 @@
       "requestTargets": [
         "/app/presentation/space/list",
         "/app/presentation/space/get",
+        "/app/presentation/space/location/list"
+      ]
+    },
+    "spaceManagement": {
+      "contract": "contract/space-presentation-v1.md",
+      "requestTargets": [
         "/app/space/delete/status",
-        "/app/space/beta/update",
-        "/app/space/location/list"
+        "/app/space/beta/update"
       ]
     },
     "automationPresentation": {

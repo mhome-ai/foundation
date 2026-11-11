@@ -274,7 +274,7 @@
     "/app/space/list": "userRead",
     "/app/space/location/create": "spaceManage",
     "/app/space/location/delete": "spaceManage",
-    "/app/space/location/list": "spaceRead",
+    "/app/presentation/space/location/list": "spaceRead",
     "/app/space/location/search": "userRead",
     "/app/space/location/update": "spaceManage",
     "/app/space/member/invite": "spaceManage",
