@@ -443,7 +443,9 @@
     },
     "deviceSources": {
       "contract": "contract/entity-v1.md",
-      "uiRequestTargets": ["/app/device/source/resolve"]
+      "uiRequestTargets": [
+        "/app/device/source/resolve"
+      ]
     },
     "entity": {
       "contract": "contract/entity-v1.md",
@@ -472,6 +474,15 @@
       ],
       "eventTargets": [
         "/user/navigation/changed"
+      ]
+    },
+    "wave": {
+      "contract": "contract/wave-v1.md",
+      "requestTargets": [
+        "/app/wave/discover",
+        "/app/wave/pair",
+        "/app/wave/list",
+        "/app/wave/refresh"
       ]
     }
   },

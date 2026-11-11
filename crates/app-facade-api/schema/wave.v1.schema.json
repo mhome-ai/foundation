@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mhome.wave.v1",
+  "$defs": {
+    "EmptyInput": {"type":"object","additionalProperties":false},
+    "PairInput": {
+      "type":"object","additionalProperties":false,"required":["candidateId"],
+      "properties":{"candidateId":{"type":"string","minLength":1},"pin":{"type":["string","null"],"pattern":"^[0-9]{6}$"}}
+    },
+    "DeviceInput": {
+      "type":"object","additionalProperties":false,"required":["deviceId"],
+      "properties":{"deviceId":{"type":"string","pattern":"^[0-9a-fA-F]{32}$"}}
+    },
+    "AdmissionResult": {
+      "type":"object","additionalProperties":false,
+      "required":["deviceId","grantState","inventoryState","entityIds"],
+      "properties":{
+        "deviceId":{"type":"string","pattern":"^[0-9a-f]{32}$"},
+        "grantState":{"const":"committed"},
+        "inventoryState":{"enum":["ready","unavailable"]},
+        "entityIds":{"type":"array","items":{"type":"string"}},
+        "reason":{"type":"string"}
+      }
+    }
+  }
+}

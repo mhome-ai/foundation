@@ -368,7 +368,11 @@
     "/pod/talk/speech/prepare": "spaceWrite",
     "/pod/talk/turn/submit": "spaceWrite",
     "/pod/talk/view/get": "spaceRead",
-    "/app/entity/state/get": "spaceRead"
+    "/app/entity/state/get": "spaceRead",
+    "/app/wave/discover": "spaceManage",
+    "/app/wave/pair": "spaceManage",
+    "/app/wave/list": "spaceManage",
+    "/app/wave/refresh": "spaceManage"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

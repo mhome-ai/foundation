@@ -58,3 +58,5 @@ pub mod profile;
 pub mod widget_presentation;
 
 pub mod billing;
+
+pub mod wave;

@@ -81,6 +81,7 @@ const HUB_PREFIXES: &[&str] = &[
     "/app/runtime/",
     "/app/system/hosts/",
     "/app/person/",
+    "/app/wave/",
 ];
 
 const REQUEST_PLACEMENT_PREFIXES: &[&str] = &["/app/messaging/"];
