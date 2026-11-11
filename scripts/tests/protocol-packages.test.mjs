@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -127,6 +128,12 @@ for (const [name, config] of Object.entries(PROTOCOL_PACKAGES)) {
         );
       }
       if (name === "appFacade") {
+        const contractRoot = fileURLToPath(new URL(`../../${config.crateDir}/contract/`, import.meta.url));
+        for (const relative of fs.readdirSync(contractRoot, { recursive: true })) {
+          if (!fs.statSync(path.join(contractRoot, relative)).isFile()) continue;
+          const file = `contract/${relative.split(path.sep).join("/")}`;
+          assert.ok(packedFiles.has(file), `${file} missing from npm package`);
+        }
         // Cloud response presentation loads this resource directly, not through a $ref.
         const timesPath = "manifest/presentation-times.v1.json";
         assert.ok(packedFiles.has(timesPath), `${timesPath} missing from npm package`);
