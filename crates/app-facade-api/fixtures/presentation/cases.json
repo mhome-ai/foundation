@@ -1147,8 +1147,8 @@
           "spaceId": "space-demo",
           "name": "Home",
           "mode": "local",
-          "agentMode": "cloud",
-          "lifecycleState": "ACTIVE"
+          "lifecycleState": "ACTIVE",
+          "llmMode": "cloud"
         }
       ]
     },
@@ -1159,8 +1159,8 @@
           "spaceId": "space-demo",
           "name": "Home",
           "mode": "local",
-          "agentMode": "cloud",
-          "lifecycleState": "ACTIVE"
+          "lifecycleState": "ACTIVE",
+          "llmMode": "cloud"
         }
       ]
     }
@@ -1173,8 +1173,8 @@
         "spaceId": "space-demo",
         "name": "Home",
         "mode": "local",
-        "agentMode": "cloud",
-        "lifecycleState": "ACTIVE"
+        "lifecycleState": "ACTIVE",
+        "llmMode": "cloud"
       },
       "locations": [
         {
@@ -1196,8 +1196,8 @@
         "spaceId": "space-demo",
         "name": "Home",
         "mode": "local",
-        "agentMode": "cloud",
-        "lifecycleState": "ACTIVE"
+        "lifecycleState": "ACTIVE",
+        "llmMode": "cloud"
       },
       "locations": [
         {
@@ -1239,7 +1239,7 @@
         "invalid@example.com"
       ]
     },
-    "status": "success",
+    "status": "partial",
     "essential": {
       "action": "Invited",
       "spaceId": "space-demo",
@@ -2171,7 +2171,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2199,7 +2199,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2235,7 +2235,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2306,7 +2306,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "configurable": true,
           "active": true,
           "requirements": {
@@ -2328,7 +2328,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2359,7 +2359,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2400,7 +2400,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2428,7 +2428,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "modelSource": "catalog",
           "catalogProvider": "example",
@@ -2461,7 +2461,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2486,7 +2486,7 @@
       "providers": [
         {
           "provider": "local_example",
-          "displayName": "\u793a\u4f8b Provider",
+          "displayName": "示例 Provider",
           "runtime": "local",
           "useCases": [
             "chat"
@@ -2531,7 +2531,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2589,7 +2589,7 @@
           "models": [
             {
               "id": "demo-chat",
-              "displayName": "\u793a\u4f8b\u5bf9\u8bdd\u6a21\u578b",
+              "displayName": "示例对话模型",
               "modelType": "chat",
               "available": true,
               "deprecated": false,
@@ -2640,7 +2640,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "description": null,
           "ownerType": "system",
           "ownerId": "agent",
@@ -2682,7 +2682,7 @@
       "llmUseCases": [
         {
           "useCase": "chat",
-          "displayName": "\u5bf9\u8bdd",
+          "displayName": "对话",
           "configurable": true,
           "active": true,
           "requirements": {
@@ -2738,22 +2738,22 @@
     "name": "agent-memory-text",
     "target": "/app/agent/memory/get",
     "data": {
-      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
+      "content": "客厅空调设定为 26°C 前先征求用户同意。"
     },
     "status": "success",
     "essential": {
-      "content": "\u5ba2\u5385\u7a7a\u8c03\u8bbe\u5b9a\u4e3a 26\u00b0C \u524d\u5148\u5f81\u6c42\u7528\u6237\u540c\u610f\u3002"
+      "content": "客厅空调设定为 26°C 前先征求用户同意。"
     }
   },
   {
     "name": "agent-identity-text",
     "target": "/app/agent/identity/get",
     "data": {
-      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
+      "content": "使用中文，回答简洁。"
     },
     "status": "success",
     "essential": {
-      "content": "\u4f7f\u7528\u4e2d\u6587\uff0c\u56de\u7b54\u7b80\u6d01\u3002"
+      "content": "使用中文，回答简洁。"
     }
   },
   {
@@ -4537,5 +4537,508 @@
         "createdAt": "2024-11-03 14:30:00.123 +08:00 (Asia/Shanghai)"
       }
     }
+  },
+  {
+    "name": "space-invite-all-failed",
+    "target": "/app/space/member/invite",
+    "data": {
+      "action": "Unchanged",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com"
+      ],
+      "invited": [],
+      "alreadyPending": [],
+      "alreadyMembers": [],
+      "failed": [
+        "a@example.com"
+      ]
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED",
+    "essential": {
+      "status": "error",
+      "error": {
+        "code": "OPERATION_FAILED",
+        "message": "No requested Space member operation succeeded",
+        "details": {
+          "action": "Unchanged",
+          "spaceId": "space-demo",
+          "requested": [
+            "a@example.com"
+          ],
+          "invited": [],
+          "alreadyPending": [],
+          "alreadyMembers": [],
+          "failed": [
+            "a@example.com"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "space-invite-alreadyPending",
+    "target": "/app/space/member/invite",
+    "data": {
+      "action": "Unchanged",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com"
+      ],
+      "invited": [],
+      "alreadyPending": [
+        "a@example.com"
+      ],
+      "alreadyMembers": [],
+      "failed": []
+    },
+    "status": "success",
+    "essential": {
+      "action": "Unchanged",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com"
+      ],
+      "invited": [],
+      "alreadyPending": [
+        "a@example.com"
+      ],
+      "alreadyMembers": [],
+      "failed": []
+    }
+  },
+  {
+    "name": "space-invite-alreadyMembers",
+    "target": "/app/space/member/invite",
+    "data": {
+      "action": "Unchanged",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com"
+      ],
+      "invited": [],
+      "alreadyPending": [],
+      "alreadyMembers": [
+        "a@example.com"
+      ],
+      "failed": []
+    },
+    "status": "success",
+    "essential": {
+      "action": "Unchanged",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com"
+      ],
+      "invited": [],
+      "alreadyPending": [],
+      "alreadyMembers": [
+        "a@example.com"
+      ],
+      "failed": []
+    }
+  },
+  {
+    "name": "space-remove-success",
+    "target": "/app/space/member/remove",
+    "data": {
+      "action": "Removed",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com"
+      ],
+      "removed": [],
+      "notMembership": [
+        "a@example.com"
+      ],
+      "failed": []
+    },
+    "status": "success",
+    "essential": {
+      "action": "Removed",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com"
+      ],
+      "removed": [],
+      "notMembership": [
+        "a@example.com"
+      ],
+      "failed": []
+    }
+  },
+  {
+    "name": "space-remove-partial",
+    "target": "/app/space/member/remove",
+    "data": {
+      "action": "Removed",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com",
+        "b@example.com"
+      ],
+      "removed": [
+        "a@example.com"
+      ],
+      "notMembership": [],
+      "failed": [
+        "b@example.com"
+      ]
+    },
+    "status": "partial",
+    "essential": {
+      "action": "Removed",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com",
+        "b@example.com"
+      ],
+      "removed": [
+        "a@example.com"
+      ],
+      "notMembership": [],
+      "failed": [
+        "b@example.com"
+      ]
+    }
+  },
+  {
+    "name": "space-remove-error",
+    "target": "/app/space/member/remove",
+    "data": {
+      "action": "Removed",
+      "spaceId": "space-demo",
+      "requested": [
+        "a@example.com"
+      ],
+      "removed": [],
+      "notMembership": [],
+      "failed": [
+        "a@example.com"
+      ]
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED",
+    "essential": {
+      "status": "error",
+      "error": {
+        "code": "OPERATION_FAILED",
+        "message": "No requested Space member operation succeeded",
+        "details": {
+          "action": "Removed",
+          "spaceId": "space-demo",
+          "requested": [
+            "a@example.com"
+          ],
+          "removed": [],
+          "notMembership": [],
+          "failed": [
+            "a@example.com"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "space-location-create-failed",
+    "target": "/app/space/location/create",
+    "data": {
+      "action": "NotCreated",
+      "spaceId": "space-demo",
+      "locationId": "office",
+      "name": "Office"
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED",
+    "essential": {
+      "status": "error",
+      "error": {
+        "code": "OPERATION_FAILED",
+        "message": "The Space Location write did not succeed",
+        "details": {
+          "action": "NotCreated",
+          "spaceId": "space-demo",
+          "locationId": "office",
+          "name": "Office"
+        }
+      }
+    }
+  },
+  {
+    "name": "space-location-update-failed",
+    "target": "/app/space/location/update",
+    "data": {
+      "action": "NotUpdated",
+      "spaceId": "space-demo",
+      "locationId": "office",
+      "name": "Office"
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED",
+    "essential": {
+      "status": "error",
+      "error": {
+        "code": "OPERATION_FAILED",
+        "message": "The Space Location write did not succeed",
+        "details": {
+          "action": "NotUpdated",
+          "spaceId": "space-demo",
+          "locationId": "office",
+          "name": "Office"
+        }
+      }
+    }
+  },
+  {
+    "name": "space-location-delete-failed",
+    "target": "/app/space/location/delete",
+    "data": {
+      "action": "NotDeleted",
+      "spaceId": "space-demo",
+      "locationId": "office",
+      "name": "Office",
+      "deleted": false
+    },
+    "status": "error",
+    "code": "OPERATION_FAILED",
+    "essential": {
+      "status": "error",
+      "error": {
+        "code": "OPERATION_FAILED",
+        "message": "The Space Location write did not succeed",
+        "details": {
+          "action": "NotDeleted",
+          "spaceId": "space-demo",
+          "locationId": "office",
+          "name": "Office",
+          "deleted": false
+        }
+      }
+    }
+  },
+  {
+    "name": "space-delete-failed-operation-read",
+    "target": "/app/space/delete/status",
+    "data": {
+      "accepted": true,
+      "operationId": "operation-demo",
+      "spaceId": "space-demo",
+      "state": "DELETE_FAILED",
+      "message": "Hub did not confirm erasure",
+      "deleted": false
+    },
+    "status": "success",
+    "essential": {
+      "accepted": true,
+      "operationId": "operation-demo",
+      "spaceId": "space-demo",
+      "state": "DELETE_FAILED",
+      "message": "Hub did not confirm erasure",
+      "deleted": false
+    }
+  },
+  {
+    "name": "space-member-changes-success",
+    "target": "/app/space/member/update",
+    "data": {
+      "action": "Updated",
+      "spaceId": "space-demo",
+      "removal": {
+        "action": "Removed",
+        "spaceId": "space-demo",
+        "requested": [
+          "old@example.com"
+        ],
+        "removed": [
+          "old@example.com"
+        ],
+        "notMembership": [],
+        "failed": []
+      },
+      "invitation": {
+        "action": "Invited",
+        "spaceId": "space-demo",
+        "requested": [
+          "new@example.com"
+        ],
+        "invited": [
+          "new@example.com"
+        ],
+        "alreadyPending": [],
+        "alreadyMembers": [],
+        "failed": []
+      },
+      "problems": []
+    },
+    "status": "success",
+    "essential": {
+      "action": "Updated",
+      "spaceId": "space-demo",
+      "removal": {
+        "action": "Removed",
+        "spaceId": "space-demo",
+        "requested": [
+          "old@example.com"
+        ],
+        "removed": [
+          "old@example.com"
+        ],
+        "notMembership": [],
+        "failed": []
+      },
+      "invitation": {
+        "action": "Invited",
+        "spaceId": "space-demo",
+        "requested": [
+          "new@example.com"
+        ],
+        "invited": [
+          "new@example.com"
+        ],
+        "alreadyPending": [],
+        "alreadyMembers": [],
+        "failed": []
+      },
+      "problems": []
+    }
+  },
+  {
+    "name": "space-member-changes-partial",
+    "target": "/app/space/member/update",
+    "data": {
+      "action": "Updated",
+      "spaceId": "space-demo",
+      "removal": {
+        "action": "Removed",
+        "spaceId": "space-demo",
+        "requested": [
+          "old@example.com"
+        ],
+        "removed": [
+          "old@example.com"
+        ],
+        "notMembership": [],
+        "failed": []
+      },
+      "invitation": {
+        "action": "Invited",
+        "spaceId": "space-demo",
+        "requested": [
+          "new@example.com"
+        ],
+        "invited": [],
+        "alreadyPending": [],
+        "alreadyMembers": [],
+        "failed": [
+          "new@example.com"
+        ]
+      },
+      "problems": []
+    },
+    "status": "partial",
+    "essential": {
+      "action": "Updated",
+      "spaceId": "space-demo",
+      "removal": {
+        "action": "Removed",
+        "spaceId": "space-demo",
+        "requested": [
+          "old@example.com"
+        ],
+        "removed": [
+          "old@example.com"
+        ],
+        "notMembership": [],
+        "failed": []
+      },
+      "invitation": {
+        "action": "Invited",
+        "spaceId": "space-demo",
+        "requested": [
+          "new@example.com"
+        ],
+        "invited": [],
+        "alreadyPending": [],
+        "alreadyMembers": [],
+        "failed": [
+          "new@example.com"
+        ]
+      },
+      "problems": []
+    }
+  },
+  {
+    "name": "space-member-changes-error",
+    "target": "/app/space/member/update",
+    "data": {
+      "action": "Updated",
+      "spaceId": "space-demo",
+      "removal": {
+        "action": "Removed",
+        "spaceId": "space-demo",
+        "requested": [
+          "old@example.com"
+        ],
+        "removed": [],
+        "notMembership": [],
+        "failed": [
+          "old@example.com"
+        ]
+      },
+      "invitation": {
+        "action": "Invited",
+        "spaceId": "space-demo",
+        "requested": [
+          "new@example.com"
+        ],
+        "invited": [],
+        "alreadyPending": [],
+        "alreadyMembers": [],
+        "failed": [
+          "new@example.com"
+        ]
+      },
+      "problems": []
+    },
+    "status": "error",
+    "essential": {
+      "status": "error",
+      "error": {
+        "code": "OPERATION_FAILED",
+        "message": "Space member changes did not complete",
+        "details": {
+          "action": "Updated",
+          "spaceId": "space-demo",
+          "removal": {
+            "action": "Removed",
+            "spaceId": "space-demo",
+            "requested": [
+              "old@example.com"
+            ],
+            "removed": [],
+            "notMembership": [],
+            "failed": [
+              "old@example.com"
+            ]
+          },
+          "invitation": {
+            "action": "Invited",
+            "spaceId": "space-demo",
+            "requested": [
+              "new@example.com"
+            ],
+            "invited": [],
+            "alreadyPending": [],
+            "alreadyMembers": [],
+            "failed": [
+              "new@example.com"
+            ]
+          },
+          "problems": []
+        }
+      }
+    },
+    "code": "OPERATION_FAILED"
   }
 ]

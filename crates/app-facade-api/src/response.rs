@@ -5,11 +5,15 @@ use serde_json::{json, Value};
 
 mod agent;
 mod runtime;
+mod space;
 pub mod time;
 pub mod units;
 
 /// Outcomes are assigned by target contracts, never by scanning arbitrary data.
 pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
+    if let Some(outcome) = space::outcome(target, &data) {
+        return outcome;
+    }
     if target == crate::group::DETAIL {
         let warnings: Vec<_> = data
             .get("items")

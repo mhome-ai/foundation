@@ -1,0 +1,190 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.meowlink.app/space-member-changes.v1.json",
+  "title": "Space member changes",
+  "definitions": {
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "removeEmails": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "inviteEmails": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "removeEmails"
+          ],
+          "properties": {
+            "removeEmails": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "required": [
+            "inviteEmails"
+          ],
+          "properties": {
+            "inviteEmails": {
+              "minItems": 1
+            }
+          }
+        }
+      ]
+    },
+    "output": {
+      "type": "object",
+      "required": [
+        "action",
+        "spaceId",
+        "removal",
+        "invitation",
+        "problems"
+      ],
+      "properties": {
+        "action": {
+          "enum": [
+            "Updated",
+            "DryRun"
+          ]
+        },
+        "spaceId": {
+          "type": "string"
+        },
+        "removal": {
+          "type": "object",
+          "required": [
+            "action",
+            "spaceId",
+            "requested",
+            "removed",
+            "notMembership",
+            "failed"
+          ],
+          "properties": {
+            "action": {
+              "type": "string"
+            },
+            "spaceId": {
+              "type": "string"
+            },
+            "requested": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "notMembership": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "failed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "invitation": {
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "action",
+                "spaceId",
+                "requested",
+                "invited",
+                "alreadyPending",
+                "alreadyMembers",
+                "failed"
+              ],
+              "properties": {
+                "action": {
+                  "type": "string"
+                },
+                "spaceId": {
+                  "type": "string"
+                },
+                "requested": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "invited": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "alreadyPending": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "alreadyMembers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "failed": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "problems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "step",
+              "code",
+              "message"
+            ],
+            "properties": {
+              "step": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

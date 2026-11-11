@@ -334,6 +334,13 @@
         "/app/presentation/space/location/list"
       ]
     },
+    "spaceMemberChanges": {
+      "contract": "contract/space-presentation-v1.md",
+      "schema": "schema/space-member-changes.v1.schema.json",
+      "requestTargets": [
+        "/app/space/member/update"
+      ]
+    },
     "spaceManagement": {
       "contract": "contract/space-presentation-v1.md",
       "requestTargets": [

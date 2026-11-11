@@ -49,7 +49,42 @@ login and Hub authorization retain their independently owned wire DTOs.
 
 Legacy `/scope/list`, `/scope/get`, `/scope/preference/get`, `/scope/agent/get`,
 and `/scope/location/list` readers are retired, without fallback aliases. Native
-UI membership refresh uses `/app/presentation/space/list`; the CLI uses
-`/app/space/list` for identity-only listing and selection checks, and presentation
-listing for its full management view. Neither lightweight flow expands per-Space
-context. `/focus` remains connection control, not a business Facade.
+UI membership refresh uses `/app/presentation/space/list`. CLI `space list` forwards
+`/app/space/list` and its canonical `{spaces}` DTO with `spaceId`, `name`, `mode`,
+`llmMode` and `lifecycleState`. It never expands per-Space context or adds local
+active-Space state and Hub routes. Read selected details, members and preferences
+through their own Facades. CLI selection uses `/app/client/space/focus`; it returns
+`{focusedSpaceId}` and leaves membership validation/persistence to the receiving
+Client and authoritative executor. `/focus` has no compatibility alias.
+
+Space commands pass the caller's Full/Essential choice to the Facade. Prepare
+previews remain fixed control objects. Whole-Space deletion drives the existing
+asynchronous protocol using structured Full control reads, then returns the
+unchanged `/app/space/delete/status` DTO in the requested detail. It does not
+rewrite `action` or hide operation fields. A successful status read may describe
+`DELETE_FAILED`; waiting for that failed operation still exits unsuccessfully.
+
+## Space mutation outcomes
+
+The backend settles member invite/remove outcomes before presentation. A request
+with no failed items succeeds, including already-pending/already-member invitations
+and removal of absent memberships. Fulfilled and failed items together return
+`partial`; failure of every requested item returns `error` with the complete
+per-item result in diagnostics. Full and Essential retain the same outcome.
+Location writes with `NotCreated`, `NotUpdated` or `NotDeleted` return `error`,
+with the original write result in diagnostics. Prepared previews describe planned
+work and never prove effects. Reading a failed deletion operation remains a
+successful read; accepting deletion never means erasure has completed.
+
+`/app/space/member/update` accepts `{removeEmails?: string[], inviteEmails?: string[]}`
+with at least one requested change. UI member editing and the human-operated CLI
+share this business composite. The backend normalizes/resolves all inputs and
+rejects an OWNER removal before any write. It then removes memberships and sends
+invitations under one Space mutation lock; it does not promise rollback. The same
+email cannot be removed and invited together. Its complete result is
+`{action, spaceId, removal, invitation, problems}`; removal/invitation preserve
+those individual operations' DTOs. If invitation execution becomes unconfirmed,
+`invitation` is null and `problems` explains that membership must be inspected
+before retrying. The backend settles the overall outcome. It supports direct and
+prepared modes; previews perform no writes. This operation does not extend the
+native Agent, MCP or external Skill boundary for member removal.

@@ -279,6 +279,7 @@
     "/app/space/member/invite": "spaceManage",
     "/app/space/member/list": "spaceManage",
     "/app/space/member/remove": "spaceManage",
+    "/app/space/member/update": "spaceManage",
     "/app/space/preference/get": "spaceRead",
     "/app/space/preference/update": "userWrite",
     "/app/space/rename": "spaceManage",

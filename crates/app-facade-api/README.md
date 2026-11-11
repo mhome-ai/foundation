@@ -39,15 +39,18 @@ conversion belongs at the Facade implementation boundary.
 
 Agent Profile get/save use `content` for the complete document. LLM mode get/save
 use `llmMode`; summary and default-provider metadata use that same field.
-`control.mode` selects response detail. Each LLM use case has one current model. The existing
+`control.responseDetail` selects response detail. Each LLM use case has one current model. The existing
 `/app/agent/llm/summary` operation owns the combined LLM read used by UI and CLI.
 See the Agent cases in the shared [presentation fixtures](fixtures/presentation/cases.json).
 
-Client workflows may coordinate input, login, polling and local files. Native
-Profile updates may run model-based merging. These workflows own explicit final
-results and compose real Facade calls; they are not alternative DTOs for a single
-Facade operation. A UI view model may derive display state after the SDK boundary.
-Composition does not imply a distributed transaction or automatic rollback.
+Business aggregation, multi-write orchestration and overall outcome settlement belong
+behind a Facade. Clients may make independent reads needed by the caller and adapt
+arguments, local files and terminal/UI input. They may drive defined prepare/commit,
+interactive-session and asynchronous-operation protocols; the backend owns business
+steps, transitions and final DTOs. Do not implement product business composites or
+alternative DTOs in CLI, SDK or surface adapters. A UI view model may derive display
+state after the SDK boundary. Backend composition does not imply a distributed
+transaction or automatic rollback.
 
 ## Full values and Essential presentation
 

@@ -2,6 +2,39 @@ use app_facade_api::{response, ResponseDetail};
 use serde_json::{json, Value};
 
 #[test]
+fn space_member_changes_validate_inputs_and_complete_result_dtos() {
+    let schema: Value = serde_json::from_str(include_str!(
+        "../schema/space-member-changes.v1.schema.json"
+    ))
+    .unwrap();
+    let validator = |definition: &str| {
+        let mut root = schema.clone();
+        root["$ref"] = json!(format!("#/definitions/{definition}"));
+        jsonschema::validator_for(&root).unwrap()
+    };
+    let input = validator("input");
+    assert!(input.is_valid(&json!({"removeEmails":["a@example.com"],"inviteEmails":[]})));
+    assert!(input.is_valid(&json!({"inviteEmails":["b@example.com"]})));
+    for invalid in [
+        json!({}),
+        json!({"removeEmails":[],"inviteEmails":[]}),
+        json!({"removeEmails":[false]}),
+        json!({"inviteEmails":["a"],"mode":"direct"}),
+    ] {
+        assert!(!input.is_valid(&invalid));
+    }
+    let output = validator("output");
+    let cases: Vec<Value> =
+        serde_json::from_str(include_str!("../fixtures/presentation/cases.json")).unwrap();
+    for case in cases
+        .iter()
+        .filter(|case| case["target"] == "/app/space/member/update")
+    {
+        output.validate(&case["data"]).unwrap();
+    }
+}
+
+#[test]
 fn card_skin_projection_fixtures_match_the_business_wire_schema() {
     let schema: Value =
         serde_json::from_str(include_str!("../schema/card-skins.v1.schema.json")).unwrap();
