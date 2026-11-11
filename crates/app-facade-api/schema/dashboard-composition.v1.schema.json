@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.meowlink.app/dashboard-composition.v1.json",
+  "definitions": {
+    "create": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canvasId",
+        "expectedRevision",
+        "itemIds"
+      ],
+      "properties": {
+        "canvasId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^\\S(?:.*\\S)?$"
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483646
+        },
+        "itemIds": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^\\S(?:.*\\S)?$"
+          }
+        },
+        "rootDraft": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "layoutSize",
+            "items"
+          ],
+          "properties": {
+            "layoutSize": {
+              "enum": [
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "itemId",
+                  "layout"
+                ],
+                "properties": {
+                  "itemId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512,
+                    "pattern": "^\\S(?:.*\\S)?$"
+                  },
+                  "layout": {
+                    "$ref": "canvas-layout.v1.schema.json#/definitions/rect"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ungroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canvasId",
+        "expectedRevision",
+        "compositionId"
+      ],
+      "properties": {
+        "canvasId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^\\S(?:.*\\S)?$"
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483646
+        },
+        "compositionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^\\S(?:.*\\S)?$"
+        },
+        "rootDraft": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "layoutSize",
+            "items"
+          ],
+          "properties": {
+            "layoutSize": {
+              "enum": [
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "itemId",
+                  "layout"
+                ],
+                "properties": {
+                  "itemId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512,
+                    "pattern": "^\\S(?:.*\\S)?$"
+                  },
+                  "layout": {
+                    "$ref": "canvas-layout.v1.schema.json#/definitions/rect"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "updateMembers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canvasId",
+        "expectedRevision",
+        "compositionId",
+        "layoutSize"
+      ],
+      "properties": {
+        "canvasId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^\\S(?:.*\\S)?$"
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483646
+        },
+        "compositionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^\\S(?:.*\\S)?$"
+        },
+        "layoutSize": {
+          "enum": [
+            "sm",
+            "md",
+            "lg"
+          ]
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "itemId",
+              "layout"
+            ],
+            "properties": {
+              "itemId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512,
+                "pattern": "^\\S(?:.*\\S)?$"
+              },
+              "layout": {
+                "$ref": "canvas-layout.v1.schema.json#/definitions/rect"
+              }
+            }
+          }
+        },
+        "reset": {
+          "type": "boolean"
+        },
+        "rootDraft": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "layoutSize",
+            "items"
+          ],
+          "properties": {
+            "layoutSize": {
+              "enum": [
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "itemId",
+                  "layout"
+                ],
+                "properties": {
+                  "itemId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512,
+                    "pattern": "^\\S(?:.*\\S)?$"
+                  },
+                  "layout": {
+                    "$ref": "canvas-layout.v1.schema.json#/definitions/rect"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "members"
+          ],
+          "properties": {
+            "reset": {
+              "const": false
+            }
+          }
+        },
+        {
+          "required": [
+            "reset"
+          ],
+          "properties": {
+            "reset": {
+              "const": true
+            }
+          },
+          "not": {
+            "required": [
+              "members"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

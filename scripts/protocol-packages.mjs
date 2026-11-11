@@ -95,6 +95,8 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       entityPresentation: "schema/entity-presentation.v1.schema.json",
       integrationPresentation: "schema/integration-presentation.v1.schema.json",
       capabilityDescriptor: "schema/capability-descriptor.v1.schema.json",
+      canvasLayout: "schema/canvas-layout.v1.schema.json",
+      dashboardComposition: "schema/dashboard-composition.v1.schema.json",
       cardSkinPackage: "schema/card-skin-package.v1.schema.json",
       cardSkins: "schema/card-skins.v1.schema.json",
       call: "schema/facade-call.v1.schema.json",
@@ -116,6 +118,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       person: "schema/person.v1.schema.json",
     }),
     fixtures: Object.freeze({
+      dashboardPacking: "fixtures/dashboard/composition-packing.json",
       attention: "fixtures/attention/conformance.json",
       agentLlm: "fixtures/agent-llm.conformance.json",
       billing: "fixtures/billing.conformance.json",

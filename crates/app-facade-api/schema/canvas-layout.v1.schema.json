@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.meowlink.app/canvas-layout.v1.json",
+  "title": "Canvas layout document",
+  "description": "Canonical saved placement. Root coordinates are global; member coordinates are local. Runtime additionally validates uniqueness, bounds, overlap and UTF-8 document size <= 256 KiB.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "items"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "cardId",
+              "layouts"
+            ],
+            "properties": {
+              "kind": {
+                "const": "card"
+              },
+              "cardId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512,
+                "pattern": "^\\S(?:.*\\S)?$"
+              },
+              "layouts": {
+                "$ref": "#/definitions/profiles"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "id",
+              "layouts",
+              "members"
+            ],
+            "properties": {
+              "kind": {
+                "const": "composition"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512,
+                "pattern": "^\\S(?:.*\\S)?$"
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "layouts": {
+                "$ref": "#/definitions/profiles"
+              },
+              "members": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "$ref": "#/definitions/member"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "rect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y",
+        "w",
+        "h"
+      ],
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "w": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "h": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sm",
+        "md",
+        "lg"
+      ],
+      "properties": {
+        "sm": {
+          "$ref": "#/definitions/rect"
+        },
+        "md": {
+          "$ref": "#/definitions/rect"
+        },
+        "lg": {
+          "$ref": "#/definitions/rect"
+        }
+      }
+    },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cardId",
+        "layouts"
+      ],
+      "properties": {
+        "cardId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^\\S(?:.*\\S)?$"
+        },
+        "layouts": {
+          "$ref": "#/definitions/profiles"
+        }
+      }
+    }
+  }
+}

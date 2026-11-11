@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.128.0",
+  "contractVersion": "1.129.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -62,6 +62,9 @@
     "/app/client/page/report": "spaceRead",
     "/app/client/screenshot/report": "spaceRead",
     "/app/client/space/focus": "clientConnection",
+    "/app/dashboard/canvas/composition/create": "spaceWrite",
+    "/app/dashboard/canvas/composition/layout/update": "spaceWrite",
+    "/app/dashboard/canvas/composition/ungroup": "spaceWrite",
     "/app/dashboard/canvas/content/get": "spaceRead",
     "/app/dashboard/canvas/create": "spaceWrite",
     "/app/dashboard/canvas/delete": "spaceWrite",

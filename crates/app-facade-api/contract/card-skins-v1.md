@@ -65,8 +65,13 @@ Package caching does not install, select, upgrade, or grant additional device au
 All platforms retain the renderer isolation requirement, including for cached files.
 
 The publication service validates metadata and bytes, not JavaScript behavior.
-The renderer contract remains `apiVersion: 1` during development and changes in
-place. Hosts and skins use that current contract without a compatibility layer.
+The renderer contract is `apiVersion: 2`. Renderers supply content in a
+framework-owned surface, both standalone and embedded. The host owns background,
+radius, clipping, menus, editing and composition dividers. A content root stays
+transparent and uses the inherited foreground; the renderer may arrange its title,
+values and controls without a reserved header. Each member receives its own grid
+and measured content viewport. Whole-card API 1 packages are rejected and must be
+adapted and rebuilt; there is no legacy rendering mode.
 The authoring build verifies the bundled ESM structure; the browser host verifies
 renderer exports against the manifest before using them. Each base owns its
 presentation adapter and renderer host; common card state and actions do not

@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.128.0",
+  "contractVersion": "1.129.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -490,6 +490,16 @@
         "/app/wave/pair",
         "/app/wave/list",
         "/app/wave/refresh"
+      ]
+    },
+    "dashboardComposition": {
+      "layoutSchema": "schema/canvas-layout.v1.schema.json",
+      "commandSchema": "schema/dashboard-composition.v1.schema.json",
+      "contract": "contract/dashboard-composition-v1.md",
+      "requestTargets": [
+        "/app/dashboard/canvas/composition/create",
+        "/app/dashboard/canvas/composition/ungroup",
+        "/app/dashboard/canvas/composition/layout/update"
       ]
     }
   },
