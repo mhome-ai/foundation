@@ -1,10 +1,9 @@
 {
   "manifest": "mhome.hub.targets.v1",
-  "contractVersion": "1.127.1",
+  "contractVersion": "1.128.0",
   "appTargets": [
     "/app/hub/get",
-    "/app/hub/remove",
-    "/app/hub/cache/clear"
+    "/app/hub/remove"
   ],
   "localTargets": [
     "/local/hub/get",

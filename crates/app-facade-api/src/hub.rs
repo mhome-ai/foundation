@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 pub const GET_TARGET: &str = "/app/hub/get";
 pub const REMOVE_TARGET: &str = "/app/hub/remove";
-pub const CACHE_CLEAR_TARGET: &str = "/app/hub/cache/clear";
 
 pub const LOCAL_GET_TARGET: &str = "/local/hub/get";
 pub const LOCAL_CANDIDATES_TARGET: &str = "/local/hub/candidates";
@@ -11,7 +10,7 @@ pub const LOCAL_SETUP_CONFIRM_TARGET: &str = "/local/hub/setup/confirm";
 pub const LOCAL_SETUP_STATUS_TARGET: &str = "/local/hub/setup/status";
 pub const LOCAL_SETUP_CANCEL_TARGET: &str = "/local/hub/setup/cancel";
 
-pub const APP_TARGETS: &[&str] = &[GET_TARGET, REMOVE_TARGET, CACHE_CLEAR_TARGET];
+pub const APP_TARGETS: &[&str] = &[GET_TARGET, REMOVE_TARGET];
 pub const LOCAL_TARGETS: &[&str] = &[
     LOCAL_GET_TARGET,
     LOCAL_CANDIDATES_TARGET,
@@ -155,18 +154,6 @@ pub struct HubRemoveResponse {
     pub accepted: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub operation: Option<HubOperation>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct HubCacheClearRequest {
-    pub hub_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct MutationResponse {
-    pub ok: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]

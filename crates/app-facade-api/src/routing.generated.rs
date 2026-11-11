@@ -12,7 +12,6 @@ const CLOUD_PREFIXES: &[&str] = &[
 pub const CLOUD_TARGETS: &[&str] = &[
     "/app/agent/context/get",
     "/app/agent/credit/usage",
-    "/app/hub/cache/clear",
     "/app/hub/get",
     "/app/hub/remove",
     "/app/plugin/catalog/list",

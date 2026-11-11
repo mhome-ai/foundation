@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.127.1",
+  "contractVersion": "1.128.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "spaceMode"
@@ -16,7 +16,6 @@
     "cloudTargets": [
       "/app/agent/context/get",
       "/app/agent/credit/usage",
-      "/app/hub/cache/clear",
       "/app/hub/get",
       "/app/hub/remove",
       "/app/plugin/catalog/list",
