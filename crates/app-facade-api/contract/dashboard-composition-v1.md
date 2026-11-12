@@ -24,8 +24,11 @@ layout. Default dimensions are used only when creating a placement.
 All three composition commands require current-Space write authorization and
 `expectedRevision`. They return `{spaceId, canvasId, revision, layoutDocument}`;
 creation also returns `createdItemId`. The backend owns validation and the whole
-operation. A stale revision changes nothing. An optional `rootDraft` includes
-unsaved root placement changes in that same commit.
+operation. A stale revision changes nothing. An optional `rootDrafts` array includes unsaved root placement changes for up to
+three distinct profiles in that same commit. `rootDraft` remains supported for a
+single profile; the two fields are mutually exclusive. Ordinary layout updates
+may include `rootDrafts` for profiles other than their main `layoutSize`; organize
+may include all edited profiles before arranging its selected profile.
 
 - `/app/dashboard/canvas/composition/create`: `itemIds` selects two or more roots.
   Existing compositions flatten to leaves; leaf identities and current dimensions

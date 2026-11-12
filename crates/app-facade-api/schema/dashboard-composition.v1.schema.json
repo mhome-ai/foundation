@@ -71,8 +71,61 @@
               }
             }
           }
+        },
+        "rootDrafts": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "layoutSize",
+              "items"
+            ],
+            "properties": {
+              "layoutSize": {
+                "enum": [
+                  "sm",
+                  "md",
+                  "lg"
+                ]
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "itemId",
+                    "layout"
+                  ],
+                  "properties": {
+                    "itemId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512,
+                      "pattern": "^\\S(?:.*\\S)?$"
+                    },
+                    "layout": {
+                      "$ref": "canvas-layout.v1.schema.json#/definitions/rect"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
-      }
+      },
+      "allOf": [
+        {
+          "not": {
+            "required": [
+              "rootDraft",
+              "rootDrafts"
+            ]
+          }
+        }
+      ]
     },
     "ungroup": {
       "type": "object",
@@ -138,8 +191,61 @@
               }
             }
           }
+        },
+        "rootDrafts": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "layoutSize",
+              "items"
+            ],
+            "properties": {
+              "layoutSize": {
+                "enum": [
+                  "sm",
+                  "md",
+                  "lg"
+                ]
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "itemId",
+                    "layout"
+                  ],
+                  "properties": {
+                    "itemId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512,
+                      "pattern": "^\\S(?:.*\\S)?$"
+                    },
+                    "layout": {
+                      "$ref": "canvas-layout.v1.schema.json#/definitions/rect"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
-      }
+      },
+      "allOf": [
+        {
+          "not": {
+            "required": [
+              "rootDraft",
+              "rootDrafts"
+            ]
+          }
+        }
+      ]
     },
     "updateMembers": {
       "type": "object",
@@ -238,6 +344,49 @@
               }
             }
           }
+        },
+        "rootDrafts": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "layoutSize",
+              "items"
+            ],
+            "properties": {
+              "layoutSize": {
+                "enum": [
+                  "sm",
+                  "md",
+                  "lg"
+                ]
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "itemId",
+                    "layout"
+                  ],
+                  "properties": {
+                    "itemId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512,
+                      "pattern": "^\\S(?:.*\\S)?$"
+                    },
+                    "layout": {
+                      "$ref": "canvas-layout.v1.schema.json#/definitions/rect"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "oneOf": [
@@ -263,6 +412,16 @@
           "not": {
             "required": [
               "members"
+            ]
+          }
+        }
+      ],
+      "allOf": [
+        {
+          "not": {
+            "required": [
+              "rootDraft",
+              "rootDrafts"
             ]
           }
         }
