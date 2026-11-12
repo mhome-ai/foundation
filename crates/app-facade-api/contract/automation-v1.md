@@ -26,3 +26,15 @@ Generated Twin and Group programs remain internal resources.
   rename. The script's authored root name remains available in the script itself.
 
 Inputs are closed objects. The schema is `schema/automation.v1.schema.json`.
+
+For `/app/automation/save` and `/app/automation/snapshot/rollback`, the definition
+is committed before the optional attempt to restore the enabled state. If that
+attempt is rejected or unconfirmed, the Facade returns `partial` with the
+Automation ID and `restoreIssue` (`failed` or `unconfirmed`). Rollback also
+includes the snapshot ID. Its `enabled` field is omitted when the post-write
+observation is unavailable. Read current state before deciding whether to enable.
+
+`/app/automation/delete` returns `success` when all targets complete and `partial`
+when `deletedIds` and `failedIds` both contain IDs. A batch with no completed
+targets returns `error` with its per-target details. These outcomes apply to direct
+calls and prepared commits, in Full and Essential presentation.

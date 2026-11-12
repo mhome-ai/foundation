@@ -33,8 +33,9 @@ Only activation changes pending to active and sets createdAt. Repeating activati
 preserves createdAt and lastUsedAt. Cancelled/failed physical writes explicitly
 delete pending; read/list/sync do not clean it up. No TTL or background cleanup.
 Update patches configuration without activating or resetting metadata.
-Delete missing IDs is idempotent, has no deleted-count guarantee, does not erase
-physical tags, and does not promise cross-record atomicity on cloud storage.
+Delete treats missing IDs as complete and returns an acknowledgement. SQLite and
+DynamoDB delete a request atomically. Tablestore batch deletion can partially
+apply before returning an error. Physical tags retain their written content.
 Prepared preview includes requested IDs, found state, name and creation state;
 last-use observations do not invalidate a preview.
 
