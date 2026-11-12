@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.hub.targets.v1",
-  "contractVersion": "1.129.1",
+  "contractVersion": "1.130.0",
   "appTargets": [
     "/app/hub/get",
     "/app/hub/remove"
