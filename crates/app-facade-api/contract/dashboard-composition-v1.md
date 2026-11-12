@@ -50,6 +50,18 @@ source and target Canvas documents together. Delete and resource cleanup prune
 leaf references: one surviving member becomes an independent Card at its current
 absolute position; zero members removes the container.
 
+`/app/dashboard/canvas/list` and `/app/dashboard/canvas/content/get` include
+`pendingDeletion: {canvas, itemIds}` when a Canvas has a staged deletion.
+`canvas: true` identifies a staged whole-Canvas deletion. For card deletions,
+`itemIds` contains the root or member IDs that were selected for deletion.
+The read field is omitted after cleanup finishes.
+
+Users can explicitly finish a staged deletion with `retryPending: true` on
+`/app/dashboard/canvas/delete` for that `canvasId`, or on
+`/app/dashboard/card/delete` with the selected pending `itemIds` as
+`cardIds`. The backend processes the requested pending targets. An already
+completed retry returns success with zero deletions.
+
 Existing data is converted explicitly with old writers stopped, a verified
 backup and conflict checks. Runtime startup never converts legacy placement or
 silently deletes a database. Cloud Canvas records stay in the existing `canvas`
