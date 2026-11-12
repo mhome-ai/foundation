@@ -52,5 +52,8 @@ absolute position; zero members removes the container.
 
 Existing data is converted explicitly with old writers stopped, a verified
 backup and conflict checks. Runtime startup never converts legacy placement or
-silently deletes a database. Cloud Canvas records use the transaction-enabled
-`canvasLayouts` table; the old `canvas` table remains rollback material.
+silently deletes a database. Cloud Canvas records stay in the existing `canvas`
+table with unchanged primary keys. Existing records require an explicit in-place
+conversion and a verified backup before cutover. Aliyun must have local
+transactions enabled on that table; existing tables without the feature require
+provider support. No replacement Canvas table is introduced.
