@@ -18,7 +18,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 24.22.1
+          node-version: 24.22.3
           package-manager-cache: false
       - name: Install publication client
         run: npm install --global npm@12.2.1 --ignore-scripts --no-audit --no-fund
