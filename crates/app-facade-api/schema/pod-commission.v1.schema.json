@@ -384,7 +384,12 @@
               ]
             },
             {
-              "required": ["enrollment"]
+              "properties": {
+                "enrollment": {}
+              },
+              "required": [
+                "enrollment"
+              ]
             },
             {
               "properties": {
