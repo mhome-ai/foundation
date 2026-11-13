@@ -142,10 +142,13 @@ fn a_blocking_platform_commissions_a_pod_on_its_own_runtime() {
     let core = Arc::new(Commissioning::with_own_runtime(platform).unwrap());
     *lan.core.lock().unwrap() = Some(Arc::downgrade(&core));
     core.on_adapter_state(support::ready());
-    core.on_advertisement(support::advertisement("pod-a", DeviceKind::Pod, false));
-
-    let lease = call(&core, "/local/pod/discovery/start", json!({}));
+    let lease = call(
+        &core,
+        "/local/pod/discovery/start",
+        json!({"transport":"ble"}),
+    );
     assert!(lease["leaseId"].is_string());
+    core.on_advertisement(support::advertisement("pod-a", DeviceKind::Pod, false));
     let id = call(
         &core,
         "/local/pod/commission/start",

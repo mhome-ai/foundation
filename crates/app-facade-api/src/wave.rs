@@ -7,6 +7,12 @@ pub const REFRESH: &str = "/app/wave/refresh";
 #[derive(Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 pub struct EmptyInput {}
+use crate::pod::DiscoveryTransport;
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DiscoverInput {
+    pub transport: DiscoveryTransport,
+}
 // Deliberately no Debug: this is a private direct App interaction.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -73,5 +79,28 @@ mod tests {
             .is_err());
         }
         assert!(serde_json::from_value::<EmptyInput>(json!({"address":"1.2.3.4"})).is_err());
+    }
+
+    #[test]
+    fn wave_discovery_requires_exactly_one_explicit_transport() {
+        for (name, expected) in [
+            ("lan", DiscoveryTransport::Lan),
+            ("ble", DiscoveryTransport::Ble),
+        ] {
+            let input: DiscoverInput = serde_json::from_value(json!({"transport":name})).unwrap();
+            assert_eq!(input.transport, expected);
+            assert_eq!(
+                serde_json::to_value(input).unwrap(),
+                json!({"transport":name})
+            );
+        }
+        for input in [
+            json!({}),
+            json!({"transport":"all"}),
+            json!({"transport":["lan","ble"]}),
+            json!({"transport":"lan","address":"192.0.2.1"}),
+        ] {
+            assert!(serde_json::from_value::<DiscoverInput>(input).is_err());
+        }
     }
 }

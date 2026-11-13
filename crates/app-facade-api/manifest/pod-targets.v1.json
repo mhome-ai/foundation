@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.pod.targets.v1",
-  "contractVersion": "1.134.0",
+  "contractVersion": "1.135.0",
   "contract": "contract/pod-commissioning-v1.md",
   "localTargets": [
     "/local/pod/discovery/start",
@@ -87,6 +87,7 @@
     "not_commissionable",
     "wrong_kind",
     "unknown_session",
+    "unknown_lease",
     "wrong_state",
     "invalid_code",
     "invalid_wifi",

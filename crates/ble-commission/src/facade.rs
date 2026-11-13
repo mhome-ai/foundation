@@ -5,8 +5,8 @@ use app_facade_api::host_provision::{self as host, ProvisionStatus};
 use app_facade_api::pod::{
     self, AdapterState, BluetoothSettingsResponse, CommissionAuthorizeRequest,
     CommissionCodeRequest, CommissionSessionRequest, CommissionStartRequest, CommissionStatus,
-    CommissionWifiRequest, DeviceKind, DiscoveryLease, DiscoveryTransport, EmptyRequest,
-    LeaseRequest, RequestErrorReason, DISCOVERY_LEASE_MS, SESSION_LIFETIME_MS,
+    CommissionWifiRequest, DeviceKind, DiscoveryLease, DiscoveryStartRequest, DiscoveryTransport,
+    EmptyRequest, LeaseRequest, RequestErrorReason, DISCOVERY_LEASE_MS, SESSION_LIFETIME_MS,
 };
 use core_api::ErrorResponse;
 use serde::de::DeserializeOwned;
@@ -60,6 +60,13 @@ impl From<RequestError> for ErrorResponse {
 
 use RequestErrorReason as Reason;
 
+/// True only for a valid, explicit Client Bluetooth discovery request.
+pub fn requests_bluetooth_discovery(target: &str, payload: &str) -> bool {
+    target == pod::DISCOVERY_START_TARGET
+        && serde_json::from_str::<DiscoveryStartRequest>(payload)
+            .is_ok_and(|request| request.transport == DiscoveryTransport::Ble)
+}
+
 /// Whether `target` is served by [`crate::Commissioning::handle`].
 pub fn is_target(target: &str) -> bool {
     pod::LOCAL_TARGETS.contains(&target) || host::LOCAL_TARGETS.contains(&target)
@@ -98,12 +105,41 @@ pub(crate) async fn dispatch(
     }
     let value = match target {
         pod::DISCOVERY_START_TARGET => {
-            let _: EmptyRequest = parse(payload)?;
-            return to_json(&discovery_lease(engine, uuid::Uuid::new_v4().to_string()));
+            let request: DiscoveryStartRequest = parse(payload)?;
+            let lease = DiscoveryLease {
+                lease_id: uuid::Uuid::new_v4().to_string(),
+                expires_at_ms: engine.now_ms() + DISCOVERY_LEASE_MS,
+            };
+            engine.discovery.lock().unwrap().leases.insert(
+                lease.lease_id.clone(),
+                (request.transport, lease.expires_at_ms),
+            );
+            engine.reconcile();
+            return to_json(&lease);
         }
         pod::DISCOVERY_RENEW_TARGET => {
             let request: LeaseRequest = parse(payload)?;
-            return to_json(&discovery_lease(engine, request.lease_id));
+            let now = engine.now_ms();
+            let expires_at_ms = now + DISCOVERY_LEASE_MS;
+            {
+                let mut discovery = engine.discovery.lock().unwrap();
+                let Some((_, expires)) = discovery
+                    .leases
+                    .get_mut(&request.lease_id)
+                    .filter(|(_, expires)| *expires > now)
+                else {
+                    return Err(RequestError::rejected(
+                        Reason::UnknownLease,
+                        "the discovery lease expired",
+                    )
+                    .into());
+                };
+                *expires = expires_at_ms;
+            }
+            return to_json(&DiscoveryLease {
+                lease_id: request.lease_id,
+                expires_at_ms,
+            });
         }
         pod::DISCOVERY_STOP_TARGET => {
             let request: LeaseRequest = parse(payload)?;
@@ -187,21 +223,6 @@ fn cancel_host(
         engine.emit_session(live);
     }
     Ok(live.snapshot())
-}
-
-fn discovery_lease(engine: &Engine, lease_id: String) -> DiscoveryLease {
-    let lease = DiscoveryLease {
-        lease_id,
-        expires_at_ms: engine.now_ms() + DISCOVERY_LEASE_MS,
-    };
-    engine
-        .discovery
-        .lock()
-        .unwrap()
-        .leases
-        .insert(lease.lease_id.clone(), lease.expires_at_ms);
-    engine.reconcile();
-    lease
 }
 
 fn unknown(kind: DeviceKind) -> RequestError {

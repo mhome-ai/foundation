@@ -6,6 +6,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering::SeqCst};
 struct Fake {
     context: Mutex<String>,
     ready: AtomicBool,
+    hub_host: Mutex<String>,
     offline: AtomicBool,
     operation: Mutex<Option<api::HubOperation>>,
     cloud_outcome: Mutex<String>,
@@ -24,6 +25,7 @@ impl Fake {
         Arc::new(Self {
             context: Mutex::new("login-one".into()),
             ready: false.into(),
+            hub_host: Mutex::new("host".into()),
             offline: false.into(),
             operation: Mutex::new(None),
             cloud_outcome: Mutex::new("COMPLETED".into()),
@@ -74,7 +76,7 @@ impl Platform for Fake {
     }
     async fn view(&self, _: &str, scope: &str) -> Result<api::LocalHubState, String> {
         let ready = self.ready.load(SeqCst);
-        serde_json::from_value(json!({"spaceId":scope,"configured":ready,"operation":self.operation.lock().unwrap().clone(),"hub":if ready{json!({"id":"hub-one","hostId":"host","type":"linux","isTest":false,"status":"ready","cloud":{},"local":{"discovered":true,"connected":true}})}else{Value::Null}})).map_err(|e|e.to_string())
+        serde_json::from_value(json!({"spaceId":scope,"configured":ready,"operation":self.operation.lock().unwrap().clone(),"hub":if ready{json!({"id":"hub-one","hostId":self.hub_host.lock().unwrap().as_str(),"type":"linux","isTest":false,"status":"ready","cloud":{},"local":{"discovered":true,"connected":true}})}else{Value::Null}})).map_err(|e|e.to_string())
     }
     async fn cloud(
         &self,
@@ -326,6 +328,20 @@ async fn signed_proof_rejects_changed_host_space_tls_key_nonce_and_signature() {
             "{field}"
         );
     }
+}
+
+#[tokio::test(start_paused = true)]
+async fn product_joining_an_existing_hub_does_not_initialize_another_core() {
+    let platform = Fake::new();
+    *platform.hub_host.lock().unwrap() = "existing-host".into();
+    platform.ready.store(true, SeqCst);
+    platform.offline.store(true, SeqCst);
+    Commissioning::new(platform.clone())
+        .setup_product("home", "new-product", &Fake::peer())
+        .await
+        .unwrap();
+    assert_eq!(platform.cloud_count.load(SeqCst), 0);
+    assert_eq!(platform.count.load(SeqCst), 0);
 }
 
 #[tokio::test(start_paused = true)]

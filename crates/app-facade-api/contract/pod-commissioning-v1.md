@@ -306,11 +306,12 @@ never show these values or `message` verbatim.
 | `not_signed_in` | no signed-in MeowLink account |
 | `space_not_offered` | the Space is not among those offered, or the account has no Space |
 | `cloud_unreachable_for_device` | the cloud address is loopback |
+| `unknown_lease` | the discovery lease expired or was stopped |
 | `busy` | the native Client cannot take the request now; retry |
 
 | Target | Request | Response |
 | --- | --- | --- |
-| `/local/pod/discovery/start` | `{}` | `{"leaseId","expiresAtMs"}`, 30 s lease |
+| `/local/pod/discovery/start` | `{"transport":"lan"|"ble"}` | `{"leaseId","expiresAtMs"}`, 30 s lease |
 | `/local/pod/discovery/renew` | `{"leaseId"}` | `{"leaseId","expiresAtMs"}` |
 | `/local/pod/discovery/stop` | `{"leaseId"}` | `{}` |
 | `/local/pod/discovery/list` | `{}` | discovery snapshot |
@@ -326,6 +327,12 @@ never show these values or `message` verbatim.
 current adapter state (enable Bluetooth or Location, or the app's permission
 page) and answers whether it did; a platform without such a page answers
 `{"opened":false}`.
+
+The lease activates only its selected transport. Renew keeps that transport and
+returns `unknown_lease` if the lease was stopped or expired. A LAN lease does
+not request Bluetooth permission. BLE discovery uses the current Client's radio.
+Snapshots may contain both transports when several callers hold leases. A running
+Pod setup may continue LAN browsing to complete a handoff.
 
 Discovery is shared by every MeowLink device kind: each candidate carries
 `kind` (`pod` or `host`). `/local/pod/commission/start` accepts only `pod`

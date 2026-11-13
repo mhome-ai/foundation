@@ -493,6 +493,20 @@ impl Commissioning {
     ) -> Result<(), String> {
         let context = self.platform.account_context().await?;
         let view = self.platform.view(&context, scope).await?;
+        if view.space_id != scope {
+            return Err("Hub registration belongs to a different Space".into());
+        }
+        // Reuse a published Hub on a different Host without promoting this Core.
+        if view.configured
+            && view.operation.is_none()
+            && view.revocation.is_none()
+            && view.hub.as_ref().is_some_and(|hub| {
+                hub.cloud.status.eq_ignore_ascii_case("ready") && hub.cloud.host_id != host_id
+            })
+        {
+            self.current(&context).await?;
+            return Ok(());
+        }
         let deadline = Instant::now() + SETUP_TIMEOUT;
         if let Some(result) = self.continue_setup(&context, scope, host_id, &view).await? {
             return match result {

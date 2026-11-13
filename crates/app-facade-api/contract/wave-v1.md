@@ -1,13 +1,18 @@
-# Native Wave LAN admission
+# Native Wave admission
 
 These Hub-routed App Facades require current-Space Manage access and an active
 local Hub. They do not make Wave devices Hosts, Nodes or Plugins. No device URL,
 Space/Hub selector, grant, certificate or private key is an input/output.
 
-- `/app/wave/discover`: `{}` -> `{candidates:[{candidateId,deviceId,proof,purpose}]}`.
-  Core browses `_meow-wave._tcp.local.` and identifies bounded LAN candidates.
+- `/app/wave/discover`: `{transport:"lan"|"ble"}` ->
+  `{candidates:[{candidateId,deviceId,proof,purpose}]}`.
+  LAN discovery browses `_meow-wave._tcp.local.`; it never invokes BLE Relay.
+  BLE discovery searches only bound relays for pure BLE operation. It does not
+  discover unconfigured Wi-Fi devices for network setup. The caller selects
+  exactly one transport; there is no implicit discovery or fallback.
   Results are untrusted location hints, scoped to this caller, Space and Hub
-  generation, expiring after two minutes. They never grant operation authority.
+  generation and transport, expiring after two minutes. They never grant operation
+  authority.
 - `/app/wave/pair`: `{candidateId,pin?}` -> AdmissionResult below. This is a direct
   authenticated App interaction; Agent/MCP/cloud delegation cannot submit PINs.
   PIN6 is required when the selected device requires it. Omitting it is allowed

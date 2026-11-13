@@ -18,7 +18,7 @@ pub(crate) struct Discovery {
     pub revision: u64,
     pub scanning: bool,
     pub adapter: AdapterStatus,
-    pub leases: HashMap<String, i64>,
+    pub leases: HashMap<String, (DiscoveryTransport, i64)>,
     pub candidates: HashMap<String, PodCandidate>,
     pub scan_refused_at: Option<i64>,
     pub lan: HashMap<String, LanAdvertisement>,
@@ -64,9 +64,20 @@ impl Discovery {
         }
     }
 
-    pub fn has_live_lease(&mut self, now: i64) -> bool {
-        self.leases.retain(|_, expires| *expires > now);
-        !self.leases.is_empty()
+    pub fn has_live_lease(&mut self, transport: DiscoveryTransport, now: i64) -> bool {
+        self.leases.retain(|_, (_, expires)| *expires > now);
+        self.leases.values().any(|(leased, _)| *leased == transport)
+    }
+
+    pub fn clear_ble(&mut self) -> bool {
+        let before = self.candidates.len();
+        self.candidates
+            .retain(|_, candidate| candidate.transport == DiscoveryTransport::Lan);
+        if self.candidates.len() == before {
+            return false;
+        }
+        self.revision += 1;
+        true
     }
 
     pub fn set_adapter(&mut self, status: AdapterStatus) -> bool {

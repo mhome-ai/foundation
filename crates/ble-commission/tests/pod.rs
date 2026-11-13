@@ -67,7 +67,7 @@ fn valid(session: &Value) {
 
 #[tokio::test(start_paused = true)]
 async fn commissions_a_pod_end_to_end() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("pod-a", Script::pod());
     let id = to_authorization(&harness).await;
     let prompt = harness.wait_state(POD, "awaiting_authorization").await;
@@ -114,7 +114,7 @@ async fn commissions_a_pod_end_to_end() {
 
 #[tokio::test(start_paused = true)]
 async fn a_wrong_code_can_be_retried_on_the_same_link() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("pod-a", Script::pod());
     let id = start(&harness).await;
     harness.wait_state(POD, "awaiting_code").await;
@@ -138,7 +138,7 @@ async fn a_wrong_code_can_be_retried_on_the_same_link() {
 
 #[tokio::test(start_paused = true)]
 async fn five_wrong_codes_lock_the_session() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     let id = start(&harness).await;
     harness.wait_state(POD, "awaiting_code").await;
@@ -157,7 +157,7 @@ async fn five_wrong_codes_lock_the_session() {
 
 #[tokio::test(start_paused = true)]
 async fn a_locked_device_fails_with_code_locked() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("pod-a", Script::pod());
     let id = start(&harness).await;
     harness.wait_state(POD, "awaiting_code").await;
@@ -170,7 +170,7 @@ async fn a_locked_device_fails_with_code_locked() {
         .await;
     assert_eq!(locked["error"]["code"], "code_locked");
 
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("pod-a", Script::pod());
     device.locked.store(true, Ordering::SeqCst);
     start(&harness).await;
@@ -180,7 +180,7 @@ async fn a_locked_device_fails_with_code_locked() {
 
 #[tokio::test(start_paused = true)]
 async fn start_checks_account_device_and_radio() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     harness.add_device("host-a", Script::host());
     let start = |candidate: &str| json!({ "candidateId": candidate });
@@ -296,7 +296,7 @@ async fn start_checks_account_device_and_radio() {
 
 #[tokio::test(start_paused = true)]
 async fn requests_are_checked_against_the_session_state() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     let id = start(&harness).await;
     harness.wait_state(POD, "awaiting_code").await;
@@ -376,7 +376,7 @@ async fn requests_are_checked_against_the_session_state() {
 
 #[tokio::test(start_paused = true)]
 async fn a_loopback_cloud_is_refused_before_issuing() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     let id = to_authorization(&harness).await;
     harness.cloud.endpoints.lock().unwrap().api = "http://127.0.0.1:8080/api/v1".into();
@@ -400,7 +400,7 @@ async fn a_loopback_cloud_is_refused_before_issuing() {
 #[tokio::test(start_paused = true)]
 async fn login_approval_does_not_replace_device_confirmation() {
     for op in ["deliver", "status"] {
-        let harness = Harness::new();
+        let harness = Harness::with_discovery("ble").await;
         let mut script = Script::pod();
         script.activation = Activation::Never;
         script.drop_after_op = Some(op);
@@ -425,7 +425,7 @@ async fn login_approval_does_not_replace_device_confirmation() {
 
 #[tokio::test(start_paused = true)]
 async fn a_pod_activation_failure_does_not_revoke_from_the_app() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.activation = Activation::Failed("time_sync_failed");
     harness.add_device("pod-a", script);
@@ -441,7 +441,7 @@ async fn a_pod_activation_failure_does_not_revoke_from_the_app() {
 
 #[tokio::test(start_paused = true)]
 async fn a_refused_delivery_fails_without_revoking() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.deliver_ok = false;
     harness.add_device("pod-a", script);
@@ -475,7 +475,7 @@ async fn reprovision(harness: &Harness) -> String {
 
 #[tokio::test(start_paused = true)]
 async fn a_wifi_change_window_only_moves_the_pod_to_the_new_network() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.wifi_configured = true;
     script.reprovision = Some(None);
@@ -507,7 +507,7 @@ async fn a_wifi_change_window_only_moves_the_pod_to_the_new_network() {
 
 #[tokio::test(start_paused = true)]
 async fn a_wifi_change_the_pod_cannot_save_fails_with_its_code() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.reprovision = Some(Some("storage_failed"));
     harness.add_device("pod-a", script);
@@ -522,7 +522,7 @@ async fn a_wifi_change_the_pod_cannot_save_fails_with_its_code() {
 
 #[tokio::test(start_paused = true)]
 async fn sessions_run_without_ui_renewal_and_reject_cancel() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.activation = Activation::Commissioned { after_polls: 50 };
     harness.add_device("pod-a", script);
@@ -563,7 +563,7 @@ async fn sessions_run_without_ui_renewal_and_reject_cancel() {
 
 #[tokio::test(start_paused = true)]
 async fn activation_timeout_releases_the_radio_without_revoking() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.activation = Activation::Never;
     harness.add_device("pod-a", script);
@@ -577,6 +577,9 @@ async fn activation_timeout_releases_the_radio_without_revoking() {
     assert!(ended.get("error").is_some());
     tokio::time::sleep(Duration::from_secs(2)).await;
     assert!(harness.cloud.revokes().is_empty());
+    harness
+        .ok("/local/pod/discovery/start", json!({"transport":"ble"}))
+        .await;
     harness.add_device("pod-a", Script::pod());
     let fresh = start(&harness).await;
     assert_ne!(fresh, id);
@@ -584,7 +587,7 @@ async fn activation_timeout_releases_the_radio_without_revoking() {
 
 #[tokio::test(start_paused = true)]
 async fn a_kept_network_is_confirmed_before_skipping_wifi() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.wifi_configured = true;
     script.kept_wifi_connecting_polls = 4;
@@ -594,7 +597,7 @@ async fn a_kept_network_is_confirmed_before_skipping_wifi() {
     harness.wait_state(POD, "awaiting_authorization").await;
     assert_eq!(device.scans.load(Ordering::SeqCst), 0);
 
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.wifi_configured = true;
     script.kept_wifi =
@@ -616,7 +619,7 @@ async fn a_kept_network_is_confirmed_before_skipping_wifi() {
 
 #[tokio::test(start_paused = true)]
 async fn a_scan_request_during_the_first_scan_waits_for_it() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("pod-a", Script::pod());
     let id = start(&harness).await;
     secure(&harness, &id).await;
@@ -633,7 +636,7 @@ async fn a_scan_request_during_the_first_scan_waits_for_it() {
 
 #[tokio::test(start_paused = true)]
 async fn the_session_times_out_after_its_lifetime() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     start(&harness).await;
     let timed_out = harness.wait_state(POD, "timed_out").await;
@@ -642,7 +645,7 @@ async fn the_session_times_out_after_its_lifetime() {
 
 #[tokio::test(start_paused = true)]
 async fn a_dropped_link_while_waiting_fails_the_session() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("pod-a", Script::pod());
     start(&harness).await;
     harness.wait_state(POD, "awaiting_code").await;
@@ -653,7 +656,7 @@ async fn a_dropped_link_while_waiting_fails_the_session() {
 
 #[tokio::test(start_paused = true)]
 async fn a_refused_issue_fails_without_any_cleanup_call() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     harness.cloud.fail_issue.store(true, Ordering::SeqCst);
     let id = to_authorization(&harness).await;
@@ -671,7 +674,7 @@ async fn a_refused_issue_fails_without_any_cleanup_call() {
 
 #[tokio::test(start_paused = true)]
 async fn lan_setup_works_without_bluetooth_and_never_reconfigures_wifi() {
-    let h = Harness::new();
+    let h = Harness::with_discovery("lan").await;
     let device = h.add_device("pod-a", Script::pod());
     h.core.on_adapter_state(app_facade_api::pod::AdapterStatus {
         state: app_facade_api::pod::AdapterState::PoweredOff,
@@ -696,7 +699,7 @@ async fn lan_setup_works_without_bluetooth_and_never_reconfigures_wifi() {
 #[tokio::test(start_paused = true)]
 async fn lan_metadata_cannot_substitute_a_different_device_or_environment() {
     for changed_env in [false, true] {
-        let h = Harness::new();
+        let h = Harness::with_discovery("lan").await;
         let mut script = Script::pod();
         if changed_env {
             script.env = "dev";
@@ -722,7 +725,7 @@ async fn lan_metadata_cannot_substitute_a_different_device_or_environment() {
 async fn retry_reads_committed_completion_without_issuing_another_credential() {
     for initial_state in ["activating", "commissioned"] {
         for mode in ["user", "space"] {
-            let h = Harness::new();
+            let h = Harness::with_discovery("lan").await;
             let mut script = Script::pod();
             script.initial_state = initial_state;
             script.initial_client_mode = Some(mode);
@@ -746,7 +749,7 @@ async fn retry_reads_committed_completion_without_issuing_another_credential() {
 
 #[tokio::test(start_paused = true)]
 async fn successful_wifi_with_no_lan_discovery_ends_attempt_without_issuing() {
-    let h = Harness::new();
+    let h = Harness::with_discovery("ble").await;
     h.lan.enabled.store(false, Ordering::SeqCst);
     h.add_device("pod-a", Script::pod());
     let id = start(&h).await;
@@ -765,7 +768,7 @@ async fn successful_wifi_with_no_lan_discovery_ends_attempt_without_issuing() {
 
 #[tokio::test(start_paused = true)]
 async fn ble_handoff_waits_for_network_persistence_after_wifi_connects() {
-    let h = Harness::new();
+    let h = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.wifi_save_pending_polls = 4;
     h.add_device("pod-a", script);
@@ -776,7 +779,7 @@ async fn ble_handoff_waits_for_network_persistence_after_wifi_connects() {
 
 #[tokio::test(start_paused = true)]
 async fn failed_pod_wifi_ends_the_attempt() {
-    let h = Harness::new();
+    let h = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.join = support::Join::Failed(protocomm::proto::WifiConnectFailedReason::AuthError);
     h.add_device("pod-a", script);
@@ -796,7 +799,7 @@ async fn failed_pod_wifi_ends_the_attempt() {
 #[tokio::test(start_paused = true)]
 async fn lost_confirmation_recovers_without_init_advertisement_or_duplicate_delivery() {
     for op in ["deliver", "status"] {
-        let h = Harness::new();
+        let h = Harness::with_discovery("ble").await;
         let mut script = Script::pod();
         script.activation = Activation::Commissioned { after_polls: 0 };
         script.drop_after_op = Some(op);
@@ -828,7 +831,7 @@ async fn lost_confirmation_recovers_without_init_advertisement_or_duplicate_deli
 
 #[tokio::test(start_paused = true)]
 async fn confirmation_reconnect_rejects_replaced_device_identity() {
-    let h = Harness::new();
+    let h = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.drop_after_op = Some("status");
     script.drop_once = true;
@@ -843,7 +846,7 @@ async fn confirmation_reconnect_rejects_replaced_device_identity() {
 
 #[tokio::test(start_paused = true)]
 async fn space_mode_uses_separate_issuance_and_only_offers_owned_local_spaces() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("pod-a", Script::pod());
     let id = to_authorization(&harness).await;
     let denied = harness
@@ -875,7 +878,7 @@ async fn space_mode_uses_separate_issuance_and_only_offers_owned_local_spaces() 
 
 #[tokio::test(start_paused = true)]
 async fn member_cannot_initialize_a_space_client_even_when_the_space_is_local() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     let mut member = account("user-generation");
     for scope in &mut member.spaces {
@@ -896,7 +899,7 @@ async fn member_cannot_initialize_a_space_client_even_when_the_space_is_local() 
 
 #[tokio::test(start_paused = true)]
 async fn combined_product_binds_before_first_hub_and_space_credential() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness
         .cloud
         .account
@@ -954,7 +957,7 @@ async fn combined_product_binds_before_first_hub_and_space_credential() {
 
 #[tokio::test(start_paused = true)]
 async fn combined_product_rejects_a_different_client_before_cloud_claim() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::product();
     script.wrong_product_binding = true;
     harness.add_device("pod-a", script);
@@ -971,7 +974,7 @@ async fn combined_product_rejects_a_different_client_before_cloud_claim() {
 
 #[tokio::test(start_paused = true)]
 async fn active_space_credential_has_a_fresh_confirmation_window_but_still_waits_for_device() {
-    let h = Harness::new();
+    let h = Harness::with_discovery("ble").await;
     h.add_device("pod-a", Script::pod());
     *h.cloud.space_credential_window.lock().unwrap() = Some(("active".into(), None));
     let id = to_authorization(&h).await;
@@ -988,7 +991,7 @@ async fn active_space_credential_has_a_fresh_confirmation_window_but_still_waits
 #[tokio::test(start_paused = true)]
 async fn invalid_space_credential_windows_never_reach_the_device() {
     for window in [("pending", None), ("pending", Some(1)), ("active", Some(1))] {
-        let h = Harness::new();
+        let h = Harness::with_discovery("ble").await;
         let device = h.add_device("pod-a", Script::pod());
         *h.cloud.space_credential_window.lock().unwrap() = Some((window.0.into(), window.1));
         let id = to_authorization(&h).await;
@@ -1004,7 +1007,7 @@ async fn invalid_space_credential_windows_never_reach_the_device() {
 
 #[tokio::test(start_paused = true)]
 async fn active_space_credential_does_not_complete_a_device_that_never_authenticates() {
-    let h = Harness::new();
+    let h = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
     script.activation = Activation::Never;
     h.add_device("pod-a", script);
@@ -1026,7 +1029,7 @@ async fn active_space_credential_does_not_complete_a_device_that_never_authentic
 #[tokio::test(start_paused = true)]
 async fn committed_receipt_requires_a_known_client_mode() {
     for mode in [None, Some("invalid")] {
-        let h = Harness::new();
+        let h = Harness::with_discovery("lan").await;
         let mut script = Script::pod();
         script.initial_state = "commissioned";
         script.initial_client_mode = mode;

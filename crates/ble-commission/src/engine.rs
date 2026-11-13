@@ -5,7 +5,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use app_facade_api::host_provision::PROVISION_CHANGED_EVENT;
 use app_facade_api::pod::{
     AdapterState, AdapterStatus, CommissionError, CommissionErrorCode, DeviceKind,
-    COMMISSION_CHANGED_EVENT, DISCOVERY_CHANGED_EVENT, DISCOVERY_EVENT_INTERVAL_MS,
+    DiscoveryTransport, COMMISSION_CHANGED_EVENT, DISCOVERY_CHANGED_EVENT,
+    DISCOVERY_EVENT_INTERVAL_MS,
 };
 use tokio::sync::{mpsc, Notify};
 use tokio::task::JoinHandle;
@@ -145,18 +146,18 @@ impl Engine {
 
     pub fn on_advertisement(&self, advertisement: &Advertisement) {
         let now = self.now_ms();
-        if self.discovery.lock().unwrap().observe(advertisement, now) {
+        let mut discovery = self.discovery.lock().unwrap();
+        if discovery.has_live_lease(DiscoveryTransport::Ble, now)
+            && discovery.adapter.state == AdapterState::Ready
+            && discovery.observe(advertisement, now)
+        {
             self.discovery_changed();
         }
     }
 
     pub fn on_lan_advertisement(&self, advertisement: LanAdvertisement) {
-        if self
-            .discovery
-            .lock()
-            .unwrap()
-            .observe_lan(advertisement, self.now_ms())
-        {
+        let mut discovery = self.discovery.lock().unwrap();
+        if discovery.lan_browsing && discovery.observe_lan(advertisement, self.now_ms()) {
             self.discovery_changed();
         }
     }
@@ -188,7 +189,7 @@ impl Engine {
             .is_some_and(|s| !s.phase.is_terminal());
         let want = {
             let mut d = self.discovery.lock().unwrap();
-            let want = d.has_live_lease(now) || active;
+            let want = d.has_live_lease(DiscoveryTransport::Lan, now) || active;
             if want == d.lan_browsing
                 || (want && d.lan_refused_at.is_some_and(|at| now - at < SCAN_RETRY_MS))
             {
@@ -296,10 +297,13 @@ impl Engine {
         let owned = self.sessions.lock().unwrap().radio_owned();
         let (want, scanning, may_start, pruned) = {
             let mut discovery = self.discovery.lock().unwrap();
-            let pruned = discovery.prune(now);
-            let want = discovery.has_live_lease(now)
-                && !owned
-                && discovery.adapter.state == AdapterState::Ready;
+            let leased = discovery.has_live_lease(DiscoveryTransport::Ble, now);
+            let pruned = if leased {
+                discovery.prune(now)
+            } else {
+                discovery.clear_ble()
+            };
+            let want = leased && !owned && discovery.adapter.state == AdapterState::Ready;
             let may_start = discovery
                 .scan_refused_at
                 .is_none_or(|refused| now - refused >= SCAN_RETRY_MS);

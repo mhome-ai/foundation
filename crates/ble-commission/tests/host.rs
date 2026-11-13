@@ -56,7 +56,7 @@ fn valid(session: &Value) {
 
 #[tokio::test(start_paused = true)]
 async fn wifi_submission_reserves_the_critical_section_before_the_device_reply() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("host-a", Script::host());
     let id = to_wifi(&harness).await;
     *device.response_delay.lock().unwrap() = Duration::from_secs(2);
@@ -87,7 +87,7 @@ async fn wifi_submission_reserves_the_critical_section_before_the_device_reply()
 
 #[tokio::test(start_paused = true)]
 async fn a_rejected_wifi_apply_releases_the_critical_section_for_an_explicit_retry() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::host();
     script.reject_wifi_apply = true;
     let device = harness.add_device("host-a", script);
@@ -105,7 +105,7 @@ async fn a_rejected_wifi_apply_releases_the_critical_section_for_an_explicit_ret
 
 #[tokio::test(start_paused = true)]
 async fn provisions_a_host_and_hands_back_its_claim_token() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("host-a", Script::host());
     let id = to_wifi(&harness).await;
     join(&harness, &id).await;
@@ -129,7 +129,7 @@ async fn provisions_a_host_and_hands_back_its_claim_token() {
 
 #[tokio::test(start_paused = true)]
 async fn a_host_without_a_claim_token_still_completes() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::host();
     script.claim_token = None;
     harness.add_device("host-a", script);
@@ -141,7 +141,7 @@ async fn a_host_without_a_claim_token_still_completes() {
 
 #[tokio::test(start_paused = true)]
 async fn a_host_locks_after_repeated_wrong_codes() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("host-a", Script::host());
     let id = start(&harness).await;
     harness.wait_state(HOST, "awaiting_code").await;
@@ -169,7 +169,7 @@ async fn a_host_locks_after_repeated_wrong_codes() {
 
 #[tokio::test(start_paused = true)]
 async fn a_failed_join_offers_wifi_again_and_resets_first() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::host();
     script.join = Join::Failed(WifiConnectFailedReason::AuthError);
     let device = harness.add_device("host-a", script);
@@ -201,7 +201,7 @@ async fn a_failed_join_offers_wifi_again_and_resets_first() {
 
 #[tokio::test(start_paused = true)]
 async fn a_join_that_never_settles_fails_as_wifi_failed() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::host();
     script.join = Join::Never;
     harness.add_device("host-a", script);
@@ -216,7 +216,7 @@ async fn a_join_that_never_settles_fails_as_wifi_failed() {
 
 #[tokio::test(start_paused = true)]
 async fn pod_and_host_sessions_are_kept_apart() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("pod-a", Script::pod());
     harness.add_device("host-a", Script::host());
     let pod = session_id(
@@ -258,7 +258,7 @@ async fn pod_and_host_sessions_are_kept_apart() {
 
 #[tokio::test(start_paused = true)]
 async fn host_without_ui_expires_only_at_its_deadline() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("host-a", Script::host());
     start(&harness).await;
     let timed_out = harness
@@ -273,7 +273,7 @@ async fn host_without_ui_expires_only_at_its_deadline() {
 
 #[tokio::test(start_paused = true)]
 async fn cancelling_releases_the_link_before_its_terminal_event() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("host-a", Script::host());
     let id = to_wifi(&harness).await;
     let cancelling = harness
@@ -295,7 +295,7 @@ async fn cancelling_releases_the_link_before_its_terminal_event() {
 
 #[tokio::test(start_paused = true)]
 async fn cancellation_during_connect_closes_the_late_link_without_reopening_setup() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("host-a", Script::host());
     let id = start(&harness).await;
     // The fake central takes 50 ms to connect. Cancel while it still owns that work.
@@ -322,7 +322,7 @@ async fn cancellation_during_connect_closes_the_late_link_without_reopening_setu
 
 #[tokio::test(start_paused = true)]
 async fn cancellation_cannot_interrupt_the_network_and_token_handoff() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::host();
     script.join = Join::Never;
     harness.add_device("host-a", script);
@@ -338,7 +338,7 @@ async fn cancellation_cannot_interrupt_the_network_and_token_handoff() {
 
 #[tokio::test(start_paused = true)]
 async fn unclaimed_host_with_a_live_saved_network_recovers_without_wifi_input() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::host();
     script.wifi_configured = true;
     script.onboarding_required = true;
@@ -362,7 +362,7 @@ async fn unclaimed_host_with_a_live_saved_network_recovers_without_wifi_input() 
 
 #[tokio::test(start_paused = true)]
 async fn an_offline_saved_network_still_offers_wifi() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     let mut script = Script::host();
     script.wifi_configured = true;
     script.onboarding_required = true;
@@ -372,7 +372,7 @@ async fn an_offline_saved_network_still_offers_wifi() {
 
 #[tokio::test(start_paused = true)]
 async fn a_completed_handoff_is_not_exposed_to_another_account() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("host-a", Script::host());
     let id = to_wifi(&harness).await;
     join(&harness, &id).await;
@@ -393,7 +393,7 @@ async fn a_completed_handoff_is_not_exposed_to_another_account() {
 
 #[tokio::test(start_paused = true)]
 async fn logout_still_notifies_native_keepalive_after_releasing_the_old_session() {
-    let harness = Harness::new();
+    let harness = Harness::with_discovery("ble").await;
     harness.add_device("host-a", Script::host());
     let id = to_wifi(&harness).await;
     *harness.cloud.account.lock().unwrap() = None;

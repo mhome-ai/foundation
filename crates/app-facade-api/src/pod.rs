@@ -178,6 +178,12 @@ impl BleAdvertisement {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EmptyRequest {}
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DiscoveryStartRequest {
+    pub transport: DiscoveryTransport,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LeaseRequest {
@@ -196,7 +202,11 @@ pub struct DiscoveryLease {
 pub enum AdapterState {
     Ready,
     PoweredOff,
+    Unsupported,
+    PermissionRequired,
     Denied,
+    Initializing,
+    LocationDisabled,
     Unavailable,
 }
 
@@ -489,6 +499,7 @@ pub enum RequestErrorReason {
     NotCommissionable,
     WrongKind,
     UnknownSession,
+    UnknownLease,
     WrongState,
     InvalidCode,
     InvalidWifi,
@@ -506,6 +517,7 @@ impl RequestErrorReason {
         Self::NotCommissionable,
         Self::WrongKind,
         Self::UnknownSession,
+        Self::UnknownLease,
         Self::WrongState,
         Self::InvalidCode,
         Self::InvalidWifi,
@@ -523,6 +535,7 @@ impl RequestErrorReason {
             Self::NotCommissionable => "not_commissionable",
             Self::WrongKind => "wrong_kind",
             Self::UnknownSession => "unknown_session",
+            Self::UnknownLease => "unknown_lease",
             Self::WrongState => "wrong_state",
             Self::InvalidCode => "invalid_code",
             Self::InvalidWifi => "invalid_wifi",

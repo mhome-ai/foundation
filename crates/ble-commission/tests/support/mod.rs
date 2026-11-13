@@ -974,6 +974,18 @@ impl Harness {
         }
     }
 
+    pub async fn with_discovery(transport: &str) -> Self {
+        let harness = Self::new();
+        harness
+            .ok(
+                "/local/pod/discovery/start",
+                json!({"transport": transport}),
+            )
+            .await;
+        tokio::time::sleep(Duration::from_millis(1)).await;
+        harness
+    }
+
     pub fn add_device(&self, id: &str, script: Script) -> Arc<FakeDevice> {
         let kind = script.kind;
         let wifi_configured = script.wifi_configured;

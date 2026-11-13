@@ -26,7 +26,7 @@ use tokio::task::JoinHandle;
 
 pub use cloud::is_loopback_url;
 pub use endpoints::{endpoint_uuid, fallback_endpoint_uuids};
-pub use facade::{is_target, RequestError};
+pub use facade::{is_target, requests_bluetooth_discovery, RequestError};
 pub use platform::{
     Account, Advertisement, Blocking, BlockingCentral, BlockingCloud, BlockingLanDiscovery,
     BlockingLink, BlockingRadio, Central, Cloud, CloudEndpoints, CloudError, CloudResponse,

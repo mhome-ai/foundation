@@ -14,8 +14,13 @@ fn scans(harness: &Harness) -> Vec<bool> {
     harness.radio.calls.lock().unwrap().clone()
 }
 
-async fn lease(harness: &Harness) -> String {
-    let lease = harness.ok("/local/pod/discovery/start", json!({})).await;
+async fn lease(harness: &Harness, transport: &str) -> String {
+    let lease = harness
+        .ok(
+            "/local/pod/discovery/start",
+            json!({"transport": transport}),
+        )
+        .await;
     assert!(lease["expiresAtMs"].as_i64().unwrap() > 0);
     lease["leaseId"].as_str().unwrap().to_string()
 }
@@ -29,7 +34,7 @@ async fn a_lease_scans_until_it_is_stopped() {
     let harness = Harness::new();
     settle().await;
     assert!(scans(&harness).is_empty());
-    let id = lease(&harness).await;
+    let id = lease(&harness, "ble").await;
     settle().await;
     assert_eq!(scans(&harness), [true]);
     harness.add_device("pod-a", Script::pod());
@@ -51,7 +56,7 @@ async fn a_lease_scans_until_it_is_stopped() {
 #[tokio::test(start_paused = true)]
 async fn an_unrenewed_lease_stops_scanning_and_stale_candidates_go() {
     let harness = Harness::new();
-    let id = lease(&harness).await;
+    let id = lease(&harness, "ble").await;
     harness.add_device("pod-a", Script::pod());
     tokio::time::sleep(Duration::from_secs(12)).await;
     let list = harness.ok("/local/pod/discovery/list", json!({})).await;
@@ -68,7 +73,7 @@ async fn an_unrenewed_lease_stops_scanning_and_stale_candidates_go() {
 #[tokio::test(start_paused = true)]
 async fn discovery_events_are_coalesced_to_one_per_second() {
     let harness = Harness::new();
-    lease(&harness).await;
+    lease(&harness, "ble").await;
     for step in 0..100 {
         let rssi = if step % 2 == 0 { -40 } else { -80 };
         harness.advertise("pod-a", DeviceKind::Pod, BLE_FLAG_COMMISSIONABLE, rssi);
@@ -90,7 +95,7 @@ async fn discovery_events_are_coalesced_to_one_per_second() {
 #[tokio::test(start_paused = true)]
 async fn a_session_pauses_scanning_until_it_is_released() {
     let harness = Harness::new();
-    let lease_id = lease(&harness).await;
+    let lease_id = lease(&harness, "ble").await;
     let device = harness.add_device("pod-a", Script::pod());
     settle().await;
     harness
@@ -113,7 +118,7 @@ async fn a_session_pauses_scanning_until_it_is_released() {
 #[tokio::test(start_paused = true)]
 async fn scanning_restarts_after_the_adapter_returns() {
     let harness = Harness::new();
-    let lease_id = lease(&harness).await;
+    let lease_id = lease(&harness, "ble").await;
     settle().await;
     harness.core.on_adapter_state(AdapterStatus {
         state: AdapterState::PoweredOff,
@@ -139,7 +144,7 @@ async fn scanning_restarts_after_the_adapter_returns() {
 async fn a_refused_scan_reports_the_adapter_and_retries() {
     let harness = Harness::new();
     harness.radio.refuse.store(true, Ordering::SeqCst);
-    let lease_id = lease(&harness).await;
+    let lease_id = lease(&harness, "ble").await;
     settle().await;
     let list: Value = harness.ok("/local/pod/discovery/list", json!({})).await;
     assert_eq!(list["adapter"]["state"], "denied");
@@ -168,7 +173,7 @@ async fn lan_discovery_is_independent_and_reports_native_failures() {
         state: AdapterState::PoweredOff,
         message: None,
     });
-    let id = lease(&h).await;
+    let id = lease(&h, "lan").await;
     settle().await;
     h.core
         .on_lan_advertisement(support::lan_advertisement("lan-pod"));
@@ -193,4 +198,71 @@ async fn lan_discovery_is_independent_and_reports_native_failures() {
     assert_eq!(list["candidates"], json!([]));
     h.ok("/local/pod/discovery/stop", json!({"leaseId":id}))
         .await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn discovery_leases_keep_their_transport_and_cannot_be_resurrected() {
+    let h = Harness::new();
+    assert_eq!(
+        h.reason("/local/pod/discovery/start", json!({})).await,
+        "BAD_REQUEST"
+    );
+    let lan = lease(&h, "lan").await;
+    settle().await;
+    h.add_device("pod-a", Script::pod());
+    h.lan.advertise();
+    let list = h.ok("/local/pod/discovery/list", json!({})).await;
+    assert_eq!(list["candidates"].as_array().unwrap().len(), 1);
+    assert_eq!(list["candidates"][0]["transport"], "lan");
+    assert!(scans(&h).is_empty());
+
+    let ble = lease(&h, "ble").await;
+    settle().await;
+    h.add_device("pod-a", Script::pod());
+    let list = h.ok("/local/pod/discovery/list", json!({})).await;
+    assert_eq!(list["candidates"].as_array().unwrap().len(), 2);
+    assert_eq!(scans(&h), [true]);
+    h.ok("/local/pod/discovery/stop", json!({"leaseId": lan}))
+        .await;
+    settle().await;
+    h.lan.advertise();
+    let list = h.ok("/local/pod/discovery/list", json!({})).await;
+    assert_eq!(list["lanBrowsing"], false);
+    assert_eq!(list["candidates"].as_array().unwrap().len(), 1);
+    assert_eq!(list["candidates"][0]["transport"], "ble");
+    assert_eq!(scans(&h), [true]);
+    assert_eq!(
+        h.reason("/local/pod/discovery/renew", json!({"leaseId":lan}))
+            .await,
+        "unknown_lease"
+    );
+
+    tokio::time::sleep(Duration::from_secs(31)).await;
+    assert_eq!(
+        h.reason("/local/pod/discovery/renew", json!({"leaseId":ble}))
+            .await,
+        "unknown_lease"
+    );
+    assert_eq!(scans(&h), [true, false]);
+}
+
+#[test]
+fn only_explicit_valid_ble_start_may_request_permission() {
+    let target = app_facade_api::pod::DISCOVERY_START_TARGET;
+    let should_request = ble_commission::requests_bluetooth_discovery;
+    assert!(should_request(target, r#"{"transport":"ble"}"#));
+    assert!(!should_request(target, r#"{"transport":"lan"}"#));
+    assert!(!should_request(target, "{}"));
+    assert!(!should_request(
+        target,
+        r#"{"transport":"ble","extra":true}"#
+    ));
+    assert!(!should_request(
+        app_facade_api::pod::DISCOVERY_RENEW_TARGET,
+        r#"{"transport":"ble"}"#
+    ));
+    assert!(!should_request(
+        app_facade_api::pod::COMMISSION_START_TARGET,
+        r#"{"candidateId":"lan:p"}"#
+    ));
 }

@@ -14,12 +14,18 @@
     "candidates": { "type": "array", "items": { "$ref": "#/$defs/candidate" } }
   },
   "$defs": {
+    "startRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport"],
+      "properties": { "transport": { "enum": ["lan", "ble"] } }
+    },
     "adapter": {
       "type": "object",
       "additionalProperties": false,
       "required": ["state"],
       "properties": {
-        "state": { "enum": ["ready", "poweredOff", "denied", "unavailable"] },
+        "state": { "enum": ["ready", "poweredOff", "unsupported", "permissionRequired", "denied", "initializing", "locationDisabled", "unavailable"] },
         "message": { "type": "string" }
       }
     },
