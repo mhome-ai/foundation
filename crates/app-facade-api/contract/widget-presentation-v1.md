@@ -5,7 +5,7 @@ policy. They are not Agent/CLI/MCP tools. Inputs reject unknown fields.
 
 | Target | Input | Business output and read boundary |
 | --- | --- | --- |
-| `/app/presentation/widget/list` | Required `{type: "data" \| "button" \| "circadian"}` | `{items, automationNames}`. Reads only that type's Widget table. Global standalone Widgets, defaults and Automation-owned parameters are included; card interiors, Twin and weather internals are excluded. Owner labels use one selected metadata batch, only for returned Automation owners. No script, relation, history or all-type reads. |
+| `/app/presentation/widget/list` | Required `{type: "data" \| "button" \| "circadian"}` | `{items, automationNames}`. Reads only that type's Widget table. Global standalone Widgets, defaults and Automation-owned parameters are included. Active card interiors, Twin and weather internals are excluded. Pending Data, Button and Circadian Widgets eligible for manual deletion are included for cleanup, regardless of their usual visibility. Owner labels use one selected metadata batch, only for returned Automation owners. No script, relation, history or all-type reads. |
 | `/app/presentation/widget/names/get` | `{ids}`: 1–100 selected, trimmed, deduplicated IDs | `{names: {id: displayName}}`. Missing/blank names omitted. Only selected Widget rows; no legacy `name` fallback. |
 | `/app/presentation/widget/defaults/get` | `{}` | `{items, automationNames:{}}`. Preserves the existing default Widget lookup and lazy initialization, then reads the selected Data Widgets. |
 
