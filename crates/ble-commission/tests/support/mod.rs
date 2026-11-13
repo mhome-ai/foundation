@@ -86,6 +86,7 @@ pub struct Script {
     pub drop_once: bool,
     pub lock_after_rejections: Option<u32>,
     pub claim_token: Option<&'static str>,
+    pub refuse_host_finish: bool,
     /// Host-style paging: at most this many scan results per page.
     pub scan_page_cap: Option<usize>,
     /// Inside a Wi-Fi change window, with the pod code saving the new network
@@ -119,6 +120,7 @@ impl Script {
             drop_once: false,
             lock_after_rejections: None,
             claim_token: None,
+            refuse_host_finish: false,
             scan_page_cap: None,
             reprovision: None,
             device_id: "a0b1c2d3e4f5",
@@ -538,6 +540,7 @@ impl FakeDevice {
                 "onboardingRequired": script.onboarding_required,
                 "networkOnline": script.network_online,
             }),
+            ("host-info", "finish") if script.refuse_host_finish => json!({"ok":false}),
             ("host-info", "finish") => match script.claim_token {
                 Some(token) => json!({ "ok": true, "claimToken": token }),
                 None => json!({ "ok": true }),

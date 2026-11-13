@@ -98,6 +98,11 @@ Fallback characteristic UUIDs: the standard endpoints as for pods, `host-info`
   checking that the Host is still unclaimed. Repeated `finish` requests in the
   same session return the same token. A claimed Host's re-provision window
   carries no first-claim token.
+- `finish` returns `{"ok":false}` when the requested network has not been
+  established and the Host is not recovering an unfinished claim on a working
+  network. Refusal keeps the current setup session open. The Client reports
+  completion only after a positive receipt, with a valid token when the secured
+  Host information indicated that first claim was pending.
   `finish` ends the central's setup session. Without it, the Host disconnects the
   central 30 seconds after a successful join; the commissioner retries `finish`
   within that window. Network readiness and mDNS announcement do not establish

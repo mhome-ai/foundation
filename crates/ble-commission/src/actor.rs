@@ -51,6 +51,7 @@ pub(crate) struct Actor {
     rejected: u32,
     join_failed: bool,
     pod_info: Option<PodInfo>,
+    host_needs_claim: bool,
     target_hub: Option<app_facade_api::pod::HubIdentity>,
     credential: Option<Credential>,
     reply: Option<oneshot::Sender<()>>,
@@ -106,6 +107,7 @@ impl Actor {
             rejected: 0,
             join_failed: false,
             pod_info: None,
+            host_needs_claim: false,
             target_hub: None,
             credential: None,
             reply: None,
@@ -480,8 +482,8 @@ impl Actor {
                 let Some(host) = device::host_info(&info) else {
                     return self.fail(incomplete());
                 };
-                let recover = info.get("onboardingRequired").and_then(Value::as_bool) == Some(true)
-                    && info.get("networkOnline").and_then(Value::as_bool) == Some(true);
+                self.host_needs_claim = info["onboardingRequired"] == true;
+                let recover = self.host_needs_claim && info["networkOnline"] == true;
                 if self.update(|live| live.host = Some(host)) {
                     if recover {
                         // The secure device response identifies an unfinished first claim.
@@ -872,7 +874,7 @@ impl Actor {
     }
 
     async fn complete_host(&mut self, client: Arc<device::Client>, ip4_addr: String) {
-        let mut claim_token = None;
+        let mut receipt = None;
         for attempt in 0..FINISH_ATTEMPTS {
             if attempt > 0 && self.sleep(TICK).await.is_none() {
                 return;
@@ -885,10 +887,7 @@ impl Actor {
             };
             match result {
                 Ok(response) => {
-                    claim_token = serde_json::from_value::<HostFinishResponse>(response)
-                        .ok()
-                        .and_then(|response| response.claim_token)
-                        .filter(|token| is_claim_token(token));
+                    receipt = serde_json::from_value::<HostFinishResponse>(response).ok();
                     break;
                 }
                 Err(failure) => {
@@ -902,6 +901,19 @@ impl Actor {
         if !self.engine.check_host_account().await {
             return;
         }
+        let Some(receipt) = receipt.filter(|receipt| {
+            receipt.ok
+                && match receipt.claim_token.as_deref() {
+                    Some(token) => is_claim_token(token),
+                    None => !self.host_needs_claim,
+                }
+        }) else {
+            return self.fail(error(
+                CommissionErrorCode::WifiFailed,
+                "The Host did not confirm setup. Reconnect to check the Host before continuing.",
+                None,
+            ));
+        };
         let addresses: Vec<String> = Some(ip4_addr)
             .filter(|address| address.parse::<Ipv4Addr>().is_ok())
             .into_iter()
@@ -909,7 +921,7 @@ impl Actor {
         self.update(|live| {
             live.set(Phase::Completed, None);
             live.addresses = addresses;
-            live.claim_token = claim_token;
+            live.claim_token = receipt.claim_token;
         });
     }
 

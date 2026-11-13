@@ -140,6 +140,28 @@ async fn a_host_without_a_claim_token_still_completes() {
 }
 
 #[tokio::test(start_paused = true)]
+async fn host_does_not_complete_without_the_expected_finish_receipt() {
+    for (refused, token) in [
+        (true, Some(CLAIM_TOKEN)),
+        (false, None),
+        (false, Some("bad")),
+    ] {
+        let harness = Harness::with_discovery("ble").await;
+        let mut script = Script::host();
+        script.onboarding_required = true;
+        script.refuse_host_finish = refused;
+        script.claim_token = token;
+        harness.add_device("host-a", script);
+        let id = to_wifi(&harness).await;
+        join(&harness, &id).await;
+        let session = harness.wait_state(HOST, "failed").await;
+        assert_eq!(session["error"]["code"], "wifi_failed");
+        assert!(session.get("claimToken").is_none());
+        valid(&session);
+    }
+}
+
+#[tokio::test(start_paused = true)]
 async fn a_host_locks_after_repeated_wrong_codes() {
     let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("host-a", Script::host());
