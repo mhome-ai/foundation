@@ -10,7 +10,8 @@ policy. They are not Agent/CLI/MCP tools. Inputs reject unknown fields.
 | `/app/presentation/widget/defaults/get` | `{}` | `{items, automationNames:{}}`. Preserves the existing default Widget lookup and lazy initialization, then reads the selected Data Widgets. |
 
 Rows carry ID, revision, displayName, description, source/baseId, global, tag,
-current value, and type-specific control configuration. Circadian rows contain
+current value, and type-specific control configuration. `pendingDeletion: true`
+identifies a Widget whose deletion can be completed through the delete Facade. Circadian rows contain
 only `curve`, `curvePreview` (active curve's UI points), current/next values and
 `nextTimestamp`; they omit complete schedules, location and internal state.
 Complete configuration uses `/app/widget/detail/get`; runtime uses

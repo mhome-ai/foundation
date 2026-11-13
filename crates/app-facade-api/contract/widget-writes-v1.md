@@ -40,5 +40,12 @@ Create/configuration responses retain action, widgetId, type and displayName.
 to preserve its previous deletion behavior. This migration does not change the
 shared safe=true protection for Widgets referenced by Automations.
 
+After validation, deletion marks each Widget before removing its associated
+resources. A pending Widget remains readable and rejects controls, edits and
+new Automation or Dashboard references. Its list/detail projections carry
+`pendingDeletion: true`. Call the same delete endpoint with the original IDs
+to finish the operation. Missing IDs are already complete. A validation failure
+leaves unstarted Widgets available.
+
 All legacy public /widget/* request Controllers are retired. /widget/reportUpdate
 is a push event and internal /dispatch/widget/* operations retain their own roles.
