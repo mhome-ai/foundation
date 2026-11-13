@@ -120,11 +120,12 @@ and stop at `result_count` or on an empty page. This also works with ESP-IDF
 devices, which return exactly the requested entries (commissioners ask for at
 most 4 at a time).
 
-`prov-config` status reports `connected` with the IPv4 address once the Host is
-on the LAN (the address may be empty when the Host has none yet); `connection_failed` with `auth_error` or `network_not_found` when
-the join failed. After a failed join the commissioner sends `prov-ctrl` reset
-before the next `set_config`. In a re-provision window the previous network
-stays saved until the new one connects.
+`prov-config` status reports `connected` with the IPv4 address after the Host
+has saved the new profile. The Linux backend first activates a temporary
+profile. On failure or local cancellation it removes that profile and attempts
+to reactivate the previous one. `connection_failed` may distinguish
+`auth_error` or `network_not_found`. After a failed join the commissioner sends
+`prov-ctrl` reset before the next `set_config`.
 
 ## 4. Native Client targets
 
@@ -161,9 +162,12 @@ Session states, in order: `connecting`, `awaiting_code`, `securing`,
 `timed_out`, `cancelled`; transitional `cancelling`. `completed` carries `host`, the reported `addresses`
 (IPv4 only, possibly empty) and `claimToken` from the `finish` response; the
 commissioner sends `finish` (up to 3 times while the secure session lasts)
-before reporting it. `claimToken` is absent when `finish` could not be
-delivered, in a re-provision window.
-No other state carries `claimToken`.
+before reporting it. A missing or refused `finish` is a failed session. The
+first-claim handoff includes `claimToken`. A completed Wi-Fi update on an
+already claimed Host omits it. An account change can redact the token from a
+terminal event, so confirm a tokenless completion through the native status
+target before displaying the Wi-Fi update as successful. No other state
+carries `claimToken`.
 
 The first claim (TOFU) after BLE provisioning must include the returned token.
 Native `host.claim` passes it to `POST /v1/auth/claim`, alongside the environment,
@@ -194,13 +198,14 @@ The schema is `schema/host-provision.v1.schema.json`.
   setup after restart, keeping saved Wi-Fi. Network readiness is not ownership.
   An existing local claim, including one awaiting cloud confirmation, must never
   reopen first-claim authority. An unreadable ownership store refuses recovery.
-- Re-provision window: opened from the Host's local interface (display settings
-  or `meowhostd provision open`). Mutating local provisioning commands (`open`,
+- Re-provision window: opened on the target Host with `meow host provision open`.
+  The CLI talks directly to the Host's local control socket, without a Client
+  daemon. Mutating local provisioning commands (`open`,
   `close`, `factory-reset`) require root or membership in the `meow-admin`
   group (checked with the peer credentials of the local control socket); status
-  stays readable by the same user. The command help says to use `sudo`. Wi-Fi only; Host identity, owners and services
-  are kept. Closes after a successful join, on `meowhostd provision close`, or
-  after 10 minutes.
+  is available with `meow host provision status`.
+  Host identity, owners and services are kept. The window closes after a
+  successful join, on `meow host provision close`, or after 10 minutes.
 - Factory reset: from the local interface (`meowhostd factory-reset`). Stops
   services, forgets saved Wi-Fi on BLE provisioning appliances, erases owners,
   the Host security store and bootstrap key, and returns to first provisioning.
