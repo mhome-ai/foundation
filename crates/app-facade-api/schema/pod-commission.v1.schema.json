@@ -101,6 +101,15 @@
         }
       }
     },
+    "enrollment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spaceId", "clientMode"],
+      "properties": {
+        "spaceId": { "type": "string", "minLength": 1 },
+        "clientMode": { "enum": ["user", "space"] }
+      }
+    },
     "authorization": {
       "type": "object",
       "additionalProperties": false,
@@ -373,6 +382,9 @@
               "required": [
                 "authorization"
               ]
+            },
+            {
+              "required": ["enrollment"]
             },
             {
               "properties": {

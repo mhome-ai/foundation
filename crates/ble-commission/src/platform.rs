@@ -146,6 +146,15 @@ pub trait Cloud: Send + Sync + 'static {
             "Product Hub setup is unavailable".into(),
         ))
     }
+    async fn selected_hub(
+        &self,
+        _context: &str,
+        _space_id: &str,
+    ) -> Result<Option<(String, String)>, CloudError> {
+        Err(CloudError::Unreachable(
+            "Hub selection is unavailable".into(),
+        ))
+    }
     async fn account(&self) -> Option<Account>;
     /// `POST {api}/{path}` with the account's bearer token, the `SpaceId`
     /// header when `space_id` is set, and a JSON body.
@@ -207,6 +216,15 @@ pub trait BlockingCloud: Send + Sync + 'static {
     ) -> Result<(), CloudError> {
         Err(CloudError::Unreachable(
             "Product Hub setup is unavailable".into(),
+        ))
+    }
+    fn selected_hub(
+        &self,
+        _context: String,
+        _space_id: String,
+    ) -> Result<Option<(String, String)>, CloudError> {
+        Err(CloudError::Unreachable(
+            "Hub selection is unavailable".into(),
         ))
     }
     fn account(&self) -> Option<Account>;
@@ -323,6 +341,17 @@ impl<T: BlockingCloud + ?Sized> Cloud for Blocking<T> {
         .await
         .unwrap_or_else(|| Err(CloudError::Unreachable("Product setup stopped".into())))
     }
+    async fn selected_hub(
+        &self,
+        context: &str,
+        space_id: &str,
+    ) -> Result<Option<(String, String)>, CloudError> {
+        let (context, space_id) = (context.to_owned(), space_id.to_owned());
+        off_runtime(&self.0, move |cloud| cloud.selected_hub(context, space_id))
+            .await
+            .unwrap_or_else(|| Err(CloudError::Unreachable("Hub selection stopped".into())))
+    }
+
     async fn account(&self) -> Option<Account> {
         off_runtime(&self.0, |cloud| cloud.account())
             .await

@@ -56,6 +56,7 @@ impl Clock {
 pub enum Join {
     Connected(&'static str),
     Failed(proto::WifiConnectFailedReason),
+    HubUnverified,
     Never,
 }
 
@@ -354,6 +355,10 @@ impl FakeDevice {
                 proto::WifiStationState::ConnectionFailed,
                 Some(State::FailReason(reason as i32)),
             ),
+            Some(Join::HubUnverified) => {
+                state.pod_state = "wifi_failed";
+                (proto::WifiStationState::ConnectionFailed, None)
+            }
         };
         if sta_state == proto::WifiStationState::Connected {
             state.pod_state = match script.reprovision {
@@ -439,6 +444,7 @@ impl FakeDevice {
             state.pod_state
         };
         let response = match (endpoint, op.as_str()) {
+            ("pod-info", "prepareWifi") => json!({"ok":true}),
             ("pod-info", _) => json!({
                 "protocol": 1,
                 "deviceBinding":script.product_binding(),
@@ -452,6 +458,7 @@ impl FakeDevice {
                 "identity": { "keyId": "p256:abc", "alg": "ES256", "x": "x", "y": "y", "fingerprint": "f" },
                 "wifiConfigured": script.wifi_configured && script.reprovision.is_none(),
                 "state": info_state,
+                "error": if matches!(state.sta, Sta::Done(Join::HubUnverified)) { json!({"code":"wifi_hub_unverified"}) } else { Value::Null },
                 "mode": script.reprovision.map(|_| "reprovision"),
             }),
             ("pod-credential", "prepareBinding") => {
@@ -746,6 +753,8 @@ pub struct FakeCloud {
     pub calls: Mutex<Vec<CloudCall>>,
     pub issue_delay: Mutex<Duration>,
     pub fail_issue: AtomicBool,
+    pub bootstrap: AtomicBool,
+    pub replaced_hub: AtomicBool,
     pub space_credential_window: Mutex<Option<(String, Option<i64>)>>,
     clock: Clock,
     journal: Journal,
@@ -762,6 +771,8 @@ impl FakeCloud {
             calls: Mutex::new(Vec::new()),
             issue_delay: Mutex::new(Duration::from_millis(100)),
             fail_issue: AtomicBool::new(false),
+            bootstrap: AtomicBool::new(false),
+            replaced_hub: AtomicBool::new(false),
             space_credential_window: Mutex::new(None),
             clock: Clock::new(),
             journal,
@@ -813,6 +824,9 @@ pub fn account(context: &str) -> Account {
 
 #[async_trait]
 impl Cloud for FakeCloud {
+    async fn selected_hub(&self, _: &str, _: &str) -> Result<Option<(String, String)>, CloudError> {
+        Ok((!self.bootstrap.load(Ordering::SeqCst)).then(|| ("tenant".into(), "hub".into())))
+    }
     async fn account(&self) -> Option<Account> {
         self.account.lock().unwrap().clone()
     }
@@ -832,12 +846,18 @@ impl Cloud for FakeCloud {
         });
         note(&self.journal, format!("cloud:{path}"));
         let body = match path {
+            "hub/identity/get" => {
+                let request: Value = serde_json::from_str(body).unwrap();
+                json!({"hubId":"hub","tenantId":"tenant","spaceId":request["spaceId"],
+                    "keyId":"p256:key", "algorithm":"ES256", "publicKeyX":"x", "publicKeyY":"y",
+                    "fingerprint":"key", "hostId":"host", "hostPublicKey":{"x":"x","y":"y"}})
+            }
             "/host/authorizations/claim" => json!({"claimId":"product-claim","proof":body}),
             "/host/authorizations/commit-claim" => json!({"ok":true}),
             "pod/space/credential/issue" => json!({
                 "credentialState": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.0.clone()).unwrap_or("pending".into()), "credentialId":"space-credential", "appClientId":"a:space-device", "jwtToken":"space-jwt",
                 "activateBefore": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.1).unwrap_or(Some(self.clock.now_ms()+600_000)),
-                "hubIdentity":{"hubId":"hub","tenantId":"tenant","spaceId":space_id.unwrap(),
+                "hubIdentity":{"hubId":if self.replaced_hub.load(Ordering::SeqCst) { "other-hub" } else { "hub" },"tenantId":"tenant","spaceId":space_id.unwrap(),
                     "keyId":"p256:key", "algorithm":"ES256", "publicKeyX":"x", "publicKeyY":"y", "fingerprint":"key",
                     "hostId":"host", "hostPublicKey":{"x":"x","y":"y"}}
             }),

@@ -24,7 +24,7 @@ use core_api::ErrorResponse;
 use tokio::runtime::{Handle, Runtime};
 use tokio::task::JoinHandle;
 
-pub use cloud::is_loopback_url;
+pub use cloud::{is_loopback_url, selected_setup_hub};
 pub use endpoints::{endpoint_uuid, fallback_endpoint_uuids};
 pub use facade::{is_target, requests_bluetooth_discovery, RequestError};
 pub use platform::{

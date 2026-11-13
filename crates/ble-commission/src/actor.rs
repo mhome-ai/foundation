@@ -51,6 +51,7 @@ pub(crate) struct Actor {
     rejected: u32,
     join_failed: bool,
     pod_info: Option<PodInfo>,
+    target_hub: Option<app_facade_api::pod::HubIdentity>,
     credential: Option<Credential>,
     reply: Option<oneshot::Sender<()>>,
     pairing_code: Option<zeroize::Zeroizing<String>>,
@@ -105,6 +106,7 @@ impl Actor {
             rejected: 0,
             join_failed: false,
             pod_info: None,
+            target_hub: None,
             credential: None,
             reply: None,
             pairing_code: None,
@@ -304,7 +306,11 @@ impl Actor {
     async fn execute(&mut self, op: Op) {
         match op {
             Op::Code(code) => self.code(code).await,
-            Op::Wifi { ssid, password } => self.wifi(ssid, password).await,
+            Op::Wifi {
+                ssid,
+                password,
+                enrollment,
+            } => self.wifi(ssid, password, enrollment).await,
             Op::Scan { join: true } => {}
             Op::Scan { join: false } => self.scan().await,
             Op::Authorize {
@@ -524,8 +530,17 @@ impl Actor {
     }
 
     async fn offer_wifi(&mut self, failure: Option<CommissionError>) {
+        let authorization = if self.kind == DeviceKind::Pod && !self.reprovision() {
+            let Some(prompt) = self.authorization_prompt().await else {
+                return;
+            };
+            Some(prompt)
+        } else {
+            None
+        };
         if self.update(|live| {
             live.set(Phase::AwaitingWifi, failure);
+            live.authorization = authorization;
             live.scanning = true;
         }) {
             self.scan_now().await;
@@ -568,7 +583,12 @@ impl Actor {
         }
     }
 
-    async fn wifi(&mut self, ssid: String, password: String) {
+    async fn wifi(
+        &mut self,
+        ssid: String,
+        password: String,
+        enrollment: Option<app_facade_api::pod::EnrollmentTarget>,
+    ) {
         let accepted_phase = match self.kind {
             DeviceKind::Host => Phase::JoiningWifi,
             DeviceKind::Pod => Phase::AwaitingWifi,
@@ -580,11 +600,104 @@ impl Actor {
             return self.fail_disconnected("no link");
         };
         let join_failed = self.join_failed;
+        if join_failed {
+            match self.race(client.wifi_reset()).await {
+                Some(Ok(())) => {}
+                Some(Err(error)) => return self.fail_disconnected(error),
+                None => return,
+            }
+        }
+        let dependent = self
+            .pod_info
+            .as_ref()
+            .and_then(|info| info.device_binding.as_ref())
+            .is_some_and(|binding| binding.host.is_some());
+        if let Some(target) = enrollment.as_ref() {
+            let Some(context) = self
+                .engine
+                .mutate(self.kind, &self.id, |live| live.account_context.clone())
+                .flatten()
+            else {
+                return;
+            };
+            let cloud = self.engine.platform.cloud.clone();
+            if self
+                .race(cloud.account())
+                .await
+                .flatten()
+                .as_ref()
+                .map(|a| &a.context)
+                != Some(&context)
+            {
+                return self.fail(error(
+                    CommissionErrorCode::IssueFailed,
+                    "The MeowLink account changed. Start again.",
+                    None,
+                ));
+            }
+            self.target_hub = if target.client_mode == ClientMode::Space {
+                match self
+                    .race(cloud::resolve_setup_hub(&cloud, &context, &target.space_id))
+                    .await
+                {
+                    Some(Ok(Some(hub))) => Some(hub),
+                    Some(Ok(None)) if dependent => None,
+                    Some(Ok(None) | Err(_)) => {
+                        return self.fail(error(
+                            CommissionErrorCode::WifiFailed,
+                            "The selected Space has no available Hub to verify.",
+                            Some("wifi_hub_unverified".into()),
+                        ))
+                    }
+                    None => return,
+                }
+            } else {
+                None
+            };
+            if self
+                .race(cloud.account())
+                .await
+                .flatten()
+                .as_ref()
+                .map(|a| &a.context)
+                != Some(&context)
+            {
+                return self.fail(error(
+                    CommissionErrorCode::IssueFailed,
+                    "The MeowLink account changed. Start again.",
+                    None,
+                ));
+            }
+            let mut command = json!({"op":"prepareWifi", "mode":match (target.client_mode, self.target_hub.is_some()) {
+                (ClientMode::User, _) => "user",
+                (ClientMode::Space, false) => "bootstrap",
+                (ClientMode::Space, true) => "space",
+            }});
+            if let Some(hub) = self.target_hub.as_ref() {
+                command["hub"] = json!([
+                    hub.hub_id,
+                    hub.tenant_id,
+                    hub.space_id,
+                    hub.public_key_x,
+                    hub.public_key_y,
+                    hub.host_public_key.x,
+                    hub.host_public_key.y
+                ]);
+            }
+            if !matches!(self.race(client.call_json(POD_INFO_ENDPOINT, &command)).await, Some(Ok(reply)) if reply["ok"] == true)
+            {
+                return self.fail(error(
+                    CommissionErrorCode::WifiFailed,
+                    "The pod did not accept the Wi-Fi setup target.",
+                    None,
+                ));
+            }
+            if !self.update(|live| live.enrollment = enrollment) {
+                return;
+            }
+        }
         let applied = self
             .race(async {
-                if join_failed {
-                    client.wifi_reset().await?;
-                }
                 client.wifi_set_config(&ssid, &password).await?;
                 client.wifi_apply().await
             })
@@ -647,6 +760,24 @@ impl Actor {
                 }
                 Ok(WifiStatus::Failed(failure)) => {
                     self.join_failed = true;
+                    if self.kind == DeviceKind::Pod && matches!(failure, WifiFailure::Other) {
+                        let Some(status) = self
+                            .race(client.call_json(POD_INFO_ENDPOINT, &json!({})))
+                            .await
+                        else {
+                            return;
+                        };
+                        if status.is_ok_and(|info| {
+                            info.pointer("/error/code").and_then(Value::as_str)
+                                == Some("wifi_hub_unverified")
+                        }) {
+                            return self.fail(error(
+                                CommissionErrorCode::WifiFailed,
+                                "The pod could not verify its Hub through the selected Wi-Fi.",
+                                Some("wifi_hub_unverified".into()),
+                            ));
+                        }
+                    }
                     self.enter(
                         if self.kind == DeviceKind::Pod {
                             Phase::Failed
@@ -789,33 +920,8 @@ impl Actor {
         {
             return;
         }
-        let Some(account) = self.race(self.engine.platform.cloud.account()).await else {
+        let Some(prompt) = self.authorization_prompt().await else {
             return;
-        };
-        let Some(account) = account else {
-            return self.fail(error(
-                CommissionErrorCode::IssueFailed,
-                "Sign in to MeowLink before adding a pod.",
-                None,
-            ));
-        };
-        let Some(first) = account.spaces.first() else {
-            return self.fail(error(
-                CommissionErrorCode::IssueFailed,
-                "Join a Space in MeowLink before adding a pod.",
-                None,
-            ));
-        };
-        let default_space_id = account
-            .active_space_id
-            .clone()
-            .filter(|active| account.spaces.iter().any(|scope| &scope.space_id == active))
-            .unwrap_or_else(|| first.space_id.clone());
-        let prompt = AuthorizationPrompt {
-            user_id: account.user_id,
-            user_name: account.user_name,
-            spaces: account.spaces,
-            default_space_id,
         };
         self.update(|live| {
             live.set(Phase::AwaitingAuthorization, None);
@@ -823,11 +929,47 @@ impl Actor {
         });
     }
 
+    async fn authorization_prompt(&self) -> Option<AuthorizationPrompt> {
+        let account = self.race(self.engine.platform.cloud.account()).await?;
+        let context = self
+            .engine
+            .mutate(self.kind, &self.id, |live| live.account_context.clone())
+            .flatten()?;
+        let account = account.filter(|account| account.context == context);
+        let Some(account) = account else {
+            self.fail(error(
+                CommissionErrorCode::IssueFailed,
+                "Sign in to MeowLink before adding a pod.",
+                None,
+            ));
+            return None;
+        };
+        let Some(first) = account.spaces.first() else {
+            self.fail(error(
+                CommissionErrorCode::IssueFailed,
+                "Join a Space in MeowLink before adding a pod.",
+                None,
+            ));
+            return None;
+        };
+        let default_space_id = account
+            .active_space_id
+            .clone()
+            .filter(|active| account.spaces.iter().any(|scope| &scope.space_id == active))
+            .unwrap_or_else(|| first.space_id.clone());
+        Some(AuthorizationPrompt {
+            user_id: account.user_id,
+            user_name: account.user_name,
+            spaces: account.spaces,
+            default_space_id,
+        })
+    }
+
     async fn confirm_saved_network(&self) -> bool {
         let Some(client) = self.client() else {
             return false;
         };
-        for _ in 0..30 {
+        for _ in 0..REPROVISION_POLLS {
             let Some(info) = self
                 .race(client.call_json(POD_INFO_ENDPOINT, &json!({})))
                 .await
@@ -836,7 +978,19 @@ impl Actor {
             };
             match info {
                 Ok(info) if info["state"] == "wifi_connected" => return true,
-                Ok(info) if info["state"] == "failed" => break,
+                Ok(info) if matches!(info["state"].as_str(), Some("failed" | "wifi_failed")) => {
+                    if info.pointer("/error/code").and_then(Value::as_str)
+                        == Some("wifi_hub_unverified")
+                    {
+                        self.fail(error(
+                            CommissionErrorCode::WifiFailed,
+                            "The pod could not verify its Hub through the selected Wi-Fi.",
+                            Some("wifi_hub_unverified".into()),
+                        ));
+                        return false;
+                    }
+                    break;
+                }
                 Ok(_) => {}
                 Err(error) => {
                     self.fail_disconnected(error);
@@ -994,13 +1148,9 @@ impl Actor {
         };
         let prompted = self
             .engine
-            .mutate(self.kind, &self.id, |live| {
-                live.authorization
-                    .as_ref()
-                    .map(|prompt| prompt.user_id.clone())
-            })
+            .mutate(self.kind, &self.id, |live| live.account_context.clone())
             .flatten();
-        let Some(account) = account.filter(|account| Some(&account.user_id) == prompted.as_ref())
+        let Some(account) = account.filter(|account| Some(&account.context) == prompted.as_ref())
         else {
             return self.fail(error(
                 CommissionErrorCode::IssueFailed,
@@ -1099,6 +1249,15 @@ impl Actor {
                 if !valid_space_credential_window(&issued, self.engine.now_ms()) {
                     return self.fail(issue_failed(Some(
                         "Invalid Space credential activation window".into(),
+                    )));
+                }
+                if self
+                    .target_hub
+                    .as_ref()
+                    .is_some_and(|expected| expected != &issued.hub_identity)
+                {
+                    return self.fail(issue_failed(Some(
+                        "The selected Space's Hub changed during setup".into(),
                     )));
                 }
                 let deliver = json!({"op":"deliver", "clientMode":"space", "credentialId":issued.credential_id,

@@ -167,7 +167,7 @@ fn a_blocking_platform_commissions_a_pod_on_its_own_runtime() {
     call(
         &core,
         "/local/pod/commission/wifi",
-        json!({ "sessionId": id, "ssid": "home", "password": "correct horse" }),
+        json!({ "sessionId": id, "enrollment":{"spaceId":"scope-a","clientMode":"user"}, "ssid": "home", "password": "correct horse" }),
     );
     wait(&core, "awaiting_authorization");
     call(

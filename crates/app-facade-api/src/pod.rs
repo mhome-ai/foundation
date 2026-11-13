@@ -288,6 +288,15 @@ pub struct CommissionWifiRequest {
     pub ssid: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub password: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enrollment: Option<EnrollmentTarget>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EnrollmentTarget {
+    pub space_id: String,
+    pub client_mode: ClientMode,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -417,6 +426,8 @@ pub struct CommissionSession {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub authorization: Option<AuthorizationPrompt>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enrollment: Option<EnrollmentTarget>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pod_id: Option<String>,
     /// Credential ownership; required with a successful enrollment result.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -462,7 +473,11 @@ impl CommissionSession {
             return Err("awaiting_authorization requires an authorization prompt");
         }
         if self.mode == Some(SessionMode::Reprovision) {
-            if self.authorization.is_some() || self.pod_id.is_some() || self.client_mode.is_some() {
+            if self.authorization.is_some()
+                || self.enrollment.is_some()
+                || self.pod_id.is_some()
+                || self.client_mode.is_some()
+            {
                 return Err("reprovision sessions issue no credential");
             }
         } else if self.state == CommissionState::Completed
@@ -633,7 +648,7 @@ pub enum SpaceCredentialState {
     Active,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HubIdentity {
     pub hub_id: String,

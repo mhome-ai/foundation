@@ -67,6 +67,56 @@ pub(crate) async fn approve_login(
     post(cloud, context, USER_LOGIN_APPROVE_PATH, None, request).await
 }
 
+/// Selects only a published Hub. An in-flight setup or teardown is not an
+/// empty Space eligible for a new bootstrap.
+pub fn selected_setup_hub(
+    view: &app_facade_api::hub::LocalHubState,
+    space_id: &str,
+    tenant_id: String,
+) -> Result<Option<(String, String)>, CloudError> {
+    let unavailable = || CloudError::Unreachable("The selected Space's Hub is not ready".into());
+    if tenant_id.is_empty()
+        || view.space_id != space_id
+        || view.configured != view.hub.is_some()
+        || view.operation.is_some()
+        || view.revocation.is_some()
+    {
+        return Err(unavailable());
+    }
+    let Some(hub) = view.hub.as_ref() else {
+        return Ok(None);
+    };
+    if !hub.cloud.status.eq_ignore_ascii_case("ready") || hub.cloud.id.is_empty() {
+        return Err(unavailable());
+    }
+    Ok(Some((tenant_id, hub.cloud.id.clone())))
+}
+
+pub(crate) async fn resolve_setup_hub(
+    cloud: &Arc<dyn Cloud>,
+    context: &str,
+    space_id: &str,
+) -> Result<Option<app_facade_api::pod::HubIdentity>, CallError> {
+    let Some((tenant_id, hub_id)) = cloud.selected_hub(context, space_id).await? else {
+        return Ok(None);
+    };
+    let identity: app_facade_api::pod::HubIdentity = post(
+        cloud,
+        context,
+        "hub/identity/get",
+        None,
+        &serde_json::json!({"tenantId":tenant_id,"hubId":hub_id,"spaceId":space_id}),
+    )
+    .await?;
+    if identity.space_id != space_id || identity.hub_id != hub_id || identity.tenant_id != tenant_id
+    {
+        return Err(CallError::Unreadable(
+            "the Hub identity does not match the selected Space".into(),
+        ));
+    }
+    Ok(Some(identity))
+}
+
 /// Whether the host of `url` is `localhost`, in `127.0.0.0/8` or `::1`.
 pub fn is_loopback_url(url: &str) -> bool {
     let rest = url.split_once("://").map_or(url, |(_, rest)| rest);

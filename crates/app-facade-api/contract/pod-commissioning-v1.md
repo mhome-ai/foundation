@@ -9,8 +9,9 @@ call the `/local/pod/*` targets of their native Client.
 Network provisioning and activation are separate transactions. BLE provisions
 Wi-Fi; Ethernet and already-connected Wi-Fi skip it. Every initialization then
 uses a direct native Client ↔ Pod LAN security-2 session. No Core relay is used.
-The commissioner explicitly chooses `clientMode: "user" | "space"` during
-`/local/pod/commission/authorize`. User mode uses the personal Pod credential.
+The commissioner selects `clientMode: "user" | "space"` before submitting
+initial BLE Wi-Fi credentials or in the LAN session for an already-networked Pod.
+User mode uses the personal Pod credential.
 Space mode uses a local Core credential signed by Lion; it carries no user
 identity and has no cloud access/refresh token. Changing mode requires reset.
 
@@ -159,10 +160,13 @@ Activation error codes: `time_sync_failed`, `cloud_unreachable`,
 `local_hub_unavailable`, `refresh_rejected`, `auth_rejected`, `storage_failed` (the final commit, or in a
 Wi-Fi change window saving the new network, failed).
 
-The Pod commits Wi-Fi immediately after a successful join, before any credential
-issuance. Activation commits only identity/binding data. Failed activation,
-disconnection, code expiry and reboot preserve the successfully saved network.
-A failed join rolls back only the incomplete network change.
+The Pod joins using temporary Wi-Fi settings. For a Space with an existing Hub,
+it locates and proves the selected Hub's identity through the new Wi-Fi interface
+within 30 seconds of receiving an IP address, then commits the network. Personal
+Pods commit on IP readiness. A failed join or proof clears the trial and keeps
+any previously stored network. Activation happens afterward and commits only
+identity and binding data. Activation failure, disconnection, code expiry and
+reboot preserve the committed network.
 
 ### LAN discovery and channel
 
@@ -189,8 +193,8 @@ A failed join rolls back only the incomplete network change.
 ## 4. Pod state machine
 
 ```text
-no network -> BLE secure -> join -> save Wi-Fi -> network ready
-Ethernet / saved Wi-Fi ------------------------> network ready
+no network -> BLE secure -> join -> verify selected Hub if required -> save Wi-Fi
+Ethernet / saved Wi-Fi ------------------------------------------> network ready
 network ready -> advertise init -> LAN secure -> authorize -> activate -> save identity
 join failure -> end attempt; start Wi-Fi setup again
 activation failure -> end attempt; keep network and init advertisement
@@ -214,8 +218,9 @@ Runtime states after commit:
   the new one connects. `pod-info` reports `"mode":"reprovision"` and
   `wifiConfigured: false`, and only the Wi-Fi endpoints and `pod-credential`
   `status` and `finish` are accepted (`deliver` answers `wrong_state`). After
-  `prov-config` apply the pod joins the new network, saves it, and reports
-  `commissioned`, or `failed` with `storage_failed` if saving failed; it then
+  `prov-config` apply the Pod joins the new network, validates its stored Hub for
+  Space mode, saves the network and reports `commissioned`. It reports `failed`
+  with `wifi_hub_unverified` when the Hub proof fails or `storage_failed` if saving fails. It then
   restarts on `finish`, 30 seconds later, or at the end of the window. A failed
   join or an expired window restarts with the previous network.
 - `needs_recommission`: logout, or refresh rejected because the credential was
@@ -317,7 +322,7 @@ never show these values or `message` verbatim.
 | `/local/pod/discovery/list` | `{}` | discovery snapshot |
 | `/local/pod/commission/start` | `{"candidateId"}` | session snapshot |
 | `/local/pod/commission/code` | `{"sessionId","code"}` | session snapshot |
-| `/local/pod/commission/wifi` | `{"sessionId","ssid","password"?}` | session snapshot |
+| `/local/pod/commission/wifi` | `{"sessionId","ssid","password"?,"enrollment"?}` | session snapshot |
 | `/local/pod/commission/wifi/scan` | `{"sessionId"}` | session snapshot |
 | `/local/pod/commission/authorize` | `{"sessionId","spaceId"}` | session snapshot |
 | `/local/pod/commission/status` | `{}` | `{"session": snapshot or null}` |
@@ -333,6 +338,24 @@ returns `unknown_lease` if the lease was stopped or expired. A LAN lease does
 not request Bluetooth permission. BLE discovery uses the current Client's radio.
 Snapshots may contain both transports when several callers hold leases. A running
 Pod setup may continue LAN browsing to complete a handoff.
+
+Initial BLE Wi-Fi setup requires `enrollment: {spaceId, clientMode}`. An
+already-bound Pod changing Wi-Fi uses the stored authorization and omits it.
+An already-networked Pod selects its authorization in the LAN session.
+
+Before submitting the Wi-Fi settings, the Client sends `pod-info` the secured
+`{"op":"prepareWifi","mode":"user"|"space"|"bootstrap"}` record. A `space`
+record also carries `hub`, an ordered array of seven strings: Hub ID, tenant ID,
+Space ID, Hub P-256 X/Y and Host TLS P-256 X/Y. The Client obtains this identity
+from the published Space Hub and the Hub identity service. No application
+credential is sent in the BLE network phase. The device accepts Wi-Fi apply
+only after receiving a setup target or when in its authorized reprovision
+window. It verifies a selected Hub from the new Wi-Fi before committing the
+network. The Client later authorizes the exact enrollment selected before the
+trial and rejects a credential from a different Hub.
+`bootstrap` is reserved for a verified product with an embedded dependent Host
+when the selected Space has no existing Hub or pending Hub transition. A
+standalone Pod rejects that mode.
 
 Discovery is shared by every MeowLink device kind: each candidate carries
 `kind` (`pod` or `host`). `/local/pod/commission/start` accepts only `pod`

@@ -100,6 +100,7 @@ pub(crate) enum Op {
     Wifi {
         ssid: String,
         password: String,
+        enrollment: Option<app_facade_api::pod::EnrollmentTarget>,
     },
     /// `join` waits for the scan that was already running when it was asked.
     Scan {
@@ -128,6 +129,7 @@ pub(crate) struct Live {
     pub error: Option<CommissionError>,
     pub device: Option<PodDeviceInfo>,
     pub authorization: Option<AuthorizationPrompt>,
+    pub enrollment: Option<app_facade_api::pod::EnrollmentTarget>,
     pub pod_id: Option<String>,
     pub client_mode: Option<app_facade_api::pod::ClientMode>,
     pub mode: Option<SessionMode>,
@@ -162,6 +164,7 @@ impl Live {
             device: self.device.clone(),
             networks: self.networks.clone(),
             authorization: self.authorization.clone(),
+            enrollment: self.enrollment.clone(),
             pod_id: self.pod_id.clone(),
             client_mode: self.client_mode,
             mode: self.mode,

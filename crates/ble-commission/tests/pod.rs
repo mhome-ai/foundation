@@ -7,7 +7,7 @@ use app_facade_api::pod::{
     CommissionSession, DeviceKind, BLE_FLAG_COMMISSIONABLE, COMMISSION_CHANGED_EVENT,
 };
 use serde_json::{json, Value};
-use support::{account, session_id, Activation, Harness, Script, CODE};
+use support::{account, session_id, Activation, Harness, Join, Script, CODE};
 
 const POD: DeviceKind = DeviceKind::Pod;
 
@@ -33,6 +33,10 @@ async fn secure(harness: &Harness, id: &str) {
 }
 
 async fn to_authorization(harness: &Harness) -> String {
+    to_authorization_as(harness, "user").await
+}
+
+async fn to_authorization_as(harness: &Harness, mode: &str) -> String {
     let id = start(harness).await;
     secure(harness, &id).await;
     let session = harness
@@ -44,7 +48,7 @@ async fn to_authorization(harness: &Harness) -> String {
     harness
         .ok(
             "/local/pod/commission/wifi",
-            json!({ "sessionId": id, "ssid": "home", "password": "correct horse" }),
+            json!({ "sessionId": id, "enrollment":{"spaceId":"scope-a","clientMode":mode}, "ssid": "home", "password": "correct horse" }),
         )
         .await;
     harness.wait_state(POD, "awaiting_authorization").await;
@@ -320,7 +324,7 @@ async fn requests_are_checked_against_the_session_state() {
         harness
             .reason(
                 "/local/pod/commission/wifi",
-                body(json!({ "ssid": "home" }))
+                body(json!({ "enrollment":{"spaceId":"scope-a","clientMode":"user"}, "ssid": "home" }))
             )
             .await,
         "wrong_state"
@@ -342,7 +346,7 @@ async fn requests_are_checked_against_the_session_state() {
         harness
             .reason(
                 "/local/pod/commission/wifi",
-                body(json!({ "ssid": "home", "password": "short" }))
+                body(json!({ "enrollment":{"spaceId":"scope-a","clientMode":"user"}, "ssid": "home", "password": "short" }))
             )
             .await,
         "invalid_wifi"
@@ -351,7 +355,7 @@ async fn requests_are_checked_against_the_session_state() {
         harness
             .reason(
                 "/local/pod/commission/wifi",
-                body(json!({ "ssid": "x".repeat(33) }))
+                body(json!({ "enrollment":{"spaceId":"scope-a","clientMode":"user"}, "ssid": "x".repeat(33) }))
             )
             .await,
         "invalid_wifi"
@@ -359,7 +363,7 @@ async fn requests_are_checked_against_the_session_state() {
     harness
         .ok(
             "/local/pod/commission/wifi",
-            body(json!({ "ssid": "home", "password": "correct horse" })),
+            body(json!({ "enrollment":{"spaceId":"scope-a","clientMode":"user"}, "ssid": "home", "password": "correct horse" })),
         )
         .await;
     harness.wait_state(POD, "awaiting_authorization").await;
@@ -572,7 +576,7 @@ async fn sessions_run_without_ui_renewal_and_reject_cancel() {
     harness
         .ok(
             "/local/pod/commission/wifi",
-            json!({ "sessionId": id, "ssid": "home", "password": "correct horse" }),
+            json!({ "sessionId": id, "enrollment":{"spaceId":"scope-a","clientMode":"user"}, "ssid": "home", "password": "correct horse" }),
         )
         .await;
     harness.wait_state(POD, "awaiting_authorization").await;
@@ -629,7 +633,7 @@ async fn a_kept_network_is_confirmed_before_skipping_wifi() {
     harness
         .ok(
             "/local/pod/commission/wifi",
-            json!({ "sessionId": id, "ssid": "home", "password": "correct horse" }),
+            json!({ "sessionId": id, "enrollment":{"spaceId":"scope-a","clientMode":"user"}, "ssid": "home", "password": "correct horse" }),
         )
         .await;
     harness.wait_state(POD, "awaiting_authorization").await;
@@ -776,7 +780,7 @@ async fn successful_wifi_with_no_lan_discovery_ends_attempt_without_issuing() {
     h.wait_state(POD, "awaiting_wifi").await;
     h.ok(
         "/local/pod/commission/wifi",
-        json!({"sessionId":id,"ssid":"home","password":"correct horse"}),
+        json!({"sessionId":id,"enrollment":{"spaceId":"scope-a","clientMode":"user"}, "ssid":"home","password":"correct horse"}),
     )
     .await;
     let failed = h.wait_state(POD, "failed").await;
@@ -807,7 +811,7 @@ async fn failed_pod_wifi_ends_the_attempt() {
     h.wait_state(POD, "awaiting_wifi").await;
     h.ok(
         "/local/pod/commission/wifi",
-        json!({"sessionId":id,"ssid":"home","password":"wrong password"}),
+        json!({"sessionId":id,"enrollment":{"spaceId":"scope-a","clientMode":"user"}, "ssid":"home","password":"wrong password"}),
     )
     .await;
     let failed = h.wait_state(POD, "failed").await;
@@ -864,10 +868,47 @@ async fn confirmation_reconnect_rejects_replaced_device_identity() {
 }
 
 #[tokio::test(start_paused = true)]
+async fn a_failed_hub_proof_can_arrive_before_the_first_ip_status() {
+    let harness = Harness::with_discovery("ble").await;
+    let mut script = Script::pod();
+    script.join = Join::HubUnverified;
+    harness.add_device("pod-a", script);
+    let id = start(&harness).await;
+    secure(&harness, &id).await;
+    harness.wait_state(POD, "awaiting_wifi").await;
+    harness
+        .ok(
+            "/local/pod/commission/wifi",
+            json!({"sessionId":id,"enrollment":{"spaceId":"scope-a","clientMode":"space"},"ssid":"guest"}),
+        )
+        .await;
+    let failed = harness.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["code"], "wifi_failed");
+    assert_eq!(failed["error"]["detail"], "wifi_hub_unverified");
+    assert_eq!(harness.cloud.paths(), vec!["hub/identity/get"]);
+}
+
+#[tokio::test(start_paused = true)]
 async fn space_mode_uses_separate_issuance_and_only_offers_owned_local_spaces() {
     let harness = Harness::with_discovery("ble").await;
     let device = harness.add_device("pod-a", Script::pod());
-    let id = to_authorization(&harness).await;
+    let id = to_authorization_as(&harness, "space").await;
+    assert!(
+        harness.position("device:pod-info:prepareWifi") < harness.position("device:set_config")
+    );
+    assert!(
+        harness.position("cloud:hub/identity/get")
+            < harness.position("device:pod-info:prepareWifi")
+    );
+    assert_eq!(
+        harness
+            .reason(
+                "/local/pod/commission/authorize",
+                json!({"sessionId":id,"spaceId":"scope-a","clientMode":"user"})
+            )
+            .await,
+        "space_not_offered"
+    );
     let denied = harness
         .core
         .handle(
@@ -885,7 +926,10 @@ async fn space_mode_uses_separate_issuance_and_only_offers_owned_local_spaces() 
     let done = harness.wait_state(POD, "completed").await;
     assert_eq!(done["podId"], "space-credential");
     assert_eq!(done["clientMode"], "space");
-    assert_eq!(harness.cloud.paths(), vec!["pod/space/credential/issue"]);
+    assert_eq!(
+        harness.cloud.paths(),
+        vec!["hub/identity/get", "pod/space/credential/issue"]
+    );
     let deliveries = device.deliveries.lock().unwrap();
     assert_eq!(deliveries.len(), 1);
     assert_eq!(deliveries[0]["clientMode"], "space");
@@ -893,6 +937,45 @@ async fn space_mode_uses_separate_issuance_and_only_offers_owned_local_spaces() 
     for key in ["podId", "refreshToken", "cloudApi", "cloudWs", "userId"] {
         assert!(deliveries[0].get(key).is_none());
     }
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_space_pod_refuses_an_unavailable_or_replaced_hub() {
+    let h = Harness::with_discovery("ble").await;
+    h.cloud.bootstrap.store(true, Ordering::SeqCst);
+    h.add_device("pod-a", Script::pod());
+    let id = start(&h).await;
+    secure(&h, &id).await;
+    h.wait_state(POD, "awaiting_wifi").await;
+    assert_eq!(
+        h.reason(
+            "/local/pod/commission/wifi",
+            json!({"sessionId":id,"ssid":"home"})
+        )
+        .await,
+        "BAD_REQUEST"
+    );
+    h.ok("/local/pod/commission/wifi",
+        json!({"sessionId":id,"ssid":"home","enrollment":{"spaceId":"scope-a","clientMode":"space"}})).await;
+    let failed = h.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["detail"], "wifi_hub_unverified");
+    assert!(h.cloud.calls.lock().unwrap().is_empty());
+    assert!(!h.journal().iter().any(|event| event == "device:apply"));
+
+    let h = Harness::with_discovery("ble").await;
+    let device = h.add_device("pod-a", Script::pod());
+    let id = to_authorization_as(&h, "space").await;
+    h.cloud.replaced_hub.store(true, Ordering::SeqCst);
+    h.ok(
+        "/local/pod/commission/authorize",
+        json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
+    )
+    .await;
+    assert_eq!(
+        h.wait_state(POD, "failed").await["error"]["code"],
+        "issue_failed"
+    );
+    assert!(device.deliveries.lock().unwrap().is_empty());
 }
 
 #[tokio::test(start_paused = true)]
@@ -929,7 +1012,8 @@ async fn combined_product_binds_before_first_hub_and_space_credential() {
         .spaces[0]
         .local = false;
     harness.add_device("pod-a", Script::product());
-    let id = to_authorization(&harness).await;
+    harness.cloud.bootstrap.store(true, Ordering::SeqCst);
+    let id = to_authorization_as(&harness, "space").await;
     let prompt = harness.wait_state(POD, "awaiting_authorization").await;
     assert_eq!(prompt["device"]["dependentHost"], true);
     assert!(harness
@@ -980,7 +1064,8 @@ async fn combined_product_rejects_a_different_client_before_cloud_claim() {
     let mut script = Script::product();
     script.wrong_product_binding = true;
     harness.add_device("pod-a", script);
-    let id = to_authorization(&harness).await;
+    harness.cloud.bootstrap.store(true, Ordering::SeqCst);
+    let id = to_authorization_as(&harness, "space").await;
     harness
         .ok(
             "/local/pod/commission/authorize",
@@ -996,7 +1081,7 @@ async fn active_space_credential_has_a_fresh_confirmation_window_but_still_waits
     let h = Harness::with_discovery("ble").await;
     h.add_device("pod-a", Script::pod());
     *h.cloud.space_credential_window.lock().unwrap() = Some(("active".into(), None));
-    let id = to_authorization(&h).await;
+    let id = to_authorization_as(&h, "space").await;
     h.ok(
         "/local/pod/commission/authorize",
         json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
@@ -1013,7 +1098,7 @@ async fn invalid_space_credential_windows_never_reach_the_device() {
         let h = Harness::with_discovery("ble").await;
         let device = h.add_device("pod-a", Script::pod());
         *h.cloud.space_credential_window.lock().unwrap() = Some((window.0.into(), window.1));
-        let id = to_authorization(&h).await;
+        let id = to_authorization_as(&h, "space").await;
         h.ok(
             "/local/pod/commission/authorize",
             json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
@@ -1031,7 +1116,7 @@ async fn active_space_credential_does_not_complete_a_device_that_never_authentic
     script.activation = Activation::Never;
     h.add_device("pod-a", script);
     *h.cloud.space_credential_window.lock().unwrap() = Some(("active".into(), None));
-    let id = to_authorization(&h).await;
+    let id = to_authorization_as(&h, "space").await;
     h.ok(
         "/local/pod/commission/authorize",
         json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),

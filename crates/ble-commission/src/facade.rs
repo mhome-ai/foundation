@@ -316,13 +316,14 @@ async fn start(
             error: None,
             device: None,
             authorization: None,
+            enrollment: None,
             pod_id: None,
             client_mode: None,
             mode: None,
             host: None,
             addresses: Vec::new(),
             claim_token: None,
-            account_context: (kind == DeviceKind::Host).then_some(account.context),
+            account_context: Some(account.context),
             busy: false,
             scanning: false,
             released: false,
@@ -410,6 +411,18 @@ async fn wifi(
         if live.phase != Phase::AwaitingWifi {
             return Err(wrong_state(live));
         }
+        let initial_pod = kind == DeviceKind::Pod && live.mode.is_none();
+        if initial_pod {
+            let target = request.enrollment.as_ref().ok_or_else(|| {
+                RequestError::bad_request("choose the Pod's identity and Space before Wi-Fi")
+            })?;
+            let dependent = live.device.as_ref().is_some_and(|d| d.dependent_host);
+            if !offered(live, &target.space_id, target.client_mode, dependent) {
+                return Err(RequestError::rejected(Reason::SpaceNotOffered, "choose an offered Space and mode"));
+            }
+        } else if request.enrollment.is_some() {
+            return Err(RequestError::bad_request("this Wi-Fi change does not select an enrollment target"));
+        }
         if !crate::device::valid_wifi(&ssid, &password) {
             return Err(RequestError::rejected(
                 Reason::InvalidWifi,
@@ -426,7 +439,7 @@ async fn wifi(
             live.set(Phase::JoiningWifi, None);
             live.revision += 1;
         }
-        Ok(Some(Op::Wifi { ssid, password }))
+        Ok(Some(Op::Wifi { ssid, password, enrollment: request.enrollment }))
     })
     .await
 }
@@ -468,15 +481,7 @@ async fn authorize(
             .device
             .as_ref()
             .is_some_and(|device| device.dependent_host);
-        let offered = (!dependent || client_mode == app_facade_api::pod::ClientMode::Space)
-            && live.authorization.as_ref().is_some_and(|prompt| {
-                prompt.spaces.iter().any(|scope| {
-                    scope.space_id == space_id
-                        && (client_mode == app_facade_api::pod::ClientMode::User
-                            || (scope.local || dependent) && scope.owner)
-                })
-            });
-        if !offered {
+        if !offered(live, &space_id, client_mode, dependent) {
             return Err(RequestError::rejected(
                 Reason::SpaceNotOffered,
                 "choose one of the offered Spaces",
@@ -500,4 +505,18 @@ async fn authorize(
         }))
     })
     .await
+}
+
+fn offered(live: &Live, space_id: &str, client_mode: pod::ClientMode, dependent: bool) -> bool {
+    live.enrollment
+        .as_ref()
+        .is_none_or(|target| target.space_id == space_id && target.client_mode == client_mode)
+        && (!dependent || client_mode == pod::ClientMode::Space)
+        && live.authorization.as_ref().is_some_and(|prompt| {
+            prompt.spaces.iter().any(|space| {
+                space.space_id == space_id
+                    && (client_mode == pod::ClientMode::User
+                        || (space.local || dependent) && space.owner)
+            })
+        })
 }
