@@ -131,6 +131,7 @@ async fn provisions_a_host_and_hands_back_its_claim_token() {
 async fn a_host_without_a_claim_token_still_completes() {
     let harness = Harness::with_discovery("ble").await;
     let mut script = Script::host();
+    script.onboarding_required = false;
     script.claim_token = None;
     harness.add_device("host-a", script);
     let id = to_wifi(&harness).await;
@@ -141,14 +142,15 @@ async fn a_host_without_a_claim_token_still_completes() {
 
 #[tokio::test(start_paused = true)]
 async fn host_does_not_complete_without_the_expected_finish_receipt() {
-    for (refused, token) in [
-        (true, Some(CLAIM_TOKEN)),
-        (false, None),
-        (false, Some("bad")),
+    for (needs_claim, refused, token) in [
+        (true, true, Some(CLAIM_TOKEN)),
+        (true, false, None),
+        (true, false, Some("bad")),
+        (false, false, Some(CLAIM_TOKEN)),
     ] {
         let harness = Harness::with_discovery("ble").await;
         let mut script = Script::host();
-        script.onboarding_required = true;
+        script.onboarding_required = needs_claim;
         script.refuse_host_finish = refused;
         script.claim_token = token;
         harness.add_device("host-a", script);

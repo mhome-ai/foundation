@@ -85,8 +85,8 @@ Fallback characteristic UUIDs: the standard endpoints as for pods, `host-info`
   ```
 
   `productId` is optional. `onboardingRequired` reports whether this Host still
-  awaits its first claim. `networkOnline` reports current LAN readiness. Both
-  are optional for older Hosts. A securely paired Host with `networkOnline: true`
+  awaits its first claim and is required. `networkOnline` reports current LAN
+  readiness. A securely paired Host with `networkOnline: true`
   and `onboardingRequired: true` can finish without resubmitting Wi-Fi. `finish`
   issues a fresh first-claim token after checking authoritative Host ownership.
   Already claimed Hosts never issue a new first-claim token.
@@ -102,7 +102,8 @@ Fallback characteristic UUIDs: the standard endpoints as for pods, `host-info`
   established and the Host is not recovering an unfinished claim on a working
   network. Refusal keeps the current setup session open. The Client reports
   completion only after a positive receipt, with a valid token when the secured
-  Host information indicated that first claim was pending.
+  Host information indicated that first claim was pending. A receipt that
+  unexpectedly carries a token for an already claimed Host also fails.
   `finish` ends the central's setup session. Without it, the Host disconnects the
   central 30 seconds after a successful join; the commissioner retries `finish`
   within that window. Network readiness and mDNS announcement do not establish

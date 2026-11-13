@@ -482,7 +482,10 @@ impl Actor {
                 let Some(host) = device::host_info(&info) else {
                     return self.fail(incomplete());
                 };
-                self.host_needs_claim = info["onboardingRequired"] == true;
+                let Some(needs_claim) = info["onboardingRequired"].as_bool() else {
+                    return self.fail(incomplete());
+                };
+                self.host_needs_claim = needs_claim;
                 let recover = self.host_needs_claim && info["networkOnline"] == true;
                 if self.update(|live| live.host = Some(host)) {
                     if recover {
@@ -903,9 +906,10 @@ impl Actor {
         }
         let Some(receipt) = receipt.filter(|receipt| {
             receipt.ok
-                && match receipt.claim_token.as_deref() {
-                    Some(token) => is_claim_token(token),
-                    None => !self.host_needs_claim,
+                && match (self.host_needs_claim, receipt.claim_token.as_deref()) {
+                    (true, Some(token)) => is_claim_token(token),
+                    (false, None) => true,
+                    _ => false,
                 }
         }) else {
             return self.fail(error(

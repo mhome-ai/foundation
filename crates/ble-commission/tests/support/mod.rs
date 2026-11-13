@@ -154,6 +154,7 @@ impl Script {
         Self {
             kind: DeviceKind::Host,
             claim_token: Some(CLAIM_TOKEN),
+            onboarding_required: true,
             lock_after_rejections: Some(5),
             scan_page_cap: Some(2),
             ..Self::pod()
