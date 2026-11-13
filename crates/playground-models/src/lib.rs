@@ -212,8 +212,8 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
         SMOKE_CO_ALARM_V1 => object_map(json!({
             "online": true,
             "smokeState": "clear",
-            "carbonMonoxideState": "clear",
-            "carbonMonoxideConcentration": 0,
+            "coAlarmState": "clear",
+            "co": 0,
             "batteryLevel": 96,
             "chargingState": "not charging",
             "tamperState": "clear",
@@ -366,11 +366,13 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "state.temperature",
             "state.humidity",
             "state.air",
+            "data.airAttributes",
             "state.battery",
         ][..],
         SMOKE_CO_ALARM_V1 => &[
             "state.smoke",
-            "state.carbonMonoxide",
+            "state.air",
+            "data.airAttributes",
             "state.battery",
             "state.tamper",
             "state.alarm",
@@ -391,6 +393,7 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "state.fan",
             "command.setFan",
             "state.air",
+            "data.airAttributes",
         ][..],
         SPEAKER_MEDIA_BROADCAST_V1 => &[
             "state.audioMute",
@@ -429,21 +432,22 @@ fn air_fields(model_id: &str) -> &'static [&'static str] {
             "vocState",
         ],
         FAN_PURIFIER_V1 => &["qualityState", "index", "pm25", "pm25State"],
+        SMOKE_CO_ALARM_V1 => &["co", "coAlarmState"],
         _ => &[],
     }
 }
 fn air_options(field: &str) -> &'static [&'static str] {
-    if field == "qualityState" {
-        &[
+    match field {
+        "qualityState" => &[
             "good",
             "fair",
             "moderate",
             "poor",
             "very poor",
             "extremely poor",
-        ]
-    } else {
-        &["low", "medium", "high", "critical"]
+        ],
+        "coAlarmState" => &["clear", "detected"],
+        _ => &["low", "medium", "high", "critical"],
     }
 }
 
@@ -452,7 +456,6 @@ pub fn project_state(
     attrs: &Map<String, Value>,
     capability: &str,
 ) -> Result<Map<String, Value>> {
-    let _ = model_id;
     match capability {
         "state.onOff" => Ok(object_map(json!({
             "state": if bool_attr(attrs, "on")? { "on" } else { "off" }
@@ -517,6 +520,7 @@ pub fn project_state(
         "state.humidity" => Ok(object_map(json!({
             "humidity": number_attr(attrs, "humidity")?
         }))?),
+        "data.airAttributes" => project_discovery(model_id, attrs, "state.air", "$f1"),
         "state.air" => Ok(air_fields(model_id)
             .iter()
             .map(|field| {
@@ -536,10 +540,6 @@ pub fn project_state(
             .collect()),
         "state.smoke" => Ok(object_map(json!({
             "state": string_attr(attrs, "smokeState")?
-        }))?),
-        "state.carbonMonoxide" => Ok(object_map(json!({
-            "state": string_attr(attrs, "carbonMonoxideState")?,
-            "concentration": number_attr(attrs, "carbonMonoxideConcentration")?
         }))?),
         "state.alarm" => Ok(object_map(json!({
             "mode": string_attr(attrs, "alarmMode")?
@@ -591,7 +591,6 @@ pub fn project_discovery(
     capability: &str,
     _alias: &str,
 ) -> Result<Map<String, Value>> {
-    let _ = model_id;
     match capability {
         "state.power" => Ok(object_map(
             json!({"supportedMeasurements":["activePower"]}),
@@ -599,10 +598,30 @@ pub fn project_discovery(
         "state.energy" => Ok(object_map(json!({"supportedCounters":["importedEnergy"]}))?),
         "state.air" => {
             let fields = air_fields(model_id);
-            let mut out = Map::new();
-            out.insert("availableFields".into(), json!(fields));
-            out.insert("indexScale".into(), json!("playground:air-index-v1"));
-            for field in fields.iter().filter(|field| field.ends_with("State")) {
+            let features = fields
+                .iter()
+                .map(|field| match *field {
+                    "qualityState" => "airQualityClassification",
+                    "index" => "airQualityIndex",
+                    "co" => "coConcentration",
+                    "coAlarmState" => "coAlarm",
+                    "co2" => "co2Concentration",
+                    "co2State" => "co2Classification",
+                    "pm25" => "pm25MassConcentration",
+                    "pm25State" => "pm25Classification",
+                    "vocPpb" => "vocMixingRatio",
+                    "vocState" => "vocClassification",
+                    _ => unreachable!("unknown Playground air field {field}"),
+                })
+                .collect::<Vec<_>>();
+            let mut out = object_map(json!({"supportedFeatures": features}))?;
+            if fields.contains(&"index") {
+                out.insert("indexScale".into(), json!("playground:air-index-v1"));
+            }
+            for field in fields
+                .iter()
+                .filter(|field| field.ends_with("State") && **field != "coAlarmState")
+            {
                 out.insert(format!("{field}s"), json!(air_options(field)));
             }
             Ok(out)
@@ -777,14 +796,6 @@ pub fn apply_observed_payload(
             }
         }
         "state.smoke" => copy_payload_field(attrs, payload, "state", "smokeState")?,
-        "state.carbonMonoxide" => {
-            copy_payload_field(attrs, payload, "state", "carbonMonoxideState")?;
-            copy_optional_payload_fields(
-                attrs,
-                payload,
-                &[("concentration", "carbonMonoxideConcentration")],
-            );
-        }
         "state.alarm" => copy_payload_field(attrs, payload, "mode", "alarmMode")?,
         "state.fan" => {
             copy_optional_payload_fields(
@@ -1924,7 +1935,10 @@ mod tests {
         for model in [AIR_MONITOR_V1, FAN_PURIFIER_V1] {
             let mut attrs = default_attributes(model).unwrap();
             let discovery = project_discovery(model, &attrs, "state.air", "$f1").unwrap();
-            assert_eq!(discovery["availableFields"], json!(air_fields(model)));
+            assert_eq!(
+                discovery["supportedFeatures"].as_array().unwrap().len(),
+                air_fields(model).len()
+            );
             assert!(capabilities(model)
                 .unwrap()
                 .contains(&"state.air".to_string()));
@@ -1945,6 +1959,48 @@ mod tests {
             );
         }
     }
+    #[test]
+    fn playground_co_alarm_and_concentration_have_independent_observations() {
+        let model = SMOKE_CO_ALARM_V1;
+        let mut attrs = default_attributes(model).unwrap();
+        assert_eq!(
+            project_discovery(model, &attrs, "state.air", "$f1").unwrap(),
+            object_map(json!({"supportedFeatures":["coConcentration","coAlarm"]})).unwrap(),
+        );
+        let inventory = project_capability_data(model, &attrs).unwrap();
+        assert_eq!(
+            inventory["data.airAttributes"]["states"],
+            inventory["state.air"]["attributes"]
+        );
+        assert!(exposes_capability(model, "data.airAttributes"));
+        apply_observed_payload(
+            model,
+            &mut attrs,
+            "state.air",
+            &object_map(json!({"co":0,"coAlarmState":"detected"})).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            project_state(model, &attrs, "state.air").unwrap(),
+            object_map(json!({"co":0,"coAlarmState":"detected"})).unwrap(),
+        );
+        assert_eq!(
+            project_state(model, &attrs, "state.smoke").unwrap()["state"],
+            "clear"
+        );
+        apply_observed_payload(
+            model,
+            &mut attrs,
+            "state.air",
+            &object_map(json!({"coAlarmState":null})).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            project_state(model, &attrs, "state.air").unwrap(),
+            object_map(json!({"co":0,"coAlarmState":null})).unwrap(),
+        );
+    }
+
     #[test]
     fn electrical_discovery_and_counter_reads_preserve_zero_unknowns_and_resets() {
         for model in [LIGHT_RGB_DIMMER_V1, PLUG_ENERGY_V1] {
