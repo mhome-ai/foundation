@@ -361,9 +361,11 @@ Wi-Fi-only session. From `reading_info` on, its snapshots carry
 joins it polls `pod-credential` `status` (still `joining_wifi`) until the pod
 reports `commissioned`, then records `completed` and sends `finish`. No
 authorization prompt is shown, no credential is issued and `completed` carries
-no `podId`; the pod keeps its existing credential and Space. A pod that reports
+no `podId`; the pod keeps its existing credential and Space. After obtaining an
+IP, a Space Pod has 30 seconds to verify its pinned Hub through the trial Wi-Fi
+interface. On failure it discards the attempted network. A pod that reports
 `failed` ends the session with `wifi_failed` carrying the pod's code (for
-example `storage_failed`) in `detail`. UIs show such a session as changing the
+example `wifi_hub_unverified` or `storage_failed`) in `detail`. UIs show such a session as changing the
 pod's Wi-Fi rather than adding a pod.
 
 Session states, in order: `connecting`, `awaiting_code`, `securing`,

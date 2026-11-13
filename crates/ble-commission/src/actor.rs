@@ -31,9 +31,9 @@ const HOST_JOIN_POLLS: u32 = 75;
 /// commissioner offers new Wi-Fi credentials.
 const KEPT_WIFI_POLLS: u32 = 30;
 const FINISH_ATTEMPTS: u32 = 3;
-/// How long a pod in a Wi-Fi change window may take to save the new network
-/// after joining it.
-const REPROVISION_POLLS: u32 = 30;
+/// Give the device its 30-second Hub proof budget after IP readiness, with
+/// time to receive the durable outcome and finish the BLE exchange.
+const REPROVISION_POLLS: u32 = 40;
 
 struct Credential {
     pod_id: String,
@@ -704,7 +704,11 @@ impl Actor {
                             .map(str::to_string);
                         return self.fail(error(
                             CommissionErrorCode::WifiFailed,
-                            "The pod could not save the new Wi-Fi network.",
+                            if code.as_deref() == Some("wifi_hub_unverified") {
+                                "The pod could not verify its Hub through the selected Wi-Fi."
+                            } else {
+                                "The pod could not save the new Wi-Fi network."
+                            },
                             code,
                         ));
                     }

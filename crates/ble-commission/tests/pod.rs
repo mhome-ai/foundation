@@ -521,6 +521,25 @@ async fn a_wifi_change_the_pod_cannot_save_fails_with_its_code() {
 }
 
 #[tokio::test(start_paused = true)]
+async fn a_wifi_change_reports_failed_hub_validation_without_starting_enrollment() {
+    let harness = Harness::with_discovery("ble").await;
+    let mut script = Script::pod();
+    script.wifi_configured = true;
+    script.reprovision = Some(Some("wifi_hub_unverified"));
+    harness.add_device("pod-a", script);
+    reprovision(&harness).await;
+    let failed = harness.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["code"], "wifi_failed");
+    assert_eq!(failed["error"]["detail"], "wifi_hub_unverified");
+    assert_eq!(
+        failed["error"]["message"],
+        "The pod could not verify its Hub through the selected Wi-Fi."
+    );
+    assert!(failed.get("authorization").is_none());
+    assert!(harness.cloud.calls.lock().unwrap().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
 async fn sessions_run_without_ui_renewal_and_reject_cancel() {
     let harness = Harness::with_discovery("ble").await;
     let mut script = Script::pod();
