@@ -51,6 +51,14 @@ pub struct ListOutput {
     pub automations: Vec<ListItem>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PendingOperation {
+    Create,
+    Update,
+    Delete,
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ListItem {
@@ -61,6 +69,8 @@ pub struct ListItem {
     pub corrupted: bool,
     #[serde(default)]
     pub save_incomplete: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pending_operation: Option<PendingOperation>,
     pub runnable: bool,
     pub running: bool,
     pub blocked: bool,
@@ -83,6 +93,8 @@ pub struct OverviewOutput {
     pub corrupted: bool,
     #[serde(default)]
     pub save_incomplete: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pending_operation: Option<PendingOperation>,
     pub blocked: bool,
     pub widgets: Vec<serde_json::Value>,
 }

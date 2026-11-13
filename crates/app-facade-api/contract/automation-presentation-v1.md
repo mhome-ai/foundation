@@ -24,10 +24,13 @@ hydrate source bodies or read the temporary/Group stores. This is not a promise
 of a type-specific physical index. Billing display and lifecycle state retain
 their existing authorities; enabled, runnable and running are independent.
 
-List items, selected summaries and overview may include `saveIncomplete`.
-It reflects the existing persisted marker for an unfinished definition save,
-independently of execution health, run capability and cloud quota. A completed
-save clears the marker. Readers may treat an absent field as false.
+List items, selected summaries and overview may include `pendingOperation`
+(`create`, `update` or `delete`). Omission means the definition is ready for
+ordinary management. An incomplete creation can only be deleted; an incomplete
+update can be saved again or deleted; an incomplete deletion can be continued
+by deleting the same ID. All three states block new execution. The
+`saveIncomplete` field remains available to older clients and is true when a
+pending operation is present.
 
 List Full timestamps are milliseconds. Essential renders explicit timestamp
 fields in the Space's Home timezone. Widget values retain their existing Widget

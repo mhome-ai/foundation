@@ -32,9 +32,15 @@ is committed before the optional attempt to restore the enabled state. If that
 attempt is rejected or unconfirmed, the Facade returns `partial` with the
 Automation ID and `restoreIssue` (`failed` or `unconfirmed`). Rollback also
 includes the snapshot ID. Its `enabled` field is omitted when the post-write
-observation is unavailable. Read current state before deciding whether to enable.
+observation is unavailable. A newer user stop or definition change supersedes a
+pending restoration without changing the successful definition save. Read
+current state before deciding whether to enable.
 
 `/app/automation/delete` returns `success` when all targets complete and `partial`
 when `deletedIds` and `failedIds` both contain IDs. A batch with no completed
 targets returns `error` with its per-target details. These outcomes apply to direct
 calls and prepared commits, in Full and Essential presentation.
+
+A partially deleted definition remains available for deletion with the same ID.
+Existing cleanup steps tolerate resources already removed by an earlier attempt.
+An already absent and cleaned definition is a completed delete target.

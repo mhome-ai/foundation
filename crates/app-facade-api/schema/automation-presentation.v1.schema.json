@@ -98,6 +98,9 @@
         "corrupted": {
           "type": "boolean"
         },
+        "pendingOperation": {
+          "enum": ["create", "update", "delete"]
+        },
         "saveIncomplete": {
           "type": "boolean"
         },
@@ -179,6 +182,9 @@
         },
         "corrupted": {
           "type": "boolean"
+        },
+        "pendingOperation": {
+          "enum": ["create", "update", "delete"]
         },
         "saveIncomplete": {
           "type": "boolean"
@@ -270,6 +276,9 @@
         },
         "corrupted": {
           "type": "boolean"
+        },
+        "pendingOperation": {
+          "enum": ["create", "update", "delete"]
         },
         "saveIncomplete": {
           "type": "boolean"
