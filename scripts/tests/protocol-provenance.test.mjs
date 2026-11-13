@@ -185,7 +185,7 @@ if (operation === 'verify' && args[3] === 'npm' && outcome === 'mismatched-publi
     const callLog = path.join(root, "calls.jsonl");
     try {
       const result = spawnSync("bash", [fileURLToPath(new URL("../publish-tag.sh", import.meta.url)), `mhome-core-api-v${version}`, "--publish"], {
-        cwd: root, encoding: "utf8", timeout: 15000, env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof), UPLOAD_OUTCOME: outcome, FAKE_TARGET: path.join(root, 'target') },
+        cwd: root, encoding: "utf8", timeout: 15000, env: { ...process.env, RUNNER_ENVIRONMENT: env.RUNNER_ENVIRONMENT, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: callLog, FAIL_PROOF: String(failProof), UPLOAD_OUTCOME: outcome, FAKE_TARGET: path.join(root, 'target') },
       });
       const calls = fs.readFileSync(callLog, "utf8").trim().split("\n").map(JSON.parse);
       const proof = calls.findIndex(([tool, arg]) => tool === "node" && arg === "scripts/protocol-provenance.mjs");
