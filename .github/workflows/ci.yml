@@ -27,9 +27,15 @@ jobs:
       - name: Verify publication tools on Linux
         run: npm run test:protocol-packages
   rust:
-    runs-on: [self-hosted, macOS, ARM64, release-macos-primary]
+    runs-on: ${{ github.event_name == 'pull_request' && 'macos-26' || fromJSON('["self-hosted","macOS","ARM64","release-macos-primary"]') }}
     steps:
+      - name: Checkout pull request on GitHub-hosted macOS
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Prepare source from runner repositories
+        if: github.event_name != 'pull_request'
         id: source
         shell: bash
         run: |
@@ -56,26 +62,26 @@ jobs:
         with:
           components: clippy,rustfmt
       - name: Check formatting
-        working-directory: ${{ steps.source.outputs.directory }}
+        working-directory: ${{ steps.source.outputs.directory || github.workspace }}
         run: cargo fmt --all -- --check
       - name: Lint
-        working-directory: ${{ steps.source.outputs.directory }}
+        working-directory: ${{ steps.source.outputs.directory || github.workspace }}
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Test
-        working-directory: ${{ steps.source.outputs.directory }}
+        working-directory: ${{ steps.source.outputs.directory || github.workspace }}
         run: cargo test --workspace --locked
       - name: Build documentation
-        working-directory: ${{ steps.source.outputs.directory }}
+        working-directory: ${{ steps.source.outputs.directory || github.workspace }}
         run: cargo doc --workspace --no-deps --locked
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
       - name: Install protocol verification tools
-        working-directory: ${{ steps.source.outputs.directory }}
+        working-directory: ${{ steps.source.outputs.directory || github.workspace }}
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify protocol npm packages
-        working-directory: ${{ steps.source.outputs.directory }}
+        working-directory: ${{ steps.source.outputs.directory || github.workspace }}
         run: |
           npm run verify:app-facade-routing
           npm run test:protocol-packages
@@ -87,7 +93,7 @@ jobs:
             npm pack "${staging}" --dry-run
           done
       - name: Clean task source worktrees
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         shell: bash
         run: |
           node - <<'JS'
