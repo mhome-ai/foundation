@@ -210,9 +210,17 @@ fn ui_mutations_have_explicit_authority_and_generated_execution_is_closed() {
 
 #[test]
 fn selected_summary_times_and_saved_projection_match_the_schema() {
-    let value = json!({"items":[{"requestedId":"a","found":true,"resource":{"id":"a","automationId":"a","name":"Light","type":"RECURRING","enabled":true,"corrupted":false,"runnable":true,"running":false,"blocked":false,"hasExpire":false,"timestamp":1793088060000i64,"createdAt":0,"updatedAt":0,"enabledAt":0,"tags":[],"temp":false,"lastRunAt":1793088060000i64,"expireAt":null}},{"requestedId":"missing","found":false}]});
+    let value = json!({"items":[{"requestedId":"a","found":true,"resource":{"id":"a","automationId":"a","name":"Light","type":"RECURRING","enabled":true,"corrupted":false,"saveIncomplete":true,"runnable":true,"running":false,"blocked":false,"hasExpire":false,"timestamp":1793088060000i64,"createdAt":0,"updatedAt":0,"enabledAt":0,"tags":[],"temp":false,"lastRunAt":1793088060000i64,"expireAt":null}},{"requestedId":"missing","found":false}]});
     let parsed: SummariesOutput = serde_json::from_value(value.clone()).unwrap();
     assert_eq!(parsed.items.len(), 2);
+    assert!(
+        parsed.items[0]
+            .resource
+            .as_ref()
+            .unwrap()
+            .item
+            .save_incomplete
+    );
     let mut schema: serde_json::Value = serde_json::from_str(include_str!(
         "../schema/automation-presentation.v1.schema.json"
     ))
@@ -237,4 +245,44 @@ fn selected_summary_times_and_saved_projection_match_the_schema() {
     assert!(!validator.is_valid(
         &json!({"automationId":"copy","runnable":true,"enabled":false,"script":"secret"})
     ));
+}
+
+#[test]
+fn automation_presentation_accepts_an_optional_boolean_save_state() {
+    let item = json!({
+        "id":"a", "name":"Lights", "type":"RECURRING", "enabled":false,
+        "runnable":true, "corrupted":false, "blocked":false
+    });
+    let mut list_item = item.clone();
+    list_item["running"] = json!(false);
+    list_item["hasExpire"] = json!(false);
+    for field in ["timestamp", "createdAt", "updatedAt", "enabledAt"] {
+        list_item[field] = json!(0);
+    }
+    list_item["tags"] = json!([]);
+    let mut overview = item;
+    overview["widgets"] = json!([]);
+    let mut schema: serde_json::Value = serde_json::from_str(include_str!(
+        "../schema/automation-presentation.v1.schema.json"
+    ))
+    .unwrap();
+    assert!(
+        !serde_json::from_value::<ListItem>(list_item.clone())
+            .unwrap()
+            .save_incomplete
+    );
+    assert!(
+        !serde_json::from_value::<OverviewOutput>(overview.clone())
+            .unwrap()
+            .save_incomplete
+    );
+    for (definition, mut value) in [("listItem", list_item), ("overviewOutput", overview)] {
+        schema["$ref"] = json!(format!("#/$defs/{definition}"));
+        let validator = jsonschema::validator_for(&schema).unwrap();
+        assert!(validator.is_valid(&value), "{value}");
+        value["saveIncomplete"] = json!(true);
+        assert!(validator.is_valid(&value), "{value}");
+        value["saveIncomplete"] = json!("true");
+        assert!(!validator.is_valid(&value), "{value}");
+    }
 }

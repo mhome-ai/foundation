@@ -59,6 +59,8 @@ pub struct ListItem {
     pub r#type: String,
     pub enabled: bool,
     pub corrupted: bool,
+    #[serde(default)]
+    pub save_incomplete: bool,
     pub runnable: bool,
     pub running: bool,
     pub blocked: bool,
@@ -79,6 +81,8 @@ pub struct OverviewOutput {
     pub enabled: bool,
     pub runnable: bool,
     pub corrupted: bool,
+    #[serde(default)]
+    pub save_incomplete: bool,
     pub blocked: bool,
     pub widgets: Vec<serde_json::Value>,
 }
