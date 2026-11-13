@@ -1506,11 +1506,12 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
  "ed25519-dalek",
+ "hex",
  "mhome-app-facade-api",
  "mhome-core-api",
  "mhome-host-auth",
@@ -1519,6 +1520,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "sha2 0.10.9",
  "thiserror 2.0.21",
  "tokio",
  "tracing",

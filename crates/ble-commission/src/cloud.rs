@@ -4,9 +4,11 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use app_facade_api::pod::{PodEnrollmentRequest, UserLoginApproval, USER_LOGIN_APPROVE_PATH};
+use core_api::host::auth::PublicKey;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 
 use crate::platform::{Cloud, CloudError};
 
@@ -80,6 +82,10 @@ pub fn selected_setup_hub(
         || view.configured != view.hub.is_some()
         || view.operation.is_some()
         || view.revocation.is_some()
+        || view
+            .pairing
+            .as_ref()
+            .is_some_and(|pairing| pairing.state == "RUNNING")
     {
         return Err(unavailable());
     }
@@ -97,7 +103,11 @@ pub(crate) async fn resolve_setup_hub(
     context: &str,
     space_id: &str,
 ) -> Result<Option<app_facade_api::pod::HubIdentity>, CallError> {
-    let Some((tenant_id, hub_id)) = cloud.selected_hub(context, space_id).await? else {
+    let Some((tenant_id, hub_id)) =
+        tokio::time::timeout(REQUEST_TIMEOUT, cloud.selected_hub(context, space_id))
+            .await
+            .map_err(|_| CloudError::Unreachable("Hub selection timed out".into()))??
+    else {
         return Ok(None);
     };
     let identity: app_facade_api::pod::HubIdentity = post(
@@ -113,6 +123,20 @@ pub(crate) async fn resolve_setup_hub(
         return Err(CallError::Unreadable(
             "the Hub identity does not match the selected Space".into(),
         ));
+    }
+    let key = host_protocol::signatures::verifying_key(&PublicKey {
+        x: identity.public_key_x.clone(),
+        y: identity.public_key_y.clone(),
+    })
+    .map_err(|_| CallError::Unreadable("invalid Hub public key".into()))?;
+    let fingerprint = hex::encode(Sha256::digest(key.to_sec1_point(false).as_bytes()));
+    if identity.algorithm != "ES256"
+        || identity.key_id != format!("p256:{fingerprint}")
+        || identity.fingerprint != fingerprint
+        || identity.host_id.is_empty()
+        || host_protocol::signatures::verifying_key(&identity.host_public_key).is_err()
+    {
+        return Err(CallError::Unreadable("invalid Hub identity".into()));
     }
     Ok(Some(identity))
 }

@@ -979,6 +979,29 @@ async fn a_space_pod_refuses_an_unavailable_or_replaced_hub() {
 }
 
 #[tokio::test(start_paused = true)]
+async fn a_space_pod_rejects_an_inconsistent_hub_identity_before_sending_wifi() {
+    let harness = Harness::with_discovery("ble").await;
+    harness.cloud.invalid_hub_key.store(true, Ordering::SeqCst);
+    harness.add_device("pod-a", Script::pod());
+    let id = start(&harness).await;
+    secure(&harness, &id).await;
+    harness.wait_state(POD, "awaiting_wifi").await;
+    harness
+        .ok(
+            "/local/pod/commission/wifi",
+            json!({"sessionId":id,"enrollment":{"spaceId":"scope-a","clientMode":"space"},"ssid":"home"}),
+        )
+        .await;
+    let failed = harness.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["detail"], "wifi_hub_unverified");
+    assert_eq!(harness.cloud.paths(), vec!["hub/identity/get"]);
+    assert!(!harness
+        .journal()
+        .iter()
+        .any(|event| event == "device:set_config"));
+}
+
+#[tokio::test(start_paused = true)]
 async fn member_cannot_initialize_a_space_client_even_when_the_space_is_local() {
     let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());

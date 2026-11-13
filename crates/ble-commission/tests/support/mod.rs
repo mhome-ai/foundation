@@ -758,6 +758,7 @@ pub struct FakeCloud {
     pub fail_issue: AtomicBool,
     pub bootstrap: AtomicBool,
     pub replaced_hub: AtomicBool,
+    pub invalid_hub_key: AtomicBool,
     pub space_credential_window: Mutex<Option<(String, Option<i64>)>>,
     clock: Clock,
     journal: Journal,
@@ -776,6 +777,7 @@ impl FakeCloud {
             fail_issue: AtomicBool::new(false),
             bootstrap: AtomicBool::new(false),
             replaced_hub: AtomicBool::new(false),
+            invalid_hub_key: AtomicBool::new(false),
             space_credential_window: Mutex::new(None),
             clock: Clock::new(),
             journal,
@@ -825,6 +827,27 @@ pub fn account(context: &str) -> Account {
     }
 }
 
+fn hub_identity(hub_id: &str, space_id: &Value) -> Value {
+    use sha2::{Digest, Sha256};
+    use std::sync::OnceLock;
+    static IDENTITY: OnceLock<Value> = OnceLock::new();
+    let mut identity = IDENTITY
+        .get_or_init(|| {
+            let key = host_protocol::signatures::new_key();
+            let public = host_protocol::signatures::public_key(key.verifying_key());
+            let fingerprint = hex::encode(Sha256::digest(
+                key.verifying_key().to_sec1_point(false).as_bytes(),
+            ));
+            json!({"tenantId":"tenant","keyId":format!("p256:{fingerprint}"),"algorithm":"ES256",
+            "publicKeyX":public.x,"publicKeyY":public.y,"fingerprint":fingerprint,
+            "hostId":"host","hostPublicKey":public})
+        })
+        .clone();
+    identity["hubId"] = json!(hub_id);
+    identity["spaceId"] = space_id.clone();
+    identity
+}
+
 #[async_trait]
 impl Cloud for FakeCloud {
     async fn selected_hub(&self, _: &str, _: &str) -> Result<Option<(String, String)>, CloudError> {
@@ -851,18 +874,18 @@ impl Cloud for FakeCloud {
         let body = match path {
             "hub/identity/get" => {
                 let request: Value = serde_json::from_str(body).unwrap();
-                json!({"hubId":"hub","tenantId":"tenant","spaceId":request["spaceId"],
-                    "keyId":"p256:key", "algorithm":"ES256", "publicKeyX":"x", "publicKeyY":"y",
-                    "fingerprint":"key", "hostId":"host", "hostPublicKey":{"x":"x","y":"y"}})
+                let mut identity = hub_identity("hub", &request["spaceId"]);
+                if self.invalid_hub_key.load(Ordering::SeqCst) {
+                    identity["fingerprint"] = json!("invalid");
+                }
+                identity
             }
             "/host/authorizations/claim" => json!({"claimId":"product-claim","proof":body}),
             "/host/authorizations/commit-claim" => json!({"ok":true}),
             "pod/space/credential/issue" => json!({
                 "credentialState": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.0.clone()).unwrap_or("pending".into()), "credentialId":"space-credential", "appClientId":"a:space-device", "jwtToken":"space-jwt",
                 "activateBefore": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.1).unwrap_or(Some(self.clock.now_ms()+600_000)),
-                "hubIdentity":{"hubId":if self.replaced_hub.load(Ordering::SeqCst) { "other-hub" } else { "hub" },"tenantId":"tenant","spaceId":space_id.unwrap(),
-                    "keyId":"p256:key", "algorithm":"ES256", "publicKeyX":"x", "publicKeyY":"y", "fingerprint":"key",
-                    "hostId":"host", "hostPublicKey":{"x":"x","y":"y"}}
+                "hubIdentity":hub_identity(if self.replaced_hub.load(Ordering::SeqCst) { "other-hub" } else { "hub" }, &json!(space_id.unwrap()))
             }),
             "pod/login/approve" => {
                 let delay = *self.issue_delay.lock().unwrap();
