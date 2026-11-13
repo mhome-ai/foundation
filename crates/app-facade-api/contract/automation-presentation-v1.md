@@ -72,6 +72,13 @@ also uses metadata rather than downloading authored source.
 | `/app/presentation/automation/generated/disable` | `{automationId}` | Existing AutomationStatus after disabling. |
 | `/app/presentation/automation/generated/run` | `{automationId,timezone?,locationSymbol?}` | Canonical acknowledgement without data. Forces the existing stored generated program's threads, including Recurring programs. Runtime execution remains asynchronous. |
 
+If the first Overview save fails after recording a pending creation, the Full
+error has code `PRECONDITION_FAIL` and details
+`{automationId, pendingOperation: "create"}`. The returned ID can be passed to
+`/app/automation/delete` even when the definition is absent. A failure before
+that marker is recorded preserves the original error and the existing editing
+session. Start a fresh template session for a new creation.
+
 Generated control accepts only stored `P-`, `S-`, `G-` program IDs. It does not
 rename generated programs, control Group entities, or widen public user-program
 start/stop. Actor and Client come from trusted ingress, never arbitrary sideData.
