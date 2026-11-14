@@ -52,7 +52,10 @@ visible Card `presents` a resource, and generated Automation `implements` Device
 Generated program references are not editable user programs. Existing Managers and
 indexes own these relationships; this read introduces no graph database or traversal.
 It returns IDs, not recursively expanded definitions, scripts, names or runtime data.
-Hidden Device render anchors are not public Card references.
+Public Card references require committed membership in a Dashboard Canvas or Pod Deck.
+Card bodies and relations can be written before placement. The graph only exposes
+them after placement. Hidden Device render anchors still supply generated Automation
+relationships.
 
 Full uses the standard `{status, data}` result with structured business data. Essential
 uses the same envelope with YAML `data`; timestamps are presented in the Home timezone.

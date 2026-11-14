@@ -203,6 +203,7 @@ fn obsolete_widget_mutations_are_not_public_targets() {
         "/app/widget/button/create",
         "/app/widget/circadian/create",
         "/app/dashboard/card/add",
+        "/app/dashboard/card/widget/create",
     ] {
         assert_eq!(
             authorization::required(target),

@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.138.0",
+  "contractVersion": "1.139.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -80,6 +80,7 @@
     "/app/dashboard/card/list": "spaceRead",
     "/app/dashboard/card/main-view/update": "spaceWrite",
     "/app/dashboard/card/move": "spaceWrite",
+    "/app/dashboard/card/widget/create": "spaceWrite",
     "/app/developer/contracts/export": "spaceRead",
     "/app/developer/contracts/list": "spaceRead",
     "/app/device/activity/recent/list": "spaceRead",
