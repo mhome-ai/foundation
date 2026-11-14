@@ -37,6 +37,10 @@ async fn to_authorization(harness: &Harness) -> String {
 }
 
 async fn to_authorization_as(harness: &Harness, mode: &str) -> String {
+    to_authorization_with_intent(harness, mode, false).await
+}
+
+async fn to_authorization_with_intent(harness: &Harness, mode: &str, first_hub: bool) -> String {
     let id = start(harness).await;
     secure(harness, &id).await;
     let session = harness
@@ -48,7 +52,7 @@ async fn to_authorization_as(harness: &Harness, mode: &str) -> String {
     harness
         .ok(
             "/local/pod/commission/wifi",
-            json!({ "sessionId": id, "enrollment":{"spaceId":"scope-a","clientMode":mode}, "ssid": "home", "password": "correct horse" }),
+            json!({ "sessionId": id, "enrollment":{"spaceId":"scope-a","clientMode":mode,"firstHub":first_hub}, "ssid": "home", "password": "correct horse" }),
         )
         .await;
     harness.wait_state(POD, "awaiting_authorization").await;
@@ -1023,6 +1027,48 @@ async fn member_cannot_initialize_a_space_client_even_when_the_space_is_local() 
 }
 
 #[tokio::test(start_paused = true)]
+async fn a_combined_product_needs_explicit_first_hub_intent_before_wifi() {
+    let harness = Harness::with_discovery("ble").await;
+    harness.add_device("pod-a", Script::product());
+    harness.cloud.bootstrap.store(true, Ordering::SeqCst);
+    let id = start(&harness).await;
+    secure(&harness, &id).await;
+    harness.wait_state(POD, "awaiting_wifi").await;
+    harness
+        .ok(
+            "/local/pod/commission/wifi",
+            json!({
+                "sessionId":id,"ssid":"home","enrollment":{"spaceId":"scope-a","clientMode":"space"}
+            }),
+        )
+        .await;
+    let failure = harness.wait_state(POD, "failed").await;
+    assert_eq!(failure["error"]["detail"], "wifi_hub_unverified");
+    assert!(!harness
+        .journal()
+        .iter()
+        .any(|event| event == "device:set_config"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn first_hub_intent_cannot_override_an_existing_hub() {
+    let harness = Harness::with_discovery("ble").await;
+    harness.add_device("pod-a", Script::product());
+    let id = start(&harness).await;
+    secure(&harness, &id).await;
+    harness.wait_state(POD, "awaiting_wifi").await;
+    harness.ok("/local/pod/commission/wifi", json!({
+        "sessionId":id,"ssid":"home","enrollment":{"spaceId":"scope-a","clientMode":"space","firstHub":true}
+    })).await;
+    let failure = harness.wait_state(POD, "failed").await;
+    assert_eq!(failure["error"]["code"], "wifi_failed");
+    assert!(!harness
+        .journal()
+        .iter()
+        .any(|event| event == "device:set_config"));
+}
+
+#[tokio::test(start_paused = true)]
 async fn combined_product_binds_before_first_hub_and_space_credential() {
     let harness = Harness::with_discovery("ble").await;
     harness
@@ -1036,7 +1082,7 @@ async fn combined_product_binds_before_first_hub_and_space_credential() {
         .local = false;
     harness.add_device("pod-a", Script::product());
     harness.cloud.bootstrap.store(true, Ordering::SeqCst);
-    let id = to_authorization_as(&harness, "space").await;
+    let id = to_authorization_with_intent(&harness, "space", true).await;
     let prompt = harness.wait_state(POD, "awaiting_authorization").await;
     assert_eq!(prompt["device"]["dependentHost"], true);
     assert!(harness
@@ -1056,7 +1102,7 @@ async fn combined_product_binds_before_first_hub_and_space_credential() {
     harness
         .ok(
             "/local/pod/commission/authorize",
-            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
+            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space","firstHub":true}),
         )
         .await;
     let done = harness
@@ -1088,11 +1134,11 @@ async fn combined_product_rejects_a_different_client_before_cloud_claim() {
     script.wrong_product_binding = true;
     harness.add_device("pod-a", script);
     harness.cloud.bootstrap.store(true, Ordering::SeqCst);
-    let id = to_authorization_as(&harness, "space").await;
+    let id = to_authorization_with_intent(&harness, "space", true).await;
     harness
         .ok(
             "/local/pod/commission/authorize",
-            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
+            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space","firstHub":true}),
         )
         .await;
     harness.wait_state(POD, "failed").await;

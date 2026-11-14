@@ -418,6 +418,9 @@ async fn wifi(
                 RequestError::bad_request("choose the Pod's identity and Space before Wi-Fi")
             })?;
             let dependent = live.device.as_ref().is_some_and(|d| d.dependent_host);
+            if target.first_hub && (!dependent || target.client_mode != pod::ClientMode::Space) {
+                return Err(RequestError::bad_request("only a product with a linked Host can establish the first Hub"));
+            }
             if !offered(live, &target.space_id, target.client_mode, dependent) {
                 return Err(RequestError::rejected(Reason::SpaceNotOffered, "choose an offered Space and mode"));
             }
@@ -471,6 +474,7 @@ async fn authorize(
     let endpoints = engine.platform.cloud.cloud_endpoints().await;
     let space_id = request.space_id;
     let client_mode = request.client_mode;
+    let first_hub = request.first_hub;
     self::request(engine, DeviceKind::Pod, &request.session_id, |live| {
         if live.phase != Phase::AwaitingAuthorization {
             return Err(wrong_state(live));
@@ -482,6 +486,20 @@ async fn authorize(
             .device
             .as_ref()
             .is_some_and(|device| device.dependent_host);
+        if first_hub && (!dependent || client_mode != pod::ClientMode::Space) {
+            return Err(RequestError::bad_request(
+                "only a product with a linked Host can establish the first Hub",
+            ));
+        }
+        if live
+            .enrollment
+            .as_ref()
+            .is_some_and(|target| target.first_hub != first_hub)
+        {
+            return Err(RequestError::bad_request(
+                "use the Hub setup intent chosen before joining Wi-Fi",
+            ));
+        }
         if !offered(live, &space_id, client_mode, dependent) {
             return Err(RequestError::rejected(
                 Reason::SpaceNotOffered,
@@ -502,6 +520,7 @@ async fn authorize(
         Ok(Some(Op::Authorize {
             space_id,
             client_mode,
+            first_hub,
             endpoints,
         }))
     })

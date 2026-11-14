@@ -383,8 +383,12 @@ impl Actor {
             Op::Authorize {
                 space_id,
                 client_mode,
+                first_hub,
                 endpoints,
-            } => self.authorize(space_id, client_mode, endpoints).await,
+            } => {
+                self.authorize(space_id, client_mode, first_hub, endpoints)
+                    .await
+            }
         }
     }
 
@@ -732,8 +736,15 @@ impl Actor {
                     .race(cloud::resolve_setup_hub(&cloud, &context, &target.space_id))
                     .await
                 {
-                    Some(Ok(Some(hub))) => Some(hub),
-                    Some(Ok(None)) if dependent => None,
+                    Some(Ok(Some(hub))) if !target.first_hub => Some(hub),
+                    Some(Ok(None)) if dependent && target.first_hub => None,
+                    Some(Ok(Some(_))) => {
+                        return self.fail(error(
+                            CommissionErrorCode::WifiFailed,
+                            "This Space already has a Hub. Start setup again and use that Hub.",
+                            None,
+                        ))
+                    }
                     Some(Ok(None) | Err(_)) => {
                         return self.fail(error(
                             CommissionErrorCode::WifiFailed,
@@ -1239,6 +1250,7 @@ impl Actor {
         &mut self,
         space_id: String,
         client_mode: ClientMode,
+        first_hub: bool,
         endpoints: CloudEndpoints,
     ) {
         let cloud = self.engine.platform.cloud.clone();
@@ -1302,6 +1314,31 @@ impl Actor {
                 return self.fail(issue_failed(Some(
                     "Choose a Space you own for this device".into(),
                 )));
+            }
+            match self
+                .race(cloud.selected_hub(&account.context, &space_id))
+                .await
+            {
+                Some(Ok(hub)) if hub.is_none() == first_hub => {
+                    if let Some(expected) = self.target_hub.as_ref() {
+                        if hub.as_ref().is_none_or(|(tenant, id)| {
+                            tenant != &expected.tenant_id || id != &expected.hub_id
+                        }) {
+                            return self.fail(issue_failed(Some(
+                                "The selected Hub changed during setup.".into(),
+                            )));
+                        }
+                    }
+                }
+                Some(Ok(_)) => {
+                    return self.fail(issue_failed(Some(if first_hub {
+                        "This Space already has a Hub. Start setup again using that Hub.".into()
+                    } else {
+                        "This Space has no Hub. Choose the first Hub setup.".into()
+                    })));
+                }
+                Some(Err(error)) => return self.fail(issue_failed(Some(error.to_string()))),
+                None => return,
             }
             self.ack();
             let prepared = self

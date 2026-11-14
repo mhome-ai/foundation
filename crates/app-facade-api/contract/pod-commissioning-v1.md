@@ -324,7 +324,7 @@ never show these values or `message` verbatim.
 | `/local/pod/commission/code` | `{"sessionId","code"}` | session snapshot |
 | `/local/pod/commission/wifi` | `{"sessionId","ssid","password"?,"enrollment"?}` | session snapshot |
 | `/local/pod/commission/wifi/scan` | `{"sessionId"}` | session snapshot |
-| `/local/pod/commission/authorize` | `{"sessionId","spaceId"}` | session snapshot |
+| `/local/pod/commission/authorize` | `{"sessionId","spaceId","clientMode","firstHub"?}` | session snapshot |
 | `/local/pod/commission/status` | `{}` | `{"session": snapshot or null}` |
 | `/local/pod/bluetooth/settings` | `{}` | `{"opened"}` |
 
@@ -353,9 +353,12 @@ only after receiving a setup target or when in its authorized reprovision
 window. It verifies a selected Hub from the new Wi-Fi before committing the
 network. The Client later authorizes the exact enrollment selected before the
 trial and rejects a credential from a different Hub.
-`bootstrap` is reserved for a verified product with an embedded dependent Host
-when the selected Space has no existing Hub or pending Hub transition. A
-standalone Pod rejects that mode.
+`bootstrap` requires explicit `firstHub: true` and a verified product with an
+embedded dependent Host. The selected Space must have no existing Hub or
+pending Hub transition. For BLE, include the flag in `enrollment` before sending
+Wi-Fi and repeat the same intent during authorization. An already-networked
+product supplies its intent during authorization. A standalone Pod rejects
+first Hub setup.
 
 Discovery is shared by every MeowLink device kind: each candidate carries
 `kind` (`pod` or `host`). `/local/pod/commission/start` accepts only `pod`

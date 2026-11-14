@@ -109,6 +109,7 @@ pub(crate) enum Op {
     Authorize {
         space_id: String,
         client_mode: app_facade_api::pod::ClientMode,
+        first_hub: bool,
         endpoints: CloudEndpoints,
     },
 }

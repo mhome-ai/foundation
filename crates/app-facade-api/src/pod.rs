@@ -297,6 +297,8 @@ pub struct CommissionWifiRequest {
 pub struct EnrollmentTarget {
     pub space_id: String,
     pub client_mode: ClientMode,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub first_hub: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -311,6 +313,8 @@ pub struct CommissionAuthorizeRequest {
     pub session_id: String,
     pub space_id: String,
     pub client_mode: ClientMode,
+    #[serde(default)]
+    pub first_hub: bool,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
