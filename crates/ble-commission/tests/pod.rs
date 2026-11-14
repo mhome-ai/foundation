@@ -1248,6 +1248,18 @@ async fn a_pod_cannot_receive_wifi_credentials_after_the_client_changes_network(
 }
 
 #[tokio::test(start_paused = true)]
+async fn pod_setup_rejects_a_hub_change_even_if_the_old_native_transport_is_still_ready() {
+    let harness = Harness::with_discovery("ble").await;
+    harness.add_device("pod-a", Script::pod());
+    let id = to_authorization(&harness).await;
+    harness.cloud.bootstrap.store(true, Ordering::SeqCst);
+    authorize(&harness, &id).await;
+    let refused = harness.wait_state(POD, "failed").await;
+    assert_eq!(refused["error"]["code"], "lan_unavailable");
+    assert!(harness.cloud.paths().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
 async fn switching_space_during_pod_setup_prevents_credential_issuance() {
     let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());

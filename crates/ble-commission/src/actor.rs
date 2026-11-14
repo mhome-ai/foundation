@@ -217,6 +217,24 @@ impl Actor {
         true
     }
 
+    async fn check_hub_selection(&self) -> bool {
+        let cloud = &self.engine.platform.cloud;
+        for admission in [&self.admission, &self.destination_admission]
+            .into_iter()
+            .flatten()
+        {
+            match self.race(admission.check_hub_selection(cloud)).await {
+                Some(Ok(())) => {}
+                Some(Err(failure)) => {
+                    self.lan_admission_failed(failure);
+                    return false;
+                }
+                None => return false,
+            }
+        }
+        true
+    }
+
     fn lan_admission_failed(&self, failure: crate::platform::CloudError) {
         self.fail(error(
             CommissionErrorCode::LanUnavailable,
@@ -799,7 +817,7 @@ impl Actor {
                 return;
             }
         }
-        if !self.check_admission().await {
+        if !self.check_hub_selection().await || !self.check_admission().await {
             return;
         }
         let applied = self
@@ -1291,6 +1309,9 @@ impl Actor {
             if !self.check_admission().await {
                 return;
             }
+        }
+        if !self.check_hub_selection().await || !self.check_admission().await {
+            return;
         }
         let (Some(info), Some(device)) = (self.pod_info.clone(), self.device.as_ref()) else {
             return self.fail_disconnected("no link");

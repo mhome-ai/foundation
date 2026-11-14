@@ -209,6 +209,23 @@ impl Admission {
         }
         Ok(())
     }
+
+    /// Reconcile with authority before steps that can leave durable state.
+    /// A ready connection to a formerly selected Hub is insufficient.
+    pub async fn check_hub_selection(&self, cloud: &Arc<dyn Cloud>) -> Result<(), CloudError> {
+        if let Some(scope) = self.scope.as_deref() {
+            let current =
+                tokio::time::timeout(REQUEST_TIMEOUT, cloud.selected_hub(&self.context, scope))
+                    .await
+                    .map_err(|_| CloudError::Unreachable("Hub selection timed out".into()))??;
+            if current != self.hub {
+                return Err(CloudError::Unreachable(
+                    "The selected Space's Hub changed. Start adding the device again.".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
 }
 
 async fn commissioning_lan(
