@@ -1,4 +1,4 @@
-# Native Wave admission
+# Wave authorization management
 
 These Hub-routed App Facades require current-Space Manage access and an active
 local Hub. They do not make Wave devices Hosts, Nodes or Plugins. No device URL,
@@ -13,11 +13,9 @@ Space/Hub selector, grant, certificate or private key is an input/output.
   Results are untrusted location hints, scoped to this caller, Space and Hub
   generation and transport, expiring after two minutes. They never grant operation
   authority.
-- `/app/wave/pair`: `{candidateId,pin?}` -> AdmissionResult below. This is a direct
-  authenticated App interaction; Agent/MCP/cloud delegation cannot submit PINs.
-  PIN6 is required when the selected device requires it. Omitting it is allowed
-  only for an explicitly opened initial local-claim window. No fallback occurs.
-  Retry reconciles an existing candidate; an uncertain result never rotates a key.
+- `/app/wave/pair` is retired. Core rejects it with guidance to select the
+  Integration and use `/app/integration/connect`. Its constant/input DTO remain
+  readable for older clients; this route cannot enroll a device.
 - `/app/wave/list`: `{}` -> `{bindings:[{deviceId,grantState}]}`. States are
   `candidate` or `committed`; this is authorization bookkeeping, not Device/Twin
   inventory, online state or evidence that a candidate committed on the device.
@@ -33,6 +31,21 @@ fails. A later refresh uses the existing grant, without consuming another slot.
 Missing/uninstalled or incompatible contracts never install code automatically.
 Normal Device/capability APIs own subsequent observations, control and subscriptions.
 
+Standard onboarding uses `/app/integration/connect` for a concrete local Integration
+whose compiled model declares `connectAdapter: wave`. It uses the same interactive
+start/input/resolve/next/confirm/read/retry lifecycle as other custom connections.
+The built-in typed form supports PIN6 and explicitly opened initial no-PIN windows.
+Core checks the selected resource before pairing, verifies it against authenticated
+inventory after grant confirmation, writes the normal IntegrationInstall, and
+publishes compatible entities. It creates no ordinary Connection record.
+
+The lifecycle response includes `wave: {deviceId,grantState,inventoryState,installed,
+entityIds,warnings,reason?}`. Completed projection is `status: done`; interrupted
+setup is `status: failed, recoverable: true, canCancel: false`, preserving committed
+facts. Retry uses the durable accepted identity and source, never a new pairing.
+Additional unavailable capabilities warn without erasing compatible entities.
+Preview selection does not install a business Integration. Integration uninstall
+and physical grant removal are separate operations.
+
 Credentials remain Core-local, outside ordinary Connection/privateData/Twin/sync.
-Explicit Hub migration is outside this increment. Removal/invitation UI, BLE and
-physical target acceptance remain separate increments. Commands are never replayed.
+Explicit Hub migration is outside this increment. Physical target acceptance and publication remain separate from source implementation. Commands are never replayed.
