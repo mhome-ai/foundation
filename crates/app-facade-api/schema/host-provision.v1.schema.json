@@ -296,6 +296,10 @@
         }
       },
       "then": {
+        "properties": {
+          "host": {},
+          "result": {}
+        },
         "required": [
           "host",
           "result"
@@ -303,6 +307,9 @@
       },
       "else": {
         "not": {
+          "properties": {
+            "result": {}
+          },
           "required": [
             "result"
           ]
@@ -323,6 +330,7 @@
       "then": {
         "properties": {
           "error": {
+            "type": "object",
             "properties": {
               "code": {
                 "const": "issue_failed"

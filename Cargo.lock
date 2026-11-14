@@ -1551,7 +1551,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.77.0"
+version = "1.77.1"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
