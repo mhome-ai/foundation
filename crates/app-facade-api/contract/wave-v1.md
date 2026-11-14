@@ -42,7 +42,19 @@ publishes compatible entities. It creates no ordinary Connection record.
 The lifecycle response includes `wave: {deviceId,grantState,inventoryState,installed,
 entityIds,warnings,reason?}`. Completed projection is `status: done`; interrupted
 setup is `status: failed, recoverable: true, canCancel: false`, preserving committed
-facts. Retry uses the durable accepted identity and source, never a new pairing.
+facts. Retry first reconciles the durable candidate/identity through authenticated
+operation. A committed grant continues installation without pairing. If the grant
+is still unconfirmed, retry returns `needs_input` with a standard typed Flow view
+for the same device. The user opens its pairing window again and re-enters its
+current PIN when required; confirmation reuses the exact saved key/grant/attempt.
+No retry replaces an existing device identity or replays a business command.
+
+The decision to request new pairing input survives Core restart. Status can return
+the reconstructed input view. Clients replace their displayed flow with this
+authoritative retry/status view, including its step and revision; they must not
+reuse commands or PINs from the previous page. Reconstructed pages use new step
+identities, while ordinary next/refresh/confirm retain their revision fences.
+Closing this input cancels only the interaction, preserving candidate credentials.
 Additional unavailable capabilities warn without erasing compatible entities.
 Preview selection does not install a business Integration. Integration uninstall
 and physical grant removal are separate operations.
