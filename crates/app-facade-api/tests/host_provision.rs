@@ -62,6 +62,14 @@ fn validator() -> jsonschema::Validator {
         serde_json::from_str(include_str!("../schema/host-provision.v1.schema.json")).unwrap();
     jsonschema::options()
         .with_resource(
+            "https://schemas.mhome.ai/app-facade/pod-commission.v1.schema.json",
+            jsonschema::Resource::from_contents(
+                serde_json::from_str(include_str!("../schema/pod-commission.v1.schema.json"))
+                    .unwrap(),
+            )
+            .unwrap(),
+        )
+        .with_resource(
             "https://schemas.mhome.ai/app-facade/pod-discovery.v1.schema.json",
             jsonschema::Resource::from_contents(discovery).unwrap(),
         )
@@ -80,31 +88,41 @@ fn fixture_matches_type_and_schema() {
     assert_eq!(session.candidate.kind, DeviceKind::Host);
     session.validate().unwrap();
 
-    assert!(session
-        .claim_token
-        .as_deref()
-        .is_some_and(|token| token.len() == CLAIM_TOKEN_LEN));
-
-    let mut bad_token = raw.clone();
-    bad_token["claimToken"] = Value::from("short");
-    assert!(!schema.is_valid(&bad_token));
-    let session: ProvisionSession = serde_json::from_value(bad_token).unwrap();
-    assert!(session.validate().is_err());
-
-    let mut early_token = raw.clone();
-    early_token["state"] = Value::from("joining_wifi");
-    assert!(!schema.is_valid(&early_token));
-    let session: ProvisionSession = serde_json::from_value(early_token).unwrap();
-    assert!(session.validate().is_err());
+    assert!(raw.get("claimToken").is_none());
+    assert_eq!(
+        session.result.as_ref().unwrap().host_id,
+        session.host.as_ref().unwrap().host_id
+    );
+    let mut exposed_token = raw.clone();
+    exposed_token["claimToken"] = Value::from("A".repeat(CLAIM_TOKEN_LEN));
+    assert!(!schema.is_valid(&exposed_token));
+    assert!(serde_json::from_value::<ProvisionSession>(exposed_token).is_err());
+    let mut early_result = raw.clone();
+    early_result["state"] = Value::from("authorizing");
+    assert!(!schema.is_valid(&early_result));
+    assert!(serde_json::from_value::<ProvisionSession>(early_result)
+        .unwrap()
+        .validate()
+        .is_err());
+    let mut missing_result = raw.clone();
+    missing_result.as_object_mut().unwrap().remove("result");
+    assert!(!schema.is_valid(&missing_result));
+    assert!(serde_json::from_value::<ProvisionSession>(missing_result)
+        .unwrap()
+        .validate()
+        .is_err());
 
     let mut no_addresses = raw.clone();
     no_addresses.as_object_mut().unwrap().remove("addresses");
     assert!(schema.is_valid(&no_addresses));
 
-    let finish: HostFinishResponse =
-        serde_json::from_value(serde_json::json!({ "ok": true, "claimToken": raw["claimToken"] }))
-            .unwrap();
-    assert_eq!(finish.claim_token.as_deref(), raw["claimToken"].as_str());
+    let finish: HostFinishResponse = serde_json::from_value(
+        serde_json::json!({ "ok": true, "claimToken": "A".repeat(CLAIM_TOKEN_LEN) }),
+    )
+    .unwrap();
+    assert!(app_facade_api::host_provision::is_claim_token(
+        finish.claim_token.as_deref().unwrap()
+    ));
 
     let mut no_host = raw.clone();
     no_host.as_object_mut().unwrap().remove("host");
@@ -118,12 +136,14 @@ fn fixture_matches_type_and_schema() {
         ("awaiting_code", Some("code_rejected"), true),
         ("awaiting_wifi", Some("wifi_not_found"), true),
         ("awaiting_wifi", Some("code_rejected"), false),
-        ("failed", Some("issue_failed"), false),
+        ("failed", Some("issue_failed"), true),
+        ("awaiting_authorization", Some("issue_failed"), true),
+        ("authorizing", Some("issue_failed"), false),
     ] {
         let mut value = raw.clone();
         value["state"] = Value::from(state);
         value.as_object_mut().unwrap().remove("host");
-        value.as_object_mut().unwrap().remove("claimToken");
+        value.as_object_mut().unwrap().remove("result");
         if let Some(code) = code {
             value["error"] = serde_json::json!({ "code": code, "message": "m" });
         }
@@ -144,7 +164,7 @@ fn cancellation_snapshots_validate_without_success_or_failure_data() {
     for state in ["cancelling", "cancelled"] {
         let mut value = raw.clone();
         value["state"] = Value::from(state);
-        value.as_object_mut().unwrap().remove("claimToken");
+        value.as_object_mut().unwrap().remove("result");
         let parsed: ProvisionSession = serde_json::from_value(value.clone()).unwrap();
         parsed.validate().unwrap();
         assert!(schema.is_valid(&value));

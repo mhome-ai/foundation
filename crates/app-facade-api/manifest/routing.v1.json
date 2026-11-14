@@ -1,12 +1,16 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.141.0",
+  "contractVersion": "1.142.0",
   "targetPrefix": "/app/",
   "default": {
     "execution": "spaceMode"
   },
   "matching": "exactBeforePrefix",
   "placementJsonPointer": "/input/placement",
+  "unspacedCloudTargets": [
+    "/app/host/metrics",
+    "/app/host/permissions/get"
+  ],
   "rules": {
     "cloudPrefixes": [
       "/app/space/",

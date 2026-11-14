@@ -12,6 +12,7 @@ mod discovery;
 mod endpoints;
 mod engine;
 mod facade;
+mod first_hub;
 pub mod hub;
 mod lan;
 mod platform;
@@ -24,13 +25,13 @@ use core_api::ErrorResponse;
 use tokio::runtime::{Handle, Runtime};
 use tokio::task::JoinHandle;
 
-pub use cloud::{is_loopback_url, selected_setup_hub};
+pub use cloud::{is_loopback_url, selected_product_setup_hub, selected_setup_hub};
 pub use endpoints::{endpoint_uuid, fallback_endpoint_uuids};
 pub use facade::{is_target, requests_bluetooth_discovery, RequestError};
 pub use platform::{
     Account, Advertisement, Blocking, BlockingCentral, BlockingCloud, BlockingLanDiscovery,
     BlockingLink, BlockingRadio, Central, Cloud, CloudEndpoints, CloudError, CloudResponse,
-    EventSink, LanAdvertisement, LanDiscovery, Link, LinkError, Platform, Radio,
+    EventSink, LanAdvertisement, LanDiscovery, LanNetwork, Link, LinkError, Platform, Radio,
 };
 
 /// The commissioning core. Dropping it stops discovery; a running session

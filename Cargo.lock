@@ -1477,7 +1477,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.141.0"
+version = "1.142.0"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -1506,12 +1506,15 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.15.1"
+version = "0.16.0"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
  "ed25519-dalek",
  "hex",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
  "mhome-app-facade-api",
  "mhome-core-api",
  "mhome-host-auth",
@@ -1521,10 +1524,12 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.9",
+ "socket2",
  "thiserror 2.0.21",
  "tokio",
  "tracing",
  "uuid",
+ "windows-sys 0.61.2",
  "zeroize",
 ]
 
@@ -1546,7 +1551,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.76.0"
+version = "1.77.0"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
@@ -1571,7 +1576,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "1.16.0"
+version = "1.16.1"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1632,7 +1637,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "1.4.65"
+version = "1.4.66"
 dependencies = [
  "cc",
  "mhome-core-api",

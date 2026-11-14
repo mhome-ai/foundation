@@ -43,6 +43,12 @@ const REQUEST_PLACEMENT: RoutePolicy = RoutePolicy {
 
 include!("routing.generated.rs");
 
+/// These account reads execute in Cloud when no Space is selected. With an
+/// explicit Space they retain the normal Space-owner route.
+pub fn allows_unspaced_target(target: &str) -> bool {
+    UNSPACED_CLOUD_TARGETS.contains(&target)
+}
+
 /// Resolve routing metadata for a canonical App Facade target.
 ///
 /// Exact exceptions are evaluated before domain prefixes. Unknown `/app/*`

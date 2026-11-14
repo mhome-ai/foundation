@@ -72,6 +72,10 @@ const SPACE_MODE_TARGETS: &[&str] = &[
     "/app/presentation/space/location/list",
     "/app/trace/get",
 ];
+const UNSPACED_CLOUD_TARGETS: &[&str] = &[
+    "/app/host/metrics",
+    "/app/host/permissions/get",
+];
 
 const HUB_PREFIXES: &[&str] = &[
     "/app/plugin/",

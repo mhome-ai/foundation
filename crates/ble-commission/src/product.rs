@@ -15,7 +15,9 @@ pub(crate) async fn prepare(
     scope: &str,
     info: &PodInfo,
     client: &Arc<Client>,
-) -> Result<(), String> {
+    first_hub: bool,
+    network_host: Option<&(String, core_api::host::auth::PublicKey)>,
+) -> Result<Option<app_facade_api::pod::HubIdentity>, String> {
     let binding = info
         .device_binding
         .as_ref()
@@ -55,6 +57,11 @@ pub(crate) async fn prepare(
         || challenge.exchange_key_hash.as_deref() != Some(&hash)
     {
         return Err("Host proof does not match the paired product".into());
+    }
+    if network_host.is_some_and(|(id, key)| {
+        id != &challenge.status.host_id || key != &challenge.host_public_key
+    }) {
+        return Err("The product Host changed after Wi-Fi setup".into());
     }
     // Fresh physical pairing plus this explicit owner approval confirms the
     // current product identity after reset, using the normal directory CAS.
@@ -98,6 +105,11 @@ pub(crate) async fn prepare(
     )
     .await
     .map_err(|e| e.to_string())?;
+    if !first_hub {
+        // An ordinary product joins the selected Hub; it never promotes its
+        // bundled Core or invokes a Hub mutation.
+        return Ok(None);
+    }
     cloud
         .setup_product_hub(
             context,
@@ -106,7 +118,15 @@ pub(crate) async fn prepare(
             &serde_json::to_string(&challenge.host_public_key).map_err(|e| e.to_string())?,
         )
         .await
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+    let hub = cloud::resolve_setup_hub(cloud, context, scope)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("The first Hub was not published")?;
+    if hub.host_id != challenge.status.host_id || hub.host_public_key != challenge.host_public_key {
+        return Err("The first Hub does not belong to the paired product".into());
+    }
+    Ok(Some(hub))
 }
 fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
     value[key]

@@ -151,6 +151,13 @@ Status reconciles the exact committed Hub even if the setup response was lost.
 
 `/local/hub/setup/start` returns a tagged result: `PAIRING_REQUIRED` carries the
 pairing session/code, while `RUNNING` and `COMPLETED` carry the exact `hubId`.
+`/local/hub/get` also exposes this account's unconfirmed `preparation` on the
+selected Space: `STARTING` contains `hostId` and `expiresAt`, while
+`PAIRING_REQUIRED` contains the existing `sessionId`, `candidate`, `pairingCode`
+and unchanged `expiresAt` (Unix milliseconds). Reads never restart pairing or
+extend expiry. Confirm atomically replaces preparation with a Host-bound pairing
+operation; cancellation and expiry remove preparation. UI operations recover a
+lost start/confirm response through this read before permitting another mutation.
 A retry reads cloud state first. Before the commit checkpoint it starts a fresh
 paired attempt; at `FINALIZING` it uses the same cloud initiate entrypoint to
 finish the recorded Hub without LAN discovery or new credentials. Completed
@@ -159,3 +166,11 @@ The command has the shared Core-request deadline (60 seconds); adapters receive
 the cloud call's budget explicitly. A running migration is observed separately
 within the existing ten-minute setup deadline. Failure preserves the recorded
 phase for an explicit retry, rather than starting automatic recovery.
+
+LAN adapters provide a native-selected `LanNetwork` for each numeric Pod endpoint.
+The shared Security 2 HTTP transport binds every TCP socket to that interface
+(Android also supplies its OS `Network` handle). It never uses proxy settings,
+DNS, redirects or a default-route fallback. Missing/disappeared interfaces fail
+the exchange. IPv6 DNS-SD scope IDs must agree with the selected interface.
+This transport binding complements, rather than replaces, the selected-Space
+Hub identity and same-LAN admission checks.

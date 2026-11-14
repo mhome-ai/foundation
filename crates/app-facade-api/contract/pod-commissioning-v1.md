@@ -134,6 +134,20 @@ confirming connectivity with `prov-config` status. Inside a Wi-Fi change window
 the response also carries `"mode":"reprovision"` and `wifiConfigured` is false
 (section 4).
 
+BLE `pod-info` is the network-phase DTO, not the LAN identity/receipt DTO above.
+It carries `protocol`, `env`, `deviceId`, `model`, `firmwareVersion`,
+`publicKey: [x, y]`, `wifiConfigured`, `state`, `dependentHost`, and optional
+`mode`/`error: {code}`. It never includes `deviceBinding`, `podId`, `clientMode`
+or a credential. `publicKey` is the same ES256 P-256 key as LAN: derive
+`fingerprint = hex(SHA256(0x04 || x || y))` and `keyId = "p256:" + fingerprint`.
+Coordinates are unpadded base64url. The complete JSON must fit 480 bytes,
+leaving room for the authenticated record in one 512-byte ATT value.
+`dependentHost` identifies a combined product eligible for explicit first-Hub
+network setup; it is not an ownership grant. After the LAN handoff, the Client
+requires the exact same key, device ID, environment and dependent-Host role,
+then verifies the complete product binding and Host proof before authorization.
+No fallback accepts the former full LAN DTO on BLE.
+
 `pod-credential` requests:
 
 - `{"op":"deliver","clientMode":"user","podId","loginGrant","spaceId","cloudApi","cloudWs"}` →
@@ -357,8 +371,13 @@ trial and rejects a credential from a different Hub.
 embedded dependent Host. The selected Space must have no existing Hub or
 pending Hub transition. For BLE, include the flag in `enrollment` before sending
 Wi-Fi and repeat the same intent during authorization. An already-networked
-product supplies its intent during authorization. A standalone Pod rejects
-first Hub setup.
+product supplies its intent during authorization. A retry may resume an existing
+setup or published Hub only when its Host ID matches the securely paired
+product. Removal, revocation, or another Host's operation blocks that retry.
+The existing Hub setup engine owns continuation; the Client adopts the newly
+published Hub only after checking its Host key, account, explicit Space and
+unchanged local network. UI focus changes do not change this destination.
+A standalone Pod rejects first Hub setup.
 
 Discovery is shared by every MeowLink device kind: each candidate carries
 `kind` (`pod` or `host`). `/local/pod/commission/start` accepts only `pod`
@@ -393,6 +412,29 @@ interface. On failure it discards the attempted network. A pod that reports
 `failed` ends the session with `wifi_failed` carrying the pod's code (for
 example `wifi_hub_unverified` or `storage_failed`) in `detail`. UIs show such a session as changing the
 pod's Wi-Fi rather than adding a pod.
+
+For a combined Linux product (`dependentHost: true`), the Native Client is the
+single Security 2 pairing authority on both BLE and LAN. The Host peripheral
+forwards encrypted records over the OS-private Pod socket; the Host owns the
+Wi-Fi trial, verification and rollback. This is not a BLE discovery relay.
+A secured `pod-info` `{"op":"networkTarget"}` read before a Wi-Fi trial returns
+`{"mode":"space","spaceId":"...","tenantId":"..."}` for an ordinary Space
+product, `{"mode":"unclaimed"}` before Host binding, or `{"mode":"ownHub"}` when its installed Core durable identity matches its
+local Host claim. The ordinary product requires the signed-in owner to obtain the
+current Hub identity online and send the `space` preparation record above.
+An own-Hub product accepts `{"op":"prepareWifi","mode":"ownHub"}` only after
+checking the installed Core identity against its local Host claim. It
+changes network without trying to prove LAN membership against itself. Both
+paths retain authorization and issue no new Pod credential.
+The `commissioned` response in this Wi-Fi-only mode confirms the saved network;
+it does not restore a revoked credential. A Linux product that already needs
+reauthorization keeps that state and its existing binding after a network change.
+
+The Linux trial binds discovery and the pinned connection to the new Wi-Fi
+interface. It saves the NetworkManager profile only after Hub proof succeeds;
+a failure or cancellation discards the trial and restores the previous profile.
+Its total session polling budget also covers bounded network activation and
+rollback; the Hub proof budget remains 30 seconds after obtaining an IP.
 
 Session states, in order: `connecting`, `awaiting_code`, `securing`,
 `reading_info`, `awaiting_wifi`, `joining_wifi`, `discovering_lan`,
@@ -526,3 +568,21 @@ An older registration for the same device cannot complete a different attempt.
 active local credential, returning `clientMode: "space"`; this read requires Space
 MANAGE. A cloud Space has no such local enrollment and returns `registered:false`.
 Both checks are read-only completion hooks. They do not issue or renew credentials.
+
+### Interrupted combined first Hub
+
+A combined product uses the same durable first-Hub network intent and cloud
+recovery permit as [Host provisioning](host-provisioning-v1.md#interrupted-first-hub-installation).
+The secured `pod-info {op:"hostIdentity"}` returns the local Host's
+`{hostId,publicKey:[x,y]}` through OS-private IPC while a network window is open.
+The commissioner retains this identity across BLE-to-LAN handoff and checks it
+against the product's signed binding before any claim or credential delivery.
+The BLE record contains only the public identity and compact intent/permit;
+full Host claim messages and Pod credentials remain on the LAN Security 2 channel.
+
+If the Host is already bound and its first-Hub setup is pending, `networkTarget`
+returns `firstHub` with the original intent and Space. Native obtains an online
+Owner permit and submits `bootstrapRecovery`. If no Pod profile has been saved,
+Wi-Fi success continues the defined LAN binding/Hub setup/Pod credential protocol.
+An existing Pod profile keeps the Wi-Fi-only reprovision flow. Neither case
+changes Space or clears the current Host authorization to bypass a failed check.

@@ -103,7 +103,10 @@ async fn commissions_a_pod_end_to_end() {
     }
     assert_eq!(calls[0].context, "ctx-1");
     assert_eq!(calls[0].body["clientId"], "client-1");
-    assert_eq!(calls[0].body["identity"]["keyId"], "p256:abc");
+    assert_eq!(
+        calls[0].body["identity"]["keyId"],
+        support::pod_identity().key_id
+    );
     assert!(harness.cloud.revokes().is_empty());
     tokio::time::sleep(Duration::from_secs(2)).await;
     assert!(harness.position("event:completed") < harness.position("device:pod-credential:finish"));
@@ -511,6 +514,63 @@ async fn a_wifi_change_window_only_moves_the_pod_to_the_new_network() {
         .events(COMMISSION_CHANGED_EVENT)
         .iter()
         .for_each(valid);
+}
+
+#[tokio::test(start_paused = true)]
+async fn combined_product_network_change_resolves_current_hub_without_reissuing_credentials() {
+    let harness = Harness::with_discovery("ble").await;
+    let mut script = Script::product();
+    script.reprovision = Some(None);
+    harness.add_device("pod-a", script);
+    reprovision(&harness).await;
+    harness.wait_state(POD, "completed").await;
+    assert!(
+        harness.position("device:pod-info:networkTarget")
+            < harness.position("device:pod-info:prepareWifi")
+    );
+    assert!(
+        harness.position("device:pod-info:prepareWifi") < harness.position("device:set_config")
+    );
+    let calls = harness.cloud.calls.lock().unwrap();
+    assert!(calls.iter().any(|call| call.path == "hub/identity/get"));
+    assert!(calls.iter().all(|call| call.path == "hub/identity/get"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn own_hub_network_change_uses_physical_pairing_without_requiring_the_old_lan() {
+    let harness = Harness::with_discovery("ble").await;
+    *harness.cloud.commissioning_lan.lock().unwrap() = None;
+    let mut script = Script::product();
+    script.own_product_hub = true;
+    script.reprovision = Some(None);
+    harness.add_device("pod-a", script);
+    reprovision(&harness).await;
+    harness.wait_state(POD, "completed").await;
+    assert!(
+        harness.position("device:pod-info:prepareWifi") < harness.position("device:set_config")
+    );
+    assert!(harness.cloud.calls.lock().unwrap().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn ordinary_product_network_change_requires_its_space_owner_before_sending_wifi() {
+    let harness = Harness::with_discovery("ble").await;
+    harness
+        .cloud
+        .account
+        .lock()
+        .unwrap()
+        .as_mut()
+        .unwrap()
+        .spaces[0]
+        .owner = false;
+    let mut script = Script::product();
+    script.reprovision = Some(None);
+    harness.add_device("pod-a", script);
+    reprovision(&harness).await;
+    let failed = harness.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["code"], "wifi_failed");
+    assert!(!harness.journal().contains(&"device:set_config".into()));
 }
 
 #[tokio::test(start_paused = true)]
@@ -1128,6 +1188,32 @@ async fn combined_product_binds_before_first_hub_and_space_credential() {
 }
 
 #[tokio::test(start_paused = true)]
+async fn ordinary_combined_product_binds_without_running_hub_setup() {
+    let harness = Harness::with_discovery("ble").await;
+    harness.add_device("pod-a", Script::product());
+    let id = to_authorization_with_intent(&harness, "space", false).await;
+    harness
+        .ok(
+            "/local/pod/commission/authorize",
+            json!({
+                "sessionId":id, "spaceId":"scope-a", "clientMode":"space", "firstHub":false
+            }),
+        )
+        .await;
+    harness.wait_state(POD, "completed").await;
+    assert!(harness
+        .journal()
+        .iter()
+        .any(|e| e == "device:pod-credential:bind"));
+    assert!(!harness.journal().iter().any(|e| e == "product:hub-ready"));
+    assert!(harness
+        .cloud
+        .paths()
+        .iter()
+        .any(|p| p == "pod/space/credential/issue"));
+}
+
+#[tokio::test(start_paused = true)]
 async fn combined_product_rejects_a_different_client_before_cloud_claim() {
     let harness = Harness::with_discovery("ble").await;
     let mut script = Script::product();
@@ -1142,7 +1228,13 @@ async fn combined_product_rejects_a_different_client_before_cloud_claim() {
         )
         .await;
     harness.wait_state(POD, "failed").await;
-    assert!(harness.cloud.calls.lock().unwrap().is_empty());
+    assert!(!harness
+        .cloud
+        .calls
+        .lock()
+        .unwrap()
+        .iter()
+        .any(|call| call.path == "/host/authorizations/claim"));
 }
 
 #[tokio::test(start_paused = true)]
@@ -1260,7 +1352,7 @@ async fn pod_setup_rejects_a_hub_change_even_if_the_old_native_transport_is_stil
 }
 
 #[tokio::test(start_paused = true)]
-async fn switching_space_during_pod_setup_prevents_credential_issuance() {
+async fn switching_ui_focus_keeps_the_explicit_pod_destination() {
     let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     let id = to_authorization(&harness).await;
@@ -1273,13 +1365,17 @@ async fn switching_space_during_pod_setup_prevents_credential_issuance() {
         .unwrap()
         .active_space_id = Some("scope-a".into());
     authorize(&harness, &id).await;
-    let refused = harness.wait_state(POD, "failed").await;
-    assert_eq!(refused["error"]["code"], "lan_unavailable");
-    assert!(harness.cloud.paths().is_empty());
+    harness.wait_state(POD, "completed").await;
+    let calls = harness.cloud.calls.lock().unwrap();
+    let issued = calls
+        .iter()
+        .find(|c| c.path == "pod/login/approve")
+        .unwrap();
+    assert_eq!(issued.context, "ctx-1");
 }
 
 #[tokio::test(start_paused = true)]
-async fn switching_space_at_the_pairing_prompt_requires_a_new_setup_session() {
+async fn switching_ui_focus_at_pairing_does_not_invent_a_destination() {
     let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     let id = start(&harness).await;
@@ -1293,8 +1389,62 @@ async fn switching_space_at_the_pairing_prompt_requires_a_new_setup_session() {
         .unwrap()
         .active_space_id = Some("scope-a".into());
     secure(&harness, &id).await;
-    let refused = harness.wait_state(POD, "failed").await;
-    assert_eq!(refused["error"]["code"], "lan_unavailable");
+    harness.wait_state(POD, "awaiting_wifi").await;
     assert!(!harness.journal().iter().any(|e| e == "device:set_config"));
     assert!(harness.cloud.paths().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn first_hub_lan_retry_finishes_the_same_product_after_hub_creation_or_pending_setup() {
+    for pending in [false, true] {
+        let h = Harness::with_discovery("lan").await;
+        let script = Script::product();
+        let key =
+            host_protocol::signatures::decode_key(script.product_key.as_ref().unwrap()).unwrap();
+        *h.cloud.product_hub_key.lock().unwrap() = Some(
+            serde_json::to_value(host_protocol::signatures::public_key(key.verifying_key()))
+                .unwrap(),
+        );
+        h.cloud.product_pending.store(pending, Ordering::SeqCst);
+        h.add_device("pod-a", script);
+        h.lan.advertise();
+        let start = h
+            .ok(
+                "/local/pod/commission/start",
+                json!({"candidateId":"lan:pod-a"}),
+            )
+            .await;
+        let id = session_id(&start);
+        secure(&h, &id).await;
+        h.wait_state(POD, "awaiting_authorization").await;
+        h.ok(
+            "/local/pod/commission/authorize",
+            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space","firstHub":true}),
+        )
+        .await;
+        let done = h.wait_state(POD, "completed").await;
+        assert_eq!(done["clientMode"], "space");
+        assert!(h.position("product:hub-ready") < h.position("device:pod-credential:deliver"));
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn unfinished_first_hub_product_recovers_wifi_then_completes_space_enrollment() {
+    let h = Harness::with_discovery("ble").await;
+    h.cloud.bootstrap.store(true, Ordering::SeqCst);
+    let mut script = Script::product();
+    script.first_hub_recovery = true;
+    let device = h.add_device("pod-a", script);
+    let id = to_authorization_with_intent(&h, "space", true).await;
+    let commands = device.network_requests.lock().unwrap().clone();
+    assert_eq!(commands.len(), 1);
+    assert_eq!(commands[0]["mode"], "bootstrapRecovery");
+    assert!(h.position("cloud:/host/first-hub/recovery/prepare") < h.position("device:apply"));
+    h.ok(
+        "/local/pod/commission/authorize",
+        json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space","firstHub":true}),
+    )
+    .await;
+    let done = h.wait_state(POD, "completed").await;
+    assert_eq!(done["clientMode"], "space");
 }

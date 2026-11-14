@@ -585,6 +585,10 @@ fn routing_manifest_matches_rust_policy() {
     assert_eq!(manifest["default"]["execution"], "spaceMode");
     assert_eq!(manifest["matching"], "exactBeforePrefix");
     assert_eq!(manifest["placementJsonPointer"], "/input/placement");
+    assert_eq!(
+        manifest["unspacedCloudTargets"],
+        serde_json::json!(["/app/host/metrics", "/app/host/permissions/get"])
+    );
 
     let expected_rule_groups = [
         "cloudPrefixes",

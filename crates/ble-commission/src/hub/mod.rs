@@ -98,6 +98,7 @@ struct Session {
     base: String,
     key: PublicKey,
     pairing_code: String,
+    expires_at: i64,
     deadline: Instant,
 }
 struct Operation {
@@ -108,11 +109,17 @@ struct Operation {
     task: Option<tokio::task::AbortHandle>,
     is_test: bool,
 }
+struct Start {
+    sequence: u64,
+    host_id: String,
+    deadline: Instant,
+    expires_at: i64,
+}
 #[derive(Default)]
 struct State {
     sessions: HashMap<String, Session>,
     operations: HashMap<(String, String), Operation>,
-    starts: HashMap<(String, String), u64>,
+    starts: HashMap<(String, String), Start>,
     sequence: u64,
 }
 pub struct Commissioning {
@@ -134,6 +141,9 @@ impl Commissioning {
     }
     fn clean(state: &mut State) {
         state.sessions.retain(|_, s| s.deadline > Instant::now());
+        state
+            .starts
+            .retain(|_, start| start.deadline > Instant::now());
         state.operations.retain(|_, op| {
             let retain = op.deadline + RETAIN_FAILURE > Instant::now();
             if !retain {
@@ -174,11 +184,30 @@ impl Commissioning {
         Self::clean(&mut state);
         if let Some(op) = state
             .operations
-            .get(&(context, scope.into()))
+            .get(&(context.clone(), scope.into()))
             .filter(|op| op.view.state != "COMPLETED")
         {
             view.pairing = Some(op.view.clone());
         }
+        view.preparation = if let Some((id, session)) = state
+            .sessions
+            .iter()
+            .find(|(_, s)| s.context == context && s.scope == scope)
+        {
+            Some(api::HubSetupPreparation::PairingRequired {
+                session_id: id.clone(),
+                candidate: session.candidate.view(),
+                pairing_code: session.pairing_code.clone(),
+                expires_at: session.expires_at,
+            })
+        } else {
+            state.starts.get(&(context, scope.into())).map(|start| {
+                api::HubSetupPreparation::Starting {
+                    host_id: start.host_id.clone(),
+                    expires_at: start.expires_at,
+                }
+            })
+        };
         Ok(view)
     }
     pub async fn start(
@@ -242,7 +271,15 @@ impl Commissioning {
                 .map_err(|_| "Hub setup state unavailable")?;
             state.sequence += 1;
             let sequence = state.sequence;
-            state.starts.insert(start_key.clone(), sequence);
+            state.starts.insert(
+                start_key.clone(),
+                Start {
+                    sequence,
+                    host_id: request.host_id.clone(),
+                    deadline: Instant::now() + COMMAND_TIMEOUT,
+                    expires_at: now_ms() + COMMAND_TIMEOUT.as_millis() as i64,
+                },
+            );
             if let Some(previous) = state.operations.remove(&start_key) {
                 if let Some(task) = previous.task {
                     task.abort();
@@ -300,6 +337,7 @@ impl Commissioning {
             base,
             key,
             pairing_code: code.clone(),
+            expires_at: now_ms() + (ttl * 1000) as i64,
             deadline: Instant::now() + Duration::from_secs(ttl),
         };
         self.current(&context).await?;
@@ -308,7 +346,11 @@ impl Commissioning {
             .lock()
             .map_err(|_| "Hub setup state unavailable")?;
         Self::clean(&mut state);
-        if state.starts.get(&start_key) != Some(&sequence) {
+        if state
+            .starts
+            .get(&start_key)
+            .is_none_or(|start| start.sequence != sequence)
+        {
             return Err("Hub setup was replaced by a newer attempt".into());
         }
         state.starts.remove(&start_key);
@@ -322,13 +364,14 @@ impl Commissioning {
         state
             .sessions
             .retain(|_, s| s.context != context || s.scope != scope);
+        let expires_at = session.expires_at;
         state.sessions.insert(id.clone(), session);
         Ok(api::HubSetupStartResponse::PairingRequired {
             space_id: scope.into(),
             session_id: id,
             candidate: candidate.view(),
             pairing_code: code,
-            expires_at: now_ms() + (ttl * 1000) as i64,
+            expires_at,
         })
     }
     // Only cloud state selects this branch. The cloud rechecks the exact target
@@ -496,16 +539,22 @@ impl Commissioning {
         if view.space_id != scope {
             return Err("Hub registration belongs to a different Space".into());
         }
-        // Reuse a published Hub on a different Host without promoting this Core.
-        if view.configured
-            && view.operation.is_none()
-            && view.revocation.is_none()
-            && view.hub.as_ref().is_some_and(|hub| {
-                hub.cloud.status.eq_ignore_ascii_case("ready") && hub.cloud.host_id != host_id
+        // This API means establish/resume this product as the first Hub.
+        // Ordinary product additions do not call it.
+        if view.revocation.is_some()
+            || view
+                .hub
+                .as_ref()
+                .is_some_and(|hub| hub.cloud.host_id != host_id)
+            || view.operation.as_ref().is_some_and(|op| {
+                op.kind != api::HubOperationKind::Setup || op.host_id.as_deref() != Some(host_id)
             })
+            || view
+                .pairing
+                .as_ref()
+                .is_some_and(|op| op.host_id.as_deref() != Some(host_id))
         {
-            self.current(&context).await?;
-            return Ok(());
+            return Err("This Space has a Hub operation for another device".into());
         }
         let deadline = Instant::now() + SETUP_TIMEOUT;
         if let Some(result) = self.continue_setup(&context, scope, host_id, &view).await? {
@@ -619,6 +668,7 @@ impl Commissioning {
                 .ok_or("Hub pairing expired; start again")?;
             state.sessions.remove(id);
             let started = now_ms();
+            let host_id = session.candidate.host_id.clone();
             state.operations.insert(
                 key.clone(),
                 Operation {
@@ -633,7 +683,7 @@ impl Commissioning {
                         phase: "INITIALIZING".into(),
                         started_at: started,
                         expires_at: started + SETUP_TIMEOUT.as_millis() as i64,
-                        host_id: None,
+                        host_id: Some(host_id),
                         hub_id: None,
                         failure: None,
                     },

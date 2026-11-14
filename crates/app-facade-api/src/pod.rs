@@ -578,7 +578,34 @@ pub struct PodIdentity {
     pub fingerprint: String,
 }
 
-/// `pod-info` response.
+/// BLE network-phase information. Full component bindings and credentials are
+/// LAN-only. The two P-256 coordinates identify exactly the same Pod as the LAN
+/// identity; commissioners derive its canonical key ID/fingerprint locally.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PodNetworkInfo {
+    pub protocol: u32,
+    pub env: String,
+    pub device_id: String,
+    pub model: String,
+    pub firmware_version: String,
+    pub public_key: [String; 2],
+    pub wifi_configured: bool,
+    pub state: String,
+    pub dependent_host: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<PodNetworkError>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mode: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct PodNetworkError {
+    pub code: String,
+}
+
+/// LAN `pod-info` response.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PodInfo {

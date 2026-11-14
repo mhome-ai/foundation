@@ -190,6 +190,7 @@ pub(crate) async fn dispatch(
         host::PROVISION_CODE_TARGET => code(engine, Host, parse(payload)?).await,
         pod::COMMISSION_WIFI_TARGET => wifi(engine, Pod, parse(payload)?).await,
         host::PROVISION_WIFI_TARGET => wifi(engine, Host, parse(payload)?).await,
+        host::PROVISION_AUTHORIZE_TARGET => authorize_host(engine, parse(payload)?).await,
         pod::COMMISSION_WIFI_SCAN_TARGET => wifi_scan(engine, Pod, parse(payload)?).await,
         host::PROVISION_WIFI_SCAN_TARGET => wifi_scan(engine, Host, parse(payload)?).await,
         pod::COMMISSION_AUTHORIZE_TARGET => authorize(engine, parse(payload)?).await,
@@ -213,7 +214,7 @@ fn cancel_host(
         .ok_or_else(|| unknown(DeviceKind::Host))?;
     // Wi-Fi apply and the claim-token handoff are one bounded critical section.
     // Disconnecting in it can strand an online device without its claim token.
-    if live.phase == Phase::JoiningWifi {
+    if matches!(live.phase, Phase::JoiningWifi | Phase::Issuing) {
         return Err(busy());
     }
     if !live.phase.is_terminal() && live.phase != Phase::Cancelling {
@@ -323,8 +324,8 @@ async fn start(
             host: None,
             addresses: Vec::new(),
             claim_token: None,
+            host_result: None,
             account_context: Some(account.context),
-            active_space_id: account.active_space_id,
             busy: false,
             scanning: false,
             released: false,
@@ -413,11 +414,13 @@ async fn wifi(
             return Err(wrong_state(live));
         }
         let initial_pod = kind == DeviceKind::Pod && live.mode.is_none();
-        if initial_pod {
+        let initial_space_host = kind == DeviceKind::Host && live.host.as_ref().is_some_and(|host|
+            host.onboarding_required && host.authorization_mode == core_api::host::access::HostMode::SpaceSelf);
+        if initial_pod || initial_space_host {
             let target = request.enrollment.as_ref().ok_or_else(|| {
-                RequestError::bad_request("choose the Pod's identity and Space before Wi-Fi")
+                RequestError::bad_request("choose the device's identity and Space before Wi-Fi")
             })?;
-            let dependent = live.device.as_ref().is_some_and(|d| d.dependent_host);
+            let dependent = initial_space_host || live.device.as_ref().is_some_and(|d| d.dependent_host);
             if target.first_hub && (!dependent || target.client_mode != pod::ClientMode::Space) {
                 return Err(RequestError::bad_request("only a product with a linked Host can establish the first Hub"));
             }
@@ -463,6 +466,39 @@ async fn wifi_scan(
         let join = live.scanning;
         live.scanning = true;
         Ok(Some(Op::Scan { join }))
+    })
+    .await
+}
+
+async fn authorize_host(
+    engine: &Arc<Engine>,
+    request: CommissionSessionRequest,
+) -> Result<Value, RequestError> {
+    self::request(engine, DeviceKind::Host, &request.session_id, |live| {
+        if live.phase != Phase::AwaitingAuthorization {
+            return Err(wrong_state(live));
+        }
+        if live.busy {
+            return Err(busy());
+        }
+        if live.claim_token.is_none()
+            && !(live
+                .host
+                .as_ref()
+                .is_some_and(|host| !host.onboarding_required)
+                && live
+                    .enrollment
+                    .as_ref()
+                    .is_some_and(|target| target.first_hub))
+        {
+            return Err(RequestError::bad_request(
+                "Host claim handoff is unavailable",
+            ));
+        }
+        live.busy = true;
+        live.set(Phase::Issuing, None);
+        live.revision += 1;
+        Ok(Some(Op::HostAuthorize))
     })
     .await
 }

@@ -10,6 +10,7 @@ pub const PROVISION_CODE_TARGET: &str = "/local/host/provision/code";
 pub const PROVISION_WIFI_TARGET: &str = "/local/host/provision/wifi";
 pub const PROVISION_WIFI_SCAN_TARGET: &str = "/local/host/provision/wifi/scan";
 pub const PROVISION_STATUS_TARGET: &str = "/local/host/provision/status";
+pub const PROVISION_AUTHORIZE_TARGET: &str = "/local/host/provision/authorize";
 pub const PROVISION_CANCEL_TARGET: &str = "/local/host/provision/cancel";
 
 pub const PROVISION_CHANGED_EVENT: &str = "/local/host/provision/changed";
@@ -20,6 +21,7 @@ pub const LOCAL_TARGETS: &[&str] = &[
     PROVISION_WIFI_TARGET,
     PROVISION_WIFI_SCAN_TARGET,
     PROVISION_STATUS_TARGET,
+    PROVISION_AUTHORIZE_TARGET,
     PROVISION_CANCEL_TARGET,
 ];
 pub const EVENT_TARGETS: &[&str] = &[PROVISION_CHANGED_EVENT];
@@ -67,6 +69,8 @@ pub enum ProvisionState {
     ReadingInfo,
     AwaitingWifi,
     JoiningWifi,
+    AwaitingAuthorization,
+    Authorizing,
     Cancelling,
     Cancelled,
     Completed,
@@ -93,6 +97,8 @@ pub struct HostDeviceInfo {
     pub firmware_version: String,
     pub fingerprint: String,
     pub wifi_configured: bool,
+    pub authorization_mode: core_api::host::access::HostMode,
+    pub onboarding_required: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -107,14 +113,27 @@ pub struct ProvisionSession {
     pub host: Option<HostDeviceInfo>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub networks: Vec<WifiNetwork>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub authorization: Option<crate::pod::AuthorizationPrompt>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub enrollment: Option<crate::pod::EnrollmentTarget>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub result: Option<ProvisionResult>,
     /// IPv4 LAN addresses reported by the Host once it joined; may be empty.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub addresses: Vec<String>,
-    /// One-time token for the first claim of this Host, from `finish`.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub claim_token: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub error: Option<CommissionError>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProvisionResult {
+    pub host_id: String,
+    pub wifi_configured: bool,
+    pub commissioned: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hub_id: Option<String>,
 }
 
 impl ProvisionSession {
@@ -126,6 +145,7 @@ impl ProvisionSession {
             (ProvisionState::Failed | ProvisionState::TimedOut, Some(_))
             | (_, None)
             | (ProvisionState::AwaitingCode, Some(CommissionErrorCode::CodeRejected))
+            | (ProvisionState::AwaitingAuthorization, Some(CommissionErrorCode::IssueFailed))
             | (
                 ProvisionState::AwaitingWifi,
                 Some(
@@ -136,31 +156,30 @@ impl ProvisionSession {
             ) => {}
             _ => {
                 return Err(
-                    "only failed, timed_out and retryable code or Wi-Fi states carry an error",
+                    "only failed, timed_out and retryable interaction states carry an error",
                 );
             }
         }
         if let Some(code) = self.error.as_ref().map(|error| error.code) {
             if matches!(
                 code,
-                CommissionErrorCode::IssueFailed
-                    | CommissionErrorCode::DeliveryFailed
-                    | CommissionErrorCode::ActivationFailed
+                CommissionErrorCode::DeliveryFailed | CommissionErrorCode::ActivationFailed
             ) {
                 return Err("credential error codes do not apply to Host provisioning");
             }
         }
-        if self.state == ProvisionState::Completed && self.host.is_none() {
-            return Err("completed sessions carry the Host information");
-        }
-        match self.claim_token.as_deref() {
-            Some(_) if self.state != ProvisionState::Completed => {
-                return Err("only completed sessions carry a claim token");
+        match (&self.result, self.state) {
+            (Some(result), ProvisionState::Completed)
+                if self.host.as_ref().is_some_and(|host| {
+                    host.host_id == result.host_id && result.wifi_configured && result.commissioned
+                }) => {}
+            (None, ProvisionState::Completed) => {
+                return Err("completed sessions carry their operation result")
             }
-            Some(token) if !is_claim_token(token) => {
-                return Err("claim tokens are 43 base64url characters");
+            (Some(_), _) => {
+                return Err("only completed sessions carry a matching successful operation result")
             }
-            _ => {}
+            (None, _) => {}
         }
         Ok(())
     }

@@ -169,6 +169,37 @@ pub struct LocalHubState {
     pub revocation: Option<HubRevocation>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pairing: Option<HubPairingOperation>,
+    /// Read-only recovery of an unconfirmed native setup request.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preparation: Option<HubSetupPreparation>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(
+    tag = "state",
+    rename_all = "SCREAMING_SNAKE_CASE",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum HubSetupPreparation {
+    Starting {
+        host_id: String,
+        expires_at: i64,
+    },
+    PairingRequired {
+        session_id: String,
+        candidate: HubCandidate,
+        pairing_code: String,
+        expires_at: i64,
+    },
+}
+impl HubSetupPreparation {
+    pub fn host_id(&self) -> &str {
+        match self {
+            Self::Starting { host_id, .. } => host_id,
+            Self::PairingRequired { candidate, .. } => &candidate.host_id,
+        }
+    }
 }
 
 impl LocalHubState {

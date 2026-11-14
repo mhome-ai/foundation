@@ -18,10 +18,18 @@ Business execution follows Space mode, independently of LLM placement:
   cloud forwarding. Core obtains cloud-owned directory metadata and user grants
   through the private `/bridge/management/control` endpoint; this endpoint neither
   dispatches Host commands nor impersonates a Client.
-- Cloud Space: cloud executes business through the initiating personal desktop
-  Client. No other online App is selected. MCP, web and mobile have no such
+- Cloud Space: cloud executes business through the initiating personal Native
+  Client (desktop, Android or iOS). No other online App is selected. MCP and web have no such
   transport and management calls fail if no suitable route exists. List still
   returns registrations with unavailable observations.
+- No Space: `/app/host/metrics` and `/app/host/permissions/get` execute through
+  the authenticated initiating Native Client, using the same Facade DTO and
+  caller-selected Full/Essential protocol. Only an Admin Host is accepted; a
+  Space Host still requires its Space. The Cloud verifies the current socket
+  identity directly because no Space presence index exists yet. It never chooses
+  another online Client. These two exceptions are declared by
+  `routing.v1.json.unspacedCloudTargets`; with a Space, normal Space-mode routing
+  applies. MCP has no Native Client execution route.
 
 Host mode, ACL and Space ownership remain authoritative. The private bridge is
 bound to its authenticated tenant/Space and rechecks personal User read access;
@@ -32,6 +40,20 @@ Public signing endpoints remain Client-only and are not Agent/MCP tools.
 
 The private `/app/host/execute` Client request is a fixed management transport,
 not a capability or public Facade. It accepts no service switch or admin removal.
+Its authenticated Cloud socket, personal User, tenant and explicit `spaceId` must
+match the receiving Client's current membership. UI focus does not select or
+authorize this execution. `inventory` accepts `{}` for a list or `{hostId}` for a
+single target; the Client selects that target before probing devices. `runtime`
+and `permissions` address one explicit Host ID. Private requests never enter the
+WebView event stream. Each exchange remains bound to the initiating login and
+connection attempt; an expired attempt cannot dispatch further work or reply on
+its replacement. A result uses exactly `{value: ...}` or
+`{error: {code, message}}`, keeping business refusal codes intact.
+For an account read, the private request body's `spaceId` is explicitly `null`
+and its envelope has no Space selection. The only admitted forms are `inventory {hostId}`,
+`runtime {hostId,action:"metrics"}` and `permissions {hostId}`. Each receiver
+verifies its current personal user/tenant and the Host's signed Admin mode;
+missing `spaceId`, arbitrary unscoped writes and local Host aliases are rejected.
 A missing route fails; a mutation is never replayed through another transport.
 If a cloud entrypoint cannot reach a local Space's Core, list alone may return
 cloud registrations with unavailable observations and `sourceErrors.hub`.

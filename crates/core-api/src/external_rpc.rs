@@ -192,6 +192,23 @@ pub struct ExternalCoreDeviceIdentity {
     pub device_name: String,
 }
 
+/// Core-owned durable identities, inspected by its installed executable without
+/// starting runtime services. Private OS process boundary; not an App Facade.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CoreInstallationSnapshot {
+    pub hubs: Vec<CoreInstalledHub>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CoreInstalledHub {
+    pub tenant_id: String,
+    pub space_id: String,
+    pub hub_id: String,
+    pub public_key: crate::host::auth::PublicKey,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ListMdnsRecordsRequest {

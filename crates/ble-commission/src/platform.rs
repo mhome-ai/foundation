@@ -23,8 +23,8 @@ pub enum LinkError {
     /// The peripheral or an endpoint is not there.
     #[error("not found: {0}")]
     NotFound(String),
-    /// Bluetooth itself cannot be used.
-    #[error("Bluetooth unavailable: {0}")]
+    /// The native transport itself cannot be used.
+    #[error("transport unavailable: {0}")]
     Unavailable(String),
 }
 
@@ -57,17 +57,44 @@ pub trait Central: Send + Sync + 'static {
 #[async_trait]
 pub trait LanDiscovery: Send + Sync + 'static {
     async fn set_browsing(&self, browsing: bool) -> Result<(), String>;
-    async fn connect(&self, address: std::net::SocketAddr) -> Result<Arc<dyn Link>, LinkError> {
-        crate::lan::HttpLink::connect(address)
+    /// The native platform must select an on-link physical network. There is
+    /// deliberately no default-route fallback when that capability is missing.
+    async fn network(&self, _address: std::net::SocketAddr) -> Result<LanNetwork, LinkError> {
+        Err(LinkError::Unavailable(
+            "Local network selection is unavailable".into(),
+        ))
     }
+    async fn connect(&self, address: std::net::SocketAddr) -> Result<Arc<dyn Link>, LinkError> {
+        crate::lan::HttpLink::connect(address, self.network(address).await?)
+    }
+}
+
+/// OS routing identity, supplied by trusted native code, never by UI input or
+/// an advertisement. The platform checks that the destination is on this LAN.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LanNetwork {
+    pub interface_name: String,
+    pub interface_index: u32,
+    /// Android Network.networkHandle; binds this socket, never the process.
+    pub android_network: Option<u64>,
 }
 
 pub trait BlockingLanDiscovery: Send + Sync + 'static {
     fn set_browsing(&self, browsing: bool) -> Result<(), String>;
+    fn network(&self, _address: std::net::SocketAddr) -> Result<LanNetwork, LinkError> {
+        Err(LinkError::Unavailable(
+            "Local network selection is unavailable".into(),
+        ))
+    }
 }
 
 #[async_trait]
 impl<T: BlockingLanDiscovery + ?Sized> LanDiscovery for Blocking<T> {
+    async fn network(&self, address: std::net::SocketAddr) -> Result<LanNetwork, LinkError> {
+        off_runtime(&self.0, move |lan| lan.network(address))
+            .await
+            .unwrap_or_else(|| Err(stopped()))
+    }
     async fn set_browsing(&self, browsing: bool) -> Result<(), String> {
         off_runtime(&self.0, move |lan| lan.set_browsing(browsing))
             .await
@@ -135,6 +162,21 @@ pub struct CloudEndpoints {
 
 #[async_trait]
 pub trait Cloud: Send + Sync + 'static {
+    /// Native LAN claim of the Host whose key was read through the paired BLE
+    /// session. Implementations must pin this key before sending a claim/token.
+    /// Returns only after ordinary cloud registration has committed.
+    async fn claim_paired_host(
+        &self,
+        _context: &str,
+        _host_id: &str,
+        _host_key: &str,
+        _claim_token: &str,
+        _space_id: Option<&str>,
+    ) -> Result<(), CloudError> {
+        Err(CloudError::Unreachable(
+            "Paired Host authorization is unavailable".into(),
+        ))
+    }
     async fn setup_product_hub(
         &self,
         _context: &str,
@@ -153,6 +195,17 @@ pub trait Cloud: Send + Sync + 'static {
     ) -> Result<Option<(String, String)>, CloudError> {
         Err(CloudError::Unreachable(
             "Hub selection is unavailable".into(),
+        ))
+    }
+    /// First-Hub recovery may resume only this paired product's setup.
+    async fn product_hub_selection(
+        &self,
+        _context: &str,
+        _space_id: &str,
+        _host_id: &str,
+    ) -> Result<Option<(String, String)>, CloudError> {
+        Err(CloudError::Unreachable(
+            "Product Hub recovery is unavailable".into(),
         ))
     }
     /// A stable token for the current native LAN and local Hub transport.
@@ -221,6 +274,18 @@ pub trait BlockingLink: Send + Sync + 'static {
 }
 
 pub trait BlockingCloud: Send + Sync + 'static {
+    fn claim_paired_host(
+        &self,
+        _context: String,
+        _host_id: String,
+        _host_key: String,
+        _claim_token: String,
+        _space_id: Option<String>,
+    ) -> Result<(), CloudError> {
+        Err(CloudError::Unreachable(
+            "Paired Host authorization is unavailable".into(),
+        ))
+    }
     fn setup_product_hub(
         &self,
         _context: String,
@@ -239,6 +304,16 @@ pub trait BlockingCloud: Send + Sync + 'static {
     ) -> Result<Option<(String, String)>, CloudError> {
         Err(CloudError::Unreachable(
             "Hub selection is unavailable".into(),
+        ))
+    }
+    fn product_hub_selection(
+        &self,
+        _context: String,
+        _space_id: String,
+        _host_id: String,
+    ) -> Result<Option<(String, String)>, CloudError> {
+        Err(CloudError::Unreachable(
+            "Product Hub recovery is unavailable".into(),
         ))
     }
     fn commissioning_lan(
@@ -347,6 +422,27 @@ impl<T: BlockingLink + ?Sized> Link for Blocking<T> {
 
 #[async_trait]
 impl<T: BlockingCloud + ?Sized> Cloud for Blocking<T> {
+    async fn claim_paired_host(
+        &self,
+        context: &str,
+        host_id: &str,
+        host_key: &str,
+        claim_token: &str,
+        space_id: Option<&str>,
+    ) -> Result<(), CloudError> {
+        let (context, host_id, host_key, claim_token, space_id) = (
+            context.to_owned(),
+            host_id.to_owned(),
+            host_key.to_owned(),
+            claim_token.to_owned(),
+            space_id.map(str::to_owned),
+        );
+        off_runtime(&self.0, move |cloud| {
+            cloud.claim_paired_host(context, host_id, host_key, claim_token, space_id)
+        })
+        .await
+        .unwrap_or_else(|| Err(CloudError::Unreachable("Host authorization stopped".into())))
+    }
     async fn setup_product_hub(
         &self,
         context: &str,
@@ -375,6 +471,25 @@ impl<T: BlockingCloud + ?Sized> Cloud for Blocking<T> {
         off_runtime(&self.0, move |cloud| cloud.selected_hub(context, space_id))
             .await
             .unwrap_or_else(|| Err(CloudError::Unreachable("Hub selection stopped".into())))
+    }
+
+    async fn product_hub_selection(
+        &self,
+        context: &str,
+        space_id: &str,
+        host_id: &str,
+    ) -> Result<Option<(String, String)>, CloudError> {
+        let (context, space_id, host_id) =
+            (context.to_owned(), space_id.to_owned(), host_id.to_owned());
+        off_runtime(&self.0, move |cloud| {
+            cloud.product_hub_selection(context, space_id, host_id)
+        })
+        .await
+        .unwrap_or_else(|| {
+            Err(CloudError::Unreachable(
+                "Product Hub selection stopped".into(),
+            ))
+        })
     }
 
     async fn commissioning_lan(

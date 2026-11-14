@@ -97,6 +97,11 @@ const rustSlice = (name, values, visibility = "const") => {
 export function renderAppFacadeRouting(manifest) {
   assertRoutingContract(manifest);
   const rules = manifest.rules;
+  if (!Array.isArray(manifest.unspacedCloudTargets)
+      || new Set(manifest.unspacedCloudTargets).size !== manifest.unspacedCloudTargets.length
+      || manifest.unspacedCloudTargets.some(target => !rules.spaceModeTargets.includes(target))) {
+    throw new Error("Unspaced Cloud exceptions must be unique Space-mode targets");
+  }
   return `// Generated from manifest/routing.v1.json. DO NOT EDIT.
 
 const TARGET_PREFIX: &str = ${rustString(manifest.targetPrefix)};
@@ -107,6 +112,7 @@ ${rustSlice("CLOUD_PREFIXES", rules.cloudPrefixes)}
 ${rustSlice("CLOUD_TARGETS", rules.cloudTargets, "pub const")}
 
 ${rustSlice("SPACE_MODE_TARGETS", rules.spaceModeTargets)}
+${rustSlice("UNSPACED_CLOUD_TARGETS", manifest.unspacedCloudTargets)}
 
 ${rustSlice("HUB_PREFIXES", rules.hubPrefixes)}
 

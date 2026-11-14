@@ -6,7 +6,12 @@ one installation of one Host. Space Clients never receive Host management tokens
 
 ## Installation policy
 
-The installed package fixes one of three modes; onboarding cannot change it:
+Installation-owned configuration fixes one of three modes; onboarding cannot
+change it. Native Host stores `authorizationMode` in `config/meowhost.yaml`.
+The first installation must select it explicitly. Executable package manifests
+carry no role; ordinary upgrades and factory reset preserve the installation
+configuration. Stored authorization still rejects incompatible manual role
+changes. Mobile Host uses its platform-owned installation policy:
 
 - `admin` stores User administrators and may run multiple Spaces.
 - `spaceSelf` stores its own immutable `{tenantId, spaceId}` claim.

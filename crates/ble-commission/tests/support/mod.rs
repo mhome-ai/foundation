@@ -21,6 +21,28 @@ use protocomm::proto::{self, Status};
 use protocomm::{SessionError, SessionResponder};
 use serde_json::{json, Value};
 
+pub fn pod_identity() -> app_facade_api::pod::PodIdentity {
+    use sha2::{Digest, Sha256};
+    static IDENTITY: std::sync::OnceLock<app_facade_api::pod::PodIdentity> =
+        std::sync::OnceLock::new();
+    IDENTITY
+        .get_or_init(|| {
+            let key = host_protocol::signatures::new_key();
+            let public = host_protocol::signatures::public_key(key.verifying_key());
+            let fingerprint = hex::encode(Sha256::digest(
+                key.verifying_key().to_sec1_point(false).as_bytes(),
+            ));
+            app_facade_api::pod::PodIdentity {
+                key_id: format!("p256:{fingerprint}"),
+                alg: "ES256".into(),
+                x: public.x,
+                y: public.y,
+                fingerprint,
+            }
+        })
+        .clone()
+}
+
 pub const CODE: &str = "042137";
 pub const CLAIM_TOKEN: &str = "q3hX0v2c1mJb9yQe7tL4nK8sP5wR6uA0zD1fG2hI3jM";
 
@@ -72,6 +94,7 @@ pub struct Script {
     pub code: &'static str,
     pub wifi_configured: bool,
     pub onboarding_required: bool,
+    pub host_mode: core_api::host::access::HostMode,
     pub network_online: bool,
     pub kept_wifi: Join,
     pub kept_wifi_connecting_polls: u32,
@@ -98,6 +121,8 @@ pub struct Script {
     pub initial_client_mode: Option<&'static str>,
     pub product_key: Option<String>,
     pub wrong_product_binding: bool,
+    pub own_product_hub: bool,
+    pub first_hub_recovery: bool,
 }
 
 impl Script {
@@ -107,6 +132,7 @@ impl Script {
             code: CODE,
             wifi_configured: false,
             onboarding_required: false,
+            host_mode: core_api::host::access::HostMode::Admin,
             network_online: false,
             kept_wifi: Join::Connected("192.168.0.50"),
             kept_wifi_connecting_polls: 0,
@@ -129,6 +155,8 @@ impl Script {
             initial_client_mode: Some("user"),
             product_key: None,
             wrong_product_binding: false,
+            own_product_hub: false,
+            first_hub_recovery: false,
         }
     }
 
@@ -147,7 +175,7 @@ impl Script {
         };
         let key = host_protocol::signatures::decode_key(encoded).unwrap();
         json!({"version":1,"env":self.env,"generation":"product-generation",
-            "client":{"id":self.device_id,"keyId":"p256:abc"},
+            "client":{"id":self.device_id,"keyId":pod_identity().key_id},
             "host":{"id":"product-host","keyId":host_protocol::signatures::key_id(key.verifying_key())},"space":null})
     }
     pub fn host() -> Self {
@@ -184,8 +212,10 @@ struct DeviceState {
 pub struct FakeDevice {
     /// Simulate a device processing a request before its reply reaches the Client.
     pub response_delay: Mutex<Duration>,
+    lan: AtomicBool,
     pub script: Mutex<Script>,
     pub deliveries: Mutex<Vec<Value>>,
+    pub network_requests: Mutex<Vec<Value>>,
     state: Mutex<DeviceState>,
     pub connected: AtomicBool,
     pub locked: AtomicBool,
@@ -204,6 +234,7 @@ impl FakeDevice {
         };
         Arc::new(Self {
             response_delay: Mutex::new(Duration::ZERO),
+            lan: AtomicBool::new(false),
             state: Mutex::new(DeviceState {
                 responder: SessionResponder::new("meow", salt, verifier),
                 sta,
@@ -216,6 +247,7 @@ impl FakeDevice {
             }),
             script: Mutex::new(script),
             deliveries: Mutex::new(Vec::new()),
+            network_requests: Mutex::new(Vec::new()),
             connected: AtomicBool::new(false),
             locked: AtomicBool::new(false),
             connects: AtomicU32::new(0),
@@ -447,7 +479,62 @@ impl FakeDevice {
             state.pod_state
         };
         let response = match (endpoint, op.as_str()) {
-            ("pod-info", "prepareWifi") => json!({"ok":true}),
+            ("pod-info", "networkTarget") => {
+                if script.own_product_hub {
+                    json!({"mode":"ownHub"})
+                } else if script.first_hub_recovery {
+                    json!({"mode":"firstHub","spaceId":"scope-a","tenantId":"tenant","intentId":CLAIM_TOKEN})
+                } else if script.reprovision.is_none() {
+                    json!({"mode":"unclaimed"})
+                } else {
+                    json!({"mode":"space","spaceId":"scope-a","tenantId":"tenant"})
+                }
+            }
+            ("pod-info", "hostIdentity") => {
+                let key =
+                    host_protocol::signatures::decode_key(script.product_key.as_ref().unwrap())
+                        .unwrap();
+                let key = host_protocol::signatures::public_key(key.verifying_key());
+                json!({"hostId":"product-host","publicKey":[key.x,key.y]})
+            }
+            ("pod-info" | "host-info", "prepareWifi") => {
+                self.network_requests.lock().unwrap().push(request.clone());
+                json!({"ok":true})
+            }
+            ("host-info", "networkTarget") => {
+                if script.own_product_hub {
+                    json!({"mode":"ownHub"})
+                } else if script.host_mode == core_api::host::access::HostMode::Admin {
+                    json!({"mode":"user"})
+                } else if script.first_hub_recovery {
+                    json!({"mode":"firstHub","spaceId":"scope-a","tenantId":"tenant","intentId":CLAIM_TOKEN})
+                } else if script.onboarding_required {
+                    json!({"mode":"unclaimed"})
+                } else {
+                    json!({"mode":"space","spaceId":"scope-a","tenantId":"tenant"})
+                }
+            }
+            ("pod-info", _) if !self.lan.load(Ordering::SeqCst) => {
+                let key = pod_identity();
+                serde_json::to_value(app_facade_api::pod::PodNetworkInfo {
+                    protocol: 1,
+                    env: script.env.into(),
+                    device_id: script.device_id.into(),
+                    model: "S1".into(),
+                    firmware_version: "0.3.0".into(),
+                    public_key: [key.x, key.y],
+                    wifi_configured: script.wifi_configured && script.reprovision.is_none(),
+                    state: info_state.into(),
+                    dependent_host: script.product_key.is_some(),
+                    mode: script.reprovision.map(|_| "reprovision".into()),
+                    error: matches!(state.sta, Sta::Done(Join::HubUnverified)).then(|| {
+                        app_facade_api::pod::PodNetworkError {
+                            code: "wifi_hub_unverified".into(),
+                        }
+                    }),
+                })
+                .unwrap()
+            }
             ("pod-info", _) => json!({
                 "protocol": 1,
                 "deviceBinding":script.product_binding(),
@@ -458,7 +545,7 @@ impl FakeDevice {
                 "model": "S1",
                 "platform": "esp32c5",
                 "firmwareVersion": "0.3.0",
-                "identity": { "keyId": "p256:abc", "alg": "ES256", "x": "x", "y": "y", "fingerprint": "f" },
+                "identity": pod_identity(),
                 "wifiConfigured": script.wifi_configured && script.reprovision.is_none(),
                 "state": info_state,
                 "error": if matches!(state.sta, Sta::Done(Join::HubUnverified)) { json!({"code":"wifi_hub_unverified"}) } else { Value::Null },
@@ -539,8 +626,13 @@ impl FakeDevice {
                 "fingerprint": "ab:cd",
                 "wifiConfigured": script.wifi_configured,
                 "onboardingRequired": script.onboarding_required,
+                "authorizationMode": script.host_mode,
                 "networkOnline": script.network_online,
             }),
+            ("host-info", "identity") => {
+                let key = hub_identity("hub", &json!("scope-a"))["hostPublicKey"].clone();
+                json!({"hostId":"host-1","publicKey":[key["x"],key["y"]]})
+            }
             ("host-info", "finish") if script.refuse_host_finish => json!({"ok":false}),
             ("host-info", "finish") => match script.claim_token {
                 Some(token) => json!({ "ok": true, "claimToken": token }),
@@ -584,6 +676,13 @@ impl FakeDevice {
             .responder
             .encrypt(&response)
             .map_err(|error| LinkError::Rejected(error.to_string()))?;
+        if !self.lan.load(Ordering::SeqCst) {
+            assert!(
+                record.len() <= 512,
+                "BLE response exceeds one ATT value: {} bytes",
+                record.len()
+            );
+        }
         drop(guard);
         let mut script = self.script.lock().unwrap();
         if script.drop_after_op == Some(op.as_str()) && !op.is_empty() {
@@ -660,6 +759,7 @@ impl Central for FakeCentral {
             .get(peripheral_id)
             .cloned()
             .ok_or_else(|| LinkError::NotFound(peripheral_id.into()))?;
+        device.lan.store(false, Ordering::SeqCst);
         device.state.lock().unwrap().responder.reset();
         device.connected.store(true, Ordering::SeqCst);
         device.connects.fetch_add(1, Ordering::SeqCst);
@@ -715,7 +815,16 @@ impl LanDiscovery for FakeLan {
             .find(|(_, d)| d.script.lock().unwrap().kind == DeviceKind::Pod)
             .map(|(id, _)| id.clone())
             .ok_or(LinkError::NotFound("no pod".into()))?;
-        self.central.connect(&id, DeviceKind::Pod).await
+        let link = self.central.connect(&id, DeviceKind::Pod).await?;
+        self.central
+            .devices
+            .lock()
+            .unwrap()
+            .get(&id)
+            .unwrap()
+            .lan
+            .store(true, Ordering::SeqCst);
+        Ok(link)
     }
 }
 
@@ -758,6 +867,13 @@ pub struct FakeCloud {
     pub issue_delay: Mutex<Duration>,
     pub fail_issue: AtomicBool,
     pub bootstrap: AtomicBool,
+    pub fail_first_hub_network: AtomicBool,
+    pub product_hub_key: Mutex<Option<Value>>,
+    pub product_hub_host: Mutex<String>,
+    pub fail_host_claim: AtomicBool,
+    pub fail_hub_setup: AtomicBool,
+    pub host_claim_delay: Mutex<Duration>,
+    pub product_pending: AtomicBool,
     pub replaced_hub: AtomicBool,
     pub invalid_hub_key: AtomicBool,
     pub commissioning_lan: Mutex<Option<String>>,
@@ -778,6 +894,13 @@ impl FakeCloud {
             issue_delay: Mutex::new(Duration::from_millis(100)),
             fail_issue: AtomicBool::new(false),
             bootstrap: AtomicBool::new(false),
+            fail_first_hub_network: AtomicBool::new(false),
+            product_hub_key: Mutex::new(None),
+            product_hub_host: Mutex::new("product-host".into()),
+            fail_host_claim: AtomicBool::new(false),
+            fail_hub_setup: AtomicBool::new(false),
+            host_claim_delay: Mutex::new(Duration::ZERO),
+            product_pending: AtomicBool::new(false),
             replaced_hub: AtomicBool::new(false),
             invalid_hub_key: AtomicBool::new(false),
             commissioning_lan: Mutex::new(Some("lan-1".into())),
@@ -785,6 +908,15 @@ impl FakeCloud {
             clock: Clock::new(),
             journal,
         }
+    }
+
+    fn identity(&self, hub_id: &str, space: &Value) -> Value {
+        let mut identity = hub_identity(hub_id, space);
+        if let Some(key) = self.product_hub_key.lock().unwrap().as_ref() {
+            identity["hostId"] = json!(*self.product_hub_host.lock().unwrap());
+            identity["hostPublicKey"] = key.clone();
+        }
+        identity
     }
 
     pub fn paths(&self) -> Vec<String> {
@@ -856,6 +988,23 @@ impl Cloud for FakeCloud {
     async fn selected_hub(&self, _: &str, _: &str) -> Result<Option<(String, String)>, CloudError> {
         Ok((!self.bootstrap.load(Ordering::SeqCst)).then(|| ("tenant".into(), "hub".into())))
     }
+    async fn product_hub_selection(
+        &self,
+        context: &str,
+        space: &str,
+        host: &str,
+    ) -> Result<Option<(String, String)>, CloudError> {
+        if !self.bootstrap.load(Ordering::SeqCst)
+            && (host != *self.product_hub_host.lock().unwrap()
+                || self.product_hub_key.lock().unwrap().is_none())
+        {
+            return Err(CloudError::Unreachable("Another Host owns this Hub".into()));
+        }
+        if self.product_pending.load(Ordering::SeqCst) {
+            return Ok(None);
+        }
+        self.selected_hub(context, space).await
+    }
     async fn commissioning_lan(
         &self,
         _: &str,
@@ -890,18 +1039,32 @@ impl Cloud for FakeCloud {
         let body = match path {
             "hub/identity/get" => {
                 let request: Value = serde_json::from_str(body).unwrap();
-                let mut identity = hub_identity("hub", &request["spaceId"]);
+                let mut identity = self.identity("hub", &request["spaceId"]);
                 if self.invalid_hub_key.load(Ordering::SeqCst) {
                     identity["fingerprint"] = json!("invalid");
                 }
                 identity
+            }
+            "/host/first-hub/begin" | "/host/first-hub/recovery/prepare" => {
+                let request: Value = serde_json::from_str(body).unwrap();
+                if self.fail_first_hub_network.load(Ordering::SeqCst) {
+                    return Ok(CloudResponse {
+                        status: 409,
+                        body: json!({"error":"INTENT_ENDED"}).to_string(),
+                    });
+                }
+                let mut reply = json!({"intentId":CLAIM_TOKEN,"space":{"tenantId":"tenant","spaceId":request["spaceId"]}});
+                if path.ends_with("/prepare") {
+                    reply["authorizationId"] = json!(CLAIM_TOKEN);
+                }
+                reply
             }
             "/host/authorizations/claim" => json!({"claimId":"product-claim","proof":body}),
             "/host/authorizations/commit-claim" => json!({"ok":true}),
             "pod/space/credential/issue" => json!({
                 "credentialState": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.0.clone()).unwrap_or("pending".into()), "credentialId":"space-credential", "appClientId":"a:space-device", "jwtToken":"space-jwt",
                 "activateBefore": self.space_credential_window.lock().unwrap().as_ref().map(|w| w.1).unwrap_or(Some(self.clock.now_ms()+600_000)),
-                "hubIdentity":hub_identity(if self.replaced_hub.load(Ordering::SeqCst) { "other-hub" } else { "hub" }, &json!(space_id.unwrap()))
+                "hubIdentity":self.identity(if self.replaced_hub.load(Ordering::SeqCst) { "other-hub" } else { "hub" }, &json!(space_id.unwrap()))
             }),
             "pod/login/approve" => {
                 let delay = *self.issue_delay.lock().unwrap();
@@ -924,15 +1087,57 @@ impl Cloud for FakeCloud {
         })
     }
 
+    async fn claim_paired_host(
+        &self,
+        context: &str,
+        host: &str,
+        key: &str,
+        token: &str,
+        space: Option<&str>,
+    ) -> Result<(), CloudError> {
+        assert_eq!(context, "ctx-1");
+        assert_eq!(host, "host-1");
+        assert_eq!(
+            serde_json::from_str::<Value>(key).unwrap(),
+            hub_identity("hub", &json!("scope-a"))["hostPublicKey"]
+        );
+        assert_eq!(token, CLAIM_TOKEN);
+        assert!(space.is_none() || space == Some("scope-a"));
+        note(&self.journal, "host:claim");
+        let delay = *self.host_claim_delay.lock().unwrap();
+        tokio::time::sleep(delay).await;
+        if self
+            .account
+            .lock()
+            .unwrap()
+            .as_ref()
+            .is_none_or(|a| a.context != context)
+        {
+            return Err(CloudError::AccountChanged);
+        }
+        if self.fail_host_claim.load(Ordering::SeqCst) {
+            return Err(CloudError::Unreachable("claim unavailable".into()));
+        }
+        note(&self.journal, "host:claimed");
+        Ok(())
+    }
+
     async fn setup_product_hub(
         &self,
         context: &str,
         scope: &str,
         host: &str,
-        _: &str,
+        key: &str,
     ) -> Result<(), CloudError> {
         assert_eq!(context, "ctx-1");
-        assert_eq!(host, "product-host");
+        assert!(["product-host", "host-1"].contains(&host));
+        if self.fail_hub_setup.load(Ordering::SeqCst) {
+            return Err(CloudError::Unreachable("Hub setup unavailable".into()));
+        }
+        *self.product_hub_host.lock().unwrap() = host.into();
+        *self.product_hub_key.lock().unwrap() = Some(serde_json::from_str(key).unwrap());
+        self.bootstrap.store(false, Ordering::SeqCst);
+        self.product_pending.store(false, Ordering::SeqCst);
         note(&self.journal, "product:hub-ready");
         self.account
             .lock()

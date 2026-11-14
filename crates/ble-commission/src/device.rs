@@ -151,6 +151,68 @@ pub(crate) fn pod_info(info: &Value) -> Option<(PodInfo, PodDeviceInfo)> {
     Some((parsed, device))
 }
 
+/// Validate the compact BLE identity and expand its canonical cryptographic
+/// fields for the later same-device LAN comparison. No binding is inferred.
+pub(crate) fn pod_network_info(info: &Value) -> Option<(PodInfo, PodDeviceInfo, bool)> {
+    use app_facade_api::pod::{PodIdentity, PodNetworkInfo, CUSTOM_ENDPOINT_MAX_BYTES};
+    use sha2::{Digest, Sha256};
+    if serde_json::to_vec(info).ok()?.len() > CUSTOM_ENDPOINT_MAX_BYTES {
+        return None;
+    }
+    let network: PodNetworkInfo = serde_json::from_value(info.clone()).ok()?;
+    if network.protocol != 1
+        || network.env != core_api::RuntimeEnv::current().as_str()
+        || network.device_id.is_empty()
+        || network.model.is_empty()
+        || network.firmware_version.is_empty()
+        || network
+            .mode
+            .as_deref()
+            .is_some_and(|mode| mode != app_facade_api::pod::POD_MODE_REPROVISION)
+    {
+        return None;
+    }
+    let [x, y] = network.public_key;
+    let key = host_protocol::signatures::verifying_key(&core_api::host::auth::PublicKey {
+        x: x.clone(),
+        y: y.clone(),
+    })
+    .ok()?;
+    let fingerprint = hex::encode(Sha256::digest(key.to_sec1_point(false).as_bytes()));
+    let device = PodDeviceInfo {
+        device_id: network.device_id.clone(),
+        model: network.model.clone(),
+        firmware_version: network.firmware_version.clone(),
+        wifi_configured: network.wifi_configured,
+        dependent_host: network.dependent_host,
+    };
+    Some((
+        PodInfo {
+            protocol: network.protocol,
+            env: network.env,
+            device_id: network.device_id,
+            model: network.model,
+            platform: String::new(),
+            firmware_version: network.firmware_version,
+            identity: PodIdentity {
+                key_id: format!("p256:{fingerprint}"),
+                alg: "ES256".into(),
+                x,
+                y,
+                fingerprint,
+            },
+            wifi_configured: network.wifi_configured,
+            state: network.state,
+            mode: network.mode,
+            device_binding: None,
+            pod_id: None,
+            client_mode: None,
+        },
+        device,
+        network.dependent_host,
+    ))
+}
+
 pub(crate) fn host_info(info: &Value) -> Option<HostDeviceInfo> {
     let text = |key: &str| {
         info.get(key)
@@ -165,7 +227,22 @@ pub(crate) fn host_info(info: &Value) -> Option<HostDeviceInfo> {
         firmware_version: text("firmwareVersion")?,
         fingerprint: text("fingerprint")?,
         wifi_configured: info.get("wifiConfigured").and_then(Value::as_bool)?,
+        authorization_mode: serde_json::from_value(info.get("authorizationMode")?.clone()).ok()?,
+        onboarding_required: info.get("onboardingRequired").and_then(Value::as_bool)?,
     })
+}
+
+pub(crate) fn host_identity(
+    info: &Value,
+    host_id: &str,
+) -> Option<core_api::host::auth::PublicKey> {
+    if info.get("hostId")?.as_str()? != host_id {
+        return None;
+    }
+    let [x, y]: [String; 2] = serde_json::from_value(info.get("publicKey")?.clone()).ok()?;
+    let key = core_api::host::auth::PublicKey { x, y };
+    host_protocol::signatures::verifying_key(&key).ok()?;
+    Some(key)
 }
 
 /// One entry per SSID, strongest first; hidden and enterprise networks dropped.
@@ -270,11 +347,63 @@ mod tests {
             "firmwareVersion": "1.0.7",
             "fingerprint": "ab",
             "wifiConfigured": false,
+            "authorizationMode": "admin",
+            "onboardingRequired": true,
         });
         let parsed = host_info(&info).expect("complete");
         assert_eq!(parsed.product_id, None);
         let mut missing = info.clone();
         missing.as_object_mut().unwrap().remove("fingerprint");
         assert!(host_info(&missing).is_none());
+        for field in ["authorizationMode", "onboardingRequired"] {
+            let mut missing = info.clone();
+            missing.as_object_mut().unwrap().remove(field);
+            assert!(host_info(&missing).is_none());
+        }
+    }
+    #[test]
+    fn ble_network_info_fits_att_and_derives_the_lan_identity_without_binding() {
+        use app_facade_api::pod::{PodNetworkError, PodNetworkInfo, CUSTOM_ENDPOINT_MAX_BYTES};
+        let key = host_protocol::signatures::new_key();
+        let public = host_protocol::signatures::public_key(key.verifying_key());
+        let network = PodNetworkInfo {
+            protocol: 1,
+            env: core_api::RuntimeEnv::current().as_str().into(),
+            device_id: "d".repeat(63),
+            model: "LinuxPod".into(),
+            firmware_version: "v".repeat(31),
+            public_key: [public.x.clone(), public.y.clone()],
+            wifi_configured: false,
+            state: "wifi_failed".into(),
+            dependent_host: true,
+            mode: Some("reprovision".into()),
+            error: Some(PodNetworkError {
+                code: "wifi_hub_unverified".into(),
+            }),
+        };
+        let bytes = serde_json::to_vec(&network).unwrap();
+        assert!(bytes.len() <= CUSTOM_ENDPOINT_MAX_BYTES);
+        let value = serde_json::to_value(network).unwrap();
+        let (info, device, dependent) = pod_network_info(&value).unwrap();
+        assert!(dependent && device.dependent_host && info.reprovision());
+        assert!(
+            info.device_binding.is_none() && info.pod_id.is_none() && info.client_mode.is_none()
+        );
+        assert_eq!(info.identity.x, public.x);
+        use sha2::{Digest, Sha256};
+        let digest = hex::encode(Sha256::digest(
+            key.verifying_key().to_sec1_point(false).as_bytes(),
+        ));
+        assert_eq!(info.identity.key_id, format!("p256:{digest}"));
+        assert_eq!(info.identity.fingerprint, digest);
+        let mut wrong = value.clone();
+        wrong["publicKey"][0] = serde_json::json!("not-a-key");
+        assert!(pod_network_info(&wrong).is_none());
+        let mut wrong = value.clone();
+        wrong["protocol"] = serde_json::json!(2);
+        assert!(pod_network_info(&wrong).is_none());
+        let mut wrong = value;
+        wrong["deviceBinding"] = serde_json::json!({"host":"injected"});
+        assert!(pod_network_info(&wrong).is_none());
     }
 }

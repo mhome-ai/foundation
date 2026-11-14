@@ -4,10 +4,22 @@
   "title": "Native-client Host provisioning session snapshot",
   "type": "object",
   "additionalProperties": false,
-  "required": ["sessionId", "revision", "state", "candidate", "expiresAtMs"],
+  "required": [
+    "sessionId",
+    "revision",
+    "state",
+    "candidate",
+    "expiresAtMs"
+  ],
   "properties": {
-    "sessionId": { "type": "string", "minLength": 1 },
-    "revision": { "type": "integer", "minimum": 0 },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
     "state": {
       "enum": [
         "connecting",
@@ -16,6 +28,8 @@
         "reading_info",
         "awaiting_wifi",
         "joining_wifi",
+        "awaiting_authorization",
+        "authorizing",
         "cancelling",
         "cancelled",
         "completed",
@@ -23,19 +37,58 @@
         "timed_out"
       ]
     },
-    "candidate": { "$ref": "pod-discovery.v1.schema.json#/$defs/candidate" },
-    "expiresAtMs": { "type": "integer", "minimum": 0 },
+    "candidate": {
+      "$ref": "pod-discovery.v1.schema.json#/$defs/candidate"
+    },
+    "expiresAtMs": {
+      "type": "integer",
+      "minimum": 0
+    },
     "host": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["hostId", "name", "firmwareVersion", "fingerprint", "wifiConfigured"],
+      "required": [
+        "hostId",
+        "name",
+        "firmwareVersion",
+        "fingerprint",
+        "wifiConfigured",
+        "authorizationMode",
+        "onboardingRequired"
+      ],
       "properties": {
-        "hostId": { "type": "string", "minLength": 1 },
-        "name": { "type": "string", "minLength": 1 },
-        "productId": { "type": "string" },
-        "firmwareVersion": { "type": "string", "minLength": 1 },
-        "fingerprint": { "type": "string", "minLength": 1 },
-        "wifiConfigured": { "type": "boolean" }
+        "hostId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "productId": {
+          "type": "string"
+        },
+        "firmwareVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fingerprint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wifiConfigured": {
+          "type": "boolean"
+        },
+        "authorizationMode": {
+          "enum": [
+            "admin",
+            "spaceSelf",
+            "spaceDep"
+          ]
+        },
+        "onboardingRequired": {
+          "type": "boolean"
+        }
       }
     },
     "networks": {
@@ -43,28 +96,46 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["ssid", "rssi", "secured"],
+        "required": [
+          "ssid",
+          "rssi",
+          "secured"
+        ],
         "properties": {
-          "ssid": { "type": "string", "minLength": 1 },
-          "rssi": { "type": "integer" },
-          "secured": { "type": "boolean" }
+          "ssid": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rssi": {
+            "type": "integer"
+          },
+          "secured": {
+            "type": "boolean"
+          }
         }
       }
+    },
+    "authorization": {
+      "$ref": "pod-commission.v1.schema.json#/properties/authorization"
+    },
+    "enrollment": {
+      "$ref": "pod-commission.v1.schema.json#/properties/enrollment"
     },
     "addresses": {
       "description": "IPv4 LAN addresses reported by the Host; may be empty",
       "type": "array",
-      "items": { "type": "string", "format": "ipv4" }
-    },
-    "claimToken": {
-      "description": "One-time token for the first claim of this Host",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9_-]{43}$"
+      "items": {
+        "type": "string",
+        "format": "ipv4"
+      }
     },
     "error": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["code", "message"],
+      "required": [
+        "code",
+        "message"
+      ],
       "properties": {
         "code": {
           "enum": [
@@ -76,48 +147,190 @@
             "wifi_auth_failed",
             "wifi_not_found",
             "wifi_failed",
-            "session_timeout"
+            "lan_unavailable",
+            "device_mismatch",
+            "session_timeout",
+            "issue_failed"
           ]
         },
-        "message": { "type": "string" },
-        "detail": { "type": "string" }
+        "message": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostId",
+        "wifiConfigured",
+        "commissioned"
+      ],
+      "properties": {
+        "hostId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wifiConfigured": {
+          "const": true
+        },
+        "commissioned": {
+          "const": true
+        },
+        "hubId": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   },
   "allOf": [
     {
-      "if": { "properties": { "state": { "enum": ["failed", "timed_out"] } } },
-      "then": { "properties": { "error": {} }, "required": ["error"] }
+      "if": {
+        "properties": {
+          "state": {
+            "enum": [
+              "failed",
+              "timed_out"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "error": {}
+        },
+        "required": [
+          "error"
+        ]
+      }
     },
     {
       "if": {
         "properties": {
-          "state": { "not": { "enum": ["failed", "timed_out", "awaiting_code", "awaiting_wifi"] } }
+          "state": {
+            "not": {
+              "enum": [
+                "failed",
+                "timed_out",
+                "awaiting_code",
+                "awaiting_wifi",
+                "awaiting_authorization"
+              ]
+            }
+          }
         }
       },
-      "then": { "not": { "properties": { "error": {} }, "required": ["error"] } }
+      "then": {
+        "not": {
+          "properties": {
+            "error": {}
+          },
+          "required": [
+            "error"
+          ]
+        }
+      }
     },
     {
-      "if": { "properties": { "state": { "const": "awaiting_code" } }, "required": ["error"] },
-      "then": { "properties": { "error": { "type": "object", "properties": { "code": { "const": "code_rejected" } } } } }
-    },
-    {
-      "if": { "properties": { "state": { "const": "awaiting_wifi" } }, "required": ["error"] },
+      "if": {
+        "properties": {
+          "state": {
+            "const": "awaiting_code"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
       "then": {
         "properties": {
           "error": {
             "type": "object",
             "properties": {
-              "code": { "enum": ["wifi_auth_failed", "wifi_not_found", "wifi_failed"] }
+              "code": {
+                "const": "code_rejected"
+              }
             }
           }
         }
       }
     },
     {
-      "if": { "properties": { "state": { "const": "completed" } } },
-      "then": { "properties": { "host": {} }, "required": ["host"] },
-      "else": { "not": { "properties": { "claimToken": {} }, "required": ["claimToken"] } }
+      "if": {
+        "properties": {
+          "state": {
+            "const": "awaiting_wifi"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "then": {
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "enum": [
+                  "wifi_auth_failed",
+                  "wifi_not_found",
+                  "wifi_failed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "completed"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "host",
+          "result"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "result"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "awaiting_authorization"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "then": {
+        "properties": {
+          "error": {
+            "properties": {
+              "code": {
+                "const": "issue_failed"
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

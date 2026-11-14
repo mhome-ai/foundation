@@ -222,7 +222,57 @@ async fn replacement_login_cannot_confirm_or_read_another_accounts_attempt() {
     *platform.context.lock().unwrap() = "login-two".into();
     assert!(engine.confirm("home", &pair).await.is_err());
     assert!(engine.cancel("home", &pair).await.is_err());
+    assert!(engine.view("home").await.unwrap().preparation.is_none());
     assert_eq!(platform.setup.load(SeqCst), 0);
+}
+
+#[tokio::test(start_paused = true)]
+async fn local_view_recovers_lost_start_reply_without_restarting_pairing() {
+    let platform = Fake::new();
+    let engine = Commissioning::new(platform.clone());
+    let pair = start(&engine).await;
+    let preparation = engine.view("home").await.unwrap().preparation.unwrap();
+    match &preparation {
+        api::HubSetupPreparation::PairingRequired {
+            session_id,
+            candidate,
+            pairing_code,
+            ..
+        } => {
+            assert_eq!(session_id, &pair);
+            assert_eq!(candidate.host_id, "host");
+            assert_eq!(pairing_code, "123456");
+        }
+        _ => panic!("expected unconfirmed pairing"),
+    }
+    assert!(engine
+        .view("other-space")
+        .await
+        .unwrap()
+        .preparation
+        .is_none());
+    tokio::time::advance(Duration::from_secs(60)).await;
+    assert_eq!(
+        engine.view("home").await.unwrap().preparation,
+        Some(preparation)
+    );
+    assert_eq!(platform.count.load(SeqCst), 1);
+    assert_eq!(platform.cloud_count.load(SeqCst), 0);
+    engine.confirm("home", &pair).await.unwrap();
+    let view = engine.view("home").await.unwrap();
+    assert!(view.preparation.is_none());
+    assert_eq!(view.pairing.unwrap().host_id.as_deref(), Some("host"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn recovered_preparation_disappears_after_cancel_or_original_expiry() {
+    let engine = Commissioning::new(Fake::new());
+    let pair = start(&engine).await;
+    engine.cancel("home", &pair).await.unwrap();
+    assert!(engine.view("home").await.unwrap().preparation.is_none());
+    start(&engine).await;
+    tokio::time::advance(Duration::from_secs(121)).await;
+    assert!(engine.view("home").await.unwrap().preparation.is_none());
 }
 #[tokio::test]
 async fn tls_peer_must_match_signed_device_proof_before_pairing_or_cloud() {
@@ -331,7 +381,7 @@ async fn signed_proof_rejects_changed_host_space_tls_key_nonce_and_signature() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn product_joining_an_existing_hub_does_not_initialize_another_core() {
+async fn first_product_hub_setup_rejects_a_hub_owned_by_another_host() {
     let platform = Fake::new();
     *platform.hub_host.lock().unwrap() = "existing-host".into();
     platform.ready.store(true, SeqCst);
@@ -339,7 +389,7 @@ async fn product_joining_an_existing_hub_does_not_initialize_another_core() {
     Commissioning::new(platform.clone())
         .setup_product("home", "new-product", &Fake::peer())
         .await
-        .unwrap();
+        .unwrap_err();
     assert_eq!(platform.cloud_count.load(SeqCst), 0);
     assert_eq!(platform.count.load(SeqCst), 0);
 }

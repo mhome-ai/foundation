@@ -78,17 +78,14 @@ impl Phase {
             Self::ReadingInfo => ProvisionState::ReadingInfo,
             Self::AwaitingWifi => ProvisionState::AwaitingWifi,
             Self::JoiningWifi => ProvisionState::JoiningWifi,
+            Self::AwaitingAuthorization => ProvisionState::AwaitingAuthorization,
+            Self::Issuing => ProvisionState::Authorizing,
             Self::Completed => ProvisionState::Completed,
             Self::Failed => ProvisionState::Failed,
             Self::TimedOut => ProvisionState::TimedOut,
             Self::Cancelling => ProvisionState::Cancelling,
             Self::Cancelled => ProvisionState::Cancelled,
-            Self::DiscoveringLan
-            | Self::ConnectingLan
-            | Self::AwaitingAuthorization
-            | Self::Issuing
-            | Self::Delivering
-            | Self::Activating => {
+            Self::DiscoveringLan | Self::ConnectingLan | Self::Delivering | Self::Activating => {
                 unreachable!("Host sessions have no credential phases")
             }
         }
@@ -96,6 +93,7 @@ impl Phase {
 }
 
 pub(crate) enum Op {
+    HostAuthorize,
     Code(String),
     Wifi {
         ssid: String,
@@ -137,9 +135,9 @@ pub(crate) struct Live {
     pub host: Option<HostDeviceInfo>,
     pub addresses: Vec<String>,
     pub claim_token: Option<String>,
+    pub host_result: Option<app_facade_api::host_provision::ProvisionResult>,
     /// Native login generation; never projected into session snapshots.
     pub account_context: Option<String>,
-    pub active_space_id: Option<String>,
     /// A code, Wi-Fi or authorization request is queued or running.
     pub busy: bool,
     /// A Wi-Fi scan is running.
@@ -182,9 +180,11 @@ impl Live {
             candidate: self.candidate.clone(),
             expires_at_ms: self.expires_at_ms,
             host: self.host.clone(),
+            result: self.host_result.clone(),
             networks: self.networks.clone(),
+            authorization: self.authorization.clone(),
+            enrollment: self.enrollment.clone(),
             addresses: self.addresses.clone(),
-            claim_token: self.claim_token.clone(),
             error: self.error.clone(),
         }
     }

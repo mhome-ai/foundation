@@ -24,9 +24,11 @@ use crate::platform::CloudEndpoints;
 use crate::session::{disconnected, error, noun, Command, Op, Phase};
 
 const TICK: Duration = Duration::from_secs(1);
-const POD_JOIN_POLLS: u32 = 60;
-/// The Host waits up to 45 s for its network manager before reporting a failure.
-const HOST_JOIN_POLLS: u32 = 75;
+// Linux products bound activation (60s), address lookup (20s), Hub proof
+// (30s), and failed-trial cleanup/restore (80s). Do not abandon the protocol
+// while its backend still owns a potentially disruptive network transaction.
+const POD_JOIN_POLLS: u32 = 200;
+const HOST_JOIN_POLLS: u32 = 200;
 /// How long a pod that kept its network may stay `connecting` before the
 /// commissioner offers new Wi-Fi credentials.
 const KEPT_WIFI_POLLS: u32 = 30;
@@ -51,7 +53,11 @@ pub(crate) struct Actor {
     rejected: u32,
     join_failed: bool,
     pod_info: Option<PodInfo>,
+    dependent_host: bool,
     host_needs_claim: bool,
+    resume_first_hub: bool,
+    first_hub_host: Option<(String, core_api::host::auth::PublicKey)>,
+    host_key: Option<core_api::host::auth::PublicKey>,
     target_hub: Option<app_facade_api::pod::HubIdentity>,
     admission: Option<cloud::Admission>,
     destination_admission: Option<cloud::Admission>,
@@ -110,7 +116,11 @@ impl Actor {
             rejected: 0,
             join_failed: false,
             pod_info: None,
+            dependent_host: false,
             host_needs_claim: false,
+            resume_first_hub: false,
+            first_hub_host: None,
+            host_key: None,
             target_hub: None,
             admission: None,
             destination_admission: None,
@@ -245,13 +255,13 @@ impl Actor {
 
     async fn first_pod_admission(&mut self) -> bool {
         let cloud = self.engine.platform.cloud.clone();
-        let expected = self.engine.mutate(self.kind, &self.id, |live| {
-            (live.account_context.clone(), live.active_space_id.clone())
-        });
+        let expected = self
+            .engine
+            .mutate(self.kind, &self.id, |live| live.account_context.clone());
         let Some(account) = cloud.account().await.filter(|a| {
-            expected.as_ref().is_some_and(|(context, space)| {
-                context.as_ref() == Some(&a.context) && *space == a.active_space_id
-            })
+            expected
+                .as_ref()
+                .is_some_and(|context| context.as_ref() == Some(&a.context))
         }) else {
             self.lan_admission_failed(crate::platform::CloudError::AccountChanged);
             return false;
@@ -390,6 +400,7 @@ impl Actor {
 
     async fn execute(&mut self, op: Op) {
         match op {
+            Op::HostAuthorize => self.authorize_host().await,
             Op::Code(code) => self.code(code).await,
             Op::Wifi {
                 ssid,
@@ -511,9 +522,18 @@ impl Actor {
         };
         match self.kind {
             DeviceKind::Pod => {
-                let Some((pod_info, device)) = device::pod_info(&info) else {
+                let parsed = if self.lan {
+                    device::pod_info(&info).map(|(info, device)| {
+                        let dependent = device.dependent_host;
+                        (info, device, dependent)
+                    })
+                } else {
+                    device::pod_network_info(&info)
+                };
+                let Some((pod_info, device, dependent)) = parsed else {
                     return self.fail(incomplete());
                 };
+                self.dependent_host = dependent;
                 if self.lan {
                     let expected = self
                         .engine
@@ -573,11 +593,32 @@ impl Actor {
                 let Some(host) = device::host_info(&info) else {
                     return self.fail(incomplete());
                 };
-                let Some(needs_claim) = info["onboardingRequired"].as_bool() else {
-                    return self.fail(incomplete());
-                };
+                if host.authorization_mode == core_api::host::access::HostMode::SpaceDep {
+                    return self.fail(error(
+                        CommissionErrorCode::DeviceMismatch,
+                        "Add this device through its Pod setup.",
+                        None,
+                    ));
+                }
+                let needs_claim = host.onboarding_required;
+                {
+                    let identity = match self
+                        .race(client.call_json(HOST_INFO_ENDPOINT, &json!({"op":"identity"})))
+                        .await
+                    {
+                        Some(Ok(identity)) => identity,
+                        Some(Err(failure)) => return self.fail_disconnected(failure),
+                        None => return,
+                    };
+                    let Some(key) = device::host_identity(&identity, &host.host_id) else {
+                        return self.fail(incomplete());
+                    };
+                    self.host_key = Some(key);
+                }
                 self.host_needs_claim = needs_claim;
-                let recover = self.host_needs_claim && info["networkOnline"] == true;
+                let recover = self.host_needs_claim
+                    && info["networkOnline"] == true
+                    && host.authorization_mode == core_api::host::access::HostMode::Admin;
                 if self.update(|live| live.host = Some(host)) {
                     if recover {
                         // The secure device response identifies an unfinished first claim.
@@ -626,7 +667,15 @@ impl Actor {
     }
 
     async fn offer_wifi(&mut self, failure: Option<CommissionError>) {
-        let authorization = if self.kind == DeviceKind::Pod && !self.reprovision() {
+        let space_host = self
+            .engine
+            .mutate(self.kind, &self.id, |live| {
+                live.host.as_ref().is_some_and(|host| {
+                    host.onboarding_required && host.authorization_mode.is_space()
+                })
+            })
+            .unwrap_or(false);
+        let authorization = if (self.kind == DeviceKind::Pod && !self.reprovision()) || space_host {
             let Some(prompt) = self.authorization_prompt().await else {
                 return;
             };
@@ -683,7 +732,7 @@ impl Actor {
         &mut self,
         ssid: String,
         password: String,
-        enrollment: Option<app_facade_api::pod::EnrollmentTarget>,
+        mut enrollment: Option<app_facade_api::pod::EnrollmentTarget>,
     ) {
         let accepted_phase = match self.kind {
             DeviceKind::Host => Phase::JoiningWifi,
@@ -703,11 +752,107 @@ impl Actor {
                 None => return,
             }
         }
-        let dependent = self
-            .pod_info
-            .as_ref()
-            .and_then(|info| info.device_binding.as_ref())
-            .is_some_and(|binding| binding.host.is_some());
+        let host_mode = self
+            .engine
+            .mutate(self.kind, &self.id, |live| {
+                live.host.as_ref().map(|host| host.authorization_mode)
+            })
+            .flatten();
+        let host_space = host_mode.is_some_and(|mode| mode.is_space());
+        let dependent = self.dependent_host || host_space;
+        let info_endpoint = if self.kind == DeviceKind::Host {
+            HOST_INFO_ENDPOINT
+        } else {
+            POD_INFO_ENDPOINT
+        };
+        let mut recovery = None;
+        let mut own_hub = false;
+        if dependent {
+            let target = match self
+                .race(client.call_json(info_endpoint, &json!({"op":"networkTarget"})))
+                .await
+            {
+                Some(Ok(target)) => target,
+                Some(Err(failure)) => return self.fail_disconnected(failure),
+                None => return,
+            };
+            match target["mode"].as_str() {
+                Some("unclaimed")
+                    if self.host_needs_claim || (self.dependent_host && !self.reprovision()) => {}
+                Some("ownHub") => {
+                    own_hub = true;
+                    if !matches!(self.race(client.call_json(info_endpoint, &json!({"op":"prepareWifi","mode":"ownHub"}))).await,
+                        Some(Ok(reply)) if reply["ok"] == true)
+                    {
+                        return self.fail(error(
+                            CommissionErrorCode::WifiFailed,
+                            "The Hub could not prepare its network change.",
+                            None,
+                        ));
+                    }
+                }
+                Some("space" | "firstHub") => {
+                    let Some(space) = target["spaceId"].as_str().filter(|s| !s.is_empty()) else {
+                        return self.fail(error(
+                            CommissionErrorCode::WifiFailed,
+                            "The product omitted its Space network target.",
+                            None,
+                        ));
+                    };
+                    let cloud = self.engine.platform.cloud.clone();
+                    let Some(account) = self.race(cloud.account()).await.flatten() else {
+                        return self.lan_admission_failed(crate::platform::CloudError::NotSignedIn);
+                    };
+                    if !account
+                        .spaces
+                        .iter()
+                        .any(|s| s.space_id == space && s.owner)
+                    {
+                        return self.fail(error(
+                            CommissionErrorCode::WifiFailed,
+                            "Sign in as this Space's owner to change its device network.",
+                            None,
+                        ));
+                    }
+                    if enrollment.as_ref().is_some_and(|selected| {
+                        selected.space_id != space || selected.client_mode != ClientMode::Space
+                    }) {
+                        return self.fail(error(
+                            CommissionErrorCode::WifiFailed,
+                            "Continue setup in the Space already bound to this device.",
+                            None,
+                        ));
+                    }
+                    let first_hub = target["mode"] == "firstHub";
+                    if first_hub {
+                        recovery =
+                            match crate::first_hub::Intent::from_target(&target) {
+                                Ok(intent) => Some(intent),
+                                Err(detail) => return self.fail(error(
+                                    CommissionErrorCode::WifiFailed,
+                                    "The product returned an invalid first-Hub recovery target.",
+                                    Some(detail),
+                                )),
+                            };
+                    }
+                    enrollment = Some(app_facade_api::pod::EnrollmentTarget {
+                        space_id: space.into(),
+                        client_mode: ClientMode::Space,
+                        first_hub,
+                    });
+                }
+                _ => {
+                    return self.fail(error(
+                        CommissionErrorCode::WifiFailed,
+                        "The product returned an invalid network target.",
+                        None,
+                    ))
+                }
+            }
+        }
+        if own_hub {
+            enrollment = None;
+        }
         if let Some(target) = enrollment.as_ref() {
             let Some(context) = self
                 .engine
@@ -726,7 +871,11 @@ impl Actor {
                 != Some(&context)
             {
                 return self.fail(error(
-                    CommissionErrorCode::IssueFailed,
+                    if self.kind == DeviceKind::Host {
+                        CommissionErrorCode::WifiFailed
+                    } else {
+                        CommissionErrorCode::IssueFailed
+                    },
                     "The MeowLink account changed. Start again.",
                     None,
                 ));
@@ -737,11 +886,51 @@ impl Actor {
             let Some(account) = cloud.account().await.filter(|a| a.context == context) else {
                 return self.lan_admission_failed(crate::platform::CloudError::AccountChanged);
             };
+            if target.first_hub {
+                let identity = match self
+                    .race(client.call_json(
+                        info_endpoint,
+                        &json!({"op":
+                    if self.kind == DeviceKind::Host { "identity" } else { "hostIdentity" }}),
+                    ))
+                    .await
+                {
+                    Some(Ok(identity)) => identity,
+                    Some(Err(failure)) => return self.fail_disconnected(failure),
+                    None => return,
+                };
+                let host_id = identity["hostId"].as_str().unwrap_or_default();
+                let Some(key) =
+                    device::host_identity(&identity, host_id).filter(|_| !host_id.is_empty())
+                else {
+                    return self.fail(error(
+                        CommissionErrorCode::DeviceMismatch,
+                        "The product did not provide its Host identity.",
+                        None,
+                    ));
+                };
+                if self
+                    .host_key
+                    .as_ref()
+                    .is_some_and(|expected| expected != &key)
+                {
+                    return self.fail(error(
+                        CommissionErrorCode::DeviceMismatch,
+                        "The paired Host identity changed.",
+                        None,
+                    ));
+                }
+                self.first_hub_host = Some((host_id.to_owned(), key));
+            }
             match self
-                .race(cloud::Admission::capture(
+                .race(cloud::Admission::capture_product(
                     &cloud,
                     &account,
                     Some(&target.space_id),
+                    self.first_hub_host
+                        .as_ref()
+                        .filter(|_| recovery.is_some())
+                        .map(|(id, _)| id.as_str()),
                 ))
                 .await
             {
@@ -749,7 +938,9 @@ impl Actor {
                 Some(Err(failure)) => return self.lan_admission_failed(failure),
                 None => return,
             }
-            self.target_hub = if target.client_mode == ClientMode::Space {
+            self.target_hub = if recovery.is_some() {
+                None // Cloud validates that only this original Host is being resumed.
+            } else if target.client_mode == ClientMode::Space {
                 match self
                     .race(cloud::resolve_setup_hub(&cloud, &context, &target.space_id))
                     .await
@@ -784,7 +975,11 @@ impl Actor {
                 != Some(&context)
             {
                 return self.fail(error(
-                    CommissionErrorCode::IssueFailed,
+                    if self.kind == DeviceKind::Host {
+                        CommissionErrorCode::WifiFailed
+                    } else {
+                        CommissionErrorCode::IssueFailed
+                    },
                     "The MeowLink account changed. Start again.",
                     None,
                 ));
@@ -794,6 +989,33 @@ impl Actor {
                 (ClientMode::Space, false) => "bootstrap",
                 (ClientMode::Space, true) => "space",
             }});
+            if target.first_hub {
+                let (host_id, key) = self
+                    .first_hub_host
+                    .as_ref()
+                    .expect("paired first-Hub identity");
+                command = match self
+                    .race(crate::first_hub::prepare(
+                        &cloud,
+                        &context,
+                        &target.space_id,
+                        host_id,
+                        key,
+                        recovery.as_ref(),
+                    ))
+                    .await
+                {
+                    Some(Ok(command)) => command,
+                    Some(Err(detail)) => {
+                        return self.fail(error(
+                            CommissionErrorCode::WifiFailed,
+                            "First-Hub network setup was not authorized.",
+                            Some(detail),
+                        ))
+                    }
+                    None => return,
+                };
+            }
             if let Some(hub) = self.target_hub.as_ref() {
                 command["hub"] = json!([
                     hub.hub_id,
@@ -805,7 +1027,7 @@ impl Actor {
                     hub.host_public_key.y
                 ]);
             }
-            if !matches!(self.race(client.call_json(POD_INFO_ENDPOINT, &command)).await, Some(Ok(reply)) if reply["ok"] == true)
+            if !matches!(self.race(client.call_json(info_endpoint, &command)).await, Some(Ok(reply)) if reply["ok"] == true)
             {
                 return self.fail(error(
                     CommissionErrorCode::WifiFailed,
@@ -813,9 +1035,20 @@ impl Actor {
                     None,
                 ));
             }
+            self.resume_first_hub = recovery.is_some();
             if !self.update(|live| live.enrollment = enrollment) {
                 return;
             }
+        }
+        if host_mode == Some(core_api::host::access::HostMode::Admin)
+            && !matches!(self.race(client.call_json(HOST_INFO_ENDPOINT, &json!({"op":"prepareWifi","mode":"user"}))).await,
+                Some(Ok(reply)) if reply["ok"] == true)
+        {
+            return self.fail(error(
+                CommissionErrorCode::WifiFailed,
+                "The Host did not accept the Wi-Fi setup target.",
+                None,
+            ));
         }
         if !self.check_hub_selection().await || !self.check_admission().await {
             return;
@@ -1041,11 +1274,188 @@ impl Actor {
             .filter(|address| address.parse::<Ipv4Addr>().is_ok())
             .into_iter()
             .collect();
+        if let Some(device) = self.device.take() {
+            device.link.disconnect().await;
+        }
         self.update(|live| {
-            live.set(Phase::Completed, None);
+            live.set(
+                if self.host_needs_claim || self.resume_first_hub {
+                    Phase::AwaitingAuthorization
+                } else {
+                    Phase::Completed
+                },
+                None,
+            );
             live.addresses = addresses;
             live.claim_token = receipt.claim_token;
+            if !self.host_needs_claim && !self.resume_first_hub {
+                live.host_result = live.host.as_ref().map(|host| {
+                    app_facade_api::host_provision::ProvisionResult {
+                        host_id: host.host_id.clone(),
+                        wifi_configured: true,
+                        commissioned: true,
+                        hub_id: None,
+                    }
+                });
+            }
         });
+    }
+
+    async fn authorize_host(&mut self) {
+        let Some((host, enrollment, token, context)) = self
+            .engine
+            .mutate(self.kind, &self.id, |live| {
+                Some((
+                    live.host.clone()?,
+                    live.enrollment.clone(),
+                    live.claim_token.clone(),
+                    live.account_context.clone()?,
+                ))
+            })
+            .flatten()
+        else {
+            return self.fail(error(
+                CommissionErrorCode::IssueFailed,
+                "Host setup context is incomplete. Start again.",
+                None,
+            ));
+        };
+        let Some(key) = self.host_key.clone() else {
+            return self.fail(error(
+                CommissionErrorCode::IssueFailed,
+                "Host setup context is incomplete. Start again.",
+                None,
+            ));
+        };
+        let cloud = self.engine.platform.cloud.clone();
+        let Some(account) = self
+            .race(cloud.account())
+            .await
+            .flatten()
+            .filter(|account| account.context == context)
+        else {
+            return self.fail(error(
+                CommissionErrorCode::IssueFailed,
+                "The setup account changed. Start again.",
+                None,
+            ));
+        };
+        let space = if host.authorization_mode.is_space() {
+            let Some(target) = enrollment.as_ref().filter(|target| {
+                target.client_mode == ClientMode::Space
+                    && account
+                        .spaces
+                        .iter()
+                        .any(|s| s.space_id == target.space_id && s.owner)
+            }) else {
+                return self.fail(error(
+                    CommissionErrorCode::IssueFailed,
+                    "Choose a Space you own for this Host.",
+                    None,
+                ));
+            };
+            Some(target.space_id.as_str())
+        } else {
+            None
+        };
+        let first_hub = enrollment.as_ref().is_some_and(|target| target.first_hub);
+        match self
+            .race(cloud::Admission::capture_product(
+                &cloud,
+                &account,
+                space,
+                first_hub.then_some(host.host_id.as_str()),
+            ))
+            .await
+        {
+            Some(Ok(admission)) => self.destination_admission = Some(admission),
+            Some(Err(failure)) => return self.host_authorization_failed(failure.to_string()),
+            None => return,
+        }
+        if !self.check_admission().await || !self.check_hub_selection().await {
+            return;
+        }
+        let encoded_key = serde_json::to_string(&key).expect("Host public key JSON");
+        self.ack();
+        if self.host_needs_claim {
+            let Some(token) = token else {
+                return self.host_authorization_failed("Host claim handoff is unavailable".into());
+            };
+            match self
+                .race(cloud.claim_paired_host(&context, &host.host_id, &encoded_key, &token, space))
+                .await
+            {
+                Some(Ok(())) => {}
+                Some(Err(failure)) => return self.host_authorization_failed(failure.to_string()),
+                None => return,
+            }
+        }
+        let mut hub_id = None;
+        if first_hub {
+            let space = space.expect("validated Space Host enrollment");
+            match self
+                .race(cloud.setup_product_hub(&context, space, &host.host_id, &encoded_key))
+                .await
+            {
+                Some(Ok(())) => {}
+                Some(Err(failure)) => return self.host_authorization_failed(failure.to_string()),
+                None => return,
+            }
+            match self
+                .race(cloud::resolve_setup_hub(&cloud, &context, space))
+                .await
+            {
+                Some(Ok(Some(hub)))
+                    if hub.host_id == host.host_id && hub.host_public_key == key =>
+                {
+                    let mut admission = self
+                        .destination_admission
+                        .clone()
+                        .expect("captured destination");
+                    match self
+                        .race(admission.accept_created_hub(&cloud, &hub, None))
+                        .await
+                    {
+                        Some(Ok(())) => self.destination_admission = Some(admission),
+                        Some(Err(failure)) => {
+                            return self.host_authorization_failed(failure.to_string())
+                        }
+                        None => return,
+                    }
+                    hub_id = Some(hub.hub_id)
+                }
+                None => return,
+                _ => {
+                    return self.host_authorization_failed(
+                        "The first Hub has not confirmed this Host's identity.".into(),
+                    )
+                }
+            }
+        }
+        if !self.engine.check_host_account().await {
+            return;
+        }
+        self.update(|live| {
+            live.set(Phase::Completed, None);
+            live.claim_token = None;
+            live.host_result = Some(app_facade_api::host_provision::ProvisionResult {
+                host_id: host.host_id,
+                wifi_configured: true,
+                commissioned: true,
+                hub_id,
+            });
+        });
+    }
+
+    fn host_authorization_failed(&self, detail: String) {
+        self.enter(
+            Phase::AwaitingAuthorization,
+            Some(error(
+                CommissionErrorCode::IssueFailed,
+                "Host setup did not finish. Check the device and retry.",
+                Some(detail),
+            )),
+        );
     }
 
     async fn prompt_authorization(&mut self) {
@@ -1073,16 +1483,24 @@ impl Actor {
         let account = account.filter(|account| account.context == context);
         let Some(account) = account else {
             self.fail(error(
-                CommissionErrorCode::IssueFailed,
-                "Sign in to MeowLink before adding a pod.",
+                if self.kind == DeviceKind::Host {
+                    CommissionErrorCode::WifiFailed
+                } else {
+                    CommissionErrorCode::IssueFailed
+                },
+                "Sign in to MeowLink before adding this device.",
                 None,
             ));
             return None;
         };
         let Some(first) = account.spaces.first() else {
             self.fail(error(
-                CommissionErrorCode::IssueFailed,
-                "Join a Space in MeowLink before adding a pod.",
+                if self.kind == DeviceKind::Host {
+                    CommissionErrorCode::WifiFailed
+                } else {
+                    CommissionErrorCode::IssueFailed
+                },
+                "Join a Space in MeowLink before adding this device.",
                 None,
             ));
             return None;
@@ -1233,6 +1651,11 @@ impl Actor {
             };
             if info.device_id != expected.device_id
                 || info.identity != expected.identity
+                || info
+                    .device_binding
+                    .as_ref()
+                    .is_some_and(|binding| binding.host.is_some())
+                    != self.dependent_host
                 || info.env != core_api::RuntimeEnv::current().as_str()
             {
                 if let Some(device) = self.device.take() {
@@ -1297,9 +1720,23 @@ impl Actor {
         if !self.check_admission().await {
             return;
         }
-        if self.destination_admission.is_none() {
+        let product_host = if first_hub {
+            self.pod_info
+                .as_ref()
+                .and_then(|i| i.device_binding.as_ref())
+                .and_then(|b| b.host.as_ref())
+                .map(|h| h.id.clone())
+        } else {
+            None
+        };
+        if self.destination_admission.is_none() || product_host.is_some() {
             match self
-                .race(cloud::Admission::capture(&cloud, &account, Some(&space_id)))
+                .race(cloud::Admission::capture_product(
+                    &cloud,
+                    &account,
+                    Some(&space_id),
+                    product_host.as_deref(),
+                ))
                 .await
             {
                 Some(Ok(admission)) => self.destination_admission = Some(admission),
@@ -1336,11 +1773,25 @@ impl Actor {
                     "Choose a Space you own for this device".into(),
                 )));
             }
-            match self
-                .race(cloud.selected_hub(&account.context, &space_id))
-                .await
-            {
-                Some(Ok(hub)) if hub.is_none() == first_hub => {
+            let selection = async {
+                if first_hub {
+                    cloud
+                        .product_hub_selection(
+                            &account.context,
+                            &space_id,
+                            product_host.as_deref().ok_or(
+                                crate::platform::CloudError::Unreachable(
+                                    "Product Host identity missing".into(),
+                                ),
+                            )?,
+                        )
+                        .await
+                } else {
+                    cloud.selected_hub(&account.context, &space_id).await
+                }
+            };
+            match self.race(selection).await {
+                Some(Ok(hub)) if first_hub || hub.is_some() => {
                     if let Some(expected) = self.target_hub.as_ref() {
                         if hub.as_ref().is_none_or(|(tenant, id)| {
                             tenant != &expected.tenant_id || id != &expected.hub_id
@@ -1352,11 +1803,9 @@ impl Actor {
                     }
                 }
                 Some(Ok(_)) => {
-                    return self.fail(issue_failed(Some(if first_hub {
-                        "This Space already has a Hub. Start setup again using that Hub.".into()
-                    } else {
-                        "This Space has no Hub. Choose the first Hub setup.".into()
-                    })));
+                    return self.fail(issue_failed(Some(
+                        "This Space has no Hub. Choose the first Hub setup.".into(),
+                    )))
                 }
                 Some(Err(error)) => return self.fail(issue_failed(Some(error.to_string()))),
                 None => return,
@@ -1369,10 +1818,25 @@ impl Actor {
                     &space_id,
                     &info,
                     &client,
+                    first_hub,
+                    self.first_hub_host.as_ref(),
                 ))
                 .await;
             match prepared {
-                Some(Ok(())) => {}
+                Some(Ok(hub)) => {
+                    if let Some(hub) = hub {
+                        let Some(admission) = self.destination_admission.as_mut() else {
+                            return;
+                        };
+                        if let Err(failure) = admission
+                            .accept_created_hub(&cloud, &hub, self.selected_lan_address)
+                            .await
+                        {
+                            return self.lan_admission_failed(failure);
+                        }
+                        self.target_hub = Some(hub);
+                    }
+                }
                 Some(Err(error)) => return self.fail(issue_failed(Some(error))),
                 None => return,
             }
@@ -1533,6 +1997,11 @@ impl Actor {
             };
             if info.device_id != expected.device_id
                 || info.identity != expected.identity
+                || info
+                    .device_binding
+                    .as_ref()
+                    .is_some_and(|binding| binding.host.is_some())
+                    != self.dependent_host
                 || info.env != core_api::RuntimeEnv::current().as_str()
                 || info.pod_id.as_deref() != Some(&pod_id)
                 || info.client_mode != Some(client_mode)

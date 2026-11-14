@@ -3,9 +3,10 @@
 BLE-capable embedded Linux Hosts get Wi-Fi or recover an unfinished first claim
 over BLE from a native Client (desktop/CLI Clientd, Android, iOS). Desktop, Docker
 and Android Hosts use LAN discovery rather than advertising BLE setup.
-Provisioning connects the Host to the LAN
-and hands the provisioner a one-time claim token; ownership is then established
-by the existing Host claim over the LAN, which requires that token (section 4).
+Provisioning connects the Host to the LAN. The Native Client retains the BLE
+claim token privately and, after explicit user confirmation, establishes ownership
+through the existing LAN claim protocol. CLI/UI drive this session protocol;
+they never receive the token or compose the claim and Hub setup themselves.
 
 The BLE layer is the one pods use (`pod-commissioning-v1.md` sections 2 and 3):
 same service UUID, manufacturer data with device kind `2`, protocomm security 2
@@ -79,6 +80,7 @@ Fallback characteristic UUIDs: the standard endpoints as for pods, `host-info`
     "firmwareVersion": "0.9.0",
     "fingerprint": "<hex SHA-256 of the bootstrap public key>",
     "wifiConfigured": false,
+    "authorizationMode": "spaceSelf",
     "onboardingRequired": true,
     "networkOnline": false
   }
@@ -86,10 +88,26 @@ Fallback characteristic UUIDs: the standard endpoints as for pods, `host-info`
 
   `productId` is optional. `onboardingRequired` reports whether this Host still
   awaits its first claim and is required. `networkOnline` reports current LAN
-  readiness. A securely paired Host with `networkOnline: true`
+  readiness. `authorizationMode` is the persisted installation role, independent
+  of upgrades. A securely paired Admin Host with `networkOnline: true`
   and `onboardingRequired: true` can finish without resubmitting Wi-Fi. `finish`
   issues a fresh first-claim token after checking authoritative Host ownership.
   Already claimed Hosts never issue a new first-claim token.
+- `{"op":"identity"}` → `{"hostId":"…","publicKey":["<P-256 x>","<P-256 y>"]}`.
+  The separate encrypted record fits the BLE attribute budget. Native retains
+  this key and pins the subsequent LAN TLS connection to it before sending any
+  claim token, exchange secret or cloud grant.
+- `{"op":"networkTarget"}` reports `user`, `space` (with claimed Space/Tenant),
+  `ownHub`, `firstHub` or `unclaimed`, derived from Host authority and the installed Core's
+  durable identity. It does not trust Pod profile caches or caller assertions.
+- `{"op":"prepareWifi","mode":"user|space|bootstrap|bootstrapRecovery|ownHub","hub":[…]?}`
+  prepares the network policy in the same secure session before `set_config`.
+  Space uses the compact exact Hub identity tuple defined in the Pod contract.
+  Only an explicit first-Hub enrollment may request bootstrap; an existing Hub
+  is exempt from finding a different Hub only when its own Core identity matches
+  its Host claim. Ordinary Space re-provisioning obtains current Hub identity
+  online. The Host validates its own role/claim and rejects changed targets while
+  joining. A new central cannot reuse the preceding central's target or password.
 - `{"op":"finish"}` → `{"ok":true,"claimToken":"…"}`. After a successful
   first-provisioning join, or secure recovery with an already working network,
   the response carries a claim token: 32 random bytes as 43 unpadded base64url
@@ -123,7 +141,8 @@ most 4 at a time).
 
 `prov-config` status reports `connected` with the IPv4 address after the Host
 has saved the new profile. The Linux backend first activates a temporary
-profile. On failure or local cancellation it removes that profile and attempts
+profile, then proves the exact target Hub through that trial interface within
+30 seconds of obtaining an IP for ordinary Space devices. On failure or local cancellation it removes that profile and attempts
 to reactivate the previous one. `connection_failed` may distinguish
 `auth_error` or `network_not_found`. After a failed join the commissioner sends
 `prov-ctrl` reset before the next `set_config`.
@@ -138,9 +157,10 @@ Candidates come from the shared discovery (`/local/pod/discovery/*`) with
 | --- | --- | --- |
 | `/local/host/provision/start` | `{"candidateId"}` | session snapshot |
 | `/local/host/provision/code` | `{"sessionId","code"}` | session snapshot |
-| `/local/host/provision/wifi` | `{"sessionId","ssid","password"?}` | session snapshot |
+| `/local/host/provision/wifi` | `{"sessionId","ssid","password"?,"enrollment"?}` | session snapshot |
 | `/local/host/provision/wifi/scan` | `{"sessionId"}` | session snapshot |
 | `/local/host/provision/status` | `{}` | `{"session": snapshot or null}` |
+| `/local/host/provision/authorize` | `{"sessionId"}` | session snapshot |
 | `/local/host/provision/cancel` | `{"sessionId"}` | session snapshot |
 
 Event `/local/host/provision/changed` carries a session snapshot. One session
@@ -158,37 +178,40 @@ returns the same session; a different session ID is rejected. Cancellation durin
 token form a bounded critical section. Leaving the UI does not cancel a session.
 There is no renewal endpoint.
 
-Session states, in order: `connecting`, `awaiting_code`, `securing`,
-`reading_info`, `awaiting_wifi`, `joining_wifi`, `completed`; terminal `failed`,
-`timed_out`, `cancelled`; transitional `cancelling`. `completed` carries `host`, the reported `addresses`
-(IPv4 only, possibly empty) and `claimToken` from the `finish` response; the
-commissioner sends `finish` (up to 3 times while the secure session lasts)
-before reporting it. A missing or refused `finish` is a failed session. The
-first-claim handoff includes `claimToken`. A completed Wi-Fi update on an
-already claimed Host omits it. An account change can redact the token from a
-terminal event, so confirm a tokenless completion through the native status
-target before displaying the Wi-Fi update as successful. No other state
-carries `claimToken`.
+Session states: `connecting` → `awaiting_code` → `securing` → `reading_info`
+→ `awaiting_wifi` → `joining_wifi`. A Host that already has an authoritative
+claim completes here; this only changes its network. An unclaimed Host continues
+through `awaiting_authorization` → `authorizing` → `completed`. User confirmation
+calls `/local/host/provision/authorize`. Failure returns to
+`awaiting_authorization` with `issue_failed`; retry is explicit, never an automatic
+repeat of a write whose response may have been lost. The same paired Host key
+and account remain required. Cancellation during `authorizing` is rejected as
+busy, as it is during `joining_wifi`.
 
-The first claim (TOFU) after BLE provisioning must include the returned token.
-Native `host.claim` passes it to `POST /v1/auth/claim`, alongside the environment,
-cloud proof and direct Client exchange secret (`core-api::host::access::ClaimRequest`).
-There is no Core-proxied first-claim route. The Host rejects a missing or incorrect
-provisioning token with 403 `HOST_CLAIM_TOKEN_REQUIRED`. The token remains valid
-until claim succeeds, another setup issues a replacement token, or factory reset.
-BLE `completed` confirms the network/handoff step, not Host ownership. The App's
-Host onboarding operation waits for explicit ownership confirmation, then claims
-over the LAN. It completes only after the existing claim API confirms cloud
-registration. It does not install Core or Plugins. Hosts that were not provisioned
-over BLE use the ordinary direct LAN claim flow. See the Foundation Host
-management authorization contract.
+Space Hosts require an owner Space and explicit `firstHub` enrollment before
+Wi-Fi is sent. Ordinary Space Hosts must verify the existing exact Hub. Explicit
+first-Hub enrollment reuses the durable Hub setup engine after Host claim; the
+result is accepted only for the same BLE-paired Host key and original Client LAN.
+Admin Hosts require no Space. A combined Pod/Host uses the Pod session instead.
 
-Error codes are the pod session codes without the credential ones:
-`bluetooth_unavailable`, `device_busy`, `disconnected`, `code_rejected` (retry
-allowed), `code_locked`, `wifi_auth_failed`, `wifi_not_found`, `wifi_failed`,
-`session_timeout`. Retry rules are the pod ones: a rejected code returns to
-`awaiting_code`, a failed join to `awaiting_wifi`, each with its error; `failed`
-and `timed_out` always carry `error`. `code_locked` is terminal.
+The Host first-claim token remains private to Native. It is sent with the existing
+LAN `POST /v1/auth/claim` proof and exchange secret. The Host rejects a missing or
+incorrect token with `HOST_CLAIM_TOKEN_REQUIRED`. Its validity ends at successful
+claim, replacement by another secure setup, or factory reset. Repeating the same
+owner's already committed claim reconciles through the ordinary claim contract.
+There is no Core-proxied first-claim route. Hosts already online without BLE use
+the ordinary direct LAN claim operation.
+
+Only `completed` carries `result`: `{hostId,wifiConfigured:true,commissioned:true,
+hubId?}`. `hubId` is present when this operation explicitly established the first
+Hub. `host` and optional reported IPv4 `addresses` remain in the snapshot. No
+public snapshot, event, CLI or UI result contains `claimToken`. Terminal errors
+are `failed` and `timed_out`, both with `error`; cancellation uses `cancelling`
+then `cancelled`. Wrong codes and failed Wi-Fi joins return to their input states.
+The supported errors include `bluetooth_unavailable`, `device_busy`,
+`disconnected`, `code_rejected`, `code_locked`, `wifi_auth_failed`,
+`wifi_not_found`, `wifi_failed`, `lan_unavailable`, `device_mismatch`,
+`issue_failed` and `session_timeout`.
 
 The schema is `schema/host-provision.v1.schema.json`.
 
@@ -211,3 +234,37 @@ The schema is `schema/host-provision.v1.schema.json`.
   services, forgets saved Wi-Fi on BLE provisioning appliances, erases owners,
   the Host security store and bootstrap key, and returns to first provisioning.
   Machine identity and installed software are retained.
+
+## Interrupted first-Hub installation
+
+The explicit first-Hub BLE flow records a durable installation intent before
+trying Wi-Fi. Native obtains the securely paired Host identity and calls
+`POST /api/v1/host/first-hub/begin` with `{spaceId, hostId, env, hostPublicKey}`
+under the signed-in Owner. Cloud checks Space ownership and current Hub state,
+returning `{intentId, space: {tenantId, spaceId}}`. The encrypted `prepareWifi`
+bootstrap record carries this object as `firstHub`. It is not a Host claim or
+permission to replace a Hub. Host persists it bound to its own installation key.
+
+If Host was claimed to that Space but Core setup was interrupted, the next secure
+`networkTarget` returns `{mode:"firstHub", intentId, spaceId, tenantId}`.
+Native retains this exact Space and gets a fresh online Owner permit with
+`POST /api/v1/host/first-hub/recovery/prepare {spaceId,intentId}`. It sends
+`{op:"prepareWifi",mode:"bootstrapRecovery",firstHub:{intentId,space},authorizationId}`.
+This is a compact private BLE record, not part of the public session snapshot.
+
+After trial Wi-Fi obtains an IP, Host signs its current claimed status using the
+permit as `probeId` and calls `/api/v1/host/first-hub/recovery/verify` over its
+configured trusted HTTPS endpoint, bound to the trial Wi-Fi interface. Cloud
+checks the Host signature and key, original Space, current Owner, five-minute
+permit and absence of another Host's Hub/operation. The cloud permit determines
+freshness; a rebooted Host clock does not extend it. Verification shares the
+30-second post-IP trial deadline. Failure discards the trial and restores the
+previous network; the Host's original claim is retained.
+
+A successful recovery enters `awaiting_authorization`, then the existing Hub
+setup engine continues for the same paired Host. It does not submit another Host
+claim. Hub completion closes the cloud intent generation before publication;
+removing that Hub later does not revive the old intent. A local Core identity
+already durably installed uses `ownHub` network change instead. Neither path
+changes the installation role. Reset removes this pending intent with identity
+and ownership, while preserving the installation role.
