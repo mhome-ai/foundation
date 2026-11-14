@@ -227,15 +227,14 @@ impl Actor {
 
     async fn first_pod_admission(&mut self) -> bool {
         let cloud = self.engine.platform.cloud.clone();
-        let expected = self
-            .engine
-            .mutate(self.kind, &self.id, |live| live.account_context.clone())
-            .flatten();
-        let Some(account) = cloud
-            .account()
-            .await
-            .filter(|a| Some(&a.context) == expected.as_ref())
-        else {
+        let expected = self.engine.mutate(self.kind, &self.id, |live| {
+            (live.account_context.clone(), live.active_space_id.clone())
+        });
+        let Some(account) = cloud.account().await.filter(|a| {
+            expected.as_ref().is_some_and(|(context, space)| {
+                context.as_ref() == Some(&a.context) && *space == a.active_space_id
+            })
+        }) else {
             self.lan_admission_failed(crate::platform::CloudError::AccountChanged);
             return false;
         };

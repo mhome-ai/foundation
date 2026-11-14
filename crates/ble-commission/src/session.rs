@@ -138,6 +138,7 @@ pub(crate) struct Live {
     pub claim_token: Option<String>,
     /// Native login generation; never projected into session snapshots.
     pub account_context: Option<String>,
+    pub active_space_id: Option<String>,
     /// A code, Wi-Fi or authorization request is queued or running.
     pub busy: bool,
     /// A Wi-Fi scan is running.

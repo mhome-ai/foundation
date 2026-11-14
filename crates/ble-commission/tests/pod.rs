@@ -1219,3 +1219,24 @@ async fn switching_space_during_pod_setup_prevents_credential_issuance() {
     assert_eq!(refused["error"]["code"], "lan_unavailable");
     assert!(harness.cloud.paths().is_empty());
 }
+
+#[tokio::test(start_paused = true)]
+async fn switching_space_at_the_pairing_prompt_requires_a_new_setup_session() {
+    let harness = Harness::with_discovery("ble").await;
+    harness.add_device("pod-a", Script::pod());
+    let id = start(&harness).await;
+    harness.wait_state(POD, "awaiting_code").await;
+    harness
+        .cloud
+        .account
+        .lock()
+        .unwrap()
+        .as_mut()
+        .unwrap()
+        .active_space_id = Some("scope-a".into());
+    secure(&harness, &id).await;
+    let refused = harness.wait_state(POD, "failed").await;
+    assert_eq!(refused["error"]["code"], "lan_unavailable");
+    assert!(!harness.journal().iter().any(|e| e == "device:set_config"));
+    assert!(harness.cloud.paths().is_empty());
+}

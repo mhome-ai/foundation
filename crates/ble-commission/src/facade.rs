@@ -324,6 +324,7 @@ async fn start(
             addresses: Vec::new(),
             claim_token: None,
             account_context: Some(account.context),
+            active_space_id: account.active_space_id,
             busy: false,
             scanning: false,
             released: false,
