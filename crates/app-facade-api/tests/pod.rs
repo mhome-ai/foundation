@@ -219,3 +219,38 @@ fn fixtures_match_types_and_schemas() {
         .validate()
         .is_err());
 }
+
+#[test]
+fn first_hub_enrollment_round_trips_through_the_session_schema() {
+    let discovery_schema =
+        serde_json::from_str(include_str!("../schema/pod-discovery.v1.schema.json")).unwrap();
+    let commission_schema =
+        serde_json::from_str(include_str!("../schema/pod-commission.v1.schema.json")).unwrap();
+    let schema = jsonschema::options()
+        .with_resource(
+            "https://schemas.mhome.ai/app-facade/pod-discovery.v1.schema.json",
+            jsonschema::Resource::from_contents(discovery_schema).unwrap(),
+        )
+        .build(&commission_schema)
+        .unwrap();
+    let mut session: CommissionSession = serde_json::from_str(include_str!(
+        "../fixtures/pod-commission.awaiting-authorization.json"
+    ))
+    .unwrap();
+    session.device.as_mut().unwrap().dependent_host = true;
+    session.enrollment = Some(app_facade_api::pod::EnrollmentTarget {
+        space_id: "scope-1".into(),
+        client_mode: app_facade_api::pod::ClientMode::Space,
+        first_hub: true,
+    });
+    let mut wire = serde_json::to_value(&session).unwrap();
+    assert_eq!(wire["enrollment"]["firstHub"], true);
+    schema.validate(&wire).unwrap();
+    let reparsed: CommissionSession = serde_json::from_value(wire.clone()).unwrap();
+    reparsed.validate().unwrap();
+    assert_eq!(reparsed.enrollment, session.enrollment);
+
+    wire["enrollment"]["firstHub"] = Value::from("true");
+    assert!(!schema.is_valid(&wire));
+    assert!(serde_json::from_value::<CommissionSession>(wire).is_err());
+}

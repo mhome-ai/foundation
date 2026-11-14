@@ -373,6 +373,13 @@
       "expiresAt"
     ]
   },
+  "/app/pod/list": {
+    "ms": [
+      "observedAtMs",
+      "pods.*.issuedAt",
+      "pods.*.activatedAt"
+    ]
+  },
   "/app/host/directory/list": {
     "ms": [
       "observedAtMs"

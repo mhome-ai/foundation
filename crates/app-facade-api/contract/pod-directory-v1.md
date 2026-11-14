@@ -20,6 +20,8 @@ Every row contains `registrationId`, `clientMode` (`user` or `space`), `register
 `spaceId` and `appClientId`. Personal rows contain the saved `name`, `deviceId`,
 `model`, `platform`, `firmwareVersion`, `issuedAt`, and `activatedAt`.
 No tokens, enrollment grants, credential IDs or private keys are returned.
+`observedAtMs`, `issuedAt`, and `activatedAt` are Unix milliseconds in Full.
+Essential renders them in the authorized display time zone.
 
 Connection is an observation in the indicated Space, not global power state.
 Personal registration IDs are keyed by User and device public-key fingerprint;

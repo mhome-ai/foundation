@@ -1300,6 +1300,7 @@
   {
     "name": "pod-directory-unknown",
     "target": "/app/pod/list",
+    "timezone": "Asia/Shanghai",
     "data": {
       "spaceId": "space-demo",
       "observedAtMs": 1800000000000,
@@ -1329,7 +1330,7 @@
     "status": "success",
     "essential": {
       "spaceId": "space-demo",
-      "observedAtMs": 1800000000000,
+      "observedAtMs": "2027-01-15 16:00:00 +08:00 (Asia/Shanghai)",
       "pods": [
         {
           "registrationId": "pod-demo",
@@ -1340,8 +1341,8 @@
           "model": "Pod",
           "platform": "esp32",
           "firmwareVersion": "1.0.0",
-          "issuedAt": 1800000000000,
-          "activatedAt": 1800000001000,
+          "issuedAt": "2027-01-15 16:00:00 +08:00 (Asia/Shanghai)",
+          "activatedAt": "2027-01-15 16:00:01 +08:00 (Asia/Shanghai)",
           "connection": {
             "state": "unknown",
             "source": "unavailable",

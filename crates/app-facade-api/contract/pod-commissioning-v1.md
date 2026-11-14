@@ -339,7 +339,7 @@ not request Bluetooth permission. BLE discovery uses the current Client's radio.
 Snapshots may contain both transports when several callers hold leases. A running
 Pod setup may continue LAN browsing to complete a handoff.
 
-Initial BLE Wi-Fi setup requires `enrollment: {spaceId, clientMode}`. An
+Initial BLE Wi-Fi setup requires `enrollment: {spaceId, clientMode, firstHub?}`. An
 already-bound Pod changing Wi-Fi uses the stored authorization and omits it.
 An already-networked Pod selects its authorization in the LAN session.
 
