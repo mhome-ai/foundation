@@ -64,6 +64,30 @@ impl BlockingLink for ForeignLink {
 }
 
 impl BlockingCloud for ForeignCloud {
+    fn selected_hub(
+        &self,
+        context: String,
+        space_id: String,
+    ) -> Result<Option<(String, String)>, CloudError> {
+        self.0.run(self.1.selected_hub(&context, &space_id))
+    }
+    fn commissioning_lan(
+        &self,
+        context: String,
+        space_id: Option<String>,
+        hub: Option<(String, String)>,
+        device: Option<std::net::SocketAddr>,
+    ) -> Result<String, CloudError> {
+        self.0.run(
+            self.1.commissioning_lan(
+                &context,
+                space_id.as_deref(),
+                hub.as_ref()
+                    .map(|(tenant, id)| (tenant.as_str(), id.as_str())),
+                device,
+            ),
+        )
+    }
     fn account(&self) -> Option<Account> {
         self.0.run(self.1.account())
     }

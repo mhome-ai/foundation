@@ -141,6 +141,98 @@ pub(crate) async fn resolve_setup_hub(
     Ok(Some(identity))
 }
 
+/// The account, selected Space and local route for one first-commissioning attempt.
+#[derive(Clone)]
+pub(crate) struct Admission {
+    active_space: Option<String>,
+    scope: Option<String>,
+    context: String,
+    hub: Option<(String, String)>,
+    route: String,
+}
+
+impl Admission {
+    pub async fn capture(
+        cloud: &Arc<dyn Cloud>,
+        account: &crate::platform::Account,
+        selected: Option<&str>,
+    ) -> Result<Self, CloudError> {
+        let scope = selected
+            .map(str::to_owned)
+            .or_else(|| account.active_space_id.clone());
+        let hub = match scope.as_deref() {
+            Some(space) => {
+                tokio::time::timeout(REQUEST_TIMEOUT, cloud.selected_hub(&account.context, space))
+                    .await
+                    .map_err(|_| CloudError::Unreachable("Hub selection timed out".into()))??
+            }
+            None => None,
+        };
+        let route = commissioning_lan(
+            cloud,
+            &account.context,
+            scope.as_deref(),
+            hub.as_ref(),
+            None,
+        )
+        .await?;
+        Ok(Self {
+            active_space: account.active_space_id.clone(),
+            scope,
+            context: account.context.clone(),
+            hub,
+            route,
+        })
+    }
+
+    pub async fn check(
+        &self,
+        cloud: &Arc<dyn Cloud>,
+        device: Option<std::net::SocketAddr>,
+    ) -> Result<(), CloudError> {
+        let account = cloud.account().await.ok_or(CloudError::NotSignedIn)?;
+        if account.context != self.context || account.active_space_id != self.active_space {
+            return Err(CloudError::AccountChanged);
+        }
+        let route = commissioning_lan(
+            cloud,
+            &self.context,
+            self.scope.as_deref(),
+            self.hub.as_ref(),
+            device,
+        )
+        .await?;
+        if route != self.route {
+            return Err(CloudError::Unreachable(
+                "The local network changed. Start adding the device again.".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+async fn commissioning_lan(
+    cloud: &Arc<dyn Cloud>,
+    context: &str,
+    scope: Option<&str>,
+    hub: Option<&(String, String)>,
+    device: Option<std::net::SocketAddr>,
+) -> Result<String, CloudError> {
+    let hub = hub.map(|(tenant, hub)| (tenant.as_str(), hub.as_str()));
+    let token = tokio::time::timeout(
+        REQUEST_TIMEOUT,
+        cloud.commissioning_lan(context, scope, hub, device),
+    )
+    .await
+    .map_err(|_| CloudError::Unreachable("Local network check timed out".into()))??;
+    if token.is_empty() {
+        return Err(CloudError::Unreachable(
+            "Local network check returned no route".into(),
+        ));
+    }
+    Ok(token)
+}
+
 /// Whether the host of `url` is `localhost`, in `127.0.0.0/8` or `::1`.
 pub fn is_loopback_url(url: &str) -> bool {
     let rest = url.split_once("://").map_or(url, |(_, rest)| rest);

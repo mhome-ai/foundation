@@ -6,6 +6,14 @@ MeowLink native Clients. It implements the `/local/pod/*` and
 mobile Clients only supply a radio, a GATT central, a native LAN browser, the signed-in cloud account
 and an event sink.
 
+A first Pod session checks its selected Space and native LAN after secure device
+identification, before transmitting Wi-Fi credentials, and before issuing and
+delivering authorization. The platform's `commissioning_lan` callback returns an
+opaque identifier for the verified local network and, when assigned, the exact
+Hub connection. A network, account, or active Space change invalidates the
+attempt. A device-reported Wi-Fi replacement session keeps its stored identity
+and follows its separate recovery rules.
+
 ## Entry points
 
 ```rust

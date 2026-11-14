@@ -760,6 +760,7 @@ pub struct FakeCloud {
     pub bootstrap: AtomicBool,
     pub replaced_hub: AtomicBool,
     pub invalid_hub_key: AtomicBool,
+    pub commissioning_lan: Mutex<Option<String>>,
     pub space_credential_window: Mutex<Option<(String, Option<i64>)>>,
     clock: Clock,
     journal: Journal,
@@ -779,6 +780,7 @@ impl FakeCloud {
             bootstrap: AtomicBool::new(false),
             replaced_hub: AtomicBool::new(false),
             invalid_hub_key: AtomicBool::new(false),
+            commissioning_lan: Mutex::new(Some("lan-1".into())),
             space_credential_window: Mutex::new(None),
             clock: Clock::new(),
             journal,
@@ -853,6 +855,19 @@ fn hub_identity(hub_id: &str, space_id: &Value) -> Value {
 impl Cloud for FakeCloud {
     async fn selected_hub(&self, _: &str, _: &str) -> Result<Option<(String, String)>, CloudError> {
         Ok((!self.bootstrap.load(Ordering::SeqCst)).then(|| ("tenant".into(), "hub".into())))
+    }
+    async fn commissioning_lan(
+        &self,
+        _: &str,
+        _: Option<&str>,
+        _: Option<(&str, &str)>,
+        _: Option<std::net::SocketAddr>,
+    ) -> Result<String, CloudError> {
+        self.commissioning_lan
+            .lock()
+            .unwrap()
+            .clone()
+            .ok_or_else(|| CloudError::Unreachable("Hub is unreachable".into()))
     }
     async fn account(&self) -> Option<Account> {
         self.account.lock().unwrap().clone()

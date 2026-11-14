@@ -53,6 +53,9 @@ pub(crate) struct Actor {
     pod_info: Option<PodInfo>,
     host_needs_claim: bool,
     target_hub: Option<app_facade_api::pod::HubIdentity>,
+    admission: Option<cloud::Admission>,
+    destination_admission: Option<cloud::Admission>,
+    selected_lan_address: Option<std::net::SocketAddr>,
     credential: Option<Credential>,
     reply: Option<oneshot::Sender<()>>,
     pairing_code: Option<zeroize::Zeroizing<String>>,
@@ -109,6 +112,9 @@ impl Actor {
             pod_info: None,
             host_needs_claim: false,
             target_hub: None,
+            admission: None,
+            destination_admission: None,
+            selected_lan_address: None,
             credential: None,
             reply: None,
             pairing_code: None,
@@ -190,6 +196,63 @@ impl Actor {
         self.device.as_ref().map(|device| device.client.clone())
     }
 
+    async fn check_admission(&self) -> bool {
+        let cloud = &self.engine.platform.cloud;
+        for admission in [&self.admission, &self.destination_admission]
+            .into_iter()
+            .flatten()
+        {
+            match self
+                .race(admission.check(cloud, self.selected_lan_address))
+                .await
+            {
+                Some(Ok(())) => {}
+                Some(Err(failure)) => {
+                    self.lan_admission_failed(failure);
+                    return false;
+                }
+                None => return false,
+            }
+        }
+        true
+    }
+
+    fn lan_admission_failed(&self, failure: crate::platform::CloudError) {
+        self.fail(error(
+            CommissionErrorCode::LanUnavailable,
+            "Connect this Client to the selected Space's local Hub network and start again.",
+            Some(failure.to_string()),
+        ));
+    }
+
+    async fn first_pod_admission(&mut self) -> bool {
+        let cloud = self.engine.platform.cloud.clone();
+        let expected = self
+            .engine
+            .mutate(self.kind, &self.id, |live| live.account_context.clone())
+            .flatten();
+        let Some(account) = cloud
+            .account()
+            .await
+            .filter(|a| Some(&a.context) == expected.as_ref())
+        else {
+            self.lan_admission_failed(crate::platform::CloudError::AccountChanged);
+            return false;
+        };
+        match self
+            .race(cloud::Admission::capture(&cloud, &account, None))
+            .await
+        {
+            Some(Ok(admission)) => self.admission = Some(admission),
+            Some(Err(failure)) => {
+                self.lan_admission_failed(failure);
+                return false;
+            }
+            None => return false,
+        }
+        self.check_admission().await
+    }
+
     async fn open(&mut self) -> Option<bool> {
         // Keep ownership through connection/version setup, even if the session
         // deadline expires. Cleanup must receive and close a late native link.
@@ -248,7 +311,7 @@ impl Actor {
     }
 
     async fn open_lan_addresses(
-        &self,
+        &mut self,
         addresses: &[std::net::SocketAddr],
     ) -> Result<Opened, OpenError> {
         let mut last = OpenError::Link("Pod is no longer on this LAN".into());
@@ -264,7 +327,10 @@ impl Actor {
                 }
             };
             match device::open_link(link, DeviceKind::Pod).await {
-                Ok(opened) => return Ok(opened),
+                Ok(opened) => {
+                    self.selected_lan_address = Some(*address);
+                    return Ok(opened);
+                }
                 Err(e) => last = e,
             }
         }
@@ -414,10 +480,11 @@ impl Actor {
             Ok(info) => info,
             Err(failure) => return self.fail_disconnected(failure),
         };
+        let kind = self.kind;
         let incomplete = || {
             error(
                 CommissionErrorCode::DeviceBusy,
-                &format!("The {} returned incomplete information.", noun(self.kind)),
+                &format!("The {} returned incomplete information.", noun(kind)),
                 Some(info.to_string()),
             )
         };
@@ -442,6 +509,9 @@ impl Actor {
                     }
                 }
                 let reprovision = pod_info.reprovision();
+                if !reprovision && !self.first_pod_admission().await {
+                    return;
+                }
                 let kept_wifi = device.wifi_configured && !reprovision;
                 let completed = pod_info.state == "commissioned";
                 let activating = pod_info.state == "activating";
@@ -640,6 +710,24 @@ impl Actor {
                     None,
                 ));
             }
+            if !self.check_admission().await {
+                return;
+            }
+            let Some(account) = cloud.account().await.filter(|a| a.context == context) else {
+                return self.lan_admission_failed(crate::platform::CloudError::AccountChanged);
+            };
+            match self
+                .race(cloud::Admission::capture(
+                    &cloud,
+                    &account,
+                    Some(&target.space_id),
+                ))
+                .await
+            {
+                Some(Ok(admission)) => self.destination_admission = Some(admission),
+                Some(Err(failure)) => return self.lan_admission_failed(failure),
+                None => return,
+            }
             self.target_hub = if target.client_mode == ClientMode::Space {
                 match self
                     .race(cloud::resolve_setup_hub(&cloud, &context, &target.space_id))
@@ -700,6 +788,9 @@ impl Actor {
             if !self.update(|live| live.enrollment = enrollment) {
                 return;
             }
+        }
+        if !self.check_admission().await {
+            return;
         }
         let applied = self
             .race(async {
@@ -1174,6 +1265,22 @@ impl Actor {
                 None,
             ));
         };
+        if !self.check_admission().await {
+            return;
+        }
+        if self.destination_admission.is_none() {
+            match self
+                .race(cloud::Admission::capture(&cloud, &account, Some(&space_id)))
+                .await
+            {
+                Some(Ok(admission)) => self.destination_admission = Some(admission),
+                Some(Err(failure)) => return self.lan_admission_failed(failure),
+                None => return,
+            }
+            if !self.check_admission().await {
+                return;
+            }
+        }
         let (Some(info), Some(device)) = (self.pod_info.clone(), self.device.as_ref()) else {
             return self.fail_disconnected("no link");
         };
@@ -1289,6 +1396,9 @@ impl Actor {
                 )
             }
         };
+        if !self.check_admission().await {
+            return;
+        }
         let deadline = credential.confirm_before;
         self.credential = Some(credential);
         if !self.update(|live| {
@@ -1348,7 +1458,8 @@ impl Actor {
             }
             self.sleep(TICK).await?;
             let attempt = async {
-                let opened = self.open_lan_addresses(&self.lan_addresses).await.ok()?;
+                let addresses = self.lan_addresses.clone();
+                let opened = self.open_lan_addresses(&addresses).await.ok()?;
                 let client = opened.client.clone();
                 let patch = opened.patch_version;
                 self.device = Some(opened);

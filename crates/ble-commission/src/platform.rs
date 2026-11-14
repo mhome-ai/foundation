@@ -155,6 +155,20 @@ pub trait Cloud: Send + Sync + 'static {
             "Hub selection is unavailable".into(),
         ))
     }
+    /// A stable token for the current native LAN and local Hub transport.
+    /// A configured Hub must be authenticated and reached directly over this
+    /// LAN. When there is no Hub, only the native network contributes.
+    async fn commissioning_lan(
+        &self,
+        _context: &str,
+        _space_id: Option<&str>,
+        _hub: Option<(&str, &str)>,
+        _device: Option<std::net::SocketAddr>,
+    ) -> Result<String, CloudError> {
+        Err(CloudError::Unreachable(
+            "Local commissioning network is unavailable".into(),
+        ))
+    }
     async fn account(&self) -> Option<Account>;
     /// `POST {api}/{path}` with the account's bearer token, the `SpaceId`
     /// header when `space_id` is set, and a JSON body.
@@ -225,6 +239,17 @@ pub trait BlockingCloud: Send + Sync + 'static {
     ) -> Result<Option<(String, String)>, CloudError> {
         Err(CloudError::Unreachable(
             "Hub selection is unavailable".into(),
+        ))
+    }
+    fn commissioning_lan(
+        &self,
+        _context: String,
+        _space_id: Option<String>,
+        _hub: Option<(String, String)>,
+        _device: Option<std::net::SocketAddr>,
+    ) -> Result<String, CloudError> {
+        Err(CloudError::Unreachable(
+            "Local commissioning network is unavailable".into(),
         ))
     }
     fn account(&self) -> Option<Account>;
@@ -350,6 +375,27 @@ impl<T: BlockingCloud + ?Sized> Cloud for Blocking<T> {
         off_runtime(&self.0, move |cloud| cloud.selected_hub(context, space_id))
             .await
             .unwrap_or_else(|| Err(CloudError::Unreachable("Hub selection stopped".into())))
+    }
+
+    async fn commissioning_lan(
+        &self,
+        context: &str,
+        space_id: Option<&str>,
+        hub: Option<(&str, &str)>,
+        device: Option<std::net::SocketAddr>,
+    ) -> Result<String, CloudError> {
+        let context = context.to_owned();
+        let space_id = space_id.map(str::to_owned);
+        let hub = hub.map(|(tenant, hub)| (tenant.to_owned(), hub.to_owned()));
+        off_runtime(&self.0, move |cloud| {
+            cloud.commissioning_lan(context, space_id, hub, device)
+        })
+        .await
+        .unwrap_or_else(|| {
+            Err(CloudError::Unreachable(
+                "Local network check stopped".into(),
+            ))
+        })
     }
 
     async fn account(&self) -> Option<Account> {

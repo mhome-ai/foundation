@@ -1173,3 +1173,49 @@ async fn committed_receipt_requires_a_known_client_mode() {
         assert!(h.cloud.calls.lock().unwrap().is_empty());
     }
 }
+
+#[tokio::test(start_paused = true)]
+async fn first_pod_cannot_reach_wifi_entry_without_the_signed_in_hub_lan() {
+    let harness = Harness::with_discovery("ble").await;
+    harness.add_device("pod-a", Script::pod());
+    *harness.cloud.commissioning_lan.lock().unwrap() = None;
+    let id = start(&harness).await;
+    secure(&harness, &id).await;
+    let refused = harness.wait_state(POD, "failed").await;
+    assert_eq!(refused["error"]["code"], "lan_unavailable");
+    assert!(!harness.journal().iter().any(|e| e == "device:set_config"));
+    assert!(harness.cloud.paths().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_pod_cannot_receive_wifi_credentials_after_the_client_changes_network() {
+    let harness = Harness::with_discovery("ble").await;
+    harness.add_device("pod-a", Script::pod());
+    let id = start(&harness).await;
+    secure(&harness, &id).await;
+    harness.wait_state(POD, "awaiting_wifi").await;
+    *harness.cloud.commissioning_lan.lock().unwrap() = Some("lan-2".into());
+    harness.ok("/local/pod/commission/wifi", json!({"sessionId":id,"ssid":"home","enrollment":{"spaceId":"scope-a","clientMode":"user"}})).await;
+    let refused = harness.wait_state(POD, "failed").await;
+    assert_eq!(refused["error"]["code"], "lan_unavailable");
+    assert!(!harness.journal().iter().any(|e| e == "device:set_config"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn switching_space_during_pod_setup_prevents_credential_issuance() {
+    let harness = Harness::with_discovery("ble").await;
+    harness.add_device("pod-a", Script::pod());
+    let id = to_authorization(&harness).await;
+    harness
+        .cloud
+        .account
+        .lock()
+        .unwrap()
+        .as_mut()
+        .unwrap()
+        .active_space_id = Some("scope-a".into());
+    authorize(&harness, &id).await;
+    let refused = harness.wait_state(POD, "failed").await;
+    assert_eq!(refused["error"]["code"], "lan_unavailable");
+    assert!(harness.cloud.paths().is_empty());
+}
