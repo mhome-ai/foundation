@@ -213,7 +213,16 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "online": true,
             "smokeState": "clear",
             "coAlarmState": "clear",
-            "co": 0,
+            "coConcentration": 0,
+            "coConcentrationState": "low",
+            "smokeSeverity": null,
+            "coSeverity": null,
+            "detectorFault": "normal",
+            "detectorService": "normal",
+            "detectorTest": "idle",
+            "detectorTestResult": null,
+            "detectorMute": "unmuted",
+            "smokeSensitivity": "standard",
             "batteryLevel": 96,
             "chargingState": "not charging",
             "tamperState": "clear",
@@ -370,9 +379,16 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "state.battery",
         ][..],
         SMOKE_CO_ALARM_V1 => &[
-            "state.smoke",
-            "state.air",
-            "data.airAttributes",
+            "state.smokeDetector",
+            "state.carbonMonoxideDetector",
+            "state.smokeDetectorSetting",
+            "data.smokeDetectorAttributes",
+            "data.carbonMonoxideDetectorAttributes",
+            "command.testSmokeDetector",
+            "command.testCarbonMonoxideDetector",
+            "command.setSmokeDetectorSensitivity",
+            "command.setSmokeDetectorMute",
+            "command.setCarbonMonoxideDetectorMute",
             "state.battery",
             "state.tamper",
             "state.alarm",
@@ -419,6 +435,104 @@ pub fn exposes_capability(model_id: &str, capability: &str) -> bool {
         .unwrap_or(false)
 }
 
+fn detector_fields(capability: &str) -> Vec<(&'static str, &'static str)> {
+    let smoke = capability == "state.smokeDetector";
+    let mut fields = vec![
+        (
+            "alarmState",
+            if smoke { "smokeState" } else { "coAlarmState" },
+        ),
+        (
+            "alarmSeverity",
+            if smoke { "smokeSeverity" } else { "coSeverity" },
+        ),
+        ("faultState", "detectorFault"),
+        ("serviceState", "detectorService"),
+        ("testState", "detectorTest"),
+        ("testResult", "detectorTestResult"),
+        ("muteState", "detectorMute"),
+    ];
+    if !smoke {
+        fields.extend([
+            ("concentration", "coConcentration"),
+            ("concentrationState", "coConcentrationState"),
+        ]);
+    }
+    fields
+}
+fn detector_state(attrs: &Map<String, Value>, capability: &str) -> Map<String, Value> {
+    detector_fields(capability)
+        .iter()
+        .map(|(field, attr)| {
+            let value = attrs
+                .get(*attr)
+                .filter(|v| match *field {
+                    "concentration" => v.as_f64().is_some_and(|v| v.is_finite() && v >= 0.0),
+                    _ => v.as_str().is_some_and(|s| match *field {
+                        "alarmState" => ["clear", "detected"].contains(&s),
+                        "alarmSeverity" => ["warning", "critical"].contains(&s),
+                        "faultState" => ["normal", "fault"].contains(&s),
+                        "serviceState" => ["normal", "expired"].contains(&s),
+                        "testState" => ["idle", "testing"].contains(&s),
+                        "testResult" => ["passed", "failed"].contains(&s),
+                        "muteState" => ["muted", "unmuted"].contains(&s),
+                        _ => ["low", "medium", "high", "critical"].contains(&s),
+                    }),
+                })
+                .cloned()
+                .unwrap_or(Value::Null);
+            ((*field).into(), value)
+        })
+        .collect()
+}
+fn detector_command(
+    attrs: &mut Map<String, Value>,
+    capability: &str,
+    req: &Map<String, Value>,
+) -> Result<CommandOutcome> {
+    if capability == "command.setSmokeDetectorSensitivity" {
+        let value = required_string(req, "sensitivity")?;
+        if !["low", "standard", "high"].contains(&value.as_str()) {
+            return Err(anyhow!("Unsupported smoke sensitivity"));
+        }
+        attrs.insert("smokeSensitivity".into(), json!(value));
+        return Ok(CommandOutcome::with_event(
+            "state.smokeDetectorSetting",
+            json!({"sensitivity":value}),
+        ));
+    }
+    let caps = ["state.smokeDetector", "state.carbonMonoxideDetector"];
+    let mut events = Vec::new();
+    if capability.starts_with("command.test") {
+        attrs.insert("detectorTest".into(), json!("testing"));
+        attrs.insert("detectorTestResult".into(), Value::Null);
+        for cap in caps {
+            events.push(CommandEvent {
+                capability: cap.into(),
+                payload: json!(detector_state(attrs, cap)),
+            });
+        }
+        attrs.insert("detectorTest".into(), json!("idle"));
+        attrs.insert("detectorTestResult".into(), json!("passed"));
+    } else {
+        let value = required_string(req, "muteState")?;
+        if !["muted", "unmuted"].contains(&value.as_str()) {
+            return Err(anyhow!("muteState must be muted or unmuted"));
+        }
+        attrs.insert("detectorMute".into(), json!(value));
+    }
+    for cap in caps {
+        events.push(CommandEvent {
+            capability: cap.into(),
+            payload: json!(detector_state(attrs, cap)),
+        });
+    }
+    Ok(CommandOutcome {
+        response: Value::Null,
+        events,
+    })
+}
+
 fn air_fields(model_id: &str) -> &'static [&'static str] {
     match model_id {
         AIR_MONITOR_V1 => &[
@@ -432,7 +546,6 @@ fn air_fields(model_id: &str) -> &'static [&'static str] {
             "vocState",
         ],
         FAN_PURIFIER_V1 => &["qualityState", "index", "pm25", "pm25State"],
-        SMOKE_CO_ALARM_V1 => &["co", "coAlarmState"],
         _ => &[],
     }
 }
@@ -446,7 +559,6 @@ fn air_options(field: &str) -> &'static [&'static str] {
             "very poor",
             "extremely poor",
         ],
-        "coAlarmState" => &["clear", "detected"],
         _ => &["low", "medium", "high", "critical"],
     }
 }
@@ -538,9 +650,18 @@ pub fn project_state(
                 ((*field).into(), value)
             })
             .collect()),
-        "state.smoke" => Ok(object_map(json!({
-            "state": string_attr(attrs, "smokeState")?
-        }))?),
+        "state.smokeDetector" | "state.carbonMonoxideDetector" => {
+            Ok(detector_state(attrs, capability))
+        }
+        "state.smokeDetectorSetting" => Ok(object_map(
+            json!({"sensitivity":attrs.get("smokeSensitivity").filter(|v|v.as_str().is_some_and(|s|["low","standard","high"].contains(&s))).cloned().unwrap_or(Value::Null)}),
+        )?),
+        "data.smokeDetectorAttributes" => {
+            project_discovery(model_id, attrs, "state.smokeDetector", "$f1")
+        }
+        "data.carbonMonoxideDetectorAttributes" => {
+            project_discovery(model_id, attrs, "state.carbonMonoxideDetector", "$f1")
+        }
         "state.alarm" => Ok(object_map(json!({
             "mode": string_attr(attrs, "alarmMode")?
         }))?),
@@ -592,6 +713,14 @@ pub fn project_discovery(
     _alias: &str,
 ) -> Result<Map<String, Value>> {
     match capability {
+        "state.smokeDetector"
+        | "command.setSmokeDetectorSensitivity"
+        | "command.setSmokeDetectorMute" => Ok(object_map(
+            json!({"supportedStates":["alarmSeverity","faultState","serviceState","testState","testResult","muteState"],"availableSensitivities":["low","standard","high"],"availableMuteStates":["muted","unmuted"]}),
+        )?),
+        "state.carbonMonoxideDetector" | "command.setCarbonMonoxideDetectorMute" => Ok(object_map(
+            json!({"supportedStates":["concentration","concentrationState","alarmState","alarmSeverity","faultState","serviceState","testState","testResult","muteState"],"concentrationStates":["low","medium","high","critical"],"availableMuteStates":["muted","unmuted"]}),
+        )?),
         "state.power" => Ok(object_map(
             json!({"supportedMeasurements":["activePower"]}),
         )?),
@@ -603,8 +732,6 @@ pub fn project_discovery(
                 .map(|field| match *field {
                     "qualityState" => "airQualityClassification",
                     "index" => "airQualityIndex",
-                    "co" => "coConcentration",
-                    "coAlarmState" => "coAlarm",
                     "co2" => "co2Concentration",
                     "co2State" => "co2Classification",
                     "pm25" => "pm25MassConcentration",
@@ -618,10 +745,7 @@ pub fn project_discovery(
             if fields.contains(&"index") {
                 out.insert("indexScale".into(), json!("playground:air-index-v1"));
             }
-            for field in fields
-                .iter()
-                .filter(|field| field.ends_with("State") && **field != "coAlarmState")
-            {
+            for field in fields.iter().filter(|field| field.ends_with("State")) {
                 out.insert(format!("{field}s"), json!(air_options(field)));
             }
             Ok(out)
@@ -795,7 +919,16 @@ pub fn apply_observed_payload(
                 }
             }
         }
-        "state.smoke" => copy_payload_field(attrs, payload, "state", "smokeState")?,
+        "state.smokeDetector" | "state.carbonMonoxideDetector" => {
+            for (field, attr) in detector_fields(capability) {
+                if let Some(value) = payload.get(field) {
+                    attrs.insert(attr.into(), value.clone());
+                }
+            }
+        }
+        "state.smokeDetectorSetting" => {
+            copy_payload_field(attrs, payload, "sensitivity", "smokeSensitivity")?
+        }
         "state.alarm" => copy_payload_field(attrs, payload, "mode", "alarmMode")?,
         "state.fan" => {
             copy_optional_payload_fields(
@@ -860,6 +993,11 @@ pub fn handle_command(
         ));
     }
     match capability {
+        "command.testSmokeDetector"
+        | "command.testCarbonMonoxideDetector"
+        | "command.setSmokeDetectorSensitivity"
+        | "command.setSmokeDetectorMute"
+        | "command.setCarbonMonoxideDetectorMute" => detector_command(attrs, capability, request),
         "command.onOff" => set_on_off(attrs, request),
         "command.setBrightness" => set_brightness(attrs, request),
         "command.setColorTemperature" => set_color_temperature(attrs, request),
@@ -1960,45 +2098,76 @@ mod tests {
         }
     }
     #[test]
-    fn playground_co_alarm_and_concentration_have_independent_observations() {
+    fn playground_detectors_preserve_independent_alarms_measurements_and_combined_controls() {
         let model = SMOKE_CO_ALARM_V1;
         let mut attrs = default_attributes(model).unwrap();
+        assert!(!exposes_capability(model, "state.air"));
+        assert!(!exposes_capability(model, "state.smoke"));
+        let catalog = project_capability_data(model, &attrs).unwrap();
         assert_eq!(
-            project_discovery(model, &attrs, "state.air", "$f1").unwrap(),
-            object_map(json!({"supportedFeatures":["coConcentration","coAlarm"]})).unwrap(),
+            catalog["data.carbonMonoxideDetectorAttributes"]["states"],
+            catalog["state.carbonMonoxideDetector"]["attributes"]
         );
-        let inventory = project_capability_data(model, &attrs).unwrap();
+        apply_observed_payload(model,&mut attrs,"state.carbonMonoxideDetector",&object_map(json!({"concentration":0.5,"concentrationState":"critical","alarmState":"detected"})).unwrap()).unwrap();
         assert_eq!(
-            inventory["data.airAttributes"]["states"],
-            inventory["state.air"]["attributes"]
-        );
-        assert!(exposes_capability(model, "data.airAttributes"));
-        apply_observed_payload(
-            model,
-            &mut attrs,
-            "state.air",
-            &object_map(json!({"co":0,"coAlarmState":"detected"})).unwrap(),
-        )
-        .unwrap();
-        assert_eq!(
-            project_state(model, &attrs, "state.air").unwrap(),
-            object_map(json!({"co":0,"coAlarmState":"detected"})).unwrap(),
+            project_state(model, &attrs, "state.carbonMonoxideDetector").unwrap()["concentration"],
+            0.5
         );
         assert_eq!(
-            project_state(model, &attrs, "state.smoke").unwrap()["state"],
+            project_state(model, &attrs, "state.smokeDetector").unwrap()["alarmState"],
             "clear"
         );
-        apply_observed_payload(
+        let result =
+            handle_command(model, &mut attrs, "command.testSmokeDetector", &Map::new()).unwrap();
+        assert_eq!(result.events.len(), 4);
+        assert_eq!(result.events[0].payload["testState"], "testing");
+        assert_eq!(
+            project_state(model, &attrs, "state.carbonMonoxideDetector").unwrap()["alarmState"],
+            "detected"
+        );
+        assert_eq!(
+            project_state(model, &attrs, "state.smokeDetector").unwrap()["testResult"],
+            "passed"
+        );
+        handle_command(
             model,
             &mut attrs,
-            "state.air",
-            &object_map(json!({"coAlarmState":null})).unwrap(),
+            "command.setCarbonMonoxideDetectorMute",
+            &object_map(json!({"muteState":"muted"})).unwrap(),
         )
         .unwrap();
         assert_eq!(
-            project_state(model, &attrs, "state.air").unwrap(),
-            object_map(json!({"co":0,"coAlarmState":null})).unwrap(),
+            project_state(model, &attrs, "state.smokeDetector").unwrap()["muteState"],
+            "muted"
         );
+        assert!(handle_command(
+            model,
+            &mut attrs,
+            "command.setSmokeDetectorSensitivity",
+            &object_map(json!({"sensitivity":"auto"})).unwrap()
+        )
+        .is_err());
+        handle_command(
+            model,
+            &mut attrs,
+            "command.setSmokeDetectorSensitivity",
+            &object_map(json!({"sensitivity":"high"})).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            project_state(model, &attrs, "state.smokeDetectorSetting").unwrap()["sensitivity"],
+            "high"
+        );
+        apply_observed_payload(
+            model,
+            &mut attrs,
+            "state.carbonMonoxideDetector",
+            &object_map(json!({"alarmState":null})).unwrap(),
+        )
+        .unwrap();
+        let state = project_state(model, &attrs, "state.carbonMonoxideDetector").unwrap();
+        assert!(state["alarmState"].is_null());
+        assert_eq!(state["concentration"], 0.5);
     }
 
     #[test]

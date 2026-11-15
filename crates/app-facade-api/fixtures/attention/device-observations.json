@@ -229,7 +229,7 @@
   },
   {
     "name": "testing alone does not create smoke incident",
-    "capabilityId": "basic.device.state.smoke",
+    "capabilityId": "basic.device.state.smokeDetector",
     "observations": [
       {
         "sequence": 1,
@@ -243,7 +243,7 @@
     "sourceUpdatedAt": 1000,
     "persisted": {
       "entityId": "sensor",
-      "capabilityId": "basic.device.state.smoke",
+      "capabilityId": "basic.device.state.smokeDetector",
       "latest": {
         "sequence": 1,
         "timestamp": 1000,
@@ -255,7 +255,7 @@
   },
   {
     "name": "smoke testing preserves detected incident",
-    "capabilityId": "basic.device.state.smoke",
+    "capabilityId": "basic.device.state.smokeDetector",
     "observations": [
       {
         "sequence": 1,
@@ -274,7 +274,7 @@
     "sourceUpdatedAt": 2000,
     "persisted": {
       "entityId": "sensor",
-      "capabilityId": "basic.device.state.smoke",
+      "capabilityId": "basic.device.state.smokeDetector",
       "latest": {
         "sequence": 2,
         "timestamp": 2000,
@@ -290,7 +290,7 @@
   },
   {
     "name": "clear ends smoke incident",
-    "capabilityId": "basic.device.state.smoke",
+    "capabilityId": "basic.device.state.smokeDetector",
     "observations": [
       {
         "sequence": 1,
@@ -314,7 +314,7 @@
     "sourceUpdatedAt": 1000,
     "persisted": {
       "entityId": "sensor",
-      "capabilityId": "basic.device.state.smoke",
+      "capabilityId": "basic.device.state.smokeDetector",
       "latest": {
         "sequence": 3,
         "timestamp": 3000,

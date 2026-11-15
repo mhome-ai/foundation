@@ -41,7 +41,7 @@ Task failure, notification priority and schedule trigger times are not inferred
 as user-decision facts.
 
 Standard device facts currently cover `state.water` (`wet` / `dry`) and
-`state.smoke` (`detected` / `clear`). Other readings, including unknown/testing,
+`state.smokeDetector.alarmState` (`detected` / `clear`). Other readings, including unknown/testing,
 do not create an incident and do not resolve an existing incident. The small
 retained device projection preserves the episode across restarts and Space
 execution-mode migration. Its CAS revision is owned by Attention, independent of rebuildable Twin cache
