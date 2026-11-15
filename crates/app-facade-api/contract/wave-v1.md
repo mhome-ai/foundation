@@ -25,11 +25,15 @@ Space/Hub selector, grant, certificate or private key is an input/output.
 - `/app/wave/remove`: `{deviceId,forgetAfterDeviceReset?:boolean}` ->
   `{deviceId,grantState}`. An authenticated App caller with current-Space Manage
   access requests physical grant removal. The optional flag defaults to false.
-  `removed` confirms the device revoked
-  the grant and Core cleared the local binding. `removing` is a partial outcome
-  retaining the pending removal until the device is reachable. Repeat this
-  operation to continue it. `unbound` means no saved binding remains. The explicit
-  `forgetAfterDeviceReset:true` path is for a device the user has already reset.
+  `removed` confirms the device revoked the grant and Core cleared the local
+  binding. `removing` is a partial outcome retaining an unconfirmed removal.
+  Retry can complete while the device still accepts the saved grant. If the
+  device already revoked it and its reply was lost, the old credential cannot
+  authenticate another attempt, even when the device is reachable. The user
+  clears Wave authorization locally on the device, then explicitly confirms
+  `forgetAfterDeviceReset:true` to clear this Space's saved binding. A device-wide
+  Wave reset also removes its other Space grants. `unbound` means no saved binding
+  remains.
   `forgotten` clears its saved local binding without a device revocation reply.
   Clearing a local binding also clears its published inventory. Ordinary
   Integration uninstall remains a separate operation.
