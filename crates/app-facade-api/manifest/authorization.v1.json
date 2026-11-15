@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.142.0",
+  "contractVersion": "1.143.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -376,7 +376,8 @@
     "/app/wave/discover": "spaceManage",
     "/app/wave/pair": "spaceManage",
     "/app/wave/list": "spaceManage",
-    "/app/wave/refresh": "spaceManage"
+    "/app/wave/refresh": "spaceManage",
+    "/app/wave/remove": "spaceManage"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

@@ -4,6 +4,7 @@ pub const DISCOVER: &str = "/app/wave/discover";
 pub const PAIR: &str = "/app/wave/pair";
 pub const LIST: &str = "/app/wave/list";
 pub const REFRESH: &str = "/app/wave/refresh";
+pub const REMOVE: &str = "/app/wave/remove";
 #[derive(Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 pub struct EmptyInput {}
@@ -24,6 +25,19 @@ pub struct PairInput {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DeviceInput {
     pub device_id: String,
+}
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RemoveInput {
+    pub device_id: String,
+    #[serde(default)]
+    pub forget_after_device_reset: bool,
+}
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RemoveResult {
+    pub device_id: String,
+    pub grant_state: String,
 }
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -56,7 +70,7 @@ mod tests {
     use serde_json::json;
     #[test]
     fn wave_management_is_hub_routed_and_requires_manage() {
-        for target in [DISCOVER, PAIR, LIST, REFRESH] {
+        for target in [DISCOVER, PAIR, LIST, REFRESH, REMOVE] {
             assert_eq!(
                 crate::authorization::required(target),
                 Some(crate::authorization::OperationPolicy::SpaceManage)

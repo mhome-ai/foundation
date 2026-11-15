@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.142.0",
+  "contractVersion": "1.143.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -489,7 +489,8 @@
         "/app/wave/discover",
         "/app/wave/pair",
         "/app/wave/list",
-        "/app/wave/refresh"
+        "/app/wave/refresh",
+        "/app/wave/remove"
       ]
     },
     "dashboardWidgetCardCreate": {

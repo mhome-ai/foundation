@@ -17,11 +17,22 @@ Space/Hub selector, grant, certificate or private key is an input/output.
   Integration and use `/app/integration/connect`. Its constant/input DTO remain
   readable for older clients; this route cannot enroll a device.
 - `/app/wave/list`: `{}` -> `{bindings:[{deviceId,grantState}]}`. States are
-  `candidate` or `committed`; this is authorization bookkeeping, not Device/Twin
-  inventory, online state or evidence that a candidate committed on the device.
+  `candidate`, `committed` or `removing`; this is authorization bookkeeping, not
+  Device/Twin inventory, online state or evidence that a candidate committed on the device.
 - `/app/wave/refresh`: `{deviceId}` -> AdmissionResult. Reconcile the same saved
   credential, validate full Entity self-description against installed contracts,
   then use ordinary Twin source synchronization. It cannot open a pairing window.
+- `/app/wave/remove`: `{deviceId,forgetAfterDeviceReset?:boolean}` ->
+  `{deviceId,grantState}`. An authenticated App caller with current-Space Manage
+  access requests physical grant removal. The optional flag defaults to false.
+  `removed` confirms the device revoked
+  the grant and Core cleared the local binding. `removing` is a partial outcome
+  retaining the pending removal until the device is reachable. Repeat this
+  operation to continue it. `unbound` means no saved binding remains. The explicit
+  `forgetAfterDeviceReset:true` path is for a device the user has already reset.
+  `forgotten` clears its saved local binding without a device revocation reply.
+  Clearing a local binding also clears its published inventory. Ordinary
+  Integration uninstall remains a separate operation.
 
 AdmissionResult is `{deviceId,grantState,inventoryState,entityIds,reason?}`.
 `inventoryState:ready` means existing inventory synchronization completed;

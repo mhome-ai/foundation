@@ -15,6 +15,27 @@
       "type":"object","additionalProperties":false,"required":["deviceId"],
       "properties":{"deviceId":{"type":"string","pattern":"^[0-9a-fA-F]{32}$"}}
     },
+    "RemoveInput": {
+      "type":"object","additionalProperties":false,"required":["deviceId"],
+      "properties":{
+        "deviceId":{"type":"string","pattern":"^[0-9a-fA-F]{32}$"},
+        "forgetAfterDeviceReset":{"type":"boolean","default":false}
+      }
+    },
+    "RemoveResult": {
+      "type":"object","additionalProperties":false,"required":["deviceId","grantState"],
+      "properties":{
+        "deviceId":{"type":"string","pattern":"^[0-9a-f]{32}$"},
+        "grantState":{"enum":["unbound","removing","removed","forgotten"]}
+      }
+    },
+    "Binding": {
+      "type":"object","additionalProperties":false,"required":["deviceId","grantState"],
+      "properties":{
+        "deviceId":{"type":"string","pattern":"^[0-9a-f]{32}$"},
+        "grantState":{"enum":["candidate","committed","removing"]}
+      }
+    },
     "AdmissionResult": {
       "type":"object","additionalProperties":false,
       "required":["deviceId","grantState","inventoryState","entityIds"],
