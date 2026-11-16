@@ -229,6 +229,9 @@ pub struct LocalHubView {
 pub struct LocalHubRuntime {
     pub discovered: bool,
     pub connected: bool,
+    /// Exact authenticated LAN Hub has opened its business request gate.
+    #[serde(default)]
+    pub ready: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub connection_status: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

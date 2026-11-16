@@ -438,6 +438,7 @@ mod tests {
             local: LocalHubRuntime {
                 discovered: true,
                 connected: true,
+                ready: true,
                 connection_status: None,
                 host_name: None,
                 version: None,

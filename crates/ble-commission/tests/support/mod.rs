@@ -1104,6 +1104,12 @@ impl Cloud for FakeCloud {
         assert_eq!(token, CLAIM_TOKEN);
         assert!(space.is_none() || space == Some("scope-a"));
         note(&self.journal, "host:claim");
+        // The desktop claim admission refuses an in-flight Hub operation.
+        if self.product_pending.load(Ordering::SeqCst) {
+            return Err(CloudError::Unreachable(
+                "Hub setup is already pending".into(),
+            ));
+        }
         let delay = *self.host_claim_delay.lock().unwrap();
         tokio::time::sleep(delay).await;
         if self
@@ -1132,6 +1138,8 @@ impl Cloud for FakeCloud {
         assert_eq!(context, "ctx-1");
         assert!(["product-host", "host-1"].contains(&host));
         if self.fail_hub_setup.load(Ordering::SeqCst) {
+            *self.product_hub_host.lock().unwrap() = host.into();
+            self.product_pending.store(true, Ordering::SeqCst);
             return Err(CloudError::Unreachable("Hub setup unavailable".into()));
         }
         *self.product_hub_host.lock().unwrap() = host.into();

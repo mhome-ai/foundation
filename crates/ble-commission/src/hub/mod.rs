@@ -173,8 +173,14 @@ impl Commissioning {
                 .as_ref()
                 .filter(|h| h.cloud.status.eq_ignore_ascii_case("ready"))
             {
-                self.retire_pairing(&context, scope, &hub.cloud.host_id, &hub.cloud.id)
-                    .await?;
+                self.retire_pairing(
+                    &context,
+                    scope,
+                    &hub.cloud.host_id,
+                    &hub.cloud.id,
+                    hub.local.connected && hub.local.ready,
+                )
+                .await?;
             }
         }
         let mut state = self
@@ -432,10 +438,30 @@ impl Commissioning {
             Some("COMPLETED") => {
                 // Keep a matching session available for its existing status waiter,
                 // but do not let its stale failure obscure authoritative completion.
-                self.retire_pairing(context, scope, host, hub).await?;
-                Ok(Some(api::HubSetupStartResponse::Completed {
-                    space_id: scope.into(),
-                    hub_id: hub.into(),
+                let current = self.platform.view(context, scope).await?;
+                self.current(context).await?;
+                let ready = current.space_id == scope
+                    && current.configured
+                    && current.operation.is_none()
+                    && current.hub.as_ref().is_some_and(|h| {
+                        h.cloud.status.eq_ignore_ascii_case("ready")
+                            && h.cloud.id == hub
+                            && h.cloud.host_id == host
+                            && h.local.connected
+                            && h.local.ready
+                    });
+                self.retire_pairing(context, scope, host, hub, ready)
+                    .await?;
+                Ok(Some(if ready {
+                    api::HubSetupStartResponse::Completed {
+                        space_id: scope.into(),
+                        hub_id: hub.into(),
+                    }
+                } else {
+                    api::HubSetupStartResponse::Running {
+                        space_id: scope.into(),
+                        hub_id: hub.into(),
+                    }
                 }))
             }
             _ => Err("Cloud did not confirm Hub finalization".into()),
@@ -447,6 +473,7 @@ impl Commissioning {
         scope: &str,
         host: &str,
         hub: &str,
+        ready: bool,
     ) -> Result<(), String> {
         let candidate = self.state.lock().ok().and_then(|state| {
             state
@@ -457,25 +484,37 @@ impl Commissioning {
                         && op.view.hub_id.as_deref() == Some(hub)
                         && op.view.state != "COMPLETED"
                 })
-                .map(|op| op.session.candidate.clone())
+                .map(|op| {
+                    (
+                        op.session.candidate.clone(),
+                        op.view.phase != "WAITING_FOR_LOCAL",
+                    )
+                })
         });
-        if let Some(candidate) = candidate {
+        if let Some((candidate, notify)) = candidate {
             // Preserve the normal pairing completion hook when this process still
             // owns its authenticated LAN observation. No new discovery is required.
-            self.platform
-                .connected(context, scope, hub, &candidate)
-                .await?;
-            self.current(context).await?;
+            if notify {
+                self.platform
+                    .connected(context, scope, hub, &candidate)
+                    .await?;
+                self.current(context).await?;
+            }
             if let Ok(mut state) = self.state.lock() {
                 if let Some(op) = state.operations.get_mut(&(context.into(), scope.into())) {
                     if op.session.candidate.host_id == host
                         && op.view.hub_id.as_deref() == Some(hub)
                     {
-                        if let Some(task) = op.task.take() {
-                            task.abort();
+                        if ready {
+                            if let Some(task) = op.task.take() {
+                                task.abort();
+                            }
+                            op.view.state = "COMPLETED".into();
+                            op.view.phase = "COMPLETED".into();
+                        } else {
+                            op.view.state = "RUNNING".into();
+                            op.view.phase = "WAITING_FOR_LOCAL".into();
                         }
-                        op.view.state = "COMPLETED".into();
-                        op.view.phase = "COMPLETED".into();
                         op.view.failure = None;
                     }
                 }
@@ -515,8 +554,15 @@ impl Commissioning {
                             && h.cloud.status.eq_ignore_ascii_case("ready")
                     })
                 {
-                    self.retire_pairing(context, scope, host, hub).await?;
-                    return Ok(());
+                    let ready = view
+                        .hub
+                        .as_ref()
+                        .is_some_and(|h| h.local.connected && h.local.ready);
+                    self.retire_pairing(context, scope, host, hub, ready)
+                        .await?;
+                    if ready {
+                        return Ok(());
+                    }
                 } else {
                     return Err("Hub setup no longer matches this device".into());
                 }
@@ -804,19 +850,20 @@ impl Commissioning {
                 return Err("Another Hub was configured for this Space".into());
             }
             if current.configured
-                && !hub.cloud.status.eq_ignore_ascii_case("setup")
+                && hub.cloud.status.eq_ignore_ascii_case("ready")
                 && current.operation.is_none()
+                && hub.local.connected
+                && hub.local.ready
             {
                 if pairing.state != "COMPLETED" {
-                    self.platform
-                        .connected(&context, scope, expected, &session.candidate)
-                        .await?;
-                    self.current(&context).await?;
-                    self.update(&key, id, |op| {
-                        op.view.state = "COMPLETED".into();
-                        op.view.phase = "COMPLETED".into();
-                        op.view.failure = None;
-                    });
+                    self.retire_pairing(
+                        &context,
+                        scope,
+                        &session.candidate.host_id,
+                        expected,
+                        true,
+                    )
+                    .await?;
                 }
                 return Ok(api::HubSetupStatusResponse {
                     space_id: scope.into(),
@@ -827,11 +874,33 @@ impl Commissioning {
                 });
             }
         }
+        if let Some(hub) = current.hub.as_ref().filter(|h| {
+            current.operation.is_none()
+                && h.cloud.status.eq_ignore_ascii_case("ready")
+                && Some(h.cloud.id.as_str()) == pairing.hub_id.as_deref()
+        }) {
+            self.retire_pairing(
+                &context,
+                scope,
+                &session.candidate.host_id,
+                &hub.cloud.id,
+                false,
+            )
+            .await?;
+            pairing.state = "RUNNING".into();
+            pairing.phase = "WAITING_FOR_LOCAL".into();
+            pairing.failure = None;
+        }
         if Instant::now() >= deadline && pairing.state != "FAILED" {
+            let waiting_local = pairing.phase == "WAITING_FOR_LOCAL";
             pairing.state = "FAILED".into();
             pairing.phase = "FAILED".into();
             pairing.failure = Some(api::HubOperationFailure {
-                reason: "Hub setup was not committed before the deadline".into(),
+                reason: if waiting_local {
+                    "Hub was created but its local runtime or LAN connection is not ready".into()
+                } else {
+                    "Hub setup was not committed before the deadline".into()
+                },
                 at: Some(now_ms()),
             });
             self.update(&key, id, |op| op.view = pairing.clone());

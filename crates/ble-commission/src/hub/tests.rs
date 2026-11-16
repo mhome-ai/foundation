@@ -6,6 +6,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering::SeqCst};
 struct Fake {
     context: Mutex<String>,
     ready: AtomicBool,
+    local_ready: AtomicBool,
     hub_host: Mutex<String>,
     offline: AtomicBool,
     operation: Mutex<Option<api::HubOperation>>,
@@ -25,6 +26,7 @@ impl Fake {
         Arc::new(Self {
             context: Mutex::new("login-one".into()),
             ready: false.into(),
+            local_ready: true.into(),
             hub_host: Mutex::new("host".into()),
             offline: false.into(),
             operation: Mutex::new(None),
@@ -76,7 +78,7 @@ impl Platform for Fake {
     }
     async fn view(&self, _: &str, scope: &str) -> Result<api::LocalHubState, String> {
         let ready = self.ready.load(SeqCst);
-        serde_json::from_value(json!({"spaceId":scope,"configured":ready,"operation":self.operation.lock().unwrap().clone(),"hub":if ready{json!({"id":"hub-one","hostId":self.hub_host.lock().unwrap().as_str(),"type":"linux","isTest":false,"status":"ready","cloud":{},"local":{"discovered":true,"connected":true}})}else{Value::Null}})).map_err(|e|e.to_string())
+        serde_json::from_value(json!({"spaceId":scope,"configured":ready,"operation":self.operation.lock().unwrap().clone(),"hub":if ready{json!({"id":"hub-one","hostId":self.hub_host.lock().unwrap().as_str(),"type":"linux","isTest":false,"status":"ready","cloud":{},"local":{"discovered":true,"connected":true,"ready":self.local_ready.load(SeqCst)}})}else{Value::Null}})).map_err(|e|e.to_string())
     }
     async fn cloud(
         &self,
@@ -639,4 +641,26 @@ async fn running_continuation_is_reconciled_by_later_cloud_state_reads() {
     assert!(engine.view("home").await.unwrap().pairing.is_none());
     assert_eq!(platform.connected.load(SeqCst), 1);
     assert!(engine.status("home", &session).await.unwrap().complete);
+}
+
+#[tokio::test(start_paused = true)]
+async fn cloud_completion_waits_for_business_readiness_without_repeating_setup() {
+    let platform = Fake::new();
+    platform.local_ready.store(false, SeqCst);
+    let engine = Commissioning::new(platform.clone());
+    let pair = start(&engine).await;
+    engine.confirm("home", &pair).await.unwrap();
+    platform.entered.notified().await;
+    platform.ready.store(true, SeqCst);
+    for _ in 0..3 {
+        let state = engine.status("home", &pair).await.unwrap();
+        assert!(!state.complete);
+        assert_eq!(state.pairing.unwrap().phase, "WAITING_FOR_LOCAL");
+        assert!(engine.view("home").await.unwrap().pairing.is_some());
+    }
+    assert_eq!(platform.connected.load(SeqCst), 1);
+    assert_eq!(platform.setup.load(SeqCst), 1);
+    platform.local_ready.store(true, SeqCst);
+    assert!(engine.status("home", &pair).await.unwrap().complete);
+    assert_eq!(platform.connected.load(SeqCst), 1);
 }

@@ -54,6 +54,7 @@
           "properties": {
             "discovered": { "type": "boolean" },
             "connected": { "type": "boolean" },
+            "ready": { "type": "boolean", "default": false },
             "connectionStatus": { "type": "string" },
             "hostName": { "type": "string" },
             "version": { "type": "string" }

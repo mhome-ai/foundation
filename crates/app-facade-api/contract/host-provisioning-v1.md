@@ -268,3 +268,26 @@ removing that Hub later does not revive the old intent. A local Core identity
 already durably installed uses `ownHub` network change instead. Neither path
 changes the installation role. Reset removes this pending intent with identity
 and ownership, while preserving the installation role.
+
+## Completion and continuation
+
+A confirmed Host claim is a completed checkpoint. A failure in first-Hub setup
+must not repeat Host claiming. Native session snapshots update
+`host.onboardingRequired` to false after confirmed claim success and discard the
+claim handoff token. An unknown claim outcome remains unconfirmed until the
+Host/cloud authority protocol resolves it; display text never decides ownership.
+
+Cloud Hub `status: ready` confirms migration publication, not local runtime
+readiness. Native `/local/hub/get` adds `hub.local.ready`, which is true only when
+the exact authenticated LAN Hub reports its business request gate open through
+`/app/hub/status` (`data.ready`). A connected socket alone is insufficient.
+Shared Hub setup reports `WAITING_FOR_LOCAL` after cloud commit and completes
+only with both `hub.local.connected` and `hub.local.ready`. Cloud publication and
+local readiness retain separate meanings. A retry after cloud commit continues
+the same Hub rather than reimporting or reclaiming it.
+
+Direct LAN Space Host claims must use the same selected-Hub physical-LAN admission
+as BLE commissioning. The native adapter validates the selected Space's published
+Hub, pins its identity and verifies it on the same physical LAN as the Host.
+A cloud Owner grant or the Host's own on-link address alone does not establish
+this condition. First-Hub bootstrap has no existing target Hub to verify.

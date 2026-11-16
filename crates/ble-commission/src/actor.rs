@@ -1385,7 +1385,17 @@ impl Actor {
                 .race(cloud.claim_paired_host(&context, &host.host_id, &encoded_key, &token, space))
                 .await
             {
-                Some(Ok(())) => {}
+                Some(Ok(())) => {
+                    // A confirmed claim is a completed checkpoint. Hub initialization may
+                    // fail independently; retry must never re-enter Host claiming.
+                    self.host_needs_claim = false;
+                    self.update(|live| {
+                        live.claim_token = None;
+                        if let Some(host) = &mut live.host {
+                            host.onboarding_required = false;
+                        }
+                    });
+                }
                 Some(Err(failure)) => return self.host_authorization_failed(failure.to_string()),
                 None => return,
             }

@@ -709,6 +709,14 @@ async fn first_hub_failure_preserves_the_paired_claim_for_explicit_recovery() {
         harness
             .journal()
             .iter()
+            .filter(|s| *s == "host:claim")
+            .count(),
+        1
+    );
+    assert_eq!(
+        harness
+            .journal()
+            .iter()
             .filter(|s| *s == "device:apply")
             .count(),
         1
