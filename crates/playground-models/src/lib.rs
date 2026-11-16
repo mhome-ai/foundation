@@ -374,8 +374,10 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
         AIR_MONITOR_V1 => &[
             "state.temperature",
             "state.humidity",
-            "state.air",
-            "data.airAttributes",
+            "state.airCompositionSensor",
+            "data.airCompositionSensorAttributes",
+            "state.airQualitySensor",
+            "data.airQualitySensorAttributes",
             "state.battery",
         ][..],
         SMOKE_CO_ALARM_V1 => &[
@@ -408,8 +410,10 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "command.onOff",
             "state.fan",
             "command.setFan",
-            "state.air",
-            "data.airAttributes",
+            "state.airCompositionSensor",
+            "data.airCompositionSensorAttributes",
+            "state.airQualitySensor",
+            "data.airQualitySensorAttributes",
         ][..],
         SPEAKER_MEDIA_BROADCAST_V1 => &[
             "state.audioMute",
@@ -533,7 +537,7 @@ fn detector_command(
     })
 }
 
-fn air_fields(model_id: &str) -> &'static [&'static str] {
+fn all_air_fields(model_id: &str) -> &'static [&'static str] {
     match model_id {
         AIR_MONITOR_V1 => &[
             "qualityState",
@@ -548,6 +552,14 @@ fn air_fields(model_id: &str) -> &'static [&'static str] {
         FAN_PURIFIER_V1 => &["qualityState", "index", "pm25", "pm25State"],
         _ => &[],
     }
+}
+fn air_sensor_fields(model_id: &str, capability: &str) -> Vec<&'static str> {
+    let quality = capability == "state.airQualitySensor";
+    all_air_fields(model_id)
+        .iter()
+        .copied()
+        .filter(|field| matches!(*field, "qualityState" | "index") == quality)
+        .collect()
 }
 fn air_options(field: &str) -> &'static [&'static str] {
     match field {
@@ -632,24 +644,31 @@ pub fn project_state(
         "state.humidity" => Ok(object_map(json!({
             "humidity": number_attr(attrs, "humidity")?
         }))?),
-        "data.airAttributes" => project_discovery(model_id, attrs, "state.air", "$f1"),
-        "state.air" => Ok(air_fields(model_id)
-            .iter()
-            .map(|field| {
-                let value = attrs
-                    .get(*field)
-                    .filter(|v| {
-                        if field.ends_with("State") {
-                            v.as_str().is_some_and(|s| air_options(field).contains(&s))
-                        } else {
-                            v.as_f64().is_some_and(|n| n.is_finite() && n >= 0.0)
-                        }
-                    })
-                    .cloned()
-                    .unwrap_or(Value::Null);
-                ((*field).into(), value)
-            })
-            .collect()),
+        "data.airCompositionSensorAttributes" => {
+            project_discovery(model_id, attrs, "state.airCompositionSensor", "$f1")
+        }
+        "data.airQualitySensorAttributes" => {
+            project_discovery(model_id, attrs, "state.airQualitySensor", "$f1")
+        }
+        "state.airCompositionSensor" | "state.airQualitySensor" => {
+            Ok(air_sensor_fields(model_id, capability)
+                .iter()
+                .map(|field| {
+                    let value = attrs
+                        .get(*field)
+                        .filter(|v| {
+                            if field.ends_with("State") {
+                                v.as_str().is_some_and(|s| air_options(field).contains(&s))
+                            } else {
+                                v.as_f64().is_some_and(|n| n.is_finite() && n >= 0.0)
+                            }
+                        })
+                        .cloned()
+                        .unwrap_or(Value::Null);
+                    ((*field).into(), value)
+                })
+                .collect())
+        }
         "state.smokeDetector" | "state.carbonMonoxideDetector" => {
             Ok(detector_state(attrs, capability))
         }
@@ -725,23 +744,12 @@ pub fn project_discovery(
             json!({"supportedMeasurements":["activePower"]}),
         )?),
         "state.energy" => Ok(object_map(json!({"supportedCounters":["importedEnergy"]}))?),
-        "state.air" => {
-            let fields = air_fields(model_id);
-            let features = fields
-                .iter()
-                .map(|field| match *field {
-                    "qualityState" => "airQualityClassification",
-                    "index" => "airQualityIndex",
-                    "co2" => "co2Concentration",
-                    "co2State" => "co2Classification",
-                    "pm25" => "pm25MassConcentration",
-                    "pm25State" => "pm25Classification",
-                    "vocPpb" => "vocMixingRatio",
-                    "vocState" => "vocClassification",
-                    _ => unreachable!("unknown Playground air field {field}"),
-                })
-                .collect::<Vec<_>>();
-            let mut out = object_map(json!({"supportedFeatures": features}))?;
+        "state.airCompositionSensor" | "state.airQualitySensor" => {
+            let fields = air_sensor_fields(model_id, capability);
+            if fields.is_empty() {
+                return Err(anyhow!("Model has no observations for {capability}"));
+            }
+            let mut out = object_map(json!({"supportedStates":fields}))?;
             if fields.contains(&"index") {
                 out.insert("indexScale".into(), json!("playground:air-index-v1"));
             }
@@ -912,10 +920,10 @@ pub fn apply_observed_payload(
         "state.water" => copy_payload_field(attrs, payload, "state", "waterState")?,
         "state.temperature" => copy_payload_field(attrs, payload, "temperature", "temperature")?,
         "state.humidity" => copy_payload_field(attrs, payload, "humidity", "humidity")?,
-        "state.air" => {
-            for field in air_fields(model_id) {
-                if let Some(value) = payload.get(*field) {
-                    attrs.insert((*field).into(), value.clone());
+        "state.airCompositionSensor" | "state.airQualitySensor" => {
+            for field in air_sensor_fields(model_id, capability) {
+                if let Some(value) = payload.get(field) {
+                    attrs.insert(field.into(), value.clone());
                 }
             }
         }
@@ -1926,7 +1934,7 @@ mod tests {
         for (model, capability, payload) in [
             (
                 AIR_MONITOR_V1,
-                "state.air",
+                "state.airCompositionSensor",
                 json!({"pm25": 90, "qualityState": "poor"}),
             ),
             (SMOKE_CO_ALARM_V1, "state.alarm", json!({"mode": "away"})),
@@ -2069,32 +2077,53 @@ mod tests {
         );
     }
     #[test]
-    fn unified_air_discovery_state_and_observed_updates_agree() {
+    fn both_air_sensor_contracts_keep_their_own_catalogs_states_and_updates() {
         for model in [AIR_MONITOR_V1, FAN_PURIFIER_V1] {
             let mut attrs = default_attributes(model).unwrap();
-            let discovery = project_discovery(model, &attrs, "state.air", "$f1").unwrap();
-            assert_eq!(
-                discovery["supportedFeatures"].as_array().unwrap().len(),
-                air_fields(model).len()
-            );
-            assert!(capabilities(model)
-                .unwrap()
-                .contains(&"state.air".to_string()));
+            let catalog = project_capability_data(model, &attrs).unwrap();
+            for cap in ["airCompositionSensor", "airQualitySensor"] {
+                let state_id = format!("state.{cap}");
+                let data_id = format!("data.{cap}Attributes");
+                assert!(exposes_capability(model, &state_id));
+                assert!(exposes_capability(model, &data_id));
+                assert_eq!(
+                    catalog[&data_id]["states"],
+                    catalog[&state_id]["attributes"]
+                );
+                let discovery = project_discovery(model, &attrs, &state_id, "$f1").unwrap();
+                assert_eq!(
+                    discovery["supportedStates"].as_array().unwrap().len(),
+                    air_sensor_fields(model, &state_id).len()
+                );
+            }
             apply_observed_payload(
                 model,
                 &mut attrs,
-                "state.air",
+                "state.airCompositionSensor",
                 &object_map(json!({"pm25":null,"qualityState":"poor"})).unwrap(),
             )
             .unwrap();
-            let state = project_state(model, &attrs, "state.air").unwrap();
-            assert_eq!(state.len(), air_fields(model).len());
+            let state = project_state(model, &attrs, "state.airCompositionSensor").unwrap();
             assert!(state["pm25"].is_null());
-            assert_eq!(state["qualityState"], "poor");
+            assert_eq!(state["pm25State"], "low");
+            assert!(!state.contains_key("qualityState"));
             assert_eq!(
-                state["pm25State"], "low",
-                "independent source category is preserved"
+                project_state(model, &attrs, "state.airQualitySensor").unwrap()["qualityState"],
+                "good"
             );
+            apply_observed_payload(
+                model,
+                &mut attrs,
+                "state.airQualitySensor",
+                &object_map(json!({"qualityState":"poor","index":null,"co2":999})).unwrap(),
+            )
+            .unwrap();
+            let quality = project_state(model, &attrs, "state.airQualitySensor").unwrap();
+            assert_eq!(quality["qualityState"], "poor");
+            assert!(quality["index"].is_null());
+            assert!(!quality.contains_key("co2"));
+            assert!(!exposes_capability(model, "state.air"));
+            assert!(!exposes_capability(model, "data.airAttributes"));
         }
     }
     #[test]
