@@ -17,6 +17,122 @@ use sha2::{Digest, Sha256};
 
 const PURPOSE: &str = "meow-host-challenge+jwt";
 
+#[cfg(feature = "authority")]
+#[test]
+fn authority_jwt_provider_preserves_legacy_pkcs8_sec1_and_jws_formats() {
+    use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+
+    let old = OldKey::from_slice(&[7; 32]).unwrap();
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let claims = json!({"sub":"fictional", "exp":now + 600});
+    let legacy = old_jws(
+        &old,
+        json!({"alg":"ES256", "typ":"JWT"}),
+        &serde_json::to_vec(&claims).unwrap(),
+    );
+    let public = old.verifying_key().to_encoded_point(false);
+    let verified = decode::<Value>(
+        &legacy,
+        &DecodingKey::from_ec_der(public.as_bytes()),
+        &Validation::new(Algorithm::ES256),
+    )
+    .unwrap();
+    assert_eq!(verified.claims, claims);
+
+    let token = encode(
+        &Header::new(Algorithm::ES256),
+        &claims,
+        &EncodingKey::from_ec_der(old.to_pkcs8_der().unwrap().as_bytes()),
+    )
+    .unwrap();
+    let (data, signature) = token.rsplit_once('.').unwrap();
+    let signature = B64.decode(signature).unwrap();
+    assert_eq!(signature.len(), 64);
+    old.verifying_key()
+        .verify(
+            data.as_bytes(),
+            &OldSignature::from_slice(&signature).unwrap(),
+        )
+        .unwrap();
+}
+
+#[cfg(feature = "authority")]
+#[test]
+fn authority_jwt_rejects_malformed_optional_claims_without_requiring_absent_nbf() {
+    use jsonwebtoken::{decode, errors::ErrorKind, Algorithm, DecodingKey, Validation};
+
+    let old = OldKey::from_slice(&[7; 32]).unwrap();
+    let public = old.verifying_key().to_encoded_point(false);
+    let key = DecodingKey::from_ec_der(public.as_bytes());
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let token = |claims: Value| {
+        old_jws(
+            &old,
+            json!({"alg":"ES256", "typ":"JWT"}),
+            &serde_json::to_vec(&claims).unwrap(),
+        )
+    };
+    let mut validation = Validation::new(Algorithm::ES256);
+    validation.validate_nbf = true;
+    for value in [
+        json!("99999999999"),
+        json!([now]),
+        json!({"time":now}),
+        Value::Null,
+        json!(true),
+        json!(-1),
+    ] {
+        let malformed = token(json!({"exp":now + 600, "nbf":value}));
+        let error = decode::<Value>(&malformed, &key, &validation).unwrap_err();
+        assert!(
+            matches!(error.kind(), ErrorKind::InvalidClaimFormat(claim) if claim == "nbf")
+                || matches!(error.kind(), ErrorKind::Json(_)),
+            "malformed nbf must fail claim parsing: {error:?}"
+        );
+    }
+    assert!(decode::<Value>(&token(json!({"exp":now + 600})), &key, &validation).is_ok());
+    assert!(matches!(
+        decode::<Value>(
+            &token(json!({"exp":now + 600, "nbf":now + 3600})),
+            &key,
+            &validation
+        )
+        .unwrap_err()
+        .kind(),
+        ErrorKind::ImmatureSignature
+    ));
+    // Keep the existing caller-selected nbf policy: disabling the check remains supported.
+    validation.validate_nbf = false;
+    assert!(decode::<Value>(
+        &token(json!({"exp":now + 600, "nbf":now + 3600})),
+        &key,
+        &validation
+    )
+    .is_ok());
+    validation.required_spec_claims.clear();
+    for value in [
+        json!("never"),
+        json!([now]),
+        json!({"time":now}),
+        Value::Null,
+        json!(false),
+        json!(-1),
+    ] {
+        let error = decode::<Value>(&token(json!({"exp":value})), &key, &validation).unwrap_err();
+        assert!(
+            matches!(error.kind(), ErrorKind::InvalidClaimFormat(claim) if claim == "exp")
+                || matches!(error.kind(), ErrorKind::Json(_)),
+            "malformed exp must fail claim parsing: {error:?}"
+        );
+    }
+}
+
 fn old_public(key: &OldKey) -> PublicKey {
     let point = key.verifying_key().to_encoded_point(false);
     PublicKey {

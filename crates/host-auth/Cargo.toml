@@ -101,7 +101,8 @@ version = "0.3"
 optional = true
 
 [dependencies.jsonwebtoken]
-version = "9"
+version = "10.3.0"
+features = ["aws_lc_rs"]
 optional = true
 [dependencies.tracing]
 version = "0.1"
