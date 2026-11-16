@@ -28,8 +28,10 @@ identity and has no cloud access/refresh token. Changing mode requires reset.
 
 ## 2. BLE advertising
 
-Pods advertise only while unprovisioned, while re-commissioning after logout or
-credential invalidation, or inside a re-provision window. A commissioned pod does not advertise.
+Pods advertise only while unprovisioned, while a User Pod is re-commissioning
+after logout or credential invalidation, or inside a re-provision window. A
+commissioned pod does not advertise. Space Pods have no personal login/logout
+operation: only factory reset may clear their Space binding.
 
 - Service UUID (128-bit, shared by every MeowLink commissionable device):
   `a17a7ad5-9b2f-4010-9cf0-aa15ac54c40e`.
@@ -237,12 +239,18 @@ Runtime states after commit:
   with `wifi_hub_unverified` when the Hub proof fails or `storage_failed` if saving fails. It then
   restarts on `finish`, 30 seconds later, or at the end of the window. A failed
   join or an expired window restarts with the previous network.
-- `needs_recommission`: logout, or refresh rejected because the credential was
+- `needs_recommission` (User mode only): logout, or refresh rejected because the credential was
   revoked or the user no longer exists. Credential and local JWTs are erased,
   Wi-Fi is kept, advertising resumes with the Wi-Fi-configured flag.
 - `factory_resetting`: purely offline, erase all persisted data including the
   identity key and cached Hub tokens, reboot to `unprovisioned`. No cloud
-  request is needed. Logout also clears local credentials without cloud revocation.
+  request is needed. User logout also clears local credentials without cloud revocation.
+
+User logout keeps network and device preferences, but clears the User session,
+selected Space, account navigation data and per-Hub credentials. A subsequent
+User login obtains a fresh device session. Space mode refuses logout in both UI
+and the native execution/persistence boundary. Network loss or rejected
+authorization never clears its fixed Space binding or permits a different Space.
 
 Linux uses its OS time service and ESP uses background SNTP. User login proofs
 require usable UTC and cloud TLS retains normal CA and date validation. Space
@@ -398,7 +406,16 @@ page does not end setup; returning to it reads `status`. Waiting for user input
 also counts toward the deadline. Discovery leases still control scanning.
 
 Sign-in and Spaces are checked at `start` (`not_signed_in`,
-`space_not_offered`) and again when the authorization prompt is built.
+`space_not_offered`) and again when the authorization prompt is built. Every
+Pod/Host setup session belongs to the assisting login generation, including
+Wi-Fi-only sessions. Account replacement ends the old attempt and releases its
+link; status does not expose it to the replacement login, and queued terminal
+notifications contain no old account's authorization or completion data.
+
+Personal Pod admission requires the assisting Client and Pod to share the Client's
+physical LAN. The initial UI Space may have an unavailable or remote Hub and
+never imposes that Hub's LAN on the personal login. Space Pod admission continues
+to require the selected Space's exact Hub and same-LAN proof.
 
 A pod inside a Wi-Fi change window (`pod-info` `"mode":"reprovision"`) gets a
 Wi-Fi-only session. From `reading_info` on, its snapshots carry

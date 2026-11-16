@@ -91,17 +91,27 @@ pub(crate) async fn dispatch(
     payload: &str,
 ) -> Result<String, ErrorResponse> {
     use DeviceKind::{Host, Pod};
-    if host::LOCAL_TARGETS.contains(&target)
-        && target != host::PROVISION_START_TARGET
-        && !engine.check_host_account().await
+    let guarded = if host::LOCAL_TARGETS.contains(&target) && target != host::PROVISION_START_TARGET
     {
-        if target == host::PROVISION_STATUS_TARGET {
-            let _: EmptyRequest = parse(payload)?;
-            return to_json(&ProvisionStatus { session: None });
+        Some(Host)
+    } else if pod::LOCAL_TARGETS.contains(&target)
+        && target.starts_with("/local/pod/commission/")
+        && target != pod::COMMISSION_START_TARGET
+    {
+        Some(Pod)
+    } else {
+        None
+    };
+    if let Some(kind) = guarded {
+        if !engine.check_account(kind).await {
+            if target == host::PROVISION_STATUS_TARGET || target == pod::COMMISSION_STATUS_TARGET {
+                let _: EmptyRequest = parse(payload)?;
+                return Ok(json!({"session":null}).to_string());
+            }
+            return Err(
+                RequestError::rejected(Reason::NotSignedIn, "the setup account changed").into(),
+            );
         }
-        return Err(
-            RequestError::rejected(Reason::NotSignedIn, "the setup account changed").into(),
-        );
     }
     let value = match target {
         pod::DISCOVERY_START_TARGET => {
@@ -249,9 +259,8 @@ async fn start(
     kind: DeviceKind,
     request: CommissionStartRequest,
 ) -> Result<Value, RequestError> {
-    if kind == DeviceKind::Host {
-        engine.check_host_account().await;
-    }
+    engine.check_account(DeviceKind::Host).await;
+    engine.check_account(DeviceKind::Pod).await;
     let account = engine.platform.cloud.account().await.ok_or_else(|| {
         RequestError::rejected(Reason::NotSignedIn, "sign in before adding a device")
     })?;
@@ -354,6 +363,12 @@ async fn request(
     id: &str,
     check: impl FnOnce(&mut Live) -> Result<Option<Op>, RequestError>,
 ) -> Result<Value, RequestError> {
+    if !engine.check_account(kind).await {
+        return Err(RequestError::rejected(
+            Reason::NotSignedIn,
+            "the setup account changed",
+        ));
+    }
     let done = {
         let mut sessions = engine.sessions.lock().unwrap();
         let live = sessions.current(kind, id).ok_or_else(|| unknown(kind))?;
@@ -369,6 +384,12 @@ async fn request(
     };
     if let Some(done) = done {
         let _ = done.await;
+    }
+    if !engine.check_account(kind).await {
+        return Err(RequestError::rejected(
+            Reason::NotSignedIn,
+            "the setup account changed",
+        ));
     }
     let mut sessions = engine.sessions.lock().unwrap();
     let live = sessions.current(kind, id).ok_or_else(|| unknown(kind))?;

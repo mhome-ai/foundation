@@ -877,6 +877,8 @@ pub struct FakeCloud {
     pub replaced_hub: AtomicBool,
     pub invalid_hub_key: AtomicBool,
     pub commissioning_lan: Mutex<Option<String>>,
+    pub reject_selected_hub: AtomicBool,
+    pub lan_selections: Mutex<Vec<Option<String>>>,
     pub space_credential_window: Mutex<Option<(String, Option<i64>)>>,
     clock: Clock,
     journal: Journal,
@@ -904,6 +906,8 @@ impl FakeCloud {
             replaced_hub: AtomicBool::new(false),
             invalid_hub_key: AtomicBool::new(false),
             commissioning_lan: Mutex::new(Some("lan-1".into())),
+            reject_selected_hub: AtomicBool::new(false),
+            lan_selections: Mutex::new(Vec::new()),
             space_credential_window: Mutex::new(None),
             clock: Clock::new(),
             journal,
@@ -986,6 +990,11 @@ fn hub_identity(hub_id: &str, space_id: &Value) -> Value {
 #[async_trait]
 impl Cloud for FakeCloud {
     async fn selected_hub(&self, _: &str, _: &str) -> Result<Option<(String, String)>, CloudError> {
+        if self.reject_selected_hub.load(Ordering::SeqCst) {
+            return Err(CloudError::Unreachable(
+                "Selected Hub is pending or unavailable".into(),
+            ));
+        }
         Ok((!self.bootstrap.load(Ordering::SeqCst)).then(|| ("tenant".into(), "hub".into())))
     }
     async fn product_hub_selection(
@@ -1008,10 +1017,14 @@ impl Cloud for FakeCloud {
     async fn commissioning_lan(
         &self,
         _: &str,
-        _: Option<&str>,
+        selected: Option<&str>,
         _: Option<(&str, &str)>,
         _: Option<std::net::SocketAddr>,
     ) -> Result<String, CloudError> {
+        self.lan_selections
+            .lock()
+            .unwrap()
+            .push(selected.map(str::to_owned));
         self.commissioning_lan
             .lock()
             .unwrap()

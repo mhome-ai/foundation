@@ -442,7 +442,6 @@ async fn a_pod_activation_failure_does_not_revoke_from_the_app() {
     harness.add_device("pod-a", script);
     let id = to_authorization(&harness).await;
     authorize(&harness, &id).await;
-    *harness.cloud.account.lock().unwrap() = Some(support::account("ctx-2"));
     let failed = harness.wait_state(POD, "failed").await;
     assert_eq!(failed["error"]["code"], "activation_failed");
     assert_eq!(failed["error"]["detail"], "time_sync_failed");
@@ -1313,7 +1312,7 @@ async fn committed_receipt_requires_a_known_client_mode() {
 }
 
 #[tokio::test(start_paused = true)]
-async fn first_pod_cannot_reach_wifi_entry_without_the_signed_in_hub_lan() {
+async fn first_pod_cannot_reach_wifi_entry_without_the_clients_lan() {
     let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
     *harness.cloud.commissioning_lan.lock().unwrap() = None;
@@ -1340,15 +1339,20 @@ async fn a_pod_cannot_receive_wifi_credentials_after_the_client_changes_network(
 }
 
 #[tokio::test(start_paused = true)]
-async fn pod_setup_rejects_a_hub_change_even_if_the_old_native_transport_is_still_ready() {
+async fn space_pod_setup_rejects_a_hub_change_even_if_the_old_native_transport_is_still_ready() {
     let harness = Harness::with_discovery("ble").await;
     harness.add_device("pod-a", Script::pod());
-    let id = to_authorization(&harness).await;
+    let id = to_authorization_as(&harness, "space").await;
     harness.cloud.bootstrap.store(true, Ordering::SeqCst);
-    authorize(&harness, &id).await;
+    harness
+        .ok(
+            "/local/pod/commission/authorize",
+            json!({"sessionId":id,"spaceId":"scope-a","clientMode":"space"}),
+        )
+        .await;
     let refused = harness.wait_state(POD, "failed").await;
     assert_eq!(refused["error"]["code"], "lan_unavailable");
-    assert!(harness.cloud.paths().is_empty());
+    assert_eq!(harness.cloud.paths(), ["hub/identity/get"]);
 }
 
 #[tokio::test(start_paused = true)]
@@ -1447,4 +1451,122 @@ async fn unfinished_first_hub_product_recovers_wifi_then_completes_space_enrollm
     .await;
     let done = h.wait_state(POD, "completed").await;
     assert_eq!(done["clientMode"], "space");
+}
+
+#[tokio::test(start_paused = true)]
+async fn personal_pod_uses_the_clients_lan_without_the_initial_spaces_hub() {
+    for transport in ["ble", "lan"] {
+        let h = Harness::with_discovery(transport).await;
+        h.cloud.reject_selected_hub.store(true, Ordering::SeqCst);
+        h.add_device("pod-a", Script::pod());
+        let id = if transport == "ble" {
+            to_authorization(&h).await
+        } else {
+            h.lan.advertise();
+            let s = h
+                .ok(
+                    "/local/pod/commission/start",
+                    json!({"candidateId":"lan:pod-a"}),
+                )
+                .await;
+            let id = session_id(&s);
+            secure(&h, &id).await;
+            h.wait_state(POD, "awaiting_authorization").await;
+            id
+        };
+        authorize(&h, &id).await;
+        valid(&h.wait_state(POD, "completed").await);
+        assert!(h
+            .cloud
+            .lan_selections
+            .lock()
+            .unwrap()
+            .iter()
+            .all(Option::is_none));
+        assert_eq!(h.cloud.paths(), ["pod/login/approve"]);
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn space_pod_still_requires_the_selected_hubs_lan() {
+    let h = Harness::with_discovery("ble").await;
+    h.cloud.reject_selected_hub.store(true, Ordering::SeqCst);
+    h.add_device("pod-a", Script::pod());
+    let id = start(&h).await;
+    secure(&h, &id).await;
+    h.wait_state(POD, "awaiting_wifi").await;
+    h.ok("/local/pod/commission/wifi", json!({"sessionId":id,"ssid":"home","enrollment":{"clientMode":"space","spaceId":"scope-a"}})).await;
+    let failure = h.wait_state(POD, "failed").await;
+    assert_eq!(failure["error"]["code"], "lan_unavailable");
+    assert!(!h.journal().iter().any(|e| e == "device:set_config"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn replacement_login_cannot_continue_prior_accounts_wifi_session() {
+    let h = Harness::with_discovery("ble").await;
+    let mut script = Script::pod();
+    script.wifi_configured = true;
+    script.reprovision = Some(None);
+    h.add_device("pod-a", script);
+    let id = start(&h).await;
+    secure(&h, &id).await;
+    h.wait(POD, |s| {
+        s["state"] == "awaiting_wifi" && s["networks"].is_array()
+    })
+    .await;
+    *h.cloud.account.lock().unwrap() = Some(account("replacement-login"));
+    assert!(h.ok("/local/pod/commission/status", json!({})).await["session"].is_null());
+    assert_eq!(
+        h.reason(
+            "/local/pod/commission/wifi",
+            json!({"sessionId":id,"ssid":"home","password":"secret"})
+        )
+        .await,
+        "not_signed_in"
+    );
+    let retired = h
+        .wait_event(COMMISSION_CHANGED_EVENT, |s| {
+            s["sessionId"] == id && s["state"] == "failed"
+        })
+        .await;
+    valid(&retired);
+    assert_eq!(retired["error"]["code"], "issue_failed");
+    assert!(retired.get("authorization").is_none());
+    assert!(!h.journal().iter().any(|s| s == "device:set_config"));
+    tokio::time::sleep(Duration::from_secs(2)).await;
+    assert!(h.journal().iter().any(|s| s == "device:disconnected"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn logout_retires_idle_pod_without_waiting_for_a_request_and_new_login_can_restart() {
+    let h = Harness::with_discovery("ble").await;
+    h.add_device("pod-a", Script::pod());
+    let id = to_authorization(&h).await;
+    *h.cloud.account.lock().unwrap() = None;
+    let retired = h
+        .wait_event(COMMISSION_CHANGED_EVENT, |s| {
+            s["sessionId"] == id && s["state"] == "failed"
+        })
+        .await;
+    valid(&retired);
+    assert!(retired.get("authorization").is_none());
+    assert!(retired.get("enrollment").is_none());
+    assert!(retired["networks"].as_array().unwrap().is_empty());
+    *h.cloud.account.lock().unwrap() = Some(account("ctx-2"));
+    h.ok("/local/pod/discovery/start", json!({"transport":"ble"}))
+        .await;
+    tokio::time::sleep(Duration::from_secs(2)).await;
+    h.add_device("pod-a", Script::pod());
+    assert_ne!(start(&h).await, id);
+}
+
+#[tokio::test(start_paused = true)]
+async fn completed_pod_result_is_not_exposed_to_another_login() {
+    let h = Harness::with_discovery("ble").await;
+    h.add_device("pod-a", Script::pod());
+    let id = to_authorization(&h).await;
+    authorize(&h, &id).await;
+    h.wait_state(POD, "completed").await;
+    *h.cloud.account.lock().unwrap() = Some(account("ctx-2"));
+    assert!(h.ok("/local/pod/commission/status", json!({})).await["session"].is_null());
 }

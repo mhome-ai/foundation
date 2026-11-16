@@ -339,12 +339,12 @@ impl Engine {
     }
 
     /// Retire an old account's setup before exposing any token to a new login.
-    pub async fn check_host_account(&self) -> bool {
+    pub async fn check_account(&self, kind: DeviceKind) -> bool {
         let expected = self
             .sessions
             .lock()
             .unwrap()
-            .host
+            .slot(kind)
             .as_ref()
             .and_then(|live| live.account_context.clone());
         let Some(expected) = expected else {
@@ -361,13 +361,17 @@ impl Engine {
         }
         let mut sessions = self.sessions.lock().unwrap();
         if let Some(live) = sessions
-            .host
+            .slot(kind)
             .as_mut()
             .filter(|live| live.account_context.as_ref() == Some(&expected))
         {
             live.claim_token = None;
             if !live.phase.is_terminal() {
-                live.set(Phase::Cancelling, None);
+                if kind == DeviceKind::Host {
+                    live.set(Phase::Cancelling, None);
+                } else {
+                    live.set(Phase::Failed, Some(account_changed()));
+                }
                 let _ = live.cancel.send(true);
             }
             live.revision += 1;
@@ -385,7 +389,7 @@ impl Engine {
                 let Some(engine) = engine.upgrade() else {
                     return;
                 };
-                if kind == DeviceKind::Host && !engine.check_host_account().await {
+                if !engine.check_account(kind).await {
                     return;
                 }
                 let now = engine.now_ms();
@@ -416,6 +420,14 @@ impl Engine {
             }
         });
     }
+}
+
+fn account_changed() -> CommissionError {
+    error(
+        CommissionErrorCode::IssueFailed,
+        "The MeowLink account changed. Start again.",
+        None,
+    )
 }
 
 enum Watch {
@@ -450,7 +462,31 @@ async fn pump_events(
                     continue;
                 }
                 if let Some(object) = snapshot.as_object_mut() {
-                    object.remove("claimToken");
+                    for key in [
+                        "claimToken",
+                        "device",
+                        "authorization",
+                        "enrollment",
+                        "podId",
+                        "clientMode",
+                        "mode",
+                        "host",
+                        "result",
+                        "addresses",
+                    ] {
+                        object.remove(key);
+                    }
+                    object.insert("networks".into(), serde_json::json!([]));
+                    if target == COMMISSION_CHANGED_EVENT {
+                        object.insert("state".into(), serde_json::json!("failed"));
+                        object.insert(
+                            "error".into(),
+                            serde_json::to_value(account_changed()).unwrap(),
+                        );
+                    } else {
+                        object.insert("state".into(), serde_json::json!("cancelled"));
+                        object.remove("error");
+                    }
                 }
                 payload = snapshot.to_string();
             }

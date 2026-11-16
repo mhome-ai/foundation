@@ -111,8 +111,9 @@ Host provisioning supports `/local/host/provision/cancel`. Cancellation remains
 after cancellation was requested; late work cannot reopen the setup state.
 Accepting a Host Wi-Fi submission reserves the uncancellable join/token handoff
 before any device write; a rejected apply returns to retryable Wi-Fi input.
-Host sessions belong to the signed-in
-account context, and an account change retires their handoff. A completed Host
+Pod and Host sessions belong to the signed-in
+account context. Account replacement retires the old session, interrupts its link,
+hides its status and strips account data from queued terminal notifications. A completed Host
 session hands network information and an optional first-claim token to the App;
 explicit LAN claim and cloud confirmation still establish ownership. An unclaimed
 Host with a working saved network can finish secure recovery without new Wi-Fi.
@@ -174,3 +175,8 @@ DNS, redirects or a default-route fallback. Missing/disappeared interfaces fail
 the exchange. IPv6 DNS-SD scope IDs must agree with the selected interface.
 This transport binding complements, rather than replaces, the selected-Space
 Hub identity and same-LAN admission checks.
+
+Personal Pod setup binds the assisting account and the Client's physical LAN,
+independently of the initial UI Space's Hub. Space Pod setup additionally requires
+the selected Hub's same-LAN admission. Both BLE Wi-Fi and already-networked LAN
+activation use this distinction. The initial Space never grants User authority.

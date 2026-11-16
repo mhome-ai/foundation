@@ -147,7 +147,9 @@ impl Actor {
                 command = commands.recv() => {
                     let Some(command) = command else { break };
                     self.reply = Some(command.done);
-                    self.execute(command.op).await;
+                    if self.engine.check_account(self.kind).await {
+                        self.execute(command.op).await;
+                    }
                     self.ack();
                 }
                 _ = tokio::time::sleep(TICK) => self.check_link().await,
@@ -248,7 +250,7 @@ impl Actor {
     fn lan_admission_failed(&self, failure: crate::platform::CloudError) {
         self.fail(error(
             CommissionErrorCode::LanUnavailable,
-            "Connect this Client to the selected Space's local Hub network and start again.",
+            "Connect this Client and the device to the required local network and start again.",
             Some(failure.to_string()),
         ));
     }
@@ -926,7 +928,7 @@ impl Actor {
                 .race(cloud::Admission::capture_product(
                     &cloud,
                     &account,
-                    Some(&target.space_id),
+                    (target.client_mode == ClientMode::Space).then_some(target.space_id.as_str()),
                     self.first_hub_host
                         .as_ref()
                         .filter(|_| recovery.is_some())
@@ -1253,7 +1255,7 @@ impl Actor {
                 }
             }
         }
-        if !self.engine.check_host_account().await {
+        if !self.engine.check_account(DeviceKind::Host).await {
             return;
         }
         let Some(receipt) = receipt.filter(|receipt| {
@@ -1443,7 +1445,7 @@ impl Actor {
                 }
             }
         }
-        if !self.engine.check_host_account().await {
+        if !self.engine.check_account(DeviceKind::Host).await {
             return;
         }
         self.update(|live| {
@@ -1746,7 +1748,7 @@ impl Actor {
                 .race(cloud::Admission::capture_product(
                     &cloud,
                     &account,
-                    Some(&space_id),
+                    (client_mode == ClientMode::Space).then_some(space_id.as_str()),
                     product_host.as_deref(),
                 ))
                 .await
