@@ -207,6 +207,7 @@
       }
     },
     "clientMode": {
+      "description": "Retained device mode during enrollment, including after User logout; required with the completed Pod receipt. Absent for Wi-Fi-only sessions.",
       "enum": [
         "user",
         "space"

@@ -206,7 +206,7 @@ pub(crate) fn pod_network_info(info: &Value) -> Option<(PodInfo, PodDeviceInfo, 
             mode: network.mode,
             device_binding: None,
             pod_id: None,
-            client_mode: None,
+            client_mode: network.client_mode,
         },
         device,
         network.dependent_host,
@@ -376,6 +376,7 @@ mod tests {
             wifi_configured: false,
             state: "wifi_failed".into(),
             dependent_host: true,
+            client_mode: Some(app_facade_api::pod::ClientMode::Space),
             mode: Some("reprovision".into()),
             error: Some(PodNetworkError {
                 code: "wifi_hub_unverified".into(),
@@ -386,8 +387,10 @@ mod tests {
         let value = serde_json::to_value(network).unwrap();
         let (info, device, dependent) = pod_network_info(&value).unwrap();
         assert!(dependent && device.dependent_host && info.reprovision());
-        assert!(
-            info.device_binding.is_none() && info.pod_id.is_none() && info.client_mode.is_none()
+        assert!(info.device_binding.is_none() && info.pod_id.is_none());
+        assert_eq!(
+            info.client_mode,
+            Some(app_facade_api::pod::ClientMode::Space)
         );
         assert_eq!(info.identity.x, public.x);
         use sha2::{Digest, Sha256};
@@ -396,6 +399,12 @@ mod tests {
         ));
         assert_eq!(info.identity.key_id, format!("p256:{digest}"));
         assert_eq!(info.identity.fingerprint, digest);
+        let mut fresh = value.clone();
+        fresh.as_object_mut().unwrap().remove("clientMode");
+        assert!(pod_network_info(&fresh).unwrap().0.client_mode.is_none());
+        let mut wrong_mode = value.clone();
+        wrong_mode["clientMode"] = serde_json::json!("admin");
+        assert!(pod_network_info(&wrong_mode).is_none());
         let mut wrong = value.clone();
         wrong["publicKey"][0] = serde_json::json!("not-a-key");
         assert!(pod_network_info(&wrong).is_none());

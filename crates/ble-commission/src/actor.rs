@@ -571,8 +571,10 @@ impl Actor {
                         confirm_before: self.engine.now_ms() + 120_000,
                     });
                 }
+                let client_mode = (!reprovision).then_some(pod_info.client_mode).flatten();
                 self.pod_info = Some(pod_info);
                 if !self.update(|live| {
+                    live.client_mode = client_mode;
                     live.device = Some(device);
                     live.mode = reprovision.then_some(SessionMode::Reprovision);
                 }) {
@@ -1663,7 +1665,10 @@ impl Actor {
                 }
                 continue;
             };
-            if info.device_id != expected.device_id
+            if expected
+                .client_mode
+                .is_some_and(|mode| info.client_mode != Some(mode))
+                || info.device_id != expected.device_id
                 || info.identity != expected.identity
                 || info
                     .device_binding
@@ -1684,8 +1689,10 @@ impl Actor {
             }
             self.lan = true;
             self.lan_addresses = candidate.addresses;
+            let client_mode = (!info.reprovision()).then_some(info.client_mode).flatten();
             self.pod_info = Some(info);
             self.update(|live| {
+                live.client_mode = client_mode;
                 live.device = Some(device_info);
                 live.candidate.transport = DiscoveryTransport::Lan;
                 live.candidate.device_id = Some(expected.device_id.clone());

@@ -119,6 +119,7 @@ pub struct Script {
     pub env: &'static str,
     pub initial_state: &'static str,
     pub initial_client_mode: Option<&'static str>,
+    pub installed_mode: Option<&'static str>,
     pub product_key: Option<String>,
     pub wrong_product_binding: bool,
     pub own_product_hub: bool,
@@ -153,6 +154,7 @@ impl Script {
             env: "prod",
             initial_state: "advertising",
             initial_client_mode: Some("user"),
+            installed_mode: None,
             product_key: None,
             wrong_product_binding: false,
             own_product_hub: false,
@@ -526,6 +528,9 @@ impl FakeDevice {
                     wifi_configured: script.wifi_configured && script.reprovision.is_none(),
                     state: info_state.into(),
                     dependent_host: script.product_key.is_some(),
+                    client_mode: script
+                        .installed_mode
+                        .map(|mode| serde_json::from_value(json!(mode)).unwrap()),
                     mode: script.reprovision.map(|_| "reprovision".into()),
                     error: matches!(state.sta, Sta::Done(Join::HubUnverified)).then(|| {
                         app_facade_api::pod::PodNetworkError {
@@ -541,7 +546,7 @@ impl FakeDevice {
                 "env": script.env,
                 "deviceId": script.device_id,
                 "podId": if matches!(state.pod_state, "activating" | "commissioned") { Some("pod-1") } else { None },
-                "clientMode": if matches!(state.pod_state, "activating" | "commissioned") { state.client_mode.clone() } else { None },
+                "clientMode": if matches!(state.pod_state, "activating" | "commissioned") { state.client_mode.clone() } else { script.installed_mode.map(str::to_owned) },
                 "model": "S1",
                 "platform": "esp32c5",
                 "firmwareVersion": "0.3.0",

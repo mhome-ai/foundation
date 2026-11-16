@@ -1570,3 +1570,105 @@ async fn completed_pod_result_is_not_exposed_to_another_login() {
     *h.cloud.account.lock().unwrap() = Some(account("ctx-2"));
     assert!(h.ok("/local/pod/commission/status", json!({})).await["session"].is_null());
 }
+
+#[tokio::test(start_paused = true)]
+async fn retained_device_mode_restricts_both_transports_before_side_effects() {
+    for transport in ["ble", "lan"] {
+        for mode in ["user", "space"] {
+            let h = Harness::with_discovery(transport).await;
+            let mut script = Script::pod();
+            script.installed_mode = Some(mode);
+            let device = h.add_device("pod-a", script);
+            let id = if transport == "lan" {
+                h.lan.advertise();
+                let s = h
+                    .ok(
+                        "/local/pod/commission/start",
+                        json!({"candidateId":"lan:pod-a"}),
+                    )
+                    .await;
+                session_id(&s)
+            } else {
+                start(&h).await
+            };
+            secure(&h, &id).await;
+            let phase = if transport == "ble" {
+                "awaiting_wifi"
+            } else {
+                "awaiting_authorization"
+            };
+            let session = h.wait_state(POD, phase).await;
+            valid(&session);
+            assert_eq!(session["clientMode"], mode);
+            assert!(session.get("podId").is_none());
+            let wrong_mode = if mode == "user" { "space" } else { "user" };
+            let (path, request) = if transport == "ble" {
+                (
+                    "/local/pod/commission/wifi",
+                    json!({"sessionId":id,"ssid":"home","password":"correct horse","enrollment":{"spaceId":"scope-a","clientMode":wrong_mode}}),
+                )
+            } else {
+                (
+                    "/local/pod/commission/authorize",
+                    json!({"sessionId":id,"spaceId":"scope-a","clientMode":wrong_mode}),
+                )
+            };
+            assert_eq!(h.reason(path, request).await, "space_not_offered");
+            assert!(h.cloud.paths().is_empty());
+            assert!(device.network_requests.lock().unwrap().is_empty());
+            assert!(device.deliveries.lock().unwrap().is_empty());
+            if transport == "ble" {
+                h.ok("/local/pod/commission/wifi", json!({"sessionId":id,"ssid":"home","password":"correct horse","enrollment":{"spaceId":"scope-a","clientMode":mode}})).await;
+                let session = h.wait_state(POD, "awaiting_authorization").await;
+                assert_eq!(session["clientMode"], mode);
+            }
+            h.ok(
+                "/local/pod/commission/authorize",
+                json!({"sessionId":id,"spaceId":"scope-a","clientMode":mode}),
+            )
+            .await;
+            valid(&h.wait_state(POD, "completed").await);
+        }
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn wifi_only_session_does_not_turn_retained_mode_into_an_enrollment_receipt() {
+    let h = Harness::with_discovery("ble").await;
+    let mut script = Script::pod();
+    script.installed_mode = Some("space");
+    script.wifi_configured = true;
+    script.reprovision = Some(None);
+    h.add_device("pod-a", script);
+    let id = start(&h).await;
+    secure(&h, &id).await;
+    let session = h.wait_state(POD, "awaiting_wifi").await;
+    valid(&session);
+    assert!(session.get("clientMode").is_none());
+    h.ok(
+        "/local/pod/commission/wifi",
+        json!({"sessionId":id,"ssid":"home","password":"correct horse"}),
+    )
+    .await;
+    let completed = h.wait_state(POD, "completed").await;
+    valid(&completed);
+    assert!(completed.get("clientMode").is_none());
+    assert!(h.cloud.paths().is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn retained_mode_cannot_change_during_the_ble_to_lan_handoff() {
+    let h = Harness::with_discovery("ble").await;
+    let mut script = Script::pod();
+    script.installed_mode = Some("user");
+    let device = h.add_device("pod-a", script);
+    let id = start(&h).await;
+    secure(&h, &id).await;
+    h.wait_state(POD, "awaiting_wifi").await;
+    device.script.lock().unwrap().installed_mode = Some("space");
+    h.ok("/local/pod/commission/wifi", json!({"sessionId":id,"ssid":"home","password":"correct horse","enrollment":{"spaceId":"scope-a","clientMode":"user"}})).await;
+    let failed = h.wait_state(POD, "failed").await;
+    assert_eq!(failed["error"]["code"], "device_mismatch");
+    assert!(h.cloud.paths().is_empty());
+    assert!(device.deliveries.lock().unwrap().is_empty());
+}

@@ -14,6 +14,10 @@ initial BLE Wi-Fi credentials or in the LAN session for an already-networked Pod
 User mode uses the personal Pod credential.
 Space mode uses a local Core credential signed by Lion; it carries no user
 identity and has no cloud access/refresh token. Changing mode requires reset.
+The selected device mode survives User logout and account replacement; only
+factory reset returns a device to the unselected state. Secure device info and
+normal native sessions expose retained `clientMode` before Wi-Fi/authorization;
+callers offer only that mode. This field alone is never a completion receipt.
 
 ## 1. Device identity
 
@@ -123,7 +127,8 @@ and responses are bounded to 64 KiB including encryption overhead.
 ```
 
 `env` must match the native Client runtime (`prod`, `dev`, `e2e`).
-`podId` and `clientMode` (`user` or `space`) are included together when activation
+`clientMode` (`user` or `space`) reports the retained mode even after User logout,
+without `podId`. `podId` accompanies `clientMode` when activation
 is in flight or durably completed. A new session reads both from the secure
 device response before resuming; a missing or unknown mode fails the attempt.
 This observes completion without issuing another credential. Native completed
@@ -139,8 +144,8 @@ the response also carries `"mode":"reprovision"` and `wifiConfigured` is false
 BLE `pod-info` is the network-phase DTO, not the LAN identity/receipt DTO above.
 It carries `protocol`, `env`, `deviceId`, `model`, `firmwareVersion`,
 `publicKey: [x, y]`, `wifiConfigured`, `state`, `dependentHost`, and optional
-`mode`/`error: {code}`. It never includes `deviceBinding`, `podId`, `clientMode`
-or a credential. `publicKey` is the same ES256 P-256 key as LAN: derive
+`clientMode` (retained mode), `mode`/`error: {code}`. It never includes
+`deviceBinding`, `podId` or a credential. `publicKey` is the same ES256 P-256 key as LAN: derive
 `fingerprint = hex(SHA256(0x04 || x || y))` and `keyId = "p256:" + fingerprint`.
 Coordinates are unpadded base64url. The complete JSON must fit 480 bytes,
 leaving room for the authenticated record in one 512-byte ATT value.
@@ -246,7 +251,7 @@ Runtime states after commit:
   identity key and cached Hub tokens, reboot to `unprovisioned`. No cloud
   request is needed. User logout also clears local credentials without cloud revocation.
 
-User logout keeps network and device preferences, but clears the User session,
+User logout keeps the selected device mode, network and device preferences, but clears the User session,
 selected Space, account navigation data and per-Hub credentials. A subsequent
 User login obtains a fresh device session. Space mode refuses logout in both UI
 and the native execution/persistence boundary. Network loss or rejected

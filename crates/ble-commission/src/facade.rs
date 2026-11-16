@@ -585,9 +585,11 @@ async fn authorize(
 }
 
 fn offered(live: &Live, space_id: &str, client_mode: pod::ClientMode, dependent: bool) -> bool {
-    live.enrollment
-        .as_ref()
-        .is_none_or(|target| target.space_id == space_id && target.client_mode == client_mode)
+    live.client_mode.is_none_or(|mode| mode == client_mode)
+        && live
+            .enrollment
+            .as_ref()
+            .is_none_or(|target| target.space_id == space_id && target.client_mode == client_mode)
         && (!dependent || client_mode == pod::ClientMode::Space)
         && live.authorization.as_ref().is_some_and(|prompt| {
             prompt.spaces.iter().any(|space| {

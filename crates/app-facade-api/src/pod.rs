@@ -433,7 +433,8 @@ pub struct CommissionSession {
     pub enrollment: Option<EnrollmentTarget>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pod_id: Option<String>,
-    /// Credential ownership; required with a successful enrollment result.
+    /// Retained device mode, when selected; survives User logout. Also required
+    /// with a successful enrollment result. Absent for Wi-Fi-only sessions.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub client_mode: Option<ClientMode>,
     /// Set once the pod reports a Wi-Fi change window: the session replaces
@@ -593,6 +594,9 @@ pub struct PodNetworkInfo {
     pub wifi_configured: bool,
     pub state: String,
     pub dependent_host: bool,
+    /// Retained device mode; absent before first enrollment or after factory reset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub client_mode: Option<ClientMode>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<PodNetworkError>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -615,7 +619,8 @@ pub struct PodInfo {
     pub env: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pod_id: Option<String>,
-    /// Present with the in-flight or completed credential identity.
+    /// Retained device mode, including after User logout, or the mode of an
+    /// accepted activation receipt. `pod_id` is present only for the receipt.
     pub client_mode: Option<ClientMode>,
     pub device_id: String,
     pub model: String,
