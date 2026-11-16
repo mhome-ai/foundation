@@ -45,13 +45,12 @@ pub fn outcome(target: &str, mut data: Value) -> FacadeResponse {
             | crate::group::RENAME
             | crate::group::MEMBERS_UPDATE
             | crate::group::DELETE
+            | crate::messaging::ROUTE_UPDATE_TARGET
     ) {
         if let Some(problem) = data.get("applicationProblem").filter(|p| !p.is_null()) {
             return match serde_json::from_value::<crate::FacadeProblem>(problem.clone()) {
                 Ok(problem) => FacadeResponse::partial(data).with_warning(problem),
-                Err(_) => {
-                    FacadeResponse::error("INVALID_RESPONSE", "Invalid Group application outcome")
-                }
+                Err(_) => FacadeResponse::error("INVALID_RESPONSE", "Invalid application outcome"),
             };
         }
         return FacadeResponse::success(data);

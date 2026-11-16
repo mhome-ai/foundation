@@ -422,6 +422,10 @@ pub struct RouteListResponse {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RouteUpdateResponse {
     pub route: MessagingRoute,
+    /// The route was saved, but its current delivery registration could not be applied.
+    /// This is an operation receipt, not a persisted route lifecycle state.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub application_problem: Option<crate::FacadeProblem>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

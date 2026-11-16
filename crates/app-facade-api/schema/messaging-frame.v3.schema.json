@@ -1483,6 +1483,23 @@
           "properties": {
             "route": {
               "$ref": "#/$defs/messagingRoute"
+            },
+            "applicationProblem": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "code",
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "details": {}
+              }
             }
           }
         }

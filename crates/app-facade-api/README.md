@@ -31,6 +31,9 @@ independent saved configuration and Provider Operation boundaries.
 See [Group operation state](contract/groups-v1.md) for incomplete application,
 manual reapplication, deletion and name-update outcomes.
 
+See [Messaging route update outcomes](contract/messaging-route-updates.md) for
+committed-route receipts and best-effort cleanup without a persisted pending state.
+
 ## Business DTO ownership
 
 A Facade owns the public business DTO for an operation. Native Agent tools, MCP,

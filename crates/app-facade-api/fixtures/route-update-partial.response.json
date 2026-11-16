@@ -1,0 +1,35 @@
+{
+  "target": "/app/messaging/route/update",
+  "direction": "response",
+  "body": {
+    "route": {
+      "provider": "telegram",
+      "placement": "cloud",
+      "routeId": "route-1",
+      "accountId": "official-bot",
+      "conversationId": "chat-1",
+      "audience": "personal",
+      "externalActorId": "user-1",
+      "tenantId": "tenant-1",
+      "userId": "mhome-user-1",
+      "spaceId": "scope-1",
+      "projections": {
+        "notification": {
+          "enabled": true,
+          "levels": [
+            "alert",
+            "notify"
+          ]
+        },
+        "dialog": {
+          "enabled": true
+        }
+      },
+      "providerData": {}
+    },
+    "applicationProblem": {
+      "code": "MESSAGING_ROUTE_REGISTRATION_FAILED",
+      "message": "Chat route saved, but delivery registration failed. Apply the settings again."
+    }
+  }
+}

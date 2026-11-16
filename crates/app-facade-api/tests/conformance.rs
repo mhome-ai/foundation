@@ -18,6 +18,10 @@ use std::collections::BTreeSet;
 
 const VALID_FIXTURES: &[(&str, &str)] = &[
     (
+        "route-update-partial.response.json",
+        include_str!("../fixtures/route-update-partial.response.json"),
+    ),
+    (
         "unbind.request.json",
         include_str!("../fixtures/unbind.request.json"),
     ),
@@ -961,4 +965,32 @@ fn user_profile_is_a_cloud_account_domain() {
         serde_json::json!({"name": "Ada", "email": "extra"})
     )
     .is_err());
+}
+
+#[test]
+fn saved_messaging_route_keeps_partial_receipt_in_full_and_essential() {
+    let frame: Value = serde_json::from_str(include_str!(
+        "../fixtures/route-update-partial.response.json"
+    ))
+    .unwrap();
+    let body = frame["body"].clone();
+    let typed: RouteUpdateResponse = serde_json::from_value(body.clone()).unwrap();
+    assert!(typed.application_problem.is_some());
+    assert_eq!(serde_json::to_value(typed).unwrap(), body);
+    for detail in [
+        app_facade_api::ResponseDetail::Full,
+        app_facade_api::ResponseDetail::Essential,
+    ] {
+        let result = serde_json::to_value(
+            app_facade_api::response::present("/app/messaging/route/update", body.clone(), detail)
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(result["status"], "partial");
+        assert_eq!(
+            result["warnings"][0]["code"],
+            "MESSAGING_ROUTE_REGISTRATION_FAILED"
+        );
+        assert!(result["data"].to_string().contains("scope-1"));
+    }
 }
