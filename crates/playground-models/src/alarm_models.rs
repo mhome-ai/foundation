@@ -16,7 +16,7 @@ fn object(value: Value) -> Result<Map<String, Value>> {
 pub fn defaults(model: &str) -> Option<Map<String, Value>> {
     Some(match model {
     DEVICE_ALARM_V1=>json!({"online":true,"alarmStates":{"waterDrainFault":"clear","doorFault":"clear"},"alarmSeverities":{},"enabledAlarms":CONDITIONS,"acknowledgedAlarms":[]}),
-    SIREN_V1=>json!({"online":true,"sirenState":"off","sirenMode":"sound","sirenTone":"alarm","sirenVolume":80,"availableSirenTones":["alarm","warning"]}),
+    SIREN_V1=>json!({"online":true,"sirenState":"off","sirenMode":"sound","sirenActivationMode":"sound","sirenTone":"alarm","sirenVolume":80,"availableSirenTones":["alarm","warning"]}),
     SECURITY_SYSTEM_V1=>json!({"online":true,"securitySystemState":"disarmed"}),
     _=>return None,
 }.as_object().unwrap().clone())
@@ -278,7 +278,7 @@ pub fn observe(
                         .cloned()
                         .ok_or_else(|| anyhow!("Siren state is required"))?,
                 );
-                if let Some(mode) = payload.get("mode").filter(|v| !v.is_null()) {
+                if let Some(mode) = payload.get("mode") {
                     staged.insert("sirenMode".into(), mode.clone());
                 }
                 state(model, &staged, cap).unwrap()?;
@@ -405,9 +405,20 @@ pub fn command(
                     "sirenState".into(),
                     json!(if action == "off" { "off" } else { "on" }),
                 );
-                if ["sound", "light", "soundAndLight"].contains(&action) {
-                    staged.insert("sirenMode".into(), json!(action));
-                }
+                let mode = if ["sound", "light", "soundAndLight"].contains(&action) {
+                    staged.insert("sirenActivationMode".into(), json!(action));
+                    json!(action)
+                } else if action == "on" {
+                    let mode = state_value(
+                        attrs.get("sirenActivationMode"),
+                        &["sound", "light", "soundAndLight"],
+                    )?;
+                    ensure!(!mode.is_null(), "Siren activation mode is unavailable");
+                    mode
+                } else {
+                    Value::Null
+                };
+                staged.insert("sirenMode".into(), mode);
                 let snapshot = state(model, &staged, "state.siren").unwrap()?;
                 *attrs = staged;
                 Ok(CommandOutcome::with_event("state.siren", json!(snapshot)))
@@ -678,5 +689,72 @@ mod tests {
             .is_err());
             assert_eq!(attrs, before);
         }
+    }
+    #[test]
+    fn explicit_unknown_output_mode_replaces_observation_without_changing_activation_behavior() {
+        let mut attrs = default_attributes(SIREN_V1).unwrap();
+        handle_command(
+            SIREN_V1,
+            &mut attrs,
+            "command.sirenControl",
+            &request(json!({"command":"light"})),
+        )
+        .unwrap();
+        for mode in [Value::Null, json!("sound"), Value::Null] {
+            apply_observed_payload(
+                SIREN_V1,
+                &mut attrs,
+                "state.siren",
+                &request(json!({"state":"on","mode":mode})),
+            )
+            .unwrap();
+            assert_eq!(
+                project_state(SIREN_V1, &attrs, "state.siren").unwrap()["mode"],
+                mode
+            );
+            assert_eq!(attrs["sirenActivationMode"], "light");
+        }
+        apply_observed_payload(
+            SIREN_V1,
+            &mut attrs,
+            "state.siren",
+            &request(json!({"state":"off","mode":null})),
+        )
+        .unwrap();
+        assert_eq!(
+            project_state(SIREN_V1, &attrs, "state.siren").unwrap(),
+            request(json!({"state":"off","mode":null}))
+        );
+        let activated = handle_command(
+            SIREN_V1,
+            &mut attrs,
+            "command.sirenControl",
+            &request(json!({"command":"on"})),
+        )
+        .unwrap();
+        assert_eq!(
+            activated.events[0].payload,
+            json!({"state":"on","mode":"light"})
+        );
+        for bad in [json!("unknown"), json!(7), json!({})] {
+            let before = attrs.clone();
+            assert!(apply_observed_payload(
+                SIREN_V1,
+                &mut attrs,
+                "state.siren",
+                &request(json!({"state":"on","mode":bad}))
+            )
+            .is_err());
+            assert_eq!(attrs, before);
+        }
+        handle_command(
+            SIREN_V1,
+            &mut attrs,
+            "command.sirenControl",
+            &request(json!({"command":"off"})),
+        )
+        .unwrap();
+        assert_eq!(attrs["sirenMode"], Value::Null);
+        assert_eq!(attrs["sirenActivationMode"], "light");
     }
 }
