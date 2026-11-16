@@ -164,8 +164,7 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
         CONTACT_SENSOR_V1 => object_map(json!({
             "online": true,
             "contactState": "closed",
-            "batteryLevel": 91,
-            "chargingState": "not charging",
+            "batteryLevelState": "normal",
             "tamperState": "clear"
         })),
         MOTION_SENSOR_V1 => object_map(json!({
@@ -430,7 +429,11 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
         BUTTON_SCENE_V1 => &["state.battery", "event.buttonPress"][..],
         _ => return Err(anyhow!("unknown playground modelId: {}", model_id)),
     };
-    Ok(values.iter().map(|value| (*value).to_string()).collect())
+    let mut capabilities: Vec<String> = values.iter().map(|value| (*value).to_string()).collect();
+    if capabilities.iter().any(|c| c == "state.battery") {
+        capabilities.push("data.batteryAttributes".into());
+    }
+    Ok(capabilities)
 }
 
 pub fn exposes_capability(model_id: &str, capability: &str) -> bool {
@@ -575,6 +578,68 @@ fn air_options(field: &str) -> &'static [&'static str] {
     }
 }
 
+fn battery_fields(model: &str) -> &'static [&'static str] {
+    match model {
+        CONTACT_SENSOR_V1 => &["levelState"],
+        PRESENCE_SENSOR_V1 => &["chargingState"],
+        LOCK_DEADBOLT_V1
+        | MOTION_SENSOR_V1
+        | ILLUMINANCE_SENSOR_V1
+        | LEAK_SENSOR_V1
+        | AIR_MONITOR_V1
+        | SMOKE_CO_ALARM_V1 => &["level", "chargingState"],
+        BUTTON_SCENE_V1 => &["level"],
+        _ => &[],
+    }
+}
+fn battery_attribute(field: &str) -> &str {
+    match field {
+        "level" => "batteryLevel",
+        "levelState" => "batteryLevelState",
+        _ => "chargingState",
+    }
+}
+fn battery_discovery(model: &str) -> Result<Map<String, Value>> {
+    let fields = battery_fields(model);
+    if fields.is_empty() {
+        return Err(anyhow!("Model has no battery observations"));
+    }
+    let mut result = object_map(json!({"supportedStates":fields}))?;
+    if fields.contains(&"levelState") {
+        result.insert("levelStates".into(), json!(["normal", "low"]));
+    }
+    Ok(result)
+}
+fn battery_state(model: &str, attrs: &Map<String, Value>) -> Result<Map<String, Value>> {
+    let mut result = Map::new();
+    for field in battery_fields(model) {
+        let value = attrs
+            .get(battery_attribute(field))
+            .cloned()
+            .unwrap_or(Value::Null);
+        let valid = value.is_null()
+            || match *field {
+                "level" => value
+                    .as_f64()
+                    .is_some_and(|n| n.is_finite() && (0.0..=100.0).contains(&n)),
+                "levelState" => value
+                    .as_str()
+                    .is_some_and(|s| ["normal", "low"].contains(&s)),
+                _ => value.as_str().is_some_and(|s| {
+                    ["charging", "discharging", "full", "not charging"].contains(&s)
+                }),
+            };
+        if !valid {
+            return Err(anyhow!("Invalid battery {field}"));
+        }
+        result.insert((*field).into(), value);
+    }
+    if result.is_empty() {
+        return Err(anyhow!("Model has no battery observations"));
+    }
+    Ok(result)
+}
+
 pub fn project_state(
     model_id: &str,
     attrs: &Map<String, Value>,
@@ -619,10 +684,8 @@ pub fn project_state(
         "state.doorLock" => Ok(object_map(json!({
             "lockState": string_attr(attrs, "lockState")?
         }))?),
-        "state.battery" => Ok(object_map(json!({
-            "level": number_attr(attrs, "batteryLevel")?,
-            "chargingState": string_attr(attrs, "chargingState")?
-        }))?),
+        "data.batteryAttributes" => battery_discovery(model_id),
+        "state.battery" => battery_state(model_id, attrs),
         "state.tamper" => Ok(object_map(json!({
             "state": string_attr(attrs, "tamperState")?
         }))?),
@@ -732,6 +795,7 @@ pub fn project_discovery(
     _alias: &str,
 ) -> Result<Map<String, Value>> {
     match capability {
+        "state.battery" | "data.batteryAttributes" => battery_discovery(model_id),
         "state.smokeDetector"
         | "command.setSmokeDetectorSensitivity"
         | "command.setSmokeDetectorMute" => Ok(object_map(
@@ -908,8 +972,18 @@ pub fn apply_observed_payload(
         "state.contactSensor" => copy_payload_field(attrs, payload, "state", "contactState")?,
         "state.doorLock" => copy_payload_field(attrs, payload, "lockState", "lockState")?,
         "state.battery" => {
-            copy_payload_field(attrs, payload, "level", "batteryLevel")?;
-            copy_optional_payload_fields(attrs, payload, &[("chargingState", "chargingState")]);
+            let mut staged = attrs.clone();
+            let fields = battery_fields(model_id);
+            if payload.is_empty() || payload.keys().any(|key| !fields.contains(&key.as_str())) {
+                return Err(anyhow!("Unsupported battery observation"));
+            }
+            for field in fields {
+                if let Some(value) = payload.get(*field) {
+                    staged.insert(battery_attribute(field).into(), value.clone());
+                }
+            }
+            battery_state(model_id, &staged)?;
+            *attrs = staged;
         }
         "state.tamper" => copy_payload_field(attrs, payload, "state", "tamperState")?,
         "state.motion" => copy_payload_field(attrs, payload, "state", "motionState")?,
@@ -2251,6 +2325,67 @@ mod cover_contract_migration_tests {
             )
             .is_err());
             assert_eq!(attrs, original);
+        }
+    }
+}
+
+#[cfg(test)]
+mod battery_contract_tests {
+    use super::*;
+    #[test]
+    fn models_expose_independent_readings_and_discovery_even_when_unknown() {
+        for (model, fields) in [
+            (CONTACT_SENSOR_V1, vec!["levelState"]),
+            (PRESENCE_SENSOR_V1, vec!["chargingState"]),
+            (BUTTON_SCENE_V1, vec!["level"]),
+            (LOCK_DEADBOLT_V1, vec!["level", "chargingState"]),
+        ] {
+            assert!(exposes_capability(model, "data.batteryAttributes"));
+            let mut attrs = default_attributes(model).unwrap();
+            let facts = project_state(model, &attrs, "data.batteryAttributes").unwrap();
+            assert_eq!(facts["supportedStates"], json!(fields));
+            for field in &fields {
+                attrs.insert(battery_attribute(field).into(), Value::Null);
+            }
+            let unknown = project_state(model, &attrs, "state.battery").unwrap();
+            assert_eq!(unknown.len(), fields.len());
+            assert!(unknown.values().all(Value::is_null));
+            assert_eq!(
+                project_discovery(model, &attrs, "state.battery", "$f1").unwrap(),
+                facts
+            );
+        }
+    }
+    #[test]
+    fn partial_updates_are_atomic_and_preserve_decimals_zero_and_null() {
+        let model = LOCK_DEADBOLT_V1;
+        let mut attrs = default_attributes(model).unwrap();
+        for value in [json!(83.5), json!(0), Value::Null] {
+            apply_observed_payload(
+                model,
+                &mut attrs,
+                "state.battery",
+                &object_map(json!({"level":value})).unwrap(),
+            )
+            .unwrap();
+            let state = project_state(model, &attrs, "state.battery").unwrap();
+            assert_eq!(state["level"], value);
+            assert_eq!(state["chargingState"], "not charging");
+        }
+        for bad in [
+            json!({"level":101}),
+            json!({"level":50,"chargingState":"unknown"}),
+            json!({"levelState":"low"}),
+        ] {
+            let before = attrs.clone();
+            assert!(apply_observed_payload(
+                model,
+                &mut attrs,
+                "state.battery",
+                bad.as_object().unwrap()
+            )
+            .is_err());
+            assert_eq!(attrs, before);
         }
     }
 }
