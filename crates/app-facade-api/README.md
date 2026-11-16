@@ -28,6 +28,9 @@ Device-only rendering, online rows and chart series use the
 See [Agent LLM settings](contract/agent-llm-v1.md) for active-mode reads,
 independent saved configuration and Provider Operation boundaries.
 
+See [Group operation state](contract/groups-v1.md) for incomplete application,
+manual reapplication, deletion and name-update outcomes.
+
 ## Business DTO ownership
 
 A Facade owns the public business DTO for an operation. Native Agent tools, MCP,

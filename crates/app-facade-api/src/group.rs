@@ -31,6 +31,8 @@ pub struct GroupSummary {
     pub apply_state: GroupApplyState,
     pub created_at: i64,
     pub updated_at: i64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub application_problem: Option<FacadeProblem>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -60,8 +62,6 @@ pub struct GroupDetail {
     pub capabilities: Option<Vec<GroupCapability>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub member_problems: Option<Vec<GroupMemberProblem>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub application_problem: Option<crate::FacadeProblem>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

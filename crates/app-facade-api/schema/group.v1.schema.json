@@ -171,6 +171,25 @@
         "updatedAt": {
           "type": "integer",
           "minimum": 1
+        },
+        "applicationProblem": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "minLength": 1
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1
+            },
+            "details": {}
+          },
+          "required": [
+            "code",
+            "message"
+          ]
         }
       },
       "required": [
