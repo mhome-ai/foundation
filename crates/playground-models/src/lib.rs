@@ -1,3 +1,6 @@
+mod alarm_models;
+pub use alarm_models::{DEVICE_ALARM_V1, SECURITY_SYSTEM_V1, SIREN_V1};
+
 use anyhow::{anyhow, ensure, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
@@ -91,6 +94,9 @@ impl CommandOutcome {
 
 pub fn known_model_ids() -> &'static [&'static str] {
     &[
+        DEVICE_ALARM_V1,
+        SIREN_V1,
+        SECURITY_SYSTEM_V1,
         LIGHT_RGB_DIMMER_V1,
         PLUG_ENERGY_V1,
         COVER_SHADE_V1,
@@ -119,6 +125,9 @@ pub fn ensure_known_model(model_id: &str) -> Result<()> {
 }
 
 pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
+    if let Some(value) = alarm_models::defaults(model_id) {
+        return Ok(value);
+    }
     match model_id {
         LIGHT_RGB_DIMMER_V1 => object_map(json!({
             "online": true,
@@ -225,8 +234,6 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "batteryLevel": 96,
             "chargingState": "not charging",
             "tamperState": "clear",
-            "alarmMode": "home",
-            "availableAlarmModes": ["off", "home", "away", "night"],
             "chimeOccurred": false
         })),
         THERMOSTAT_FAN_V1 => object_map(json!({
@@ -338,6 +345,9 @@ pub fn normalize_instance(mut instance: DeviceInstance) -> Result<DeviceInstance
 }
 
 pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
+    if let Some(values) = alarm_models::capabilities(model_id) {
+        return Ok(values.iter().map(|v| v.to_string()).collect());
+    }
     let values = match model_id {
         LIGHT_RGB_DIMMER_V1 => &[
             "state.onOff",
@@ -392,7 +402,6 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "command.setCarbonMonoxideDetectorMute",
             "state.battery",
             "state.tamper",
-            "state.alarm",
             "command.chime",
             "event.chime",
         ][..],
@@ -645,6 +654,10 @@ pub fn project_state(
     attrs: &Map<String, Value>,
     capability: &str,
 ) -> Result<Map<String, Value>> {
+    if let Some(value) = alarm_models::state(model_id, attrs, capability) {
+        return value;
+    }
+
     match capability {
         "state.onOff" => Ok(object_map(json!({
             "state": if bool_attr(attrs, "on")? { "on" } else { "off" }
@@ -744,9 +757,6 @@ pub fn project_state(
         "data.carbonMonoxideDetectorAttributes" => {
             project_discovery(model_id, attrs, "state.carbonMonoxideDetector", "$f1")
         }
-        "state.alarm" => Ok(object_map(json!({
-            "mode": string_attr(attrs, "alarmMode")?
-        }))?),
         "state.fan" => Ok(object_map(json!({
             "mode": string_attr(attrs, "fanMode")?,
             "speed": number_attr(attrs, "fanSpeed")?
@@ -794,6 +804,10 @@ pub fn project_discovery(
     capability: &str,
     _alias: &str,
 ) -> Result<Map<String, Value>> {
+    if let Some(value) = alarm_models::discovery(model_id, attrs, capability, _alias) {
+        return value;
+    }
+
     match capability {
         "state.battery" | "data.batteryAttributes" => battery_discovery(model_id),
         "state.smokeDetector"
@@ -861,9 +875,6 @@ pub fn project_discovery(
                 "availablePresetModes": attrs.get("availablePresetModes").cloned().unwrap_or_else(|| Value::Array(Vec::new()))
             }))?)
         }
-        "state.alarm" => Ok(object_map(json!({
-            "availableModes": attrs.get("availableAlarmModes").cloned().unwrap_or_else(|| Value::Array(Vec::new()))
-        }))?),
         "event.buttonPress" => Ok(object_map(json!({
             "supportedPressTypes": value_attr(attrs, "supportedPressTypes")?
         }))?),
@@ -885,6 +896,9 @@ pub fn project_capability_data(
 ) -> Result<Map<String, Value>> {
     let mut data = Map::new();
     for capability in capabilities(model_id)? {
+        if alarm_models::parameterized_data(&capability) {
+            continue;
+        }
         let mut entry = Map::new();
         if capability.starts_with("state.")
             || capability.starts_with("data.")
@@ -912,6 +926,14 @@ pub fn apply_observed_payload(
     capability: &str,
     payload: &Map<String, Value>,
 ) -> Result<()> {
+    if alarm_models::capabilities(model_id).is_some() {
+        ensure!(
+            exposes_capability(model_id, capability),
+            "Unsupported model observation"
+        );
+        return alarm_models::observe(model_id, attrs, capability, payload).unwrap();
+    }
+
     if !exposes_capability(model_id, capability) {
         return Err(anyhow!(
             "playground model {} does not expose capability {}",
@@ -1011,7 +1033,6 @@ pub fn apply_observed_payload(
         "state.smokeDetectorSetting" => {
             copy_payload_field(attrs, payload, "sensitivity", "smokeSensitivity")?
         }
-        "state.alarm" => copy_payload_field(attrs, payload, "mode", "alarmMode")?,
         "state.fan" => {
             copy_optional_payload_fields(
                 attrs,
@@ -1067,6 +1088,14 @@ pub fn handle_command(
     capability: &str,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
+    if alarm_models::capabilities(model_id).is_some() {
+        ensure!(
+            exposes_capability(model_id, capability),
+            "Unsupported model command"
+        );
+        return alarm_models::command(model_id, attrs, capability, request).unwrap();
+    }
+
     if !exposes_capability(model_id, capability) {
         return Err(anyhow!(
             "playground model {} does not expose capability {}",
@@ -1494,6 +1523,9 @@ fn speaker_broadcast_audio(
 fn validate_attributes(model_id: &str, attrs: &Map<String, Value>) -> Result<()> {
     ensure_known_model(model_id)?;
     for capability in capabilities(model_id)? {
+        if alarm_models::parameterized_data(&capability) {
+            continue;
+        }
         if capability.starts_with("state.")
             || capability.starts_with("data.")
             || capability.starts_with("event.")
@@ -2011,7 +2043,11 @@ mod tests {
                 "state.airCompositionSensor",
                 json!({"pm25": 90, "qualityState": "poor"}),
             ),
-            (SMOKE_CO_ALARM_V1, "state.alarm", json!({"mode": "away"})),
+            (
+                SECURITY_SYSTEM_V1,
+                "state.securitySystem",
+                json!({"state": "armedAway"}),
+            ),
         ] {
             let mut attrs = default_attributes(model).unwrap();
             let before = project_discovery(model, &attrs, capability, "$f1").unwrap();
