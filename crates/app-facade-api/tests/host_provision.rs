@@ -171,3 +171,32 @@ fn cancellation_snapshots_validate_without_success_or_failure_data() {
         assert_eq!(parsed.state.is_terminal(), state == "cancelled");
     }
 }
+
+#[test]
+fn completion_outcome_is_required_and_distinct_from_current_ownership() {
+    let schema = validator();
+    let raw: Value =
+        serde_json::from_str(include_str!("../fixtures/host-provision.completed.json")).unwrap();
+    for outcome in ["onboarded", "wifiUpdated"] {
+        let mut snapshot = raw.clone();
+        snapshot["host"]["onboardingRequired"] = Value::Bool(false);
+        snapshot["result"]["outcome"] = Value::from(outcome);
+        assert!(schema.is_valid(&snapshot));
+        serde_json::from_value::<ProvisionSession>(snapshot.clone())
+            .unwrap()
+            .validate()
+            .unwrap();
+        if outcome == "wifiUpdated" {
+            snapshot["result"]["hubId"] = Value::from("hub");
+            assert!(!schema.is_valid(&snapshot));
+            assert!(serde_json::from_value::<ProvisionSession>(snapshot)
+                .unwrap()
+                .validate()
+                .is_err());
+        }
+    }
+    let mut missing = raw;
+    missing["result"].as_object_mut().unwrap().remove("outcome");
+    assert!(!schema.is_valid(&missing));
+    assert!(serde_json::from_value::<ProvisionSession>(missing).is_err());
+}

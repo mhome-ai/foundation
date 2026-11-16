@@ -202,7 +202,13 @@ owner's already committed claim reconciles through the ordinary claim contract.
 There is no Core-proxied first-claim route. Hosts already online without BLE use
 the ordinary direct LAN claim operation.
 
-Only `completed` carries `result`: `{hostId,wifiConfigured:true,commissioned:true,
+The required `result.outcome` is `onboarded` after adding the Host or completing
+first-Hub setup, and `wifiUpdated` after changing an already claimed Host's Wi-Fi.
+It survives status/event reconciliation; callers must not infer the operation
+from the current `host.onboardingRequired` value. `wifiUpdated` never carries a
+`hubId`.
+
+Only `completed` carries `result`: `{hostId,outcome,wifiConfigured:true,commissioned:true,
 hubId?}`. `hubId` is present when this operation explicitly established the first
 Hub. `host` and optional reported IPv4 `addresses` remain in the snapshot. No
 public snapshot, event, CLI or UI result contains `claimToken`. Terminal errors

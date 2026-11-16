@@ -166,6 +166,7 @@
       "additionalProperties": false,
       "required": [
         "hostId",
+        "outcome",
         "wifiConfigured",
         "commissioned"
       ],
@@ -183,8 +184,32 @@
         "hubId": {
           "type": "string",
           "minLength": 1
+        },
+        "outcome": {
+          "enum": [
+            "onboarded",
+            "wifiUpdated"
+          ]
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "wifiUpdated"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "hubId"
+              ]
+            }
+          }
+        }
+      ]
     }
   },
   "allOf": [

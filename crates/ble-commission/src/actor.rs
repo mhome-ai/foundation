@@ -1292,6 +1292,7 @@ impl Actor {
                 live.host_result = live.host.as_ref().map(|host| {
                     app_facade_api::host_provision::ProvisionResult {
                         host_id: host.host_id.clone(),
+                        outcome: app_facade_api::host_provision::ProvisionOutcome::WifiUpdated,
                         wifi_configured: true,
                         commissioned: true,
                         hub_id: None,
@@ -1450,6 +1451,7 @@ impl Actor {
             live.claim_token = None;
             live.host_result = Some(app_facade_api::host_provision::ProvisionResult {
                 host_id: host.host_id,
+                outcome: app_facade_api::host_provision::ProvisionOutcome::Onboarded,
                 wifi_configured: true,
                 commissioned: true,
                 hub_id,

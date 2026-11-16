@@ -102,6 +102,8 @@ async fn wifi_submission_reserves_the_critical_section_before_the_device_reply()
     let done = complete(&harness).await;
     assert!(done.get("claimToken").is_none());
     assert_eq!(done["result"]["commissioned"], true);
+    assert_eq!(done["result"]["outcome"], "onboarded");
+    assert_eq!(done["host"]["onboardingRequired"], false);
 }
 
 #[tokio::test(start_paused = true)]
@@ -235,11 +237,31 @@ async fn existing_own_hub_changes_only_wifi_without_looking_up_a_remote_hub() {
     let done = complete(&harness).await;
     valid(&done);
     assert!(done.get("claimToken").is_none());
+    assert_eq!(done["result"]["outcome"], "wifiUpdated");
+    assert!(done["result"].get("hubId").is_none());
     assert!(harness.cloud.calls.lock().unwrap().is_empty());
     assert_eq!(
         *device.network_requests.lock().unwrap(),
         vec![json!({"op":"prepareWifi","mode":"ownHub"})]
     );
+}
+
+#[tokio::test(start_paused = true)]
+async fn claimed_admin_wifi_update_keeps_its_outcome_in_status_without_claiming_again() {
+    let harness = Harness::with_discovery("ble").await;
+    let mut script = Script::host();
+    script.onboarding_required = false;
+    script.claim_token = None;
+    harness.add_device("host-a", script);
+    let id = to_wifi(&harness).await;
+    join(&harness, &id).await;
+    let done = complete(&harness).await;
+    valid(&done);
+    assert_eq!(done["result"]["outcome"], "wifiUpdated");
+    assert!(done["result"].get("hubId").is_none());
+    assert!(!harness.journal().iter().any(|step| step == "host:claim"));
+    let reopened = harness.ok("/local/host/provision/status", json!({})).await;
+    assert_eq!(reopened["session"]["result"], done["result"]);
 }
 
 #[tokio::test(start_paused = true)]
@@ -578,7 +600,7 @@ async fn authorization_requires_explicit_confirmation_and_never_exposes_the_toke
     let done = complete(&harness).await;
     assert_eq!(
         done["result"],
-        json!({"hostId":"host-1","wifiConfigured":true,"commissioned":true})
+        json!({"hostId":"host-1","outcome":"onboarded","wifiConfigured":true,"commissioned":true})
     );
     assert!(harness.position("device:disconnected") < harness.position("host:claim"));
     for event in harness.events(PROVISION_CHANGED_EVENT) {

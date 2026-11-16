@@ -127,9 +127,18 @@ pub struct ProvisionSession {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum ProvisionOutcome {
+    Onboarded,
+    WifiUpdated,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ProvisionResult {
     pub host_id: String,
+    /// The operation completed by this session, independent of current ownership.
+    pub outcome: ProvisionOutcome,
     pub wifi_configured: bool,
     pub commissioned: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -171,7 +180,11 @@ impl ProvisionSession {
         match (&self.result, self.state) {
             (Some(result), ProvisionState::Completed)
                 if self.host.as_ref().is_some_and(|host| {
-                    host.host_id == result.host_id && result.wifi_configured && result.commissioned
+                    host.host_id == result.host_id
+                        && result.wifi_configured
+                        && result.commissioned
+                        && (result.outcome != ProvisionOutcome::WifiUpdated
+                            || result.hub_id.is_none())
                 }) => {}
             (None, ProvisionState::Completed) => {
                 return Err("completed sessions carry their operation result")
