@@ -12,6 +12,34 @@ fn validator(name: &str) -> jsonschema::Validator {
 }
 
 #[test]
+fn candidate_model_reference_is_distinct_from_physical_identity_and_not_a_url() {
+    let schema = validator("Candidate");
+    let first = json!({"candidateId":"scan-a","deviceId":"11223344556677889900112233445566",
+        "productId":"ffeeddccbbaa99887766554433221100","proof":"pin6","purpose":"initial"});
+    let mut second = first.clone();
+    second["candidateId"] = json!("scan-b");
+    second["deviceId"] = json!("22334455667788990011223344556677");
+    for value in [first.clone(), second] {
+        assert!(schema.is_valid(&value));
+        let candidate: wave::Candidate = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(serde_json::to_value(candidate).unwrap(), value);
+    }
+    for product in [
+        json!("https://device.invalid/image"),
+        json!("A".repeat(32)),
+        json!(null),
+    ] {
+        let mut value = first.clone();
+        value["productId"] = product;
+        assert!(!schema.is_valid(&value));
+    }
+    let mut value = first;
+    value.as_object_mut().unwrap().remove("productId");
+    assert!(!schema.is_valid(&value));
+    assert!(serde_json::from_value::<wave::Candidate>(value).is_err());
+}
+
+#[test]
 fn removal_is_a_registered_hub_operation_with_manage_access() {
     let manifest: Value =
         serde_json::from_str(include_str!("../manifest/app-facade.v1.json")).unwrap();

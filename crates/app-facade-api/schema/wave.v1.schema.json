@@ -2,6 +2,17 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "mhome.wave.v1",
   "$defs": {
+    "Candidate": {
+      "type":"object","additionalProperties":false,
+      "required":["candidateId","deviceId","productId","proof","purpose"],
+      "properties":{
+        "candidateId":{"type":"string","minLength":1},
+        "deviceId":{"type":"string","pattern":"^[0-9a-f]{32}$"},
+        "productId":{"type":"string","pattern":"^[0-9a-f]{32}$"},
+        "proof":{"enum":["pin6","localClaim","closed"]},
+        "purpose":{"enum":["initial","recovery","closed"]}
+      }
+    },
     "EmptyInput": {"type":"object","additionalProperties":false},
     "DiscoverInput": {
       "type":"object","additionalProperties":false,"required":["transport"],

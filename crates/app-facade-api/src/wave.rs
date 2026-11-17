@@ -36,6 +36,9 @@ pub struct RemoveResult {
 pub struct Candidate {
     pub candidate_id: String,
     pub device_id: String,
+    /// Untrusted display lookup hint. Confirmed in the protected device session
+    /// before grant commitment; never an identity, permission or URL.
+    pub product_id: String,
     pub proof: String,
     pub purpose: String,
 }

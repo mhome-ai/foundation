@@ -10,7 +10,14 @@ They do not make Wave devices Hosts, Nodes or Plugins. No device URL,
 Space/Hub selector, grant, certificate or private key is an input/output.
 
 - `/app/wave/discover`: `{transport:"lan"|"ble"}` ->
-  `{candidates:[{candidateId,deviceId,proof,purpose}]}`.
+  `{candidates:[{candidateId,deviceId,productId,proof,purpose}]}`.
+  `productId` is a lowercase 32-hex public model lookup hint, separate from the
+  physical `deviceId`. The controller rechecks it in the protected device session
+  before saving candidate credentials or committing a grant. A mismatch requires
+  a new explicit selection. It does not attest the manufacturer or grant any
+  authority. Missing/unreachable product metadata never blocks normal addition;
+  callers show a generic Wave device label and short physical candidate reference.
+  Metadata refresh never overwrites a user-supplied Space device name.
   LAN discovery browses `_meow-wave._tcp.local.`; it never invokes BLE Relay.
   BLE discovery searches only bound relays for pure BLE operation. It does not
   discover unconfigured Wi-Fi devices for network setup. The caller selects
