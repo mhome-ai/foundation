@@ -1,3 +1,5 @@
+mod chime_model;
+pub use chime_model::CHIME_V1;
 mod alarm_models;
 pub use alarm_models::{DEVICE_ALARM_V1, SECURITY_SYSTEM_V1, SIREN_V1};
 
@@ -94,6 +96,7 @@ impl CommandOutcome {
 
 pub fn known_model_ids() -> &'static [&'static str] {
     &[
+        CHIME_V1,
         DEVICE_ALARM_V1,
         SIREN_V1,
         SECURITY_SYSTEM_V1,
@@ -125,6 +128,9 @@ pub fn ensure_known_model(model_id: &str) -> Result<()> {
 }
 
 pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
+    if model_id == CHIME_V1 {
+        return Ok(chime_model::defaults());
+    }
     if let Some(value) = alarm_models::defaults(model_id) {
         return Ok(value);
     }
@@ -233,8 +239,7 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "smokeSensitivity": "standard",
             "batteryLevel": 96,
             "chargingState": "not charging",
-            "tamperState": "clear",
-            "chimeOccurred": false
+            "tamperState": "clear"
         })),
         THERMOSTAT_FAN_V1 => object_map(json!({
             "online": true,
@@ -345,6 +350,9 @@ pub fn normalize_instance(mut instance: DeviceInstance) -> Result<DeviceInstance
 }
 
 pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
+    if model_id == CHIME_V1 {
+        return Ok(chime_model::capabilities());
+    }
     if let Some(values) = alarm_models::capabilities(model_id) {
         return Ok(values.iter().map(|v| v.to_string()).collect());
     }
@@ -402,8 +410,6 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "command.setCarbonMonoxideDetectorMute",
             "state.battery",
             "state.tamper",
-            "command.chime",
-            "event.chime",
         ][..],
         THERMOSTAT_FAN_V1 => &[
             "state.temperature",
@@ -654,6 +660,9 @@ pub fn project_state(
     attrs: &Map<String, Value>,
     capability: &str,
 ) -> Result<Map<String, Value>> {
+    if model_id == CHIME_V1 {
+        return chime_model::state(attrs, capability);
+    }
     if let Some(value) = alarm_models::state(model_id, attrs, capability) {
         return value;
     }
@@ -783,9 +792,6 @@ pub fn project_state(
         "data.mediaBrowse" => Ok(object_map(json!({
             "items": attrs.get("mediaItems").cloned().unwrap_or_else(|| Value::Array(Vec::new()))
         }))?),
-        "event.chime" => Ok(object_map(json!({
-            "occurred": bool_attr(attrs, "chimeOccurred")?
-        }))?),
         "event.buttonPress" => Ok(object_map(json!({
             "occurred": true,
             "pressedType": string_attr(attrs, "lastPressType")?
@@ -804,6 +810,9 @@ pub fn project_discovery(
     capability: &str,
     _alias: &str,
 ) -> Result<Map<String, Value>> {
+    if model_id == CHIME_V1 {
+        return chime_model::discovery(attrs, capability);
+    }
     if let Some(value) = alarm_models::discovery(model_id, attrs, capability, _alias) {
         return value;
     }
@@ -878,8 +887,6 @@ pub fn project_discovery(
         "event.buttonPress" => Ok(object_map(json!({
             "supportedPressTypes": value_attr(attrs, "supportedPressTypes")?
         }))?),
-        // This model emits unclassified chimes; it does not advertise type selectors.
-        "event.chime" => Ok(object_map(json!({"supportedChimeTypes": []}))?),
         "command.broadcastAudio" => Ok(object_map(json!({
             "supportedAudioInputs": attrs.get("supportedAudioInputs").cloned().unwrap_or_else(|| Value::Array(Vec::new())),
             "supportedMimeTypes": attrs.get("supportedMimeTypes").cloned().unwrap_or_else(|| Value::Array(Vec::new())),
@@ -926,6 +933,9 @@ pub fn apply_observed_payload(
     capability: &str,
     payload: &Map<String, Value>,
 ) -> Result<()> {
+    if model_id == CHIME_V1 {
+        return chime_model::observe(attrs, capability, payload);
+    }
     if alarm_models::capabilities(model_id).is_some() {
         ensure!(
             exposes_capability(model_id, capability),
@@ -1053,7 +1063,6 @@ pub fn apply_observed_payload(
                 ],
             );
         }
-        "event.chime" => copy_payload_field(attrs, payload, "occurred", "chimeOccurred")?,
         "event.buttonPress" => {
             copy_payload_field(attrs, payload, "pressedType", "lastPressType")?;
         }
@@ -1088,6 +1097,9 @@ pub fn handle_command(
     capability: &str,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
+    if model_id == CHIME_V1 {
+        return chime_model::command(attrs, capability, request);
+    }
     if alarm_models::capabilities(model_id).is_some() {
         ensure!(
             exposes_capability(model_id, capability),
@@ -1115,7 +1127,6 @@ pub fn handle_command(
         "command.setColorRGB" => set_color_rgb(attrs, request),
         "command.controlCover" => control_cover(attrs, request),
         "command.doorLock" => door_lock(attrs, request),
-        "command.chime" => chime(attrs, request),
         "command.setFan" => set_fan(attrs, request),
         "command.setThermostatMode" => set_thermostat_mode(attrs, request),
         "command.setThermostatTemperature" => set_thermostat_temperature(attrs, request),
@@ -1304,21 +1315,6 @@ fn door_lock(
         Value::String(lock_state.to_string()),
     );
     projected_event(attrs, "state.doorLock")
-}
-
-fn chime(attrs: &mut Map<String, Value>, request: &Map<String, Value>) -> Result<CommandOutcome> {
-    let command = required_string(request, "command")?;
-    let occurred = match command.as_str() {
-        "on" => true,
-        "off" => false,
-        _ => return Err(anyhow!("unsupported chime command: {}", command)),
-    };
-    attrs.insert("chimeOccurred".to_string(), Value::Bool(occurred));
-    if occurred {
-        projected_event(attrs, "event.chime")
-    } else {
-        Ok(CommandOutcome::no_response())
-    }
 }
 
 fn set_fan(attrs: &mut Map<String, Value>, request: &Map<String, Value>) -> Result<CommandOutcome> {
@@ -1856,28 +1852,6 @@ mod tests {
         );
         attrs.remove("supportedPressTypes");
         assert!(project_discovery(BUTTON_SCENE_V1, &attrs, "event.buttonPress", "$f1").is_err());
-    }
-
-    #[test]
-    fn chime_catalog_is_explicitly_unclassified_and_survives_ringing() {
-        let mut attrs = default_attributes(SMOKE_CO_ALARM_V1).unwrap();
-        let catalog = project_discovery(SMOKE_CO_ALARM_V1, &attrs, "event.chime", "$f1").unwrap();
-        assert_eq!(
-            catalog,
-            object_map(json!({"supportedChimeTypes": []})).unwrap()
-        );
-        let outcome = handle_command(
-            SMOKE_CO_ALARM_V1,
-            &mut attrs,
-            "command.chime",
-            &object_map(json!({"command": "on"})).unwrap(),
-        )
-        .unwrap();
-        assert_eq!(outcome.events[0].payload, json!({"occurred": true}));
-        assert_eq!(
-            project_discovery(SMOKE_CO_ALARM_V1, &attrs, "event.chime", "$f1").unwrap(),
-            catalog
-        );
     }
 
     #[test]

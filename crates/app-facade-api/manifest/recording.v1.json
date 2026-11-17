@@ -310,9 +310,15 @@
       "volume",
       "priority"
     ],
-    "chime": [
+    "chimeControl": [
       "device",
-      "command"
+      "command",
+      "tone"
+    ],
+    "chimeSetting": [
+      "device",
+      "enabledState",
+      "tone"
     ],
     "dispensePetFood": [
       "device",
@@ -353,7 +359,8 @@
     "audioBridge.device.command.stopAudioRecording": "stopAudioRecording",
     "basic.device.command.broadcastAudio": "broadcastAudio",
     "basic.device.command.cameraPtz": "cameraPtz",
-    "basic.device.command.chime": "chime",
+    "basic.device.command.chimeControl": "chimeControl",
+    "basic.device.command.chimeSetting": "chimeSetting",
     "basic.device.command.controlMediaPlayback": "controlMediaPlayback",
     "basic.device.command.controlCover": "controlCover",
     "basic.device.command.dispensePetFood": "dispensePetFood",
@@ -382,7 +389,6 @@
     "mlinkGoogleCast.device.command.setAudioMute": "setAudioMute",
     "mlinkGoogleCast.device.command.setAudioVolume": "setAudioVolume",
     "mlinkHomeAssistant.device.command.broadcastAudio": "broadcastAudio",
-    "mlinkHomeAssistant.device.command.chime": "chime",
     "mlinkHomeAssistant.device.command.controlMediaPlayback": "controlMediaPlayback",
     "mlinkHomeAssistant.device.command.controlCover": "controlCover",
     "mlinkHomeAssistant.device.command.doorLock": "doorLock",
@@ -421,7 +427,7 @@
     "mlinkShelly.device.command.setColorRGB": "setColorRGB",
     "mlinkShelly.device.command.setColorTemperature": "setColorTemperature",
     "mlinkSmartThings.device.command.broadcastAudio": "broadcastAudio",
-    "mlinkSmartThings.device.command.chime": "chime",
+    "mlinkSmartThings.device.command.chimeControl": "chimeControl",
     "mlinkSmartThings.device.command.controlMediaPlayback": "controlMediaPlayback",
     "mlinkSmartThings.device.command.controlCover": "controlCover",
     "mlinkSmartThings.device.command.doorLock": "doorLock",
@@ -440,7 +446,8 @@
     "mlinkSonos.device.command.setAudioMute": "setAudioMute",
     "mlinkSonos.device.command.setAudioVolume": "setAudioVolume",
     "playground.device.command.broadcastAudio": "broadcastAudio",
-    "playground.device.command.chime": "chime",
+    "playground.device.command.chimeControl": "chimeControl",
+    "playground.device.command.chimeSetting": "chimeSetting",
     "playground.device.command.controlMediaPlayback": "controlMediaPlayback",
     "playground.device.command.controlCover": "controlCover",
     "playground.device.command.doorLock": "doorLock",
@@ -463,6 +470,8 @@
     "xiaomi.device.command.setBrightness": "setBrightness",
     "xiaomi.device.command.setColorRGB": "setColorRGB",
     "xiaomi.device.command.setColorTemperature": "setColorTemperature",
-    "xiaomi.device.command.setFan": "setFan"
+    "xiaomi.device.command.setFan": "setFan",
+    "mlinkMatter.device.command.chimeControl": "chimeControl",
+    "mlinkMatter.device.command.chimeSetting": "chimeSetting"
   }
 }
