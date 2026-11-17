@@ -1,7 +1,12 @@
 # Wave authorization management
 
 These Hub-routed App Facades require current-Space Manage access and an active
-local Hub. They do not make Wave devices Hosts, Nodes or Plugins. No device URL,
+local Hub. Each physical Wave device permits at most one Space grant at a time,
+for both Wi-Fi and pure BLE. New addition requires an unbound device and an
+explicit local initial/recovery window; no additional-Space invitation exists.
+Moving to another Space requires confirmed removal or a local Wave reset first.
+Connection capacity is separate from this one-grant policy.
+They do not make Wave devices Hosts, Nodes or Plugins. No device URL,
 Space/Hub selector, grant, certificate or private key is an input/output.
 
 - `/app/wave/discover`: `{transport:"lan"|"ble"}` ->
@@ -31,9 +36,9 @@ Space/Hub selector, grant, certificate or private key is an input/output.
   device already revoked it and its reply was lost, the old credential cannot
   authenticate another attempt, even when the device is reachable. The user
   clears Wave authorization locally on the device, then explicitly confirms
-  `forgetAfterDeviceReset:true` to clear this Space's saved binding. A device-wide
-  Wave reset also removes its other Space grants. `unbound` means no saved binding
-  remains.
+  `forgetAfterDeviceReset:true` to clear this Space's saved binding. This confirmation
+  does not itself reset or revoke anything on the device. `unbound` means no saved
+  binding remains.
   `forgotten` clears its saved local binding without a device revocation reply.
   Clearing a local binding also clears its published inventory. Ordinary
   Integration uninstall remains a separate operation.
