@@ -1,7 +1,6 @@
 //! Core-native existing-network Wave admission. Keys/grants never use this DTO.
 use serde::{Deserialize, Serialize};
 pub const DISCOVER: &str = "/app/wave/discover";
-pub const PAIR: &str = "/app/wave/pair";
 pub const LIST: &str = "/app/wave/list";
 pub const REFRESH: &str = "/app/wave/refresh";
 pub const REMOVE: &str = "/app/wave/remove";
@@ -13,13 +12,6 @@ use crate::pod::DiscoveryTransport;
 #[serde(deny_unknown_fields)]
 pub struct DiscoverInput {
     pub transport: DiscoveryTransport,
-}
-// Deliberately no Debug: this is a private direct App interaction.
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PairInput {
-    pub candidate_id: String,
-    pub pin: Option<String>,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -70,25 +62,20 @@ mod tests {
     use serde_json::json;
     #[test]
     fn wave_management_is_hub_routed_and_requires_manage() {
-        for target in [DISCOVER, PAIR, LIST, REFRESH, REMOVE] {
+        for target in [DISCOVER, LIST, REFRESH, REMOVE] {
             assert_eq!(
                 crate::authorization::required(target),
                 Some(crate::authorization::OperationPolicy::SpaceManage)
             );
             assert!(!crate::authorization::allows_service(target));
         }
-        // No raw PIN/candidate payload enters household history projection.
-        assert!(!crate::recording::selected(PAIR));
+        assert_eq!(crate::authorization::required("/app/wave/pair"), None);
     }
     #[test]
     fn wave_inputs_cannot_supply_authority_routes_or_credentials() {
-        assert!(
-            serde_json::from_value::<PairInput>(json!({"candidateId":"hint","pin":"001234"}))
-                .is_ok()
-        );
         for key in ["spaceId", "hubId", "address", "grant", "privateKey"] {
-            assert!(serde_json::from_value::<PairInput>(
-                json!({"candidateId":"hint",key:"foreign"})
+            assert!(serde_json::from_value::<DiscoverInput>(
+                json!({"transport":"lan",key:"foreign"})
             )
             .is_err());
         }

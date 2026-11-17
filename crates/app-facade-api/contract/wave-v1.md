@@ -17,10 +17,10 @@ Space/Hub selector, grant, certificate or private key is an input/output.
   exactly one transport; there is no implicit discovery or fallback.
   Results are untrusted location hints, scoped to this caller, Space and Hub
   generation and transport, expiring after two minutes. They never grant operation
-  authority.
-- `/app/wave/pair` is retired. Core rejects it with guidance to select the
-  Integration and use `/app/integration/connect`. Its constant/input DTO remain
-  readable for older clients; this route cannot enroll a device.
+  authority. No connected BLE Relay, all-busy Relays or failed scans return an
+  availability error rather than a successful empty list. Partial scan coverage
+  returns available candidates with a `WAVE_BLE_DISCOVERY_INCOMPLETE` warning.
+  A successful empty scan has no such warning.
 - `/app/wave/list`: `{}` -> `{bindings:[{deviceId,grantState}]}`. States are
   `candidate`, `committed` or `removing`; this is authorization bookkeeping, not
   Device/Twin inventory, online state or evidence that a candidate committed on the device.
@@ -58,6 +58,10 @@ The built-in typed form supports PIN6 and explicitly opened initial no-PIN windo
 Core checks the selected resource before pairing, verifies it against authenticated
 inventory after grant confirmation, writes the normal IntegrationInstall, and
 publishes compatible entities. It creates no ordinary Connection record.
+
+The lifecycle response has optional top-level `warnings` for partial discovery,
+including before a device is selected. Committed authorizations are labeled
+“already added”; discovery does not assert that they are online.
 
 The lifecycle response includes `wave: {deviceId,grantState,inventoryState,installed,
 entityIds,warnings,reason?}`. Completed projection is `status: done`; interrupted

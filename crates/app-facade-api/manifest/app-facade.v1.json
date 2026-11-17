@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.149.0",
+  "contractVersion": "1.150.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -487,7 +487,6 @@
       "contract": "contract/wave-v1.md",
       "requestTargets": [
         "/app/wave/discover",
-        "/app/wave/pair",
         "/app/wave/list",
         "/app/wave/refresh",
         "/app/wave/remove"

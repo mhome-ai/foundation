@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.149.0",
+  "contractVersion": "1.150.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/credit/usage": "spaceRead",
@@ -374,7 +374,6 @@
     "/pod/talk/view/get": "spaceRead",
     "/app/entity/state/get": "spaceRead",
     "/app/wave/discover": "spaceManage",
-    "/app/wave/pair": "spaceManage",
     "/app/wave/list": "spaceManage",
     "/app/wave/refresh": "spaceManage",
     "/app/wave/remove": "spaceManage"
