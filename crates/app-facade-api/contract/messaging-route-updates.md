@@ -5,11 +5,25 @@ delivery registrations. A rejected save leaves the old registrations and actions
 untouched. Local route changes and old action invalidation share the existing
 SQLite transaction; construct the receipt before committing it.
 
-After commit, attempt the current registration and best-effort old-Space cleanup
-independently. Old cleanup failure may leave disposable records; it does not fail
-the update or prevent a later update. Cleanup must not invalidate new-Space action
-sessions. Action handlers still check the current route and authorization; provider
-message/button editing is not a prerequisite for saving settings.
+After commit, attempt the current registration and best-effort old-Space action
+cleanup independently. Cloud optional cleanup has a one-second total wait budget. Its
+failure does not fail the update or prevent a later update. Cleanup must not
+invalidate new-Space action sessions. Action handlers still check the current
+route and authorization; provider message/button editing is not a prerequisite
+for saving settings.
+
+Retain obsolete AppClient registrations during route changes and cloud route
+removal. They are disposable discovery records, not authorization. An unconditional
+delete by reusable Space/client key could arrive after a later registration and
+remove it. Actual delivery must resolve the authoritative route and check current
+identity, membership or shared grant. Revocation and unlink still change those
+authoritative records; retaining a registration never keeps a revoked route active.
+
+Explicit, authorized selection of a revoked personal route creates a fresh active
+binding using the existing binding identity field. Ordinary inbound messages reject
+revoked routes and direct the user to select a Space. Route lists hide explicit
+access denial but report authorization-query failures instead of returning a
+successful empty list.
 
 If the current delivery registration fails after commit, `/app/messaging/route/update`
 returns `partial` with the committed `route` and optional `applicationProblem`
