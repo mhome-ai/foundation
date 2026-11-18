@@ -1203,14 +1203,25 @@ fn set_color_rgb(
     attrs: &mut Map<String, Value>,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
-    attrs.insert(
-        "colorHue".to_string(),
-        json!(required_number(request, "hue")?.clamp(0.0, 360.0)),
+    let component = |key: &str, old: &str, max: f64| -> Result<f64> {
+        let value = request
+            .get(key)
+            .filter(|v| !v.is_null())
+            .or_else(|| attrs.get(old));
+        value
+            .and_then(Value::as_f64)
+            .filter(|v| v.is_finite() && (0.0..=max).contains(v))
+            .ok_or_else(|| anyhow!("{key} is invalid or unavailable"))
+    };
+    ensure!(
+        request.get("hue").is_some_and(|v| !v.is_null())
+            || request.get("saturation").is_some_and(|v| !v.is_null()),
+        "hue or saturation is required"
     );
-    attrs.insert(
-        "colorSaturation".to_string(),
-        json!(required_number(request, "saturation")?.clamp(0.0, 100.0)),
-    );
+    let hue = component("hue", "colorHue", 360.0)?;
+    let saturation = component("saturation", "colorSaturation", 100.0)?;
+    attrs.insert("colorHue".into(), json!(hue));
+    attrs.insert("colorSaturation".into(), json!(saturation));
     projected_event(attrs, "state.colorRGB")
 }
 
@@ -1960,6 +1971,56 @@ mod tests {
         assert!(handle_command(THERMOSTAT_FAN_V1, &mut attrs,
             "command.setThermostatTemperature",
             &object_map(json!({"heatingSetpoint":temperature(20.0,"C"),"coolingSetpoint":temperature(22.0,"C")})).unwrap()).is_ok());
+    }
+
+    #[test]
+    fn partial_rgb_preserves_the_other_component_and_validates_before_mutation() {
+        let model = LIGHT_RGB_DIMMER_V1;
+        let mut attrs = default_attributes(model).unwrap();
+        attrs.insert("colorHue".into(), json!(35));
+        attrs.insert("colorSaturation".into(), json!(70));
+        for (request, expected) in [
+            (json!({"hue":120.5}), json!({"hue":120.5,"saturation":70.0})),
+            (json!({"saturation":0}), json!({"hue":120.5,"saturation":0.0})),
+        ] {
+            handle_command(
+                model,
+                &mut attrs,
+                "command.setColorRGB",
+                request.as_object().unwrap(),
+            )
+            .unwrap();
+            assert_eq!(
+                json!(project_state(model, &attrs, "state.colorRGB").unwrap()),
+                expected
+            );
+        }
+        for request in [
+            json!({}),
+            json!({"hue":null}),
+            json!({"hue":10,"saturation":-1}),
+            json!({"hue":361}),
+        ] {
+            let before = attrs.clone();
+            assert!(handle_command(
+                model,
+                &mut attrs,
+                "command.setColorRGB",
+                request.as_object().unwrap()
+            )
+            .is_err());
+            assert_eq!(attrs, before);
+        }
+        attrs.insert("colorHue".into(), Value::Null);
+        let before = attrs.clone();
+        assert!(handle_command(
+            model,
+            &mut attrs,
+            "command.setColorRGB",
+            json!({"saturation":20}).as_object().unwrap()
+        )
+        .is_err());
+        assert_eq!(attrs, before);
     }
 
     #[test]
