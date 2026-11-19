@@ -129,7 +129,7 @@ test("a recovered entry cannot bypass signature or proof verification failure", 
   });
 });
 
-for (const outcome of ["success", "proof-failure", "rejected", "lost-response", "already-published", "npm-already-published", "crate-already-published", "mismatched-published", "registry-error"]) {
+for (const outcome of ["success", "proof-failure", "rejected", "lost-response", "already-published", "npm-already-published", "crate-already-published", "mismatched-published", "registry-error", "unregistered-package", "registration-error"]) {
   test(`protocol publication preserves verified proof and handles ${outcome}`, () => {
     const failProof = outcome === "proof-failure";
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "foundation-publish-proof-"));
@@ -174,6 +174,10 @@ if (tool === 'npm' && args[0] === 'publish' && !args.includes('--dry-run')) {
     fs.writeFileSync(path.join(bin, "python3"), registryPythonFixture(`
 require('node:fs').appendFileSync(process.env.CALL_LOG, JSON.stringify(['python3', ...args]) + '\\n');
 const outcome = process.env.UPLOAD_OUTCOME;
+if (operation === 'require-package' && ['unregistered-package', 'registration-error'].includes(outcome)) {
+  console.error(outcome === 'unregistered-package' ? 'Initialize npm package and trusted publisher first' : 'Cannot verify registry: HTTP 503');
+  process.exit(2);
+}
 if (operation === 'exists') {
   if (outcome === 'registry-error' && args[3] === 'npm') process.exit(2);
   if (outcome === 'npm-already-published') process.exit(args[3] === 'npm' ? 0 : 3);
@@ -190,9 +194,10 @@ if (operation === 'verify' && args[3] === 'npm' && outcome === 'mismatched-publi
       const calls = fs.readFileSync(callLog, "utf8").trim().split("\n").map(JSON.parse);
       const proof = calls.findIndex(([tool, arg]) => tool === "node" && arg === "scripts/protocol-provenance.mjs");
       const uploads = calls.map((call, i) => ({ call, i })).filter(({ call }) => ["cargo", "npm"].includes(call[0]) && call[1] === "publish" && !call.includes("--dry-run"));
-      const existingOrError = ["already-published", "npm-already-published", "mismatched-published", "registry-error"].includes(outcome);
+      const registrationBlocked = ["unregistered-package", "registration-error"].includes(outcome);
+      const existingOrError = registrationBlocked || ["already-published", "npm-already-published", "mismatched-published", "registry-error"].includes(outcome);
       assert.equal(proof >= 0, !existingOrError);
-      assert.equal(result.status, outcome === "registry-error" || outcome === "mismatched-published" ? 2 : failProof || outcome === "rejected" ? 1 : 0, result.stderr);
+      assert.equal(result.status, registrationBlocked || outcome === "registry-error" || outcome === "mismatched-published" ? 2 : failProof || outcome === "rejected" ? 1 : 0, result.stderr);
       const partial = ["npm-already-published", "crate-already-published"].includes(outcome);
       assert.equal(uploads.length, partial ? 1 : failProof || existingOrError ? 0 : 2);
       if (!existingOrError) assert.ok(uploads.every(({ i }) => i > proof));
@@ -204,6 +209,10 @@ if (operation === 'verify' && args[3] === 'npm' && outcome === 'mismatched-publi
         assert.ok(calls.some(call => call[0] === 'python3' && call[3] === 'verify' && call[4] === 'npm'));
       }
       if (outcome === 'rejected') assert.match(result.stderr, /npm rejected publication \(E404\)/);
+      if (registrationBlocked) {
+        assert.equal(calls.some(([tool]) => tool === 'cargo' || tool === 'npm'), false);
+        assert.match(result.stderr, outcome === 'unregistered-package' ? /Initialize npm package/ : /HTTP 503/);
+      }
     } finally { fs.rmSync(root, { recursive: true, force: true }); }
   });
 }

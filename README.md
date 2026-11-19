@@ -90,6 +90,14 @@ the existing macOS CI.
 The published protocol packages trust GitHub Actions for organization `mhome-ai`, repository
 `foundation`, and workflow `publish-crate.yml`. That workflow runs on `ubuntu-latest`, grants
 `id-token: write`, and publishes with provenance. No npm token is required.
+For a new protocol package, an authorized npm maintainer must first initialize
+the public package and configure this trusted publisher with direct-publish
+permission. CI checks public package registration before uploading either
+registry. A successful `npm publish --dry-run` does not establish registration
+or publishing authority; an existing public record alone does not prove the
+trusted publisher is configured. Actual CI publication still verifies that
+authority. Do not replace it with a long-lived publishing token or disable
+provenance to complete a first release.
 The release workflow pins Node 24.22.3 and npm 12.2.1. Before uploading either
 package, `scripts/protocol-provenance.mjs` signs the final npm tarball's SLSA
 statement and verifies its certificate identity, signature and transparency-log

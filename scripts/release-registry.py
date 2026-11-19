@@ -55,6 +55,30 @@ def fetch(url, *, deadline=None, request_seconds=15):
         time.sleep(delay)
 
 
+def npm_package_url(name):
+    if not re.fullmatch(r"(?:@[a-z0-9-]+/)?[a-z0-9-]+", name):
+        raise RegistryError("Invalid npm package name")
+    return f"https://registry.npmjs.org/{quote(name, safe='@/')}"
+
+
+def require_npm_package(name):
+    """Registration only: a public package record does not prove write authority."""
+    contents = fetch(npm_package_url(name))
+    if contents is None:
+        raise RegistryError(
+            f"Public npm package {name} is not registered or publicly accessible. "
+            "Initialize it with an authorized npm account and configure its trusted publisher "
+            "before releasing either registry; npm publish --dry-run does not verify this prerequisite."
+        )
+    try:
+        data = json.loads(contents)
+        if not isinstance(data, dict) or data.get("name") != name or not isinstance(data.get("versions"), dict):
+            raise ValueError("response is not the requested package record")
+    except (ValueError, TypeError) as error:
+        raise RegistryError(f"Invalid npm registration metadata for {name}: {error}") from error
+    print(f"Public npm package registration verified: {name}; publish authority still requires CI verification")
+
+
 def metadata(kind, name, version, *, deadline=None):
     if not re.fullmatch(r"\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?", version):
         raise RegistryError("Expected an exact package version")
@@ -63,9 +87,7 @@ def metadata(kind, name, version, *, deadline=None):
             raise RegistryError("Invalid crate name")
         url = f"https://crates.io/api/v1/crates/{name}/{version}"
     else:
-        if not re.fullmatch(r"(?:@[a-z0-9-]+/)?[a-z0-9-]+", name):
-            raise RegistryError("Invalid npm package name")
-        url = f"https://registry.npmjs.org/{quote(name, safe='@/')}/{version}"
+        url = f"{npm_package_url(name)}/{version}"
     contents = fetch(url, deadline=deadline)
     if contents is None:
         return None
@@ -166,13 +188,20 @@ def verify(kind, name, version, local):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("exists", "wait", "verify"))
+    parser.add_argument("action", choices=("exists", "wait", "verify", "require-package"))
     parser.add_argument("kind", choices=("crate", "npm"))
     parser.add_argument("name")
-    parser.add_argument("version")
+    parser.add_argument("version", nargs="?")
     parser.add_argument("archive", nargs="?", type=Path)
     args = parser.parse_args()
     try:
+        if args.action == "require-package":
+            if args.kind != "npm" or args.version is not None or args.archive is not None:
+                raise RegistryError("Usage: require-package npm PACKAGE (no version or archive)")
+            require_npm_package(args.name)
+            return 0
+        if args.version is None:
+            raise RegistryError("Expected an exact package version")
         if args.action == "exists":
             # Reserve 3 for proven absence. An unexpected Python/process exit 1
             # must never look like an HTTP 404 to a conditional shell caller.

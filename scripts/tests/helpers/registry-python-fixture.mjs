@@ -19,10 +19,12 @@ if (args[0] === '-c' && args.length === 2) {
   process.exit(result.status ?? 1);
 }
 const operation = args[2];
+const registration = operation === 'require-package';
 if (args[0] !== '-B' || args[1] !== ${JSON.stringify(registry)} ||
-    !['exists', 'verify', 'wait'].includes(operation) ||
-    !['crate', 'npm'].includes(args[3]) || !args[4] || !args[5] ||
-    args.length !== (operation === 'verify' ? 7 : 6) ||
+    !['exists', 'verify', 'wait', 'require-package'].includes(operation) ||
+    !['crate', 'npm'].includes(args[3]) || !args[4] || (!registration && !args[5]) ||
+    (registration && args[3] !== 'npm') ||
+    args.length !== (registration ? 5 : operation === 'verify' ? 7 : 6) ||
     (operation === 'verify' && !args[6])) {
   console.error('Unexpected Python invocation in publication fixture: ' + JSON.stringify(args));
   process.exit(2);

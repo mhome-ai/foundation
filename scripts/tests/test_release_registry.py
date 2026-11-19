@@ -100,6 +100,44 @@ class RegistryTests(unittest.TestCase):
                 with self.assertRaisesRegex(r.RegistryError, "Invalid registry metadata"):
                     r.metadata(kind, "fixture", "1.0.0")
 
+    def test_npm_package_registration_is_independent_of_the_new_version(self):
+        for versions in ({}, {"0.0.0-stage": {"name": "@mhome/fixture", "version": "0.0.0-stage"}}):
+            with self.subTest(versions=versions), patch.object(
+                r, "fetch", return_value=json.dumps({"name": "@mhome/fixture", "versions": versions}).encode()
+            ) as fetch:
+                r.require_npm_package("@mhome/fixture")
+                fetch.assert_called_once_with("https://registry.npmjs.org/@mhome/fixture")
+
+    def test_missing_registration_reports_the_bootstrap_prerequisite(self):
+        with patch.object(r, "fetch", return_value=None):
+            with self.assertRaisesRegex(r.RegistryError, "Initialize it.*trusted publisher"):
+                r.require_npm_package("@mhome/fixture")
+
+    def test_registration_errors_never_masquerade_as_missing_packages(self):
+        with patch.object(r, "fetch", side_effect=r.RegistryError("HTTP 403")):
+            with self.assertRaisesRegex(r.RegistryError, "HTTP 403"):
+                r.require_npm_package("@mhome/fixture")
+        for data in (b"not JSON", b"null", b"[]", b"{}",
+                     b'{"name":"other","versions":{}}',
+                     b'{"name":"@mhome/fixture","versions":[]}'):
+            with self.subTest(data=data), patch.object(r, "fetch", return_value=data):
+                with self.assertRaisesRegex(r.RegistryError, "Invalid npm registration metadata"):
+                    r.require_npm_package("@mhome/fixture")
+
+    def test_registration_cli_requires_npm_and_has_no_version_argument(self):
+        for args in (("require-package", "npm", "@mhome/fixture"),
+                     ("require-package", "crate", "fixture"),
+                     ("require-package", "npm", "@mhome/fixture", "1.0.0"),
+                     ("exists", "npm", "@mhome/fixture")):
+            with self.subTest(args=args), patch.object(sys, "argv", ["release-registry.py", *args]), \
+                    patch.object(r, "require_npm_package") as check:
+                valid = args == ("require-package", "npm", "@mhome/fixture")
+                self.assertEqual(0 if valid else 2, r.main())
+                if valid:
+                    check.assert_called_once_with("@mhome/fixture")
+                else:
+                    check.assert_not_called()
+
     def verify(self, kind, local, remote, **metadata):
         identity = ({"checksum": hashlib.sha256(remote).hexdigest()} if kind == "crate" else
                     {"dist": {"tarball": "https://fixture/archive.tgz", "integrity": "sha512-" +

@@ -142,6 +142,12 @@ registry_exists() {
   # A shell conditional must never turn an unavailable registry into absence.
   case "$status" in 0) return 0 ;; 3) return 1 ;; *) exit "$status" ;; esac
 }
+if [[ "${publish}" == "--publish" && -n "${npm_package}" ]]; then
+  # OIDC trust belongs to an existing npm package. A dry-run does not establish
+  # that registration, and must not let a first release upload only the crate.
+  # This read does not claim the configured publisher has write authority.
+  python3 -B "$registry_script" require-package npm "$npm_package"
+fi
 # Check from this runner before registry-based packaging. Local path dependencies
 # can compile successfully while the registry index still lacks their versions.
 node "$readiness_script" --dependencies-of "$package"
