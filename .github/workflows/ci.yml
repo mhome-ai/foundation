@@ -87,7 +87,7 @@ jobs:
           npm run test:protocol-packages
           staging_root="$(mktemp -d)"
           trap 'rm -rf "$staging_root"' EXIT
-          for protocol in artifact conversation appFacade core; do
+          for protocol in artifact conversation appFacade core onboard; do
             staging="$staging_root/$protocol"
             node scripts/stage-protocol-package.mjs "${protocol}" "${staging}"
             npm pack "${staging}" --dry-run

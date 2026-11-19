@@ -7,6 +7,13 @@ protocol=""
 npm_package=""
 
 case "${tag}" in
+  mhome-onboard-api-v*)
+    package="mhome-onboard-api"
+    manifest="crates/onboard-api/Cargo.toml"
+    version="${tag#mhome-onboard-api-v}"
+    protocol="onboard"
+    npm_package="@mhome/onboard-protocol"
+    ;;
   mhome-script-api-v*)
     package="mhome-script-api"
     manifest="crates/script-api/Cargo.toml"

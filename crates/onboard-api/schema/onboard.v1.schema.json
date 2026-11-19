@@ -1,0 +1,567 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mhome.ai/onboard/v1",
+  "title": "MeowLink product onboarding v1",
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "keyId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,64}(?![\\s\\S])"
+        },
+        "keyId": {
+          "type": "string",
+          "pattern": "^p256:[0-9a-f]{64}(?![\\s\\S])"
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "identity"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "host",
+            "pod",
+            "wave"
+          ]
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        }
+      }
+    },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/component"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "role"
+            ],
+            "properties": {
+              "role": {
+                "const": "host"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "role"
+            ],
+            "properties": {
+              "role": {
+                "const": "pod"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": [
+              "role"
+            ],
+            "properties": {
+              "role": {
+                "const": "wave"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        }
+      ]
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "lan",
+        "ble"
+      ],
+      "properties": {
+        "owner": {
+          "enum": [
+            "external",
+            "product",
+            "none"
+          ]
+        },
+        "lan": {
+          "type": "boolean"
+        },
+        "ble": {
+          "type": "boolean"
+        }
+      }
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "ownership",
+        "environment",
+        "identity",
+        "generation",
+        "components",
+        "network",
+        "canHostHub"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "ownership": {
+          "const": "space"
+        },
+        "environment": {
+          "enum": [
+            "prod",
+            "dev",
+            "e2e"
+          ]
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "generation": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}(?![\\s\\S])"
+        },
+        "components": {
+          "$ref": "#/$defs/components"
+        },
+        "network": {
+          "$ref": "#/$defs/network"
+        },
+        "canHostHub": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "canHostHub": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "components": {
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "role"
+                  ],
+                  "properties": {
+                    "role": {
+                      "const": "host"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "network": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "lan": {
+                      "const": true
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "ble": {
+                      "const": true
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "network": {
+                "properties": {
+                  "owner": {
+                    "const": "none"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "network": {
+                "properties": {
+                  "lan": {
+                    "const": false
+                  },
+                  "ble": {
+                    "const": true
+                  }
+                }
+              },
+              "components": {
+                "maxItems": 1,
+                "items": {
+                  "properties": {
+                    "role": {
+                      "const": "wave"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "network": {
+                "properties": {
+                  "lan": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "space": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tenantId",
+        "spaceId"
+      ],
+      "properties": {
+        "tenantId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,64}(?![\\s\\S])"
+        },
+        "spaceId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,64}(?![\\s\\S])"
+        }
+      }
+    },
+    "hub": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "intent",
+            "hubId",
+            "keyId"
+          ],
+          "properties": {
+            "intent": {
+              "const": "join"
+            },
+            "hubId": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.:-]{1,64}(?![\\s\\S])"
+            },
+            "keyId": {
+              "type": "string",
+              "pattern": "^p256:[0-9a-f]{64}(?![\\s\\S])"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "intent"
+          ],
+          "properties": {
+            "intent": {
+              "const": "first"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "operationId",
+        "generation",
+        "descriptorDigest",
+        "space",
+        "hub"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "operationId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}(?![\\s\\S])"
+        },
+        "generation": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}(?![\\s\\S])"
+        },
+        "descriptorDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "space": {
+          "$ref": "#/$defs/space"
+        },
+        "hub": {
+          "$ref": "#/$defs/hub"
+        }
+      }
+    },
+    "start": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan",
+        "authorizationProof"
+      ],
+      "properties": {
+        "plan": {
+          "$ref": "#/$defs/plan"
+        },
+        "authorizationProof": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192,
+          "pattern": "^[!-~]{1,8192}(?![\\s\\S])"
+        }
+      }
+    },
+    "componentResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "state"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "host",
+            "pod",
+            "wave"
+          ]
+        },
+        "state": {
+          "enum": [
+            "pending",
+            "confirmed"
+          ]
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan",
+        "phase",
+        "state",
+        "components",
+        "updatedAtMs"
+      ],
+      "properties": {
+        "plan": {
+          "$ref": "#/$defs/plan"
+        },
+        "phase": {
+          "enum": [
+            "network",
+            "binding",
+            "host",
+            "hub",
+            "pod",
+            "wave",
+            "complete"
+          ]
+        },
+        "state": {
+          "enum": [
+            "running",
+            "needsInput",
+            "needsAuthorization",
+            "recoveryRequired",
+            "complete"
+          ]
+        },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/componentResult"
+          },
+          "allOf": [
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "role"
+                ],
+                "properties": {
+                  "role": {
+                    "const": "host"
+                  }
+                }
+              },
+              "minContains": 0,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "role"
+                ],
+                "properties": {
+                  "role": {
+                    "const": "pod"
+                  }
+                }
+              },
+              "minContains": 0,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "role"
+                ],
+                "properties": {
+                  "role": {
+                    "const": "wave"
+                  }
+                }
+              },
+              "minContains": 0,
+              "maxContains": 1
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.:-]{1,64}(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "updatedAtMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "complete"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "phase": {
+                "const": "complete"
+              },
+              "components": {
+                "items": {
+                  "properties": {
+                    "state": {
+                      "const": "confirmed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "phase": {
+                "not": {
+                  "const": "complete"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "needsInput",
+                  "needsAuthorization",
+                  "recoveryRequired"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.:-]{1,64}(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "reason"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

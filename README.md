@@ -16,6 +16,7 @@ Shared Rust leaf libraries and platform contracts for MeowLink and MeowCore.
 - `mhome-machine-identity`: persistent local machine identity derivation and host naming.
 - `mhome-host-auth`: transport-independent Host signatures, verification and Client session rules.
 - `mhome-os-permissions`: in-process permission status, requests, and System Settings links.
+- `mhome-onboard-api`: device-owned Space product onboarding contracts and conformance fixtures; the runtime belongs to `meow-onboard`.
 - `mhome-core-api`: shared Core/Node contracts and the canonical Host machine, metrics and permission types in `core_api::host`.
 - `mhome-playground-models`: deterministic playground device models and projections.
 - `mhome-runtime-paths`: process-safe runtime paths, endpoint names, and daemon ownership checks.
@@ -65,6 +66,7 @@ same release tag:
 - `@mhome/conversation-protocol`
 - `@mhome/app-facade-protocol`
 - `@mhome/core-protocol`
+- `@mhome/onboard-protocol`
 
 Run `npm ci` before protocol checks or tagged crate verification. Then run
 `npm run test:protocol-packages` to verify package staging, manifest file references

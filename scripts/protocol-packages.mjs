@@ -1,4 +1,13 @@
 export const PROTOCOL_PACKAGES = Object.freeze({
+  onboard: Object.freeze({
+    crateDir: "crates/onboard-api",
+    npmName: "@mhome/onboard-protocol",
+    protocol: "mhome.onboard",
+    manifest: "manifest/onboard.v1.json",
+    additionalFiles: Object.freeze(["contract"]),
+    schemas: Object.freeze({ onboard: "schema/onboard.v1.schema.json" }),
+    fixtures: Object.freeze({ conformance: "fixtures/conformance.json" }),
+  }),
   artifact: Object.freeze({
     crateDir: "crates/artifact",
     npmName: "@mhome/artifact-protocol",

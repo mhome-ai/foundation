@@ -125,7 +125,7 @@ function main() {
   const [name, outputDir] = process.argv.slice(2);
   if (!name || !outputDir) {
     throw new Error(
-      "usage: node scripts/stage-protocol-package.mjs <artifact|conversation|appFacade|core> <output-dir>"
+      "usage: node scripts/stage-protocol-package.mjs <protocol-name> <output-dir>"
     );
   }
   const staged = stageProtocolPackage(name, outputDir);

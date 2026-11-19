@@ -14,6 +14,7 @@ members = [
   "crates/playground-models",
   "crates/runtime-paths",
   "crates/os-permissions",
+  "crates/onboard-api",
   "crates/protocomm",
   "crates/ble-commission",
   "crates/storage-api",

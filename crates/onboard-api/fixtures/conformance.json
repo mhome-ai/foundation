@@ -1,0 +1,1498 @@
+{
+  "description": "Fictional data. Structural validity never proves signatures, possession or authorization.",
+  "cases": [
+    {
+      "name": "product-host",
+      "kind": "product",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      },
+      "expectedDigest": "3f07373e1fc43c68fd2aa1feff466947028c9baacf5f4e53ef8be97b4c7a8956"
+    },
+    {
+      "name": "product-pod",
+      "kind": "product",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": false
+      },
+      "expectedDigest": "fe91332e104fc5f5e44bdb9f51046e4ae9861776d855fd8f68fb115903ba3fcc"
+    },
+    {
+      "name": "product-host-pod",
+      "kind": "product",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      },
+      "expectedDigest": "61903c882e765e91fe4b185e9ef358457777c96b33a73862bad5a186b24cddd1"
+    },
+    {
+      "name": "product-wave",
+      "kind": "product",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": false
+      },
+      "expectedDigest": "0bc431737d08f797d877be2f7911941ea6c1a82f24def182a00db44bf2743d58"
+    },
+    {
+      "name": "product-host-wave",
+      "kind": "product",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      },
+      "expectedDigest": "1fd2d302037ac783aff479f9fe9e5bcf6283dac201827dda0ef0f8e954039de8"
+    },
+    {
+      "name": "product-pod-wave",
+      "kind": "product",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": false
+      },
+      "expectedDigest": "bc989c46c2b5f43136faec4c6e0241f5d6de87b431639b51b1e27343d5bdf6f9"
+    },
+    {
+      "name": "product-host-pod-wave",
+      "kind": "product",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      },
+      "expectedDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919"
+    },
+    {
+      "name": "plan-join",
+      "kind": "plan",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "operationId": "22222222222222222222222222222222",
+        "generation": "11111111111111111111111111111111",
+        "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+        "space": {
+          "tenantId": "fictional-tenant",
+          "spaceId": "fictional-home"
+        },
+        "hub": {
+          "intent": "join",
+          "hubId": "fictional-hub",
+          "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+        }
+      },
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "plan-first",
+      "kind": "plan",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "operationId": "22222222222222222222222222222222",
+        "generation": "11111111111111111111111111111111",
+        "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+        "space": {
+          "tenantId": "fictional-tenant",
+          "spaceId": "fictional-home"
+        },
+        "hub": {
+          "intent": "first"
+        }
+      },
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "pure-ble-wave",
+      "kind": "product",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "none",
+          "lan": false,
+          "ble": true
+        },
+        "canHostHub": false
+      },
+      "expectedDigest": "fdb7b8df9fd38a29882b4384fff7a11406fc2b7f450ee8eedc95c075a966a97c"
+    },
+    {
+      "name": "user-ownership",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "user",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "admin-role",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "adminHost",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "duplicate-role",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "no-components",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "first-hub-without-host",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "no-transport",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": false,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "no-ip-pod",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "none",
+          "lan": false,
+          "ble": true
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "wrong-version",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 2,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "invalid-key",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "not-a-key"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "unknown-integration-field",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true,
+        "integrationId": "fictional.thermostat"
+      }
+    },
+    {
+      "name": "start-with-business-field",
+      "kind": "start",
+      "valid": false,
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      },
+      "value": {
+        "plan": {
+          "protocolVersion": 1,
+          "operationId": "22222222222222222222222222222222",
+          "generation": "11111111111111111111111111111111",
+          "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+          "space": {
+            "tenantId": "fictional-tenant",
+            "spaceId": "fictional-home"
+          },
+          "hub": {
+            "intent": "join",
+            "hubId": "fictional-hub",
+            "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+          }
+        },
+        "authorizationProof": "fictional-not-a-real-grant",
+        "integrationId": "fictional.thermostat"
+      }
+    },
+    {
+      "name": "structural-start-not-authorization",
+      "kind": "start",
+      "valid": true,
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      },
+      "value": {
+        "plan": {
+          "protocolVersion": 1,
+          "operationId": "22222222222222222222222222222222",
+          "generation": "11111111111111111111111111111111",
+          "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+          "space": {
+            "tenantId": "fictional-tenant",
+            "spaceId": "fictional-home"
+          },
+          "hub": {
+            "intent": "join",
+            "hubId": "fictional-hub",
+            "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+          }
+        },
+        "authorizationProof": "fictional-not-a-real-grant"
+      }
+    },
+    {
+      "name": "status-complete",
+      "kind": "status",
+      "valid": true,
+      "value": {
+        "plan": {
+          "protocolVersion": 1,
+          "operationId": "22222222222222222222222222222222",
+          "generation": "11111111111111111111111111111111",
+          "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+          "space": {
+            "tenantId": "fictional-tenant",
+            "spaceId": "fictional-home"
+          },
+          "hub": {
+            "intent": "join",
+            "hubId": "fictional-hub",
+            "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+          }
+        },
+        "phase": "complete",
+        "state": "complete",
+        "components": [
+          {
+            "role": "host",
+            "state": "confirmed"
+          },
+          {
+            "role": "pod",
+            "state": "confirmed"
+          },
+          {
+            "role": "wave",
+            "state": "confirmed"
+          }
+        ],
+        "reason": null,
+        "updatedAtMs": 1795000000123
+      },
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "status-no-reason",
+      "kind": "status",
+      "valid": true,
+      "value": {
+        "plan": {
+          "protocolVersion": 1,
+          "operationId": "22222222222222222222222222222222",
+          "generation": "11111111111111111111111111111111",
+          "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+          "space": {
+            "tenantId": "fictional-tenant",
+            "spaceId": "fictional-home"
+          },
+          "hub": {
+            "intent": "join",
+            "hubId": "fictional-hub",
+            "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+          }
+        },
+        "phase": "complete",
+        "state": "complete",
+        "components": [
+          {
+            "role": "host",
+            "state": "confirmed"
+          },
+          {
+            "role": "pod",
+            "state": "confirmed"
+          },
+          {
+            "role": "wave",
+            "state": "confirmed"
+          }
+        ],
+        "updatedAtMs": 1795000000123
+      },
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "status-pending-is-not-complete",
+      "kind": "status",
+      "valid": false,
+      "value": {
+        "plan": {
+          "protocolVersion": 1,
+          "operationId": "22222222222222222222222222222222",
+          "generation": "11111111111111111111111111111111",
+          "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+          "space": {
+            "tenantId": "fictional-tenant",
+            "spaceId": "fictional-home"
+          },
+          "hub": {
+            "intent": "join",
+            "hubId": "fictional-hub",
+            "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+          }
+        },
+        "phase": "complete",
+        "state": "complete",
+        "components": [
+          {
+            "role": "host",
+            "state": "pending"
+          },
+          {
+            "role": "pod",
+            "state": "confirmed"
+          },
+          {
+            "role": "wave",
+            "state": "confirmed"
+          }
+        ],
+        "reason": null,
+        "updatedAtMs": 1795000000123
+      },
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "status-duplicate-role",
+      "kind": "status",
+      "valid": false,
+      "value": {
+        "plan": {
+          "protocolVersion": 1,
+          "operationId": "22222222222222222222222222222222",
+          "generation": "11111111111111111111111111111111",
+          "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+          "space": {
+            "tenantId": "fictional-tenant",
+            "spaceId": "fictional-home"
+          },
+          "hub": {
+            "intent": "join",
+            "hubId": "fictional-hub",
+            "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+          }
+        },
+        "phase": "complete",
+        "state": "complete",
+        "components": [
+          {
+            "role": "host",
+            "state": "confirmed"
+          },
+          {
+            "role": "host",
+            "state": "confirmed"
+          },
+          {
+            "role": "wave",
+            "state": "confirmed"
+          }
+        ],
+        "reason": null,
+        "updatedAtMs": 1795000000123
+      },
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "status-unsafe-timestamp",
+      "kind": "status",
+      "valid": false,
+      "value": {
+        "plan": {
+          "protocolVersion": 1,
+          "operationId": "22222222222222222222222222222222",
+          "generation": "11111111111111111111111111111111",
+          "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+          "space": {
+            "tenantId": "fictional-tenant",
+            "spaceId": "fictional-home"
+          },
+          "hub": {
+            "intent": "join",
+            "hubId": "fictional-hub",
+            "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+          }
+        },
+        "phase": "complete",
+        "state": "complete",
+        "components": [
+          {
+            "role": "host",
+            "state": "confirmed"
+          },
+          {
+            "role": "pod",
+            "state": "confirmed"
+          },
+          {
+            "role": "wave",
+            "state": "confirmed"
+          }
+        ],
+        "reason": null,
+        "updatedAtMs": 9007199254740992
+      },
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "status-blocked-without-reason",
+      "kind": "status",
+      "valid": false,
+      "value": {
+        "plan": {
+          "protocolVersion": 1,
+          "operationId": "22222222222222222222222222222222",
+          "generation": "11111111111111111111111111111111",
+          "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+          "space": {
+            "tenantId": "fictional-tenant",
+            "spaceId": "fictional-home"
+          },
+          "hub": {
+            "intent": "join",
+            "hubId": "fictional-hub",
+            "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+          }
+        },
+        "phase": "network",
+        "state": "needsAuthorization",
+        "components": [
+          {
+            "role": "host",
+            "state": "pending"
+          },
+          {
+            "role": "pod",
+            "state": "pending"
+          },
+          {
+            "role": "wave",
+            "state": "pending"
+          }
+        ],
+        "updatedAtMs": 1795000000123
+      },
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    },
+    {
+      "name": "start-non-ascii-proof",
+      "kind": "start",
+      "valid": false,
+      "product": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          },
+          {
+            "role": "pod",
+            "identity": {
+              "id": "fictional-pod",
+              "keyId": "p256:09d775410e93156dde4e3bb6679bbbba1b9868a8649121fe4185097261d4ebae"
+            }
+          },
+          {
+            "role": "wave",
+            "identity": {
+              "id": "fictional-wave",
+              "keyId": "p256:0e271e02f80245c7679e705a7916a24342579904ddfdb3d3545a59e665b7a79b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      },
+      "value": {
+        "plan": {
+          "protocolVersion": 1,
+          "operationId": "22222222222222222222222222222222",
+          "generation": "11111111111111111111111111111111",
+          "descriptorDigest": "7f14befd767b337afa8e29213dd9ccd782dcb3c229c65f2f1391d267bb69e919",
+          "space": {
+            "tenantId": "fictional-tenant",
+            "spaceId": "fictional-home"
+          },
+          "hub": {
+            "intent": "join",
+            "hubId": "fictional-hub",
+            "keyId": "p256:5ec7ae791fbdba5a1b5f60d7bdd896d8349f2c5d5ca4bb429d8ce9735abbc38f"
+          }
+        },
+        "authorizationProof": "\u00e9"
+      }
+    },
+    {
+      "name": "product-newline-id",
+      "kind": "product",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "ownership": "space",
+        "environment": "dev",
+        "identity": {
+          "id": "fictional-product\n",
+          "keyId": "p256:9428d50c8ee111b04032a63367fe31f795727434424cb2786b0532e4887a0177"
+        },
+        "generation": "11111111111111111111111111111111",
+        "components": [
+          {
+            "role": "host",
+            "identity": {
+              "id": "fictional-host",
+              "keyId": "p256:09bea3e97e81eeec318f13d710c517e2dd7c484f499769bfea271b620fcfc87b"
+            }
+          }
+        ],
+        "network": {
+          "owner": "external",
+          "lan": true,
+          "ble": false
+        },
+        "canHostHub": true
+      }
+    }
+  ]
+}
