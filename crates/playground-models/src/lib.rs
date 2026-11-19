@@ -1981,7 +1981,10 @@ mod tests {
         attrs.insert("colorSaturation".into(), json!(70));
         for (request, expected) in [
             (json!({"hue":120.5}), json!({"hue":120.5,"saturation":70.0})),
-            (json!({"saturation":0}), json!({"hue":120.5,"saturation":0.0})),
+            (
+                json!({"saturation":0}),
+                json!({"hue":120.5,"saturation":0.0}),
+            ),
         ] {
             handle_command(
                 model,
