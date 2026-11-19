@@ -94,6 +94,16 @@ the caller, even if the caller knows the operation ID.
 
 ## Networking and transport handoff
 
+Discovery belongs to the commissioning Client: local LAN discovery plus its own
+BLE adapter. Initial Wi-Fi setup never asks Core or a BLE relay Plugin to scan.
+The Client reports unavailable hardware, disabled Bluetooth and denied permission
+separately; none is an empty successful BLE scan. With an existing Hub, adding a
+Space product requires the Client's authenticated direct-LAN connection to that
+exact selected Hub, not a cloud/tunnel connection. A Space without a Hub must use
+the explicit first-Hub flow. Physical pairing, a discovered name or knowing a
+Space ID cannot bypass these admission checks. User Pod/Admin Host onboarding is
+separate and does not inherit this Space-only restriction.
+
 Wi-Fi devices use protected Client BLE only for initial network setup. The BLE
 phase carries the selected public Hub identity or explicit first-Hub network
 permit, never User refresh tokens or component business credentials. The device
