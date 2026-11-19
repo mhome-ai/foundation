@@ -1,3 +1,5 @@
+mod humidistat_model;
+pub use humidistat_model::HUMIDISTAT_V1;
 mod chime_model;
 pub use chime_model::CHIME_V1;
 mod alarm_models;
@@ -96,6 +98,7 @@ impl CommandOutcome {
 
 pub fn known_model_ids() -> &'static [&'static str] {
     &[
+        HUMIDISTAT_V1,
         CHIME_V1,
         DEVICE_ALARM_V1,
         SIREN_V1,
@@ -128,6 +131,9 @@ pub fn ensure_known_model(model_id: &str) -> Result<()> {
 }
 
 pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
+    if model_id == HUMIDISTAT_V1 {
+        return Ok(humidistat_model::defaults());
+    }
     if model_id == CHIME_V1 {
         return Ok(chime_model::defaults());
     }
@@ -260,8 +266,8 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "fanMode": "auto",
             "fanSpeed": 35,
             "availableFanModes": ["auto", "low", "medium", "high"],
-            "supportFanSpeedPercentage": true,
-            "supportFanMode": true
+            "fanOscillation": "off",
+            "availableFanOscillationModes": ["off","on"]
         })),
         FAN_PURIFIER_V1 => object_map(json!({
             "online": true,
@@ -269,8 +275,8 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "fanMode": "auto",
             "fanSpeed": 30,
             "availableFanModes": ["auto", "sleep", "low", "medium", "high", "turbo"],
-            "supportFanSpeedPercentage": true,
-            "supportFanMode": true,
+            "fanOscillation": "off",
+            "availableFanOscillationModes": ["off","on"],
             "qualityState": "good",
             "index": 35,
             "pm25": 8,
@@ -350,6 +356,9 @@ pub fn normalize_instance(mut instance: DeviceInstance) -> Result<DeviceInstance
 }
 
 pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
+    if model_id == HUMIDISTAT_V1 {
+        return Ok(humidistat_model::capabilities());
+    }
     if model_id == CHIME_V1 {
         return Ok(chime_model::capabilities());
     }
@@ -660,6 +669,9 @@ pub fn project_state(
     attrs: &Map<String, Value>,
     capability: &str,
 ) -> Result<Map<String, Value>> {
+    if model_id == HUMIDISTAT_V1 {
+        return humidistat_model::state(attrs, capability);
+    }
     if model_id == CHIME_V1 {
         return chime_model::state(attrs, capability);
     }
@@ -766,10 +778,7 @@ pub fn project_state(
         "data.carbonMonoxideDetectorAttributes" => {
             project_discovery(model_id, attrs, "state.carbonMonoxideDetector", "$f1")
         }
-        "state.fan" => Ok(object_map(json!({
-            "mode": string_attr(attrs, "fanMode")?,
-            "speed": number_attr(attrs, "fanSpeed")?
-        }))?),
+        "state.fan" => fan_state(attrs),
         "state.thermostat" => Ok(object_map(json!({
             "hvacMode": string_attr(attrs, "hvacMode")?,
             "presetMode": string_attr(attrs, "presetMode")?,
@@ -810,6 +819,9 @@ pub fn project_discovery(
     capability: &str,
     _alias: &str,
 ) -> Result<Map<String, Value>> {
+    if model_id == HUMIDISTAT_V1 {
+        return humidistat_model::discovery(attrs, capability);
+    }
     if model_id == CHIME_V1 {
         return chime_model::discovery(attrs, capability);
     }
@@ -869,8 +881,9 @@ pub fn project_discovery(
         }))?),
         "state.fan" | "command.setFan" => Ok(object_map(json!({
             "availableModes": attrs.get("availableFanModes").cloned().unwrap_or_else(|| Value::Array(Vec::new())),
-            "supportSpeedPercentage": bool_attr(attrs, "supportFanSpeedPercentage")?,
-            "supportMode": bool_attr(attrs, "supportFanMode")?
+            "supportedStates": ["mode","speed","oscillation"],
+            "supportedSettings": ["mode","speed","oscillation"],
+            "availableOscillationModes": value_attr(attrs,"availableFanOscillationModes")?
         }))?),
         "state.thermostat" | "command.setThermostatMode" | "command.setThermostatTemperature" => {
             Ok(object_map(json!({
@@ -933,6 +946,9 @@ pub fn apply_observed_payload(
     capability: &str,
     payload: &Map<String, Value>,
 ) -> Result<()> {
+    if model_id == HUMIDISTAT_V1 {
+        return humidistat_model::observe(attrs, capability, payload);
+    }
     if model_id == CHIME_V1 {
         return chime_model::observe(attrs, capability, payload);
     }
@@ -1044,11 +1060,25 @@ pub fn apply_observed_payload(
             copy_payload_field(attrs, payload, "sensitivity", "smokeSensitivity")?
         }
         "state.fan" => {
-            copy_optional_payload_fields(
-                attrs,
-                payload,
-                &[("mode", "fanMode"), ("speed", "fanSpeed")],
+            let mut next = attrs.clone();
+            ensure!(
+                !payload.is_empty()
+                    && payload
+                        .keys()
+                        .all(|k| ["mode", "speed", "oscillation"].contains(&k.as_str())),
+                "Invalid fan observation"
             );
+            copy_optional_payload_fields(
+                &mut next,
+                payload,
+                &[
+                    ("mode", "fanMode"),
+                    ("speed", "fanSpeed"),
+                    ("oscillation", "fanOscillation"),
+                ],
+            );
+            fan_state(&next)?;
+            *attrs = next;
         }
         "state.thermostat" => {
             copy_optional_payload_fields(
@@ -1097,6 +1127,9 @@ pub fn handle_command(
     capability: &str,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
+    if model_id == HUMIDISTAT_V1 {
+        return humidistat_model::command(attrs, capability, request);
+    }
     if model_id == CHIME_V1 {
         return chime_model::command(attrs, capability, request);
     }
@@ -1328,15 +1361,78 @@ fn door_lock(
     projected_event(attrs, "state.doorLock")
 }
 
+fn fan_state(attrs: &Map<String, Value>) -> Result<Map<String, Value>> {
+    let mut out = Map::new();
+    for (field, key, catalog) in [
+        ("mode", "fanMode", Some("availableFanModes")),
+        ("speed", "fanSpeed", None),
+        (
+            "oscillation",
+            "fanOscillation",
+            Some("availableFanOscillationModes"),
+        ),
+    ] {
+        let value = value_attr(attrs, key)?;
+        if !value.is_null() {
+            if let Some(catalog) = catalog {
+                let name = value
+                    .as_str()
+                    .ok_or_else(|| anyhow!("Invalid fan {field}"))?;
+                ensure_in_string_list(attrs, catalog, name)?;
+            } else {
+                ensure!(
+                    value
+                        .as_f64()
+                        .is_some_and(|n| n.is_finite() && (0.0..=100.0).contains(&n)),
+                    "Invalid fan percentage"
+                );
+            }
+        }
+        out.insert(field.into(), value);
+    }
+    Ok(out)
+}
+
 fn set_fan(attrs: &mut Map<String, Value>, request: &Map<String, Value>) -> Result<CommandOutcome> {
-    if let Some(mode) = request.get("mode").and_then(Value::as_str) {
-        ensure_in_string_list(attrs, "availableFanModes", mode)?;
-        attrs.insert("fanMode".to_string(), Value::String(mode.to_string()));
-    }
-    if let Some(speed) = request.get("speed").and_then(Value::as_f64) {
-        attrs.insert("fanSpeed".to_string(), json!(speed.clamp(0.0, 100.0)));
-    }
-    projected_event(attrs, "state.fan")
+    ensure!(request.len() == 1, "Specify exactly one fan setting");
+    let (field, value) = request.iter().next().unwrap();
+    let (key, next) = match field.as_str() {
+        "mode" | "oscillation" => {
+            let name = value
+                .as_str()
+                .ok_or_else(|| anyhow!("Fan setting requires a string"))?;
+            ensure_in_string_list(
+                attrs,
+                if field == "mode" {
+                    "availableFanModes"
+                } else {
+                    "availableFanOscillationModes"
+                },
+                name,
+            )?;
+            (
+                if field == "mode" {
+                    "fanMode"
+                } else {
+                    "fanOscillation"
+                },
+                value.clone(),
+            )
+        }
+        "speed" => {
+            let n = value
+                .as_f64()
+                .filter(|n| n.is_finite() && (0.0..=100.0).contains(n))
+                .ok_or_else(|| anyhow!("Invalid fan percentage"))?;
+            ("fanSpeed", json!(n))
+        }
+        _ => return Err(anyhow!("Unsupported fan setting")),
+    };
+    let mut updated = attrs.clone();
+    updated.insert(key.into(), next);
+    let payload = Value::Object(fan_state(&updated)?);
+    *attrs = updated;
+    Ok(CommandOutcome::with_event("state.fan", payload))
 }
 
 fn set_thermostat_mode(
@@ -2027,6 +2123,45 @@ mod tests {
     }
 
     #[test]
+    fn fan_atomic_settings_preserve_other_fields_unknowns_and_validate_before_mutation() {
+        let mut attrs = default_attributes(FAN_PURIFIER_V1).unwrap();
+        let before = attrs.clone();
+        for req in [
+            json!({}),
+            json!({"speed":101}),
+            json!({"speed":"50"}),
+            json!({"speed":50,"mode":"auto"}),
+            json!({"oscillation":"other"}),
+        ] {
+            assert!(handle_command(
+                FAN_PURIFIER_V1,
+                &mut attrs,
+                "command.setFan",
+                req.as_object().unwrap()
+            )
+            .is_err());
+            assert_eq!(attrs, before);
+        }
+        let out = handle_command(
+            FAN_PURIFIER_V1,
+            &mut attrs,
+            "command.setFan",
+            json!({"oscillation":"on"}).as_object().unwrap(),
+        )
+        .unwrap();
+        assert_eq!(out.events[0].payload["oscillation"], "on");
+        assert_eq!(attrs["fanSpeed"], before["fanSpeed"]);
+        apply_observed_payload(
+            FAN_PURIFIER_V1,
+            &mut attrs,
+            "state.fan",
+            json!({"speed":null}).as_object().unwrap(),
+        )
+        .unwrap();
+        assert!(project_state(FAN_PURIFIER_V1, &attrs, "state.fan").unwrap()["speed"].is_null());
+    }
+
+    #[test]
     fn immutable_catalogs_survive_device_controls() {
         for (model, capability, command, request) in [
             (
@@ -2045,7 +2180,7 @@ mod tests {
                 FAN_PURIFIER_V1,
                 "state.fan",
                 "command.setFan",
-                json!({"mode": "turbo", "speed": 90}),
+                json!({"mode": "turbo"}),
             ),
             (
                 THERMOSTAT_FAN_V1,
