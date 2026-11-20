@@ -128,6 +128,7 @@
         "componentId",
         "componentName",
         "permission",
+        "enforcement",
         "feature",
         "reason",
         "observation",
@@ -149,6 +150,10 @@
         "feature": {
           "type": "string",
           "minLength": 1
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": ["startup", "operation"]
         },
         "reason": {
           "type": "string",

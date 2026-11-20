@@ -8,6 +8,16 @@ pub use core_api::host::permissions::{
     PermissionEvidence, PermissionKey, PermissionObservation, PermissionState,
 };
 use std::time::{SystemTime, UNIX_EPOCH};
+mod changes;
+pub use changes::PermissionSubscription;
+static CHANGES: std::sync::LazyLock<changes::Changes> =
+    std::sync::LazyLock::new(changes::Changes::default);
+
+/// Subscribe to native request completion and active monitor changes. This is
+/// an invalidation hint, not a grant or a complete OS settings change feed.
+pub fn subscribe(callback: impl Fn() + Send + Sync + 'static) -> PermissionSubscription {
+    CHANGES.subscribe(callback)
+}
 
 /// Passive read. This does not raise a system prompt. Local Network has no
 /// passive API, so its state is the latest observation from an explicitly started
@@ -21,7 +31,9 @@ pub fn status(permission: &PermissionKey) -> PermissionObservation {
 /// requests for the same permission reuse the pending request. Poll status for
 /// approval; successful submission is not a grant. Opening Settings is separate.
 pub fn request(permission: &PermissionKey) -> Result<(), String> {
-    platform::request(permission)
+    let result = platform::request(permission);
+    CHANGES.notify();
+    result
 }
 
 pub fn open_settings(permission: &PermissionKey) -> Result<(), String> {
@@ -269,6 +281,7 @@ mod platform {
                     .spawn(move || {
                         let result = automation_status(&target, true);
                         REQUESTS.finish(&key, result.error);
+                        CHANGES.notify();
                     })
                 {
                     let error = format!("Could not start authorization: {error}");
@@ -304,6 +317,7 @@ mod platform {
             &key,
             (code < 0).then(|| "The system could not complete the permission request.".into()),
         );
+        CHANGES.notify();
     }
 
     extern "C" fn network_changed(code: i32) {
@@ -319,6 +333,7 @@ mod platform {
             error.clone(),
         ));
         REQUESTS.finish(&PermissionKey::LocalNetwork {}, error);
+        CHANGES.notify();
     }
 
     pub fn open_settings(permission: &PermissionKey) -> Result<(), String> {

@@ -1437,3 +1437,7 @@ mod space_envelope_regression {
         }
     }
 }
+
+pub use host::services::{
+    ServiceRuntimePhase, ServiceRuntimeState, WaitServiceRuntimeStateRequest,
+};

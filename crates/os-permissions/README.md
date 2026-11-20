@@ -13,7 +13,12 @@ without waiting for the user's decision. Poll `status()` to update a permission 
 request is not permission approval. The process retains at most one in-flight request per key
 (including the Automation target). Losing an HTTP caller does not cancel or duplicate it. Native
 completion callbacks release request objects; only the synchronous Apple Events API needs a worker.
-No UI operation identifier, persistent grant record, or client callback subscription is required.
+No UI operation identifier or persistent grant record is required. `subscribe(callback)`
+returns an owned process-local guard for native request/monitor invalidation. It does not
+query or request access. Keep callbacks short: schedule a passive read on the consumer's
+executor. Notifications are hints, not permission observations or a complete OS Settings
+change feed; consumers still need initial/reconnect reads and passive rechecks where the
+platform supplies no change notification.
 
 Only explicit Bluetooth requests initialize Core Bluetooth. Only an explicit Local Network request
 starts a process-owned Bonjour monitor. Its state callback updates the latest network observation,

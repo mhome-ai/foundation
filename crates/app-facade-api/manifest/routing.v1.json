@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.routing.v1",
-  "contractVersion": "1.151.0",
+  "contractVersion": "1.151.1",
   "targetPrefix": "/app/",
   "default": {
     "execution": "spaceMode"

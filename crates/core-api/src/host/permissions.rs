@@ -1,9 +1,10 @@
 //! OS authorization for one computer's Host and the services it runs; independent
 //! of any Space.
 //!
-//! Services declare requirements and report observations from the processes that
-//! actually access the resource. An executing process is not necessarily a
-//! separate OS authorization identity: helpers can share a responsible app.
+//! Service shells declare requirements and own permission policy. Observations
+//! come from the relevant OS authorization context. A documented shared grant
+//! may be observed by the shell for its Core helper; an unrelated context needs
+//! its own observation. Always retain the actual observer's PID.
 //! Host reports one row per component and permission. Reading a report must never request authorization.
 //! A previous access probe is historical evidence, not a current OS setting.
 use serde::{Deserialize, Serialize};
@@ -29,9 +30,32 @@ pub enum PermissionKey {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PermissionRequirement {
     pub permission: PermissionKey,
-    /// Human-readable affected capability; denial need not disable the service.
+    /// Startup requirements fence the whole service's business runtime.
+    #[serde(default)]
+    pub enforcement: PermissionEnforcement,
+    /// Human-readable affected capability.
     pub feature: String,
     pub reason: String,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum PermissionEnforcement {
+    #[default]
+    Startup,
+    /// Checked by the target operation, without holding unrelated operations.
+    /// Used for Apple Events, whose target application need not be running.
+    Operation,
+}
+
+/// Service-level admission decision. Individual observations remain the actual
+/// executor's evidence, rather than a synthetic OS authorization state.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ServicePermissionState {
+    pub ready: bool,
+    pub reason: Option<String>,
+    pub blocked: Vec<PermissionKey>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -107,6 +131,7 @@ pub struct HostPermission {
     pub component_id: String,
     pub component_name: String,
     pub permission: PermissionKey,
+    pub enforcement: PermissionEnforcement,
     pub feature: String,
     pub reason: String,
     /// None means that the actual executor could not be observed.

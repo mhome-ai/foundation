@@ -18,11 +18,25 @@ use that memory snapshot; they do not scan packages or maintain a database copy.
 Stopped services retain their requirements. Invalid declarations remain visible.
 
 Each `HostPermission` is one component and one permission: `componentId`,
-`componentName`, `permission`, `feature`, `reason`, `observation`, `error`, and
+`componentName`, `permission`, `enforcement`, `feature`, `reason`, `observation`, `error`, and
 `supportedActions`. There are no grouped subjects or selected substitute executors.
 `PermissionObservation.processId` identifies the actual executing process, not an
 OS grant identity. A sidecar reports its own observation through its service.
-Reading status must not start an absent sidecar or substitute its parent's grant.
+Reading status must not start an absent sidecar. The service shell owns permission
+policy and business activation. It may observe a permission shared with its Core
+helper only when the platform launch/signing contract establishes the same
+authorization identity. Do not relabel the shell observation with the helper PID.
+An unrelated execution context requires its own observation; it does not own a
+second permission policy state machine.
+
+Requirements default to `enforcement: startup`: the service starts its management
+control plane, checks consent, and keeps business initialization/admission closed
+until all startup requirements are satisfied. Waiting for a user is not a process
+failure and does not consume the business initialization timeout. Explicit
+`enforcement: operation` requirements are checked by the affected operation; Mac
+Apple Events use this policy because their target applications need not be running
+at service startup. A permission grant is not business readiness. Native request
+submission, authorization, and successful business initialization remain distinct.
 
 A helper can share its responsible application's consent without any grouping
 fields in this protocol. Equal PIDs, signing teams or states alone do not establish
@@ -111,3 +125,28 @@ selection; incomplete manifests; bounded collection; native request deduplicatio
 Linux `notRequired` without any resource observation. Test Linux setup first as
 a dry-run and verify effective access in the intended ordinary runtime session.
 Signing fixtures and mocked status tests do not prove TCC attribution.
+
+## Service state and invalidation
+
+The service shell publishes its process generation, PID, revision, lifecycle
+phase and `ServicePermissionState` at `GET /internal/service/state` and
+`POST /internal/service/state/wait`. The latter accepts an optional
+`processGeneration`/`revision` cursor and waits up to 25 seconds for a newer state.
+These management endpoints are loopback-only. A state is not proof of a grant;
+individual permission observations remain the evidence. Waiting does not mean
+business readiness, and an old process's state is never adopted by PID alone.
+The private `/internal/service/status` report also places this exact state under
+`details.serviceRuntime`. This namespace is reserved for shell lifecycle data;
+business diagnostics may continue using `details.runtime`. Host treats permission
+waiting, business initialization and business shutdown as `activating`, and only
+accepts `ready` after the shell confirms both permission and business readiness.
+
+An authenticated `POST /v1/changes/wait` on Host accepts the same cursor field
+names and returns `{hostId,cursor}`. This is ordinary read authority, not permission
+to open OS prompts. Consumers read an initial/current snapshot, subscribe from its
+cursor, and reread after invalidation or reconnect. Cursors are in-memory latest
+state, not a persistent event queue. Native callbacks notify changes after detection;
+platforms without a full OS settings feed require bounded passive observation.
+Host shutdown cancels idle waits. Local Client permission `snapshot` reads local
+and already trusted, discovered remote Hosts independently of Core/Space. It never
+requests consent; remote prompts and Settings remain prohibited.

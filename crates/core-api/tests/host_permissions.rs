@@ -73,6 +73,7 @@ fn permission_actions_require_the_selected_component() {
 #[test]
 fn rows_preserve_each_components_authorization_without_grouping() {
     let row = |id: &str, state| HostPermission {
+        enforcement: PermissionEnforcement::Startup,
         component_id: id.into(),
         component_name: id.into(),
         permission: PermissionKey::Bluetooth {},
@@ -113,6 +114,22 @@ fn rows_preserve_each_components_authorization_without_grouping() {
         assert!(!validator.is_valid(&invalid));
         assert!(serde_json::from_value::<HostPermissions>(invalid).is_err());
     }
+}
+
+#[test]
+fn startup_is_the_default_and_operation_policy_is_explicit() {
+    let mut value = json!({"permission":{"id":"microphone"},"feature":"Audio","reason":"Capture"});
+    let requirement: PermissionRequirement = serde_json::from_value(value.clone()).unwrap();
+    assert_eq!(requirement.enforcement, PermissionEnforcement::Startup);
+    value["enforcement"] = json!("operation");
+    assert_eq!(
+        serde_json::from_value::<PermissionRequirement>(value.clone())
+            .unwrap()
+            .enforcement,
+        PermissionEnforcement::Operation
+    );
+    value["enforcement"] = json!("optional");
+    assert!(serde_json::from_value::<PermissionRequirement>(value).is_err());
 }
 
 #[test]

@@ -207,6 +207,10 @@ fn permission(
         return Ok(Permission::Read);
     }
     if method == Method::POST {
+        if path == core_api::host::changes::HOST_CHANGES_WAIT_PATH {
+            let _: core_api::host::changes::HostChangesCursor = serde_json::from_slice(body)?;
+            return Ok(Permission::Read);
+        }
         if path == "/v1/runtime" {
             let request: HostRuntimeRequest<serde_json::Value> = serde_json::from_slice(body)?;
             anyhow::ensure!(request.host_id == host_id, "runtime targets another Host");
@@ -341,5 +345,37 @@ mod tests {
             Permission::Reset
         );
         assert!(permission(&Method::POST, "/v1/auth/unenroll", b"{}", "host").is_err());
+    }
+}
+
+#[cfg(test)]
+mod changes_tests {
+    use super::*;
+    #[test]
+    fn change_subscription_requires_ordinary_read_authority_and_a_cursor() {
+        assert!(matches!(
+            permission(
+                &Method::POST,
+                core_api::host::changes::HOST_CHANGES_WAIT_PATH,
+                br#"{}"#,
+                "host"
+            )
+            .unwrap(),
+            Permission::Read
+        ));
+        assert!(permission(
+            &Method::POST,
+            core_api::host::changes::HOST_CHANGES_WAIT_PATH,
+            br#"{"secret":true}"#,
+            "host"
+        )
+        .is_err());
+        assert!(permission(
+            &Method::GET,
+            core_api::host::changes::HOST_CHANGES_WAIT_PATH,
+            b"",
+            "host"
+        )
+        .is_err());
     }
 }
