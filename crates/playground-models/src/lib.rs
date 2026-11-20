@@ -1,3 +1,5 @@
+mod laundry_models;
+pub use laundry_models::{DRYER_V1, WASHER_DRYER_V1, WASHER_V1};
 mod humidistat_model;
 pub use humidistat_model::HUMIDISTAT_V1;
 mod chime_model;
@@ -98,6 +100,9 @@ impl CommandOutcome {
 
 pub fn known_model_ids() -> &'static [&'static str] {
     &[
+        WASHER_V1,
+        DRYER_V1,
+        WASHER_DRYER_V1,
         HUMIDISTAT_V1,
         CHIME_V1,
         DEVICE_ALARM_V1,
@@ -131,6 +136,9 @@ pub fn ensure_known_model(model_id: &str) -> Result<()> {
 }
 
 pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
+    if laundry_models::supported(model_id) {
+        return Ok(laundry_models::defaults(model_id));
+    }
     if model_id == HUMIDISTAT_V1 {
         return Ok(humidistat_model::defaults());
     }
@@ -356,6 +364,9 @@ pub fn normalize_instance(mut instance: DeviceInstance) -> Result<DeviceInstance
 }
 
 pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
+    if laundry_models::supported(model_id) {
+        return Ok(laundry_models::capabilities());
+    }
     if model_id == HUMIDISTAT_V1 {
         return Ok(humidistat_model::capabilities());
     }
@@ -669,6 +680,9 @@ pub fn project_state(
     attrs: &Map<String, Value>,
     capability: &str,
 ) -> Result<Map<String, Value>> {
+    if laundry_models::supported(model_id) {
+        return laundry_models::state(model_id, attrs, capability);
+    }
     if model_id == HUMIDISTAT_V1 {
         return humidistat_model::state(attrs, capability);
     }
@@ -819,6 +833,15 @@ pub fn project_discovery(
     capability: &str,
     _alias: &str,
 ) -> Result<Map<String, Value>> {
+    if laundry_models::supported(model_id) {
+        ensure!(
+            laundry_models::capabilities()
+                .iter()
+                .any(|c| c == capability),
+            "Unsupported laundry discovery"
+        );
+        return laundry_models::discovery(model_id, attrs);
+    }
     if model_id == HUMIDISTAT_V1 {
         return humidistat_model::discovery(attrs, capability);
     }
@@ -946,6 +969,9 @@ pub fn apply_observed_payload(
     capability: &str,
     payload: &Map<String, Value>,
 ) -> Result<()> {
+    if laundry_models::supported(model_id) {
+        return laundry_models::observe(model_id, attrs, capability, payload);
+    }
     if model_id == HUMIDISTAT_V1 {
         return humidistat_model::observe(attrs, capability, payload);
     }
@@ -1127,6 +1153,9 @@ pub fn handle_command(
     capability: &str,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
+    if laundry_models::supported(model_id) {
+        return laundry_models::command(model_id, attrs, capability, request);
+    }
     if model_id == HUMIDISTAT_V1 {
         return humidistat_model::command(attrs, capability, request);
     }
