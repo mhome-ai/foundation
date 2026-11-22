@@ -170,6 +170,7 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
         COVER_SHADE_V1 => object_map(json!({
             "online": true,
             "coverState": "closed",
+            "coverMotionState": "stopped",
             "coverPosition": 0,
             "coverDeviceType": "shade",
             "canSetPosition": true,
@@ -178,6 +179,7 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
         COVER_GARAGE_DOOR_V1 => object_map(json!({
             "online": true,
             "coverState": "closed",
+            "coverMotionState": "stopped",
             "coverPosition": 0,
             "coverDeviceType": "garageDoor",
             "canSetPosition": true,
@@ -395,8 +397,17 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "state.power",
             "state.energy",
         ][..],
-        COVER_SHADE_V1 => &["state.cover", "command.controlCover"][..],
-        COVER_GARAGE_DOOR_V1 => &["state.cover", "command.controlCover", "state.contactSensor"][..],
+        COVER_SHADE_V1 => &[
+            "state.cover",
+            "command.coverControl",
+            "data.coverAttributes",
+        ][..],
+        COVER_GARAGE_DOOR_V1 => &[
+            "state.cover",
+            "command.coverControl",
+            "data.coverAttributes",
+            "state.contactSensor",
+        ][..],
         LOCK_DEADBOLT_V1 => &[
             "state.doorLock",
             "state.battery",
@@ -713,18 +724,8 @@ pub fn project_state(
         "state.energy" => Ok(object_map(json!({
             "importedEnergy": nullable_meter(attrs, "importedEnergy", true)?
         }))?),
-        "state.cover" => {
-            let mut state = object_map(
-                json!({"state":string_attr(attrs,"coverState")?,"deviceType":string_attr(attrs,"coverDeviceType")?}),
-            )?;
-            if bool_attr(attrs, "canGetPosition")? {
-                state.insert(
-                    "position".into(),
-                    attrs.get("coverPosition").cloned().unwrap_or(Value::Null),
-                );
-            }
-            Ok(state)
-        }
+        "state.cover" => cover_snapshot(attrs),
+        "data.coverAttributes" => cover_discovery(attrs),
         "state.contactSensor" => Ok(object_map(json!({
             "state": string_attr(attrs, "contactState")?
         }))?),
@@ -890,18 +891,7 @@ pub fn project_discovery(
             "canGetDoorState": false,
             "pinCodeRequirement": "unsupported"
         }))?),
-        "state.cover" | "command.controlCover" => Ok(object_map(json!({
-            "canSetPosition": bool_attr(attrs, "canSetPosition")?,
-            "canGetPosition": bool_attr(attrs, "canGetPosition")?,
-            "canSetTiltPosition": false,
-            "canGetTiltPosition": false,
-            "canSetPositionTransitionDuration": false,
-            "canSetTiltTransitionDuration": false,
-            "canGetLatch": false,
-            "canLatch": false,
-            "canUnlatch": false,
-            "supportedCommands": ["open", "close", "stop"]
-        }))?),
+        "state.cover" | "command.coverControl" => cover_discovery(attrs),
         "state.fan" | "command.setFan" => Ok(object_map(json!({
             "availableModes": attrs.get("availableFanModes").cloned().unwrap_or_else(|| Value::Array(Vec::new())),
             "supportedStates": ["mode","speed","oscillation"],
@@ -1033,15 +1023,26 @@ pub fn apply_observed_payload(
         "state.power" => copy_payload_field(attrs, payload, "power", "power")?,
         "state.energy" => copy_payload_field(attrs, payload, "importedEnergy", "importedEnergy")?,
         "state.cover" => {
-            copy_payload_field(attrs, payload, "state", "coverState")?;
+            let mut next = attrs.clone();
+            let mut allowed = vec!["openingState", "motionState"];
+            if bool_attr(attrs, "canGetPosition")? {
+                allowed.push("opening");
+            }
+            ensure!(
+                !payload.is_empty() && payload.keys().all(|key| allowed.contains(&key.as_str())),
+                "Unsupported cover observation"
+            );
             copy_optional_payload_fields(
-                attrs,
+                &mut next,
                 payload,
                 &[
-                    ("position", "coverPosition"),
-                    ("deviceType", "coverDeviceType"),
+                    ("openingState", "coverState"),
+                    ("motionState", "coverMotionState"),
+                    ("opening", "coverPosition"),
                 ],
             );
+            cover_snapshot(&next)?;
+            *attrs = next;
         }
         "state.contactSensor" => copy_payload_field(attrs, payload, "state", "contactState")?,
         "state.doorLock" => copy_payload_field(attrs, payload, "lockState", "lockState")?,
@@ -1187,7 +1188,7 @@ pub fn handle_command(
         "command.setBrightness" => set_brightness(attrs, request),
         "command.setColorTemperature" => set_color_temperature(attrs, request),
         "command.setColorRGB" => set_color_rgb(attrs, request),
-        "command.controlCover" => control_cover(attrs, request),
+        "command.coverControl" => control_cover(attrs, request),
         "command.doorLock" => door_lock(attrs, request),
         "command.setFan" => set_fan(attrs, request),
         "command.setThermostatMode" => set_thermostat_mode(attrs, request),
@@ -1287,48 +1288,78 @@ fn set_color_rgb(
     projected_event(attrs, "state.colorRGB")
 }
 
+fn cover_snapshot(attrs: &Map<String, Value>) -> Result<Map<String, Value>> {
+    let mut report = Map::new();
+    for (field, attr, choices) in [
+        (
+            "openingState",
+            "coverState",
+            &["open", "closed", "partially open"][..],
+        ),
+        (
+            "motionState",
+            "coverMotionState",
+            &["opening", "closing", "stopped"][..],
+        ),
+    ] {
+        let value = attrs.get(attr).cloned().unwrap_or(Value::Null);
+        ensure!(
+            value.is_null() || value.as_str().is_some_and(|v| choices.contains(&v)),
+            "Invalid cover {field}"
+        );
+        report.insert(field.into(), value);
+    }
+    if bool_attr(attrs, "canGetPosition")? {
+        let value = attrs.get("coverPosition").cloned().unwrap_or(Value::Null);
+        ensure!(
+            value.is_null()
+                || value
+                    .as_f64()
+                    .is_some_and(|v| v.is_finite() && (0.0..=100.0).contains(&v)),
+            "Invalid cover opening"
+        );
+        report.insert("opening".into(), value);
+    }
+    Ok(report)
+}
+
+fn cover_discovery(attrs: &Map<String, Value>) -> Result<Map<String, Value>> {
+    let mut states = vec!["openingState", "motionState"];
+    if bool_attr(attrs, "canGetPosition")? {
+        states.push("opening");
+    }
+    object_map(json!({
+        "supportedStates": states,
+        "supportedSettings": if bool_attr(attrs, "canSetPosition")? { vec!["opening"] } else { vec![] },
+        "supportedCommands": ["open", "close", "stop"],
+        "requiredSettings": [],
+        "openingStates": ["open", "closed", "partially open"],
+        "motionStates": ["opening", "closing", "stopped"],
+        "deviceType": string_attr(attrs,"coverDeviceType")?
+    }))
+}
+
 fn control_cover(
     attrs: &mut Map<String, Value>,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
     ensure!(
-        request.get("latch").is_none_or(Value::is_null),
-        "cover does not support latch"
-    );
-    ensure!(
-        request.get("transitionDuration").is_none_or(Value::is_null),
-        "Use positionTransitionDuration or tiltTransitionDuration"
-    );
-    for field in ["positionTransitionDuration", "tiltTransitionDuration"] {
-        if let Some(value) = request.get(field).filter(|v| !v.is_null()) {
-            ensure!(
-                value["_type"] == "Duration"
-                    && matches!(
-                        value["unit"].as_str(),
-                        Some("ms" | "sec" | "min" | "hour" | "day")
-                    )
-                    && value["value"].as_f64() == Some(0.0),
-                "cover does not support {field}; omit or use zero"
-            );
-        }
-    }
-    ensure!(
-        request.get("tiltPosition").is_none_or(Value::is_null),
-        "cover does not support tiltPosition"
+        request
+            .keys()
+            .all(|k| ["device", "command", "opening", "transitionDuration"].contains(&k.as_str())),
+        "Unsupported cover parameter"
     );
     let target = request
-        .get("position")
+        .get("opening")
         .filter(|v| !v.is_null())
         .map(|v| {
             ensure!(
                 bool_attr(attrs, "canSetPosition")?,
-                "cover does not support setting position"
+                "cover does not support setting opening"
             );
-            let n = v
-                .as_f64()
+            v.as_f64()
                 .filter(|n| n.is_finite() && (0.0..=100.0).contains(n))
-                .ok_or_else(|| anyhow!("position must be between 0 and 100"))?;
-            Ok::<f64, anyhow::Error>(n)
+                .ok_or_else(|| anyhow!("opening must be between 0 and 100"))
         })
         .transpose()?;
     let action = request.get("command").filter(|v| !v.is_null());
@@ -1338,34 +1369,55 @@ fn control_cover(
     );
     ensure!(
         target.is_some() || action.is_some(),
-        "cover requires command or position"
+        "cover requires command or opening"
     );
-    // The simulator accepts one motion: stop wins, then a target, then direction.
-    let position = if action.and_then(Value::as_str) == Some("stop") {
-        required_number(attrs, "coverPosition")?
-    } else if let Some(target) = target {
-        target
-    } else if action.and_then(Value::as_str) == Some("open") {
-        100.0
-    } else {
-        0.0
-    };
-    let state = if position <= 0.0 {
-        "closed"
-    } else if position >= 100.0 {
-        "open"
-    } else {
-        "partially open"
-    };
-    attrs.insert("coverState".into(), json!(state));
-    attrs.insert("coverPosition".into(), json!(position));
-    if attrs.contains_key("contactState") {
-        attrs.insert(
-            "contactState".into(),
-            json!(if state == "closed" { "closed" } else { "open" }),
+    ensure!(
+        target.is_none() || action.is_none(),
+        "A cover action cannot accompany an opening target"
+    );
+    if let Some(value) = request.get("transitionDuration").filter(|v| !v.is_null()) {
+        ensure!(
+            value["_type"] == "Duration"
+                && matches!(
+                    value["unit"].as_str(),
+                    Some("ms" | "sec" | "min" | "hour" | "day")
+                )
+                && value["value"].as_f64() == Some(0.0),
+            "cover does not support transitionDuration; omit or use zero"
+        );
+        ensure!(
+            target.is_some() || matches!(action.and_then(Value::as_str), Some("open" | "close")),
+            "transitionDuration requires an opening movement"
         );
     }
-    projected_event(attrs, "state.cover")
+    let mut next = attrs.clone();
+    if action.and_then(Value::as_str) != Some("stop") {
+        let position = target.unwrap_or(if action.and_then(Value::as_str) == Some("open") {
+            100.0
+        } else {
+            0.0
+        });
+        let state = if position == 0.0 {
+            "closed"
+        } else if position == 100.0 {
+            "open"
+        } else {
+            "partially open"
+        };
+        next.insert("coverState".into(), json!(state));
+        next.insert("coverPosition".into(), json!(position));
+        if next.contains_key("contactState") {
+            next.insert(
+                "contactState".into(),
+                json!(if state == "closed" { "closed" } else { "open" }),
+            );
+        }
+    }
+    next.insert("coverMotionState".into(), json!("stopped"));
+    cover_snapshot(&next)?;
+    let outcome = projected_event(&next, "state.cover")?;
+    *attrs = next;
+    Ok(outcome)
 }
 
 fn door_lock(
@@ -1911,52 +1963,128 @@ mod tests {
         for model in [COVER_SHADE_V1, COVER_GARAGE_DOOR_V1] {
             let mut attrs = default_attributes(model).unwrap();
             let discovery =
-                project_discovery(model, &attrs, "command.controlCover", "$f1").unwrap();
+                project_discovery(model, &attrs, "command.coverControl", "$f1").unwrap();
             assert_eq!(
                 discovery["supportedCommands"],
                 json!(["open", "close", "stop"])
             );
             for (position, state) in [(0, "closed"), (35, "partially open"), (100, "open")] {
                 attrs.insert("coverPosition".into(), json!(position));
-                attrs.insert("coverState".into(), json!("closing"));
+                attrs.insert("coverState".into(), json!(state));
+                attrs.insert("coverMotionState".into(), json!("closing"));
                 let outcome = handle_command(
                     model,
                     &mut attrs,
-                    "command.controlCover",
+                    "command.coverControl",
                     &object_map(json!({"command":"stop"})).unwrap(),
                 )
                 .unwrap();
                 assert_eq!(attrs["coverPosition"].as_f64(), Some(f64::from(position)));
                 assert_eq!(
-                    outcome.events[0].payload["position"].as_f64(),
+                    outcome.events[0].payload["opening"].as_f64(),
                     Some(f64::from(position))
                 );
-                assert_eq!(outcome.events[0].payload["state"], json!(state));
+                assert_eq!(outcome.events[0].payload["openingState"], json!(state));
+                assert_eq!(outcome.events[0].payload["motionState"], "stopped");
             }
             let before = attrs["coverPosition"].as_f64();
-            handle_command(
+            assert!(handle_command(
                 model,
                 &mut attrs,
-                "command.controlCover",
-                &object_map(json!({"command":"stop","position":0})).unwrap(),
+                "command.coverControl",
+                &object_map(json!({"command":"stop","opening":0})).unwrap(),
             )
-            .unwrap();
+            .is_err());
             assert_eq!(attrs["coverPosition"].as_f64(), before);
             let before = attrs.clone();
             for request in [
-                json!({"command":"open","position":101}),
+                json!({"command":"open","opening":101}),
                 json!({"command":"open","tiltPosition":50}),
-                json!({"command":"open","positionTransitionDuration":{"_type":"Duration","value":1,"unit":"sec"}}),
+                json!({"command":"open","transitionDuration":{"_type":"Duration","value":1,"unit":"sec"}}),
             ] {
                 assert!(handle_command(
                     model,
                     &mut attrs,
-                    "command.controlCover",
+                    "command.coverControl",
                     &object_map(request).unwrap()
                 )
                 .is_err());
                 assert_eq!(attrs, before);
             }
+        }
+    }
+
+    #[test]
+    fn cover_snapshots_and_discovery_preserve_independent_feedback_and_reject_old_inputs() {
+        for model in [COVER_SHADE_V1, COVER_GARAGE_DOOR_V1] {
+            let mut attrs = default_attributes(model).unwrap();
+            assert!(capabilities(model)
+                .unwrap()
+                .contains(&"data.coverAttributes".into()));
+            assert!(!capabilities(model)
+                .unwrap()
+                .contains(&"command.controlCover".into()));
+            assert_eq!(
+                project_state(model, &attrs, "data.coverAttributes").unwrap(),
+                project_discovery(model, &attrs, "state.cover", "$f1").unwrap()
+            );
+            let payload = object_map(
+                json!({"openingState":"partially open","motionState":"closing","opening":35.5}),
+            )
+            .unwrap();
+            apply_observed_payload(model, &mut attrs, "state.cover", &payload).unwrap();
+            assert_eq!(
+                project_state(model, &attrs, "state.cover").unwrap(),
+                payload
+            );
+            let cleared =
+                object_map(json!({"openingState":null,"motionState":null,"opening":null})).unwrap();
+            apply_observed_payload(model, &mut attrs, "state.cover", &cleared).unwrap();
+            assert_eq!(
+                project_state(model, &attrs, "state.cover").unwrap(),
+                cleared
+            );
+            let outcome = handle_command(model, &mut attrs, "command.coverControl", &object_map(json!({"opening":52.25,"transitionDuration":{"_type":"Duration","unit":"ms","value":0}})).unwrap()).unwrap();
+            assert_eq!(
+                outcome.events[0].payload,
+                json!({"openingState":"partially open","motionState":"stopped","opening":52.25})
+            );
+            let before = attrs.clone();
+            for request in [
+                json!({"position":20}),
+                json!({"command":"open","opening":20}),
+                json!({"command":"open","latchState":"unlatched"}),
+                json!({"command":"open","tiltOpening":20}),
+                json!({"command":"open","speed":"high"}),
+                json!({"command":"open","positionTransitionDuration":0}),
+            ] {
+                assert!(handle_command(
+                    model,
+                    &mut attrs,
+                    "command.coverControl",
+                    request.as_object().unwrap()
+                )
+                .is_err());
+                assert_eq!(attrs, before);
+            }
+            assert!(apply_observed_payload(
+                model,
+                &mut attrs,
+                "state.cover",
+                &object_map(json!({"opening":101,"motionState":"opening"})).unwrap()
+            )
+            .is_err());
+            assert_eq!(attrs, before);
+            attrs.insert("canGetPosition".into(), json!(false));
+            let facts = project_discovery(model, &attrs, "state.cover", "$f1").unwrap();
+            assert_eq!(
+                facts["supportedStates"],
+                json!(["openingState", "motionState"])
+            );
+            assert_eq!(facts["supportedSettings"], json!(["opening"]));
+            assert!(!project_state(model, &attrs, "state.cover")
+                .unwrap()
+                .contains_key("opening"));
         }
     }
 
@@ -2202,7 +2330,7 @@ mod tests {
             (
                 COVER_SHADE_V1,
                 "state.cover",
-                "command.controlCover",
+                "command.coverControl",
                 json!({"command": "open"}),
             ),
             (

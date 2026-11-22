@@ -862,16 +862,14 @@
   {
     "target": "/app/capability/invoke/json",
     "input": {
-      "capabilityId": "basic.device.command.controlCover",
+      "capabilityId": "basic.device.command.coverControl",
       "request": {
         "device": "curtain",
-        "command": "close",
-        "position": 0,
-        "internal": "private-request",
-        "positionTransitionDuration": "3sec",
-        "tiltPosition": 35.5,
+        "opening": 0,
+        "tiltOpening": 35.5,
+        "transitionDuration": "3sec",
         "tiltTransitionDuration": "0sec",
-        "latch": false
+        "internal": "private-request"
       }
     },
     "outcome": {
@@ -882,15 +880,69 @@
     },
     "expected": {
       "event": "device.command",
-      "capabilityId": "basic.device.command.controlCover",
+      "capabilityId": "basic.device.command.coverControl",
       "parameters": {
         "device": "curtain",
+        "opening": 0,
+        "tiltOpening": 35.5,
+        "transitionDuration": "3sec",
+        "tiltTransitionDuration": "0sec"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.coverControl",
+      "request": {
+        "device": "panel",
+        "position": 50,
+        "latchState": "unlatched",
+        "speed": "medium",
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.coverControl",
+      "parameters": {
+        "device": "panel",
+        "position": 50,
+        "latchState": "unlatched",
+        "speed": "medium"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.coverControl",
+      "request": {
+        "device": "door",
         "command": "close",
-        "position": 0,
-        "positionTransitionDuration": "3sec",
-        "tiltPosition": 35.5,
-        "tiltTransitionDuration": "0sec",
-        "latch": false
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.coverControl",
+      "parameters": {
+        "device": "door",
+        "command": "close"
       },
       "status": "success"
     }

@@ -270,13 +270,15 @@
       "mode",
       "speed"
     ],
-    "controlCover": [
+    "coverControl": [
       "device",
-      "latch",
       "command",
+      "opening",
+      "tiltOpening",
       "position",
-      "tiltPosition",
-      "positionTransitionDuration",
+      "latchState",
+      "speed",
+      "transitionDuration",
       "tiltTransitionDuration"
     ],
     "doorLock": [
@@ -362,7 +364,7 @@
     "basic.device.command.chimeControl": "chimeControl",
     "basic.device.command.chimeSetting": "chimeSetting",
     "basic.device.command.controlMediaPlayback": "controlMediaPlayback",
-    "basic.device.command.controlCover": "controlCover",
+    "basic.device.command.coverControl": "coverControl",
     "basic.device.command.dispensePetFood": "dispensePetFood",
     "basic.device.command.doorLock": "doorLock",
     "basic.device.command.onOff": "onOff",
@@ -390,7 +392,7 @@
     "mlinkGoogleCast.device.command.setAudioVolume": "setAudioVolume",
     "mlinkHomeAssistant.device.command.broadcastAudio": "broadcastAudio",
     "mlinkHomeAssistant.device.command.controlMediaPlayback": "controlMediaPlayback",
-    "mlinkHomeAssistant.device.command.controlCover": "controlCover",
+    "mlinkHomeAssistant.device.command.coverControl": "coverControl",
     "mlinkHomeAssistant.device.command.doorLock": "doorLock",
     "mlinkHomeAssistant.device.command.onOff": "onOff",
     "mlinkHomeAssistant.device.command.playMedia": "playMedia",
@@ -406,11 +408,11 @@
     "mlinkHue.device.command.setBrightness": "setBrightness",
     "mlinkHue.device.command.setColorRGB": "setColorRGB",
     "mlinkHue.device.command.setColorTemperature": "setColorTemperature",
-    "mlinkLutron.device.command.controlCover": "controlCover",
+    "mlinkLutron.device.command.coverControl": "coverControl",
     "mlinkLutron.device.command.onOff": "onOff",
     "mlinkLutron.device.command.setBrightness": "setBrightness",
     "mlinkLutron.device.command.setFan": "setFan",
-    "mlinkMatter.device.command.controlCover": "controlCover",
+    "mlinkMatter.device.command.coverControl": "coverControl",
     "mlinkMatter.device.command.doorLock": "doorLock",
     "mlinkMatter.device.command.onOff": "onOff",
     "mlinkMatter.device.command.setAudioMute": "setAudioMute",
@@ -421,7 +423,7 @@
     "mlinkMatter.device.command.setFan": "setFan",
     "mlinkMatter.device.command.setThermostatMode": "setThermostatMode",
     "mlinkMatter.device.command.setThermostatTemperature": "setThermostatTemperature",
-    "mlinkShelly.device.command.controlCover": "controlCover",
+    "mlinkShelly.device.command.coverControl": "coverControl",
     "mlinkShelly.device.command.onOff": "onOff",
     "mlinkShelly.device.command.setBrightness": "setBrightness",
     "mlinkShelly.device.command.setColorRGB": "setColorRGB",
@@ -429,7 +431,7 @@
     "mlinkSmartThings.device.command.broadcastAudio": "broadcastAudio",
     "mlinkSmartThings.device.command.chimeControl": "chimeControl",
     "mlinkSmartThings.device.command.controlMediaPlayback": "controlMediaPlayback",
-    "mlinkSmartThings.device.command.controlCover": "controlCover",
+    "mlinkSmartThings.device.command.coverControl": "coverControl",
     "mlinkSmartThings.device.command.doorLock": "doorLock",
     "mlinkSmartThings.device.command.onOff": "onOff",
     "mlinkSmartThings.device.command.setAudioMute": "setAudioMute",
@@ -449,7 +451,7 @@
     "playground.device.command.chimeControl": "chimeControl",
     "playground.device.command.chimeSetting": "chimeSetting",
     "playground.device.command.controlMediaPlayback": "controlMediaPlayback",
-    "playground.device.command.controlCover": "controlCover",
+    "playground.device.command.coverControl": "coverControl",
     "playground.device.command.doorLock": "doorLock",
     "playground.device.command.onOff": "onOff",
     "playground.device.command.playMedia": "playMedia",
@@ -472,6 +474,7 @@
     "xiaomi.device.command.setColorTemperature": "setColorTemperature",
     "xiaomi.device.command.setFan": "setFan",
     "mlinkMatter.device.command.chimeControl": "chimeControl",
-    "mlinkMatter.device.command.chimeSetting": "chimeSetting"
+    "mlinkMatter.device.command.chimeSetting": "chimeSetting",
+    "mlinkSwitchBot.device.command.coverControl": "coverControl"
   }
 }
