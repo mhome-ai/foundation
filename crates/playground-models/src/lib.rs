@@ -263,8 +263,8 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "hvacMode": "auto",
             "presetMode": "home",
             "runningState": "idle",
-            "supportCool": true,
-            "supportHeat": true,
+            "thermostatSupportedStates": ["temperature", "hvacMode", "presetMode", "runningState", "coolingSetpoint", "heatingSetpoint"],
+            "thermostatSupportedSettings": ["hvacMode", "presetMode", "coolingSetpoint", "heatingSetpoint"],
             "coolingSetpoint": temperature(25.0, "C"),
             "heatingSetpoint": temperature(20.0, "C"),
             "minCoolingSetpoint": temperature(18.0, "C"),
@@ -443,7 +443,6 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "state.tamper",
         ][..],
         THERMOSTAT_FAN_V1 => &[
-            "state.temperature",
             "state.thermostat",
             "command.setThermostatMode",
             "command.setThermostatTemperature",
@@ -795,6 +794,7 @@ pub fn project_state(
         }
         "state.fan" => fan_state(attrs),
         "state.thermostat" => Ok(object_map(json!({
+            "temperature": value_attr(attrs, "temperature")?,
             "hvacMode": string_attr(attrs, "hvacMode")?,
             "presetMode": string_attr(attrs, "presetMode")?,
             "runningState": string_attr(attrs, "runningState")?,
@@ -900,8 +900,8 @@ pub fn project_discovery(
         }))?),
         "state.thermostat" | "command.setThermostatMode" | "command.setThermostatTemperature" => {
             Ok(object_map(json!({
-                "supportCool": bool_attr(attrs, "supportCool")?,
-                "supportHeat": bool_attr(attrs, "supportHeat")?,
+                "supportedStates": value_attr(attrs, "thermostatSupportedStates")?,
+                "supportedSettings": value_attr(attrs, "thermostatSupportedSettings")?,
                 "minCoolingSetpoint": value_attr(attrs, "minCoolingSetpoint")?,
                 "maxCoolingSetpoint": value_attr(attrs, "maxCoolingSetpoint")?,
                 "minHeatingSetpoint": value_attr(attrs, "minHeatingSetpoint")?,
@@ -1112,6 +1112,7 @@ pub fn apply_observed_payload(
                 attrs,
                 payload,
                 &[
+                    ("temperature", "temperature"),
                     ("hvacMode", "hvacMode"),
                     ("presetMode", "presetMode"),
                     ("runningState", "runningState"),
@@ -2119,7 +2120,7 @@ mod tests {
     }
 
     #[test]
-    fn thermostat_feedback_and_ambient_temperature_have_separate_contracts() {
+    fn thermostat_owns_measured_temperature_independently_of_targets() {
         let mut attrs = default_attributes(THERMOSTAT_FAN_V1).unwrap();
         let before = project_state(THERMOSTAT_FAN_V1, &attrs, "state.thermostat").unwrap();
         assert!(!before.contains_key("currentTemperature"));
@@ -2127,17 +2128,22 @@ mod tests {
         assert_eq!(before["runningState"], "idle");
         let facts =
             project_discovery(THERMOSTAT_FAN_V1, &attrs, "state.thermostat", "$f1").unwrap();
-        assert_eq!(facts["supportCool"], true);
-        assert_eq!(facts["supportHeat"], true);
+        assert!(facts["supportedStates"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("temperature")));
+        assert!(facts["supportedSettings"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("coolingSetpoint")));
+        assert!(!capabilities(THERMOSTAT_FAN_V1)
+            .unwrap()
+            .contains(&"state.temperature".to_string()));
         attrs.insert("temperature".into(), temperature(19.0, "C"));
-        assert_eq!(
-            project_state(THERMOSTAT_FAN_V1, &attrs, "state.thermostat").unwrap(),
-            before
-        );
-        assert_eq!(
-            project_state(THERMOSTAT_FAN_V1, &attrs, "state.temperature").unwrap()["temperature"],
-            temperature(19.0, "C")
-        );
+        let after = project_state(THERMOSTAT_FAN_V1, &attrs, "state.thermostat").unwrap();
+        assert_eq!(after["temperature"], temperature(19.0, "C"));
+        assert_eq!(after["coolingSetpoint"], before["coolingSetpoint"]);
+        assert_eq!(after["heatingSetpoint"], before["heatingSetpoint"]);
         handle_command(
             THERMOSTAT_FAN_V1,
             &mut attrs,
