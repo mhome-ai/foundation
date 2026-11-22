@@ -700,7 +700,7 @@
   {
     "target": "/app/capability/invoke/json",
     "input": {
-      "capabilityId": "basic.device.command.setColorRGB",
+      "capabilityId": "basic.device.command.setColor",
       "request": {
         "device": "lamp",
         "hue": 0,
@@ -717,7 +717,7 @@
     },
     "expected": {
       "event": "device.command",
-      "capabilityId": "basic.device.command.setColorRGB",
+      "capabilityId": "basic.device.command.setColor",
       "parameters": {
         "device": "lamp",
         "hue": 0,
@@ -1523,5 +1523,63 @@
       }
     },
     "expected": null
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setColor",
+      "request": {
+        "device": "lamp",
+        "red": 128,
+        "green": 0,
+        "blue": 0,
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setColor",
+      "parameters": {
+        "device": "lamp",
+        "red": 128,
+        "green": 0,
+        "blue": 0
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/capability/invoke/json",
+    "input": {
+      "capabilityId": "basic.device.command.setColor",
+      "request": {
+        "device": "lamp",
+        "x": 0.3,
+        "y": 0.6,
+        "internal": "private-request"
+      }
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "internal": "private-response"
+      }
+    },
+    "expected": {
+      "event": "device.command",
+      "capabilityId": "basic.device.command.setColor",
+      "parameters": {
+        "device": "lamp",
+        "x": 0.3,
+        "y": 0.6
+      },
+      "status": "success"
+    }
   }
 ]

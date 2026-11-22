@@ -1,4 +1,5 @@
 mod laundry_models;
+mod light_color;
 pub use laundry_models::{DRYER_V1, WASHER_DRYER_V1, WASHER_V1};
 mod humidistat_model;
 pub use humidistat_model::HUMIDISTAT_V1;
@@ -386,8 +387,11 @@ pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
             "command.setBrightness",
             "state.colorTemperature",
             "command.setColorTemperature",
-            "state.colorRGB",
-            "command.setColorRGB",
+            "state.color",
+            "command.setColor",
+            "data.colorAttributes",
+            "data.brightnessAttributes",
+            "data.colorTemperatureAttributes",
             "state.power",
             "state.energy",
         ][..],
@@ -713,10 +717,12 @@ pub fn project_state(
         "state.colorTemperature" => Ok(object_map(json!({
             "colorTemperature": number_attr(attrs, "colorTemperature")?
         }))?),
-        "state.colorRGB" => Ok(object_map(json!({
-            "hue": number_attr(attrs, "colorHue")?,
-            "saturation": number_attr(attrs, "colorSaturation")?
-        }))?),
+        "state.color" => Ok(object_map(color_snapshot(attrs)?)?),
+        "data.colorAttributes" => Ok(object_map(light_color::attributes(false, None))?),
+        "data.brightnessAttributes" => Ok(object_map(json!({"supportedSettings":[]}))?),
+        "data.colorTemperatureAttributes" => {
+            project_discovery(model_id, attrs, "command.setColorTemperature", "")
+        }
         "state.power" => Ok(object_map(json!({
             "power": nullable_meter(attrs, "power", false)?
         }))?),
@@ -882,7 +888,14 @@ pub fn project_discovery(
             Ok(out)
         }
 
+        "state.color" | "command.setColor" | "data.colorAttributes" => {
+            Ok(object_map(light_color::attributes(false, None))?)
+        }
+        "command.setBrightness" | "data.brightnessAttributes" => {
+            Ok(object_map(json!({"supportedSettings":[]}))?)
+        }
         "state.colorTemperature" | "command.setColorTemperature" => Ok(object_map(json!({
+            "supportedSettings": [],
             "min": number_attr(attrs, "minColorTemperature")?,
             "max": number_attr(attrs, "maxColorTemperature")?
         }))?),
@@ -1016,9 +1029,15 @@ pub fn apply_observed_payload(
         "state.colorTemperature" => {
             copy_payload_field(attrs, payload, "colorTemperature", "colorTemperature")?
         }
-        "state.colorRGB" => {
-            copy_payload_field(attrs, payload, "hue", "colorHue")?;
-            copy_payload_field(attrs, payload, "saturation", "colorSaturation")?;
+        "state.color" => {
+            let color = light_color::from_hs(
+                required_number(payload, "hue")?,
+                required_number(payload, "saturation")?,
+            )
+            .map_err(anyhow::Error::msg)?;
+            attrs.insert("colorHue".into(), json!(color.hue));
+            attrs.insert("colorSaturation".into(), json!(color.saturation));
+            attrs.insert("colorSnapshot".into(), color.snapshot());
         }
         "state.power" => copy_payload_field(attrs, payload, "power", "power")?,
         "state.energy" => copy_payload_field(attrs, payload, "importedEnergy", "importedEnergy")?,
@@ -1179,6 +1198,22 @@ pub fn handle_command(
             capability
         ));
     }
+    if matches!(
+        capability,
+        "command.setColor" | "command.setBrightness" | "command.setColorTemperature"
+    ) {
+        if let Some(duration) = request.get("transitionDuration").filter(|v| !v.is_null()) {
+            ensure!(
+                duration["_type"] == "Duration"
+                    && matches!(
+                        duration["unit"].as_str(),
+                        Some("ms" | "sec" | "min" | "hour" | "day")
+                    )
+                    && duration["value"].as_f64() == Some(0.),
+                "Playground lights support only omitted or zero transitionDuration"
+            );
+        }
+    }
     match capability {
         "command.testSmokeDetector"
         | "command.testCarbonMonoxideDetector"
@@ -1188,7 +1223,7 @@ pub fn handle_command(
         "command.onOff" => set_on_off(attrs, request),
         "command.setBrightness" => set_brightness(attrs, request),
         "command.setColorTemperature" => set_color_temperature(attrs, request),
-        "command.setColorRGB" => set_color_rgb(attrs, request),
+        "command.setColor" => set_color(attrs, request),
         "command.coverControl" => control_cover(attrs, request),
         "command.doorLock" => door_lock(attrs, request),
         "command.setFan" => set_fan(attrs, request),
@@ -1263,30 +1298,47 @@ fn set_color_temperature(
     projected_event(attrs, "state.colorTemperature")
 }
 
-fn set_color_rgb(
+fn color_snapshot(attrs: &Map<String, Value>) -> Result<Value> {
+    if ["colorHue", "colorSaturation"]
+        .iter()
+        .any(|key| attrs.get(*key).is_some_and(Value::is_null))
+    {
+        return Ok(light_color::unknown());
+    }
+    if let Some(color) = attrs.get("colorSnapshot") {
+        if attrs.get("colorHue") == color.get("hue")
+            && attrs.get("colorSaturation") == color.get("saturation")
+        {
+            return Ok(color.clone());
+        }
+    }
+    light_color::from_hs(
+        required_number(attrs, "colorHue")?,
+        required_number(attrs, "colorSaturation")?,
+    )
+    .map(|color| color.snapshot())
+    .map_err(anyhow::Error::msg)
+}
+
+fn set_color(
     attrs: &mut Map<String, Value>,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
-    let component = |key: &str, old: &str, max: f64| -> Result<f64> {
-        let value = request
-            .get(key)
-            .filter(|v| !v.is_null())
-            .or_else(|| attrs.get(old));
-        value
-            .and_then(Value::as_f64)
-            .filter(|v| v.is_finite() && (0.0..=max).contains(v))
-            .ok_or_else(|| anyhow!("{key} is invalid or unavailable"))
+    let request = Value::Object(request.clone());
+    let format = light_color::format(&request).map_err(anyhow::Error::msg)?;
+    let current = if format == "hs"
+        && (request.get("hue").is_none_or(Value::is_null)
+            || request.get("saturation").is_none_or(Value::is_null))
+    {
+        Some(color_snapshot(attrs)?)
+    } else {
+        None
     };
-    ensure!(
-        request.get("hue").is_some_and(|v| !v.is_null())
-            || request.get("saturation").is_some_and(|v| !v.is_null()),
-        "hue or saturation is required"
-    );
-    let hue = component("hue", "colorHue", 360.0)?;
-    let saturation = component("saturation", "colorSaturation", 100.0)?;
-    attrs.insert("colorHue".into(), json!(hue));
-    attrs.insert("colorSaturation".into(), json!(saturation));
-    projected_event(attrs, "state.colorRGB")
+    let color = light_color::target(&request, current.as_ref()).map_err(anyhow::Error::msg)?;
+    attrs.insert("colorHue".into(), json!(color.hue));
+    attrs.insert("colorSaturation".into(), json!(color.saturation));
+    attrs.insert("colorSnapshot".into(), color.snapshot());
+    projected_event(attrs, "state.color")
 }
 
 fn cover_snapshot(attrs: &Map<String, Value>) -> Result<Map<String, Value>> {
@@ -1920,6 +1972,63 @@ mod tests {
     use super::*;
 
     #[test]
+    fn color_requests_preserve_dimming_and_complete_colors_do_not_depend_on_unknown_feedback() {
+        let model = LIGHT_RGB_DIMMER_V1;
+        let mut attrs = default_attributes(model).unwrap();
+        attrs.insert("colorHue".into(), Value::Null);
+        assert_eq!(
+            project_state(model, &attrs, "state.color").unwrap(),
+            light_color::unknown().as_object().unwrap().clone()
+        );
+        assert!(handle_command(
+            model,
+            &mut attrs,
+            "command.setColor",
+            json!({"saturation":50}).as_object().unwrap()
+        )
+        .is_err());
+        let brightness = attrs.get("brightness").cloned();
+        for req in [
+            json!({"red":64,"green":0,"blue":0}),
+            json!({"red":255,"green":0,"blue":0}),
+            json!({"x":0.75,"y":0.2}),
+        ] {
+            handle_command(
+                model,
+                &mut attrs,
+                "command.setColor",
+                req.as_object().unwrap(),
+            )
+            .unwrap();
+            assert_eq!(attrs.get("brightness").cloned(), brightness);
+            let report = project_state(model, &attrs, "state.color").unwrap();
+            assert_eq!(report.len(), 7);
+            if req.get("x").is_some() {
+                assert_eq!(report["x"], 0.75);
+                assert_eq!(report["y"], 0.2);
+            } else {
+                assert_eq!(report["red"], 255.0);
+                assert_eq!(report["hue"], 0.0);
+            }
+        }
+        let before = attrs.clone();
+        assert!(handle_command(
+            model,
+            &mut attrs,
+            "command.setColor",
+            json!({"hue":120,"transitionDuration":{"_type":"Duration","value":1,"unit":"ms"}})
+                .as_object()
+                .unwrap()
+        )
+        .is_err());
+        assert_eq!(attrs, before);
+        assert_eq!(
+            project_discovery(model, &attrs, "state.color", "$f1").unwrap()["supportedStates"],
+            json!(["hs", "rgb", "xy"])
+        );
+    }
+
+    #[test]
     fn door_lock_inventory_discovery_commands_and_state_share_the_new_contract() {
         let mut attrs = default_attributes(LOCK_DEADBOLT_V1).unwrap();
         let caps = capabilities(LOCK_DEADBOLT_V1).unwrap();
@@ -2248,13 +2357,18 @@ mod tests {
             handle_command(
                 model,
                 &mut attrs,
-                "command.setColorRGB",
+                "command.setColor",
                 request.as_object().unwrap(),
             )
             .unwrap();
             assert_eq!(
-                json!(project_state(model, &attrs, "state.colorRGB").unwrap()),
-                expected
+                json!(project_state(model, &attrs, "state.color").unwrap()),
+                light_color::from_hs(
+                    expected["hue"].as_f64().unwrap(),
+                    expected["saturation"].as_f64().unwrap()
+                )
+                .unwrap()
+                .snapshot()
             );
         }
         for request in [
@@ -2267,7 +2381,7 @@ mod tests {
             assert!(handle_command(
                 model,
                 &mut attrs,
-                "command.setColorRGB",
+                "command.setColor",
                 request.as_object().unwrap()
             )
             .is_err());
@@ -2278,7 +2392,7 @@ mod tests {
         assert!(handle_command(
             model,
             &mut attrs,
-            "command.setColorRGB",
+            "command.setColor",
             json!({"saturation":20}).as_object().unwrap()
         )
         .is_err());
@@ -2500,7 +2614,7 @@ mod tests {
         apply_observed_payload(
             LIGHT_RGB_DIMMER_V1,
             &mut attrs,
-            "state.colorRGB",
+            "state.color",
             &object_map(json!({
                 "hue": 180,
                 "saturation": 60
@@ -2515,7 +2629,7 @@ mod tests {
             Some(60.0)
         );
         assert_eq!(
-            project_state(LIGHT_RGB_DIMMER_V1, &attrs, "state.colorRGB")
+            project_state(LIGHT_RGB_DIMMER_V1, &attrs, "state.color")
                 .unwrap()
                 .get("hue")
                 .and_then(Value::as_f64),
