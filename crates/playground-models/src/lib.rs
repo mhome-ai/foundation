@@ -272,22 +272,28 @@ pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
             "maxCoolingSetpoint": temperature(30.0, "C"),
             "minHeatingSetpoint": temperature(10.0, "C"),
             "maxHeatingSetpoint": temperature(26.0, "C"),
-            "availableHvacModes": ["off", "heat", "cool", "auto"],
-            "availablePresetModes": ["home", "away", "sleep"],
+            "reportableHvacModes": ["off", "heat", "cool", "auto"],
+            "selectableHvacModes": ["off", "heat", "cool", "auto"],
+            "reportablePresetModes": ["home", "away", "sleep"],
+            "selectablePresetModes": ["home", "away", "sleep"],
             "fanMode": "auto",
             "fanSpeed": 35,
-            "availableFanModes": ["auto", "low", "medium", "high"],
+            "reportableFanModes": ["auto", "low", "medium", "high"],
+            "selectableFanModes": ["auto", "low", "medium", "high"],
             "fanOscillation": "off",
-            "availableFanOscillationModes": ["off","on"]
+            "reportableFanOscillationModes": ["off","on"],
+            "selectableFanOscillationModes": ["off","on"]
         })),
         FAN_PURIFIER_V1 => object_map(json!({
             "online": true,
             "on": false,
             "fanMode": "auto",
             "fanSpeed": 30,
-            "availableFanModes": ["auto", "sleep", "low", "medium", "high", "turbo"],
+            "reportableFanModes": ["auto", "sleep", "low", "medium", "high", "turbo"],
+            "selectableFanModes": ["auto", "sleep", "low", "medium", "high", "turbo"],
             "fanOscillation": "off",
-            "availableFanOscillationModes": ["off","on"],
+            "reportableFanOscillationModes": ["off","on"],
+            "selectableFanOscillationModes": ["off","on"],
             "qualityState": "good",
             "index": 35,
             "pm25": 8,
@@ -906,10 +912,12 @@ pub fn project_discovery(
         }))?),
         "state.cover" | "command.coverControl" => cover_discovery(attrs),
         "state.fan" | "command.setFan" => Ok(object_map(json!({
-            "availableModes": attrs.get("availableFanModes").cloned().unwrap_or_else(|| Value::Array(Vec::new())),
+            "reportableModes": value_attr(attrs,"reportableFanModes")?,
+            "selectableModes": value_attr(attrs,"selectableFanModes")?,
             "supportedStates": ["mode","speed","oscillation"],
             "supportedSettings": ["mode","speed","oscillation"],
-            "availableOscillationModes": value_attr(attrs,"availableFanOscillationModes")?
+            "reportableOscillationModes": value_attr(attrs,"reportableFanOscillationModes")?,
+            "selectableOscillationModes": value_attr(attrs,"selectableFanOscillationModes")?
         }))?),
         "state.thermostat" | "command.setThermostatMode" | "command.setThermostatTemperature" => {
             Ok(object_map(json!({
@@ -919,8 +927,10 @@ pub fn project_discovery(
                 "maxCoolingSetpoint": value_attr(attrs, "maxCoolingSetpoint")?,
                 "minHeatingSetpoint": value_attr(attrs, "minHeatingSetpoint")?,
                 "maxHeatingSetpoint": value_attr(attrs, "maxHeatingSetpoint")?,
-                "availableHvacModes": attrs.get("availableHvacModes").cloned().unwrap_or_else(|| Value::Array(Vec::new())),
-                "availablePresetModes": attrs.get("availablePresetModes").cloned().unwrap_or_else(|| Value::Array(Vec::new()))
+                "reportableHvacModes": value_attr(attrs,"reportableHvacModes")?,
+                "selectableHvacModes": value_attr(attrs,"selectableHvacModes")?,
+                "reportablePresetModes": value_attr(attrs,"reportablePresetModes")?,
+                "selectablePresetModes": value_attr(attrs,"selectablePresetModes")?
             }))?)
         }
         "event.buttonPress" => Ok(object_map(json!({
@@ -1498,12 +1508,12 @@ fn door_lock(
 fn fan_state(attrs: &Map<String, Value>) -> Result<Map<String, Value>> {
     let mut out = Map::new();
     for (field, key, catalog) in [
-        ("mode", "fanMode", Some("availableFanModes")),
+        ("mode", "fanMode", Some("reportableFanModes")),
         ("speed", "fanSpeed", None),
         (
             "oscillation",
             "fanOscillation",
-            Some("availableFanOscillationModes"),
+            Some("reportableFanOscillationModes"),
         ),
     ] {
         let value = value_attr(attrs, key)?;
@@ -1538,9 +1548,9 @@ fn set_fan(attrs: &mut Map<String, Value>, request: &Map<String, Value>) -> Resu
             ensure_in_string_list(
                 attrs,
                 if field == "mode" {
-                    "availableFanModes"
+                    "selectableFanModes"
                 } else {
-                    "availableFanOscillationModes"
+                    "selectableFanOscillationModes"
                 },
                 name,
             )?;
@@ -1574,7 +1584,7 @@ fn set_thermostat_mode(
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
     if let Some(mode) = request.get("hvacMode").and_then(Value::as_str) {
-        ensure_in_string_list(attrs, "availableHvacModes", mode)?;
+        ensure_in_string_list(attrs, "selectableHvacModes", mode)?;
         attrs.insert("hvacMode".to_string(), Value::String(mode.to_string()));
         attrs.insert(
             "runningState".to_string(),
@@ -1582,7 +1592,7 @@ fn set_thermostat_mode(
         );
     }
     if let Some(mode) = request.get("presetMode").and_then(Value::as_str) {
-        ensure_in_string_list(attrs, "availablePresetModes", mode)?;
+        ensure_in_string_list(attrs, "selectablePresetModes", mode)?;
         attrs.insert("presetMode".to_string(), Value::String(mode.to_string()));
     }
     projected_event(attrs, "state.thermostat")
@@ -2436,6 +2446,66 @@ mod tests {
         )
         .unwrap();
         assert!(project_state(FAN_PURIFIER_V1, &attrs, "state.fan").unwrap()["speed"].is_null());
+    }
+
+    #[test]
+    fn feedback_catalogs_do_not_expand_selectable_modes_or_block_valid_observations() {
+        for (model, state_cap, command_cap, state_key, attribute, reportable, selectable) in [
+            (
+                FAN_PURIFIER_V1,
+                "state.fan",
+                "command.setFan",
+                "mode",
+                "fanMode",
+                "reportableFanModes",
+                "selectableFanModes",
+            ),
+            (
+                THERMOSTAT_FAN_V1,
+                "state.thermostat",
+                "command.setThermostatMode",
+                "hvacMode",
+                "hvacMode",
+                "reportableHvacModes",
+                "selectableHvacModes",
+            ),
+        ] {
+            let mut attrs = default_attributes(model).unwrap();
+            attrs.insert(reportable.into(), json!(["auto", "local-only"]));
+            attrs.insert(selectable.into(), json!(["auto"]));
+            attrs.insert(attribute.into(), json!("local-only"));
+            assert_eq!(
+                project_state(model, &attrs, state_cap).unwrap()[state_key],
+                "local-only"
+            );
+            let facts = project_discovery(model, &attrs, state_cap, "$f1").unwrap();
+            let suffix = if state_key == "mode" {
+                "Modes"
+            } else {
+                "HvacModes"
+            };
+            assert_eq!(
+                facts[&format!("reportable{suffix}")],
+                json!(["auto", "local-only"])
+            );
+            assert_eq!(facts[&format!("selectable{suffix}")], json!(["auto"]));
+            let before = attrs.clone();
+            assert!(handle_command(
+                model,
+                &mut attrs,
+                command_cap,
+                json!({state_key:"local-only"}).as_object().unwrap()
+            )
+            .is_err());
+            assert_eq!(attrs, before);
+            assert!(handle_command(
+                model,
+                &mut attrs,
+                command_cap,
+                json!({state_key:"auto"}).as_object().unwrap()
+            )
+            .is_ok());
+        }
     }
 
     #[test]
