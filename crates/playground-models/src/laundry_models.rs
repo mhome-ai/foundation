@@ -153,8 +153,7 @@ pub fn command(
     req: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
     let mut next = a.clone();
-    let observed;
-    if cap == "command.laundrySetting" {
+    let observed = if cap == "command.laundrySetting" {
         let f = fields(id);
         ensure!(
             !req.is_empty() && req.keys().all(|k| f.iter().any(|(n, _)| *n == k)),
@@ -169,7 +168,7 @@ pub fn command(
                 next.insert(name.into(), json!(value));
             }
         }
-        observed = "state.laundrySetting";
+        "state.laundrySetting"
     } else {
         ensure!(
             cap == "command.laundryControl" && req.len() == 1,
@@ -205,8 +204,8 @@ pub fn command(
             next.insert("laundryPhase".into(), Value::Null);
             next.insert("laundryRemainingTime".into(), Value::Null);
         }
-        observed = "state.laundry";
-    }
+        "state.laundry"
+    };
     let payload = Value::Object(state(id, &next, observed)?);
     *a = next;
     Ok(CommandOutcome::with_event(observed, payload))
