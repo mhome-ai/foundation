@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.151.1",
+  "contractVersion": "1.151.2",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/conversation/get": "spaceRead",
