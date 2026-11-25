@@ -80,7 +80,9 @@ with the Suggestion when raw history expires. They do not override current facts
 The Rust `validate()` methods enforce cross-field invariants as well as shape.
 JSON Schema enforces portable shape/conditional rules; time ordering, same-Space
 resolution actors, evidence provenance, business permissions and actual script
-validity require host checks. Deserialization alone is not semantic validation.
+validity require host checks. Deserialization alone is not semantic validation. Nonblank text and identity
+padding use Unicode White_Space, consistently with Rust `str::trim`; schemas
+spell out that set because JavaScript `\s` treats NEXT LINE and BOM differently.
 
 ## Automation content
 
@@ -96,10 +98,16 @@ validity require host checks. Deserialization alone is not semantic validation.
 - Applying an update checks the base hash within the existing editing boundary.
   It must not overwrite an intervening user change after a separate stale check.
 
-Type handlers explicitly define whether an action saves, enables, or preserves
-enablement. The common framework does not equate acceptance with enabling or
-running an Automation. UI opens the already generated source without a new model
-call; handling may revalidate against current resources and supported SDK rules.
+The first Automation handler declares `APPLY`: a newly created Automation is
+saved and enabled; an update preserves the existing Automation's enabled or
+stopped state within the editing boundary. A deliberately stopped Automation must
+not be re-enabled by applying an update. UI labels state the resulting action.
+Save/enable failure or an unknown outcome is not a completed resolution.
+
+Other type handlers declare their own actions. The common framework does not
+equate acceptance with enabling or running a resource. UI opens the already
+generated source without a new model call; handling may revalidate against
+current resources and supported SDK rules.
 
 ## Run and result semantics
 

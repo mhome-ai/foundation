@@ -413,6 +413,36 @@
           "suggestionIds": []
         }
       }
+    },
+    {
+      "name": "BOM is not Unicode whitespace",
+      "type": "AutomationDraft",
+      "value": {
+        "type": "AUTOMATION",
+        "operation": "CREATE",
+        "title": "﻿",
+        "summary": "Suggest a lower evening brightness",
+        "reasons": [
+          "Observed manual adjustments after the evening routine"
+        ],
+        "evidence": [
+          {
+            "sourceType": "BEHAVIOR",
+            "sourceId": "fixture-operation-1",
+            "occurredAt": 1000,
+            "excerpt": "The user selected brightness 30 after brightness 80"
+          }
+        ],
+        "script": {
+          "script": "name: Contract fixture\ntask: []\n",
+          "scripts": {
+            "lighting": "// Fixture source bundle\n",
+            "empty": ""
+          },
+          "sdkVersion": "test-sdk-1",
+          "parseResults": []
+        }
+      }
     }
   ],
   "invalid": [
@@ -881,6 +911,36 @@
       "name": "missing_explicit_run_result",
       "type": "GenerationGetOutput",
       "value": {}
+    },
+    {
+      "name": "unicode next line is blank",
+      "type": "AutomationDraft",
+      "value": {
+        "type": "AUTOMATION",
+        "operation": "CREATE",
+        "title": "",
+        "summary": "Suggest a lower evening brightness",
+        "reasons": [
+          "Observed manual adjustments after the evening routine"
+        ],
+        "evidence": [
+          {
+            "sourceType": "BEHAVIOR",
+            "sourceId": "fixture-operation-1",
+            "occurredAt": 1000,
+            "excerpt": "The user selected brightness 30 after brightness 80"
+          }
+        ],
+        "script": {
+          "script": "name: Contract fixture\ntask: []\n",
+          "scripts": {
+            "lighting": "// Fixture source bundle\n",
+            "empty": ""
+          },
+          "sdkVersion": "test-sdk-1",
+          "parseResults": []
+        }
+      }
     }
   ]
 }

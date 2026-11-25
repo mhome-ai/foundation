@@ -45,6 +45,21 @@
           "type": "SCHEDULED"
         }
       }
+    },
+    {
+      "name": "BOM is not identity padding",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "﻿run-fixture﻿",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "SCHEDULED"
+        }
+      }
     }
   ],
   "invalid": [
