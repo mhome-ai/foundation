@@ -562,6 +562,139 @@
           }
         }
       ]
+    },
+    "operationGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "iss",
+        "aud",
+        "environment",
+        "product",
+        "plan",
+        "issuedAtMs",
+        "expiresAtMs",
+        "sub",
+        "jti"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "iss": {
+          "const": "meow-onboard-authority"
+        },
+        "aud": {
+          "const": "meow-product-onboard"
+        },
+        "environment": {
+          "enum": [
+            "prod",
+            "dev",
+            "e2e"
+          ]
+        },
+        "product": {
+          "$ref": "#/$defs/identity"
+        },
+        "plan": {
+          "$ref": "#/$defs/plan"
+        },
+        "issuedAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "sub": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,64}(?![\\s\\S])"
+        },
+        "jti": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}(?![\\s\\S])"
+        }
+      }
+    },
+    "authorityChallenge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "iss",
+        "aud",
+        "environment",
+        "product",
+        "plan",
+        "issuedAtMs",
+        "expiresAtMs",
+        "deviceNonce",
+        "nonce"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "iss": {
+          "const": "meow-onboard-authority"
+        },
+        "aud": {
+          "const": "meow-product-onboard"
+        },
+        "environment": {
+          "enum": [
+            "prod",
+            "dev",
+            "e2e"
+          ]
+        },
+        "product": {
+          "$ref": "#/$defs/identity"
+        },
+        "plan": {
+          "$ref": "#/$defs/plan"
+        },
+        "issuedAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expiresAtMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "deviceNonce": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}(?![\\s\\S])"
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}(?![\\s\\S])"
+        }
+      }
+    },
+    "possessionProof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "challengeDigest"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "challengeDigest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+        }
+      }
     }
   }
 }

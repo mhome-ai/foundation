@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 
+pub mod authority;
+
 pub const PROTOCOL_VERSION: u32 = 1;
 pub const MAX_ID_BYTES: usize = 64;
 pub const MAX_SAFE_TIMESTAMP: u64 = 9_007_199_254_740_991;
@@ -67,7 +69,8 @@ pub struct Product {
     pub ownership: Ownership,
     pub environment: Environment,
     pub identity: Identity,
-    /// Random 128-bit installation generation, replaced only by product reset.
+    /// Random 128-bit installation generation. Reset or confirmed whole-product
+    /// removal replaces it; ordinary reconnect, upgrade and renewal never do.
     pub generation: String,
     pub components: Vec<Component>,
     pub network: Network,
@@ -191,6 +194,13 @@ impl Identity {
 }
 
 impl Product {
+    /// Exactly one installed device runtime owns the operation and binding.
+    /// This does not grant that runtime Cloud/Hub admission authority.
+    pub fn operation_owner(&self) -> Result<Role, &'static str> {
+        self.validate()?;
+        Ok(self.components.iter().map(|c| c.role).min().unwrap())
+    }
+
     pub fn validate(&self) -> Result<(), &'static str> {
         if self.protocol_version != PROTOCOL_VERSION || !hex(&self.generation, 32) {
             return Err("unsupported protocol or invalid installation generation");

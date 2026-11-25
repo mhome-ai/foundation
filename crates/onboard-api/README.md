@@ -14,7 +14,12 @@ access. Integration selection, acquisition, Entity validation and capability
 availability are independent business work. Missing or newly introduced
 Integrations must never revoke a completed onboarding result.
 
-See [onboarding v1](contract/onboarding-v1.md). `validate()` checks structure
+See [onboarding v1](contract/onboarding-v1.md), the
+[authority profile](contract/authority-v1.md) and
+[product lifecycle](contract/product-lifecycle-v1.md). The claim types cover exact
+operation binding, bounded UTC-millisecond lifetimes and fresh challenge binding.
+`Product::operation_owner` selects the single installed runtime for all seven role sets.
+`validate()` checks structure
 and relationships only; signature verification and operation authority remain
 required at the device boundary. Fictional fixtures are not valid grants.
 

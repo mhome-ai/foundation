@@ -1,3 +1,4 @@
+use onboard_api::authority::*;
 use onboard_api::*;
 use serde_json::Value;
 
@@ -39,6 +40,29 @@ fn rust_and_schema_accept_the_same_canonical_corpus() {
             }),
             "status" => serde_json::from_value::<Status>(value).is_ok_and(|s| {
                 s.validate(&serde_json::from_value(case["product"].clone()).unwrap())
+                    .is_ok()
+            }),
+            "operationGrant" => serde_json::from_value::<OperationGrant>(value).is_ok_and(|s| {
+                s.validate(
+                    &serde_json::from_value(case["product"].clone()).unwrap(),
+                    &serde_json::from_value(case["plan"].clone()).unwrap(),
+                    case["nowMs"].as_u64().unwrap(),
+                )
+                .is_ok()
+            }),
+            "authorityChallenge" => {
+                serde_json::from_value::<AuthorityChallenge>(value).is_ok_and(|s| {
+                    s.validate(
+                        &serde_json::from_value(case["product"].clone()).unwrap(),
+                        &serde_json::from_value(case["plan"].clone()).unwrap(),
+                        case["deviceNonce"].as_str().unwrap(),
+                        case["nowMs"].as_u64().unwrap(),
+                    )
+                    .is_ok()
+                })
+            }
+            "possessionProof" => serde_json::from_value::<PossessionProof>(value).is_ok_and(|s| {
+                s.validate(case["challengeDigest"].as_str().unwrap())
                     .is_ok()
             }),
             _ => panic!("unhandled fixture kind: {kind}"),

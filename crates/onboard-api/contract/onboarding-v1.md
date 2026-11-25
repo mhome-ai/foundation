@@ -6,6 +6,10 @@ adapters must be delivered before advertising an operational entrypoint. This
 document is not a list of registered App/CLI routes. There is no legacy wire or
 stored-state fallback.
 
+[Operation authority](authority-v1.md) defines the signed grant, possession and
+renewal profile. [Product lifecycle](product-lifecycle-v1.md) defines the unique
+runtime owner and whole-product management/removal boundaries.
+
 ## Ownership and layers
 
 The physical product owns its operation, shared Space binding and recovery. The
@@ -88,9 +92,10 @@ the exact original operation and cannot change its target or component set.
 The operation ID is an idempotency key, not authorization. Repeating the same
 Plan observes/continues its operation; reusing its ID for changed input is a
 conflict. A different operation cannot replace unfinished device work. A new
-initialization never changes a completed product's Space; transfer needs explicit
-product reset. Authorization-sensitive status/continuation still authenticate
-the caller, even if the caller knows the operation ID.
+initialization never changes a completed product's Space. Combined-product transfer
+needs explicit product reset; standalone-Wave confirmed whole-product removal is
+the lifecycle exception, preserving its network. Authorization-sensitive status
+and continuation still authenticate the caller, even if it knows the operation ID.
 
 ## Networking and transport handoff
 
