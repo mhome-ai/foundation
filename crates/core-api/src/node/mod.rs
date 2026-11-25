@@ -6,6 +6,7 @@ pub use conversation_api::execution::{
 };
 
 pub mod contracts;
+pub mod plugin;
 pub mod settings;
 pub mod status;
 

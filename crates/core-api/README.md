@@ -10,6 +10,11 @@ This package distributes shared Node wire contracts, including Matter and Camera
 management schemas; each Plugin owns their execution. App consumers use the
 opaque Plugin Facade envelope, and Core does not aggregate these inventories.
 
+Plugins communicate through the [Plugin routing contract](contract/plugin-routing-v1.md).
+Core owns current-Space instance addressing and forwarding; Plugins own business
+payloads. Requests preserve destination outcomes, and directed events have no
+business acknowledgement or replay.
+
 `messaging::IngressRedeem` carries a parsed identity code and a dedicated
 `IdentityRedemptionContext`: event ID, receiving address, sender and optional
 conversation display name. Redemption is independent of normalized message
