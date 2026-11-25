@@ -1,3 +1,5 @@
+mod media_targets;
+pub use media_targets::{APP_OBSERVER_V1, CHANNEL_REMOTE_V1, TV_V1};
 mod laundry_models;
 mod light_color;
 pub use laundry_models::{DRYER_V1, WASHER_DRYER_V1, WASHER_V1};
@@ -101,6 +103,9 @@ impl CommandOutcome {
 
 pub fn known_model_ids() -> &'static [&'static str] {
     &[
+        TV_V1,
+        CHANNEL_REMOTE_V1,
+        APP_OBSERVER_V1,
         WASHER_V1,
         DRYER_V1,
         WASHER_DRYER_V1,
@@ -137,6 +142,9 @@ pub fn ensure_known_model(model_id: &str) -> Result<()> {
 }
 
 pub fn default_attributes(model_id: &str) -> Result<Map<String, Value>> {
+    if media_targets::supported(model_id) {
+        return Ok(media_targets::defaults(model_id));
+    }
     if laundry_models::supported(model_id) {
         return Ok(laundry_models::defaults(model_id));
     }
@@ -373,6 +381,9 @@ pub fn normalize_instance(mut instance: DeviceInstance) -> Result<DeviceInstance
 }
 
 pub fn capabilities(model_id: &str) -> Result<Vec<String>> {
+    if media_targets::supported(model_id) {
+        return Ok(media_targets::capabilities(model_id));
+    }
     if laundry_models::supported(model_id) {
         return Ok(laundry_models::capabilities());
     }
@@ -700,6 +711,9 @@ pub fn project_state(
     attrs: &Map<String, Value>,
     capability: &str,
 ) -> Result<Map<String, Value>> {
+    if media_targets::supported(model_id) {
+        return media_targets::state(model_id, attrs, capability);
+    }
     if laundry_models::supported(model_id) {
         return laundry_models::state(model_id, attrs, capability);
     }
@@ -846,6 +860,9 @@ pub fn project_discovery(
     capability: &str,
     _alias: &str,
 ) -> Result<Map<String, Value>> {
+    if media_targets::supported(model_id) {
+        return media_targets::discovery(model_id, attrs, capability);
+    }
     if laundry_models::supported(model_id) {
         ensure!(
             laundry_models::capabilities()
@@ -982,6 +999,9 @@ pub fn apply_observed_payload(
     capability: &str,
     payload: &Map<String, Value>,
 ) -> Result<()> {
+    if media_targets::supported(model_id) {
+        return media_targets::observe(model_id, attrs, capability, payload);
+    }
     if laundry_models::supported(model_id) {
         return laundry_models::observe(model_id, attrs, capability, payload);
     }
@@ -1184,6 +1204,9 @@ pub fn handle_command(
     capability: &str,
     request: &Map<String, Value>,
 ) -> Result<CommandOutcome> {
+    if media_targets::supported(model_id) {
+        return media_targets::command(model_id, attrs, capability, request);
+    }
     if laundry_models::supported(model_id) {
         return laundry_models::command(model_id, attrs, capability, request);
     }
