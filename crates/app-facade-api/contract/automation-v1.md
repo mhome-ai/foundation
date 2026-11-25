@@ -44,3 +44,44 @@ calls and prepared commits, in Full and Essential presentation.
 A partially deleted definition remains available for deletion with the same ID.
 Existing cleanup steps tolerate resources already removed by an earlier attempt.
 An already absent and cleaned definition is a completed delete target.
+
+## Single execution control and evidence
+
+- `/app/automation/instance/list` takes `{automationId}` and returns
+  `{instances: [{threadId, instanceId, revision, phase, startedAt}]}`. Only active
+  runs are listed, oldest start first. `phase` is `EXECUTING`, `WAITING`, `QUEUEING`
+  or `STOPPING`. Full times are epoch milliseconds; Essential uses Home time.
+- `/app/automation/instance/stop` takes `{automationId, threadId, instanceId}`.
+  It fences that instance, captures its execution facts durably, and closes it.
+  It leaves other instances and future recurring triggers enabled. The response
+  is `{automationId, threadId, instanceId, state, outcome}`. `STOPPING` means the
+  executing worker has not completed capture; repeat the same request to observe
+  completion. `FINISHED` reports the authoritative terminal outcome. A run that
+  completed before the stop request keeps its actual outcome; ordinary success
+  may already have discarded its details. Already performed effects are not undone.
+  A started external call without a result is uncertain, not a confirmed failure.
+- `/app/automation/diagnostic/get` takes `{automationId}` and lists retained
+  execution metadata across all threads, newest first. Bodies are read separately.
+- `/app/automation/diagnostic/read` takes the execution identity and optional
+  `cursor`, and returns `{logs, nextCursor}`. Follow the opaque cursor for older
+  events. Pages contain up to 100 events with a target size of 256 KiB; a single
+  larger event is returned intact. Pagination never removes stored content.
+  Missing or damaged bodies produce an error; they are never represented as an
+  empty successful page.
+
+Events contain `sequence`, `timestamp`, `kind`, `operationId`, `level`, `message`
+and `details`. Ordinary events describe actual action/read requests, their results,
+and scheduled waits. Paired events share an operation ID. Schema-declared sensitive
+request fields are excluded. DEBUG adds internal compiler/interpreter flow. JSONL
+storage uses epoch milliseconds; Essential renders timestamps in Home time without
+changing stored instants. Agent fetches source through the standard source interface;
+execution records never duplicate the original Plan or source.
+
+Normal success discards details. Failures/interruption, DEBUG and explicit capture
+retain at most ten instances per thread across revisions. Activity summaries have
+separate retention. Checkpoints persist only new immutable JSONL segments and a
+constant-size head reference, plus runtime memory. An empty segment is not written.
+The Plan is fetched by automation/thread and must match the run's revision; a missing
+or changed Plan ends the old run. Generation and ownership checks still apply.
+A process crash can lose events since its last checkpoint. Explicit stop confirms
+completion only after available evidence has been saved, before checkpoint cleanup.

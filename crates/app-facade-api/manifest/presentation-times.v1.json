@@ -46,12 +46,13 @@
       "schedules.*.timestamp"
     ]
   },
+  "/app/automation/instance/list": { "ms": ["instances.*.startedAt"] },
+  "/app/automation/diagnostic/read": { "ms": ["logs.*.timestamp", "logs.*.details.dueAt"] },
   "/app/automation/diagnostic/get": {
     "ms": [
       "diagnostics.*.timestamp",
       "diagnostics.*.startedAt",
-      "diagnostics.*.finishedAt",
-      "diagnostics.*.logs.*.timestamp"
+      "diagnostics.*.finishedAt"
     ]
   },
   "/app/group/list": {

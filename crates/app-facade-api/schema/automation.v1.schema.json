@@ -137,6 +137,98 @@
           }
         }
       ]
+    },
+    "instanceInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "threadId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instanceId": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "automationId",
+        "threadId",
+        "instanceId"
+      ]
+    },
+    "diagnosticReadInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "threadId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instanceId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "automationId",
+        "threadId",
+        "instanceId"
+      ]
+    },
+    "instanceStopOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "threadId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instanceId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "state": {
+          "enum": [
+            "STOPPING",
+            "FINISHED"
+          ]
+        },
+        "outcome": {
+          "enum": [
+            null,
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED",
+            "INTERRUPTED"
+          ]
+        }
+      },
+      "required": [
+        "automationId",
+        "threadId",
+        "instanceId",
+        "state",
+        "outcome"
+      ]
     }
   }
 }

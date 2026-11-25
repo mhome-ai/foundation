@@ -390,3 +390,12 @@ fn device_identity_lookup_is_space_read_and_old_catalog_is_not_public() {
     assert!(authorization::required("/app/device/source/resolve").is_some());
     assert!(authorization::required("/app/integration/entity/list").is_none());
 }
+
+#[test]
+fn execution_records_are_read_only_but_stopping_requires_write() {
+    use authorization::OperationPolicy::{SpaceRead, SpaceWrite};
+    for target in ["/app/automation/diagnostic/get", "/app/automation/diagnostic/read", "/app/automation/instance/list"] {
+        assert_eq!(authorization::required(target), Some(SpaceRead));
+    }
+    assert_eq!(authorization::required("/app/automation/instance/stop"), Some(SpaceWrite));
+}

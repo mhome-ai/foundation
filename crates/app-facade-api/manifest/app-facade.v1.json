@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.154.0",
+  "contractVersion": "1.155.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -395,6 +395,10 @@
       "requestTargets": [
         "/app/automation/start",
         "/app/automation/stop",
+        "/app/automation/instance/stop",
+        "/app/automation/instance/list",
+        "/app/automation/diagnostic/get",
+        "/app/automation/diagnostic/read",
         "/app/automation/rename",
         "/app/automation/description/update"
       ]
