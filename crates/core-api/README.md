@@ -96,7 +96,8 @@ Hosts preserve status and JSON body, never infer them from error messages.
 `ExternalCoreError` preserves domain `code`, `message` and optional `details`,
 with conversions to/from the shared client `ErrorResponse`.
 
-The transport-neutral `webhook` module defines the common route, body limit and
+The transport-neutral `webhook` module defines the generic `/W/{code}` route
+(with `/W` as its URL-generation prefix), body limit and
 JSON-versus-UTF-8-text decoding. Hosts own network listeners and method admission;
 Core owns dispatch and execution. Upgrade service shell and Core together.
 

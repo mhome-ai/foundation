@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.core.v1",
-  "contractVersion": "1.78.1",
+  "contractVersion": "1.79.0",
   "protocols": {
     "pluginRouting": {
       "contract": "contract/plugin-routing-v1.md",

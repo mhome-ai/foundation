@@ -2,7 +2,8 @@
 use crate::{ErrorResponse, ExceptionCode};
 use serde_json::Value;
 
-pub const GENERAL_WEBHOOK_ROUTE: &str = "/webhook/general/{endpoint_id}";
+pub const GENERAL_WEBHOOK_PREFIX: &str = "/W";
+pub const GENERAL_WEBHOOK_ROUTE: &str = "/W/{code}";
 pub const MAX_WEBHOOK_BODY_BYTES: usize = 1024 * 1024;
 
 pub fn decode_body(content_type: &str, body: &[u8]) -> Result<Value, ErrorResponse> {
