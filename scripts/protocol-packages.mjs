@@ -164,6 +164,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "contract/node-metadata-v2.md",
       "contract/plugin-management-v1.md",
       "contract/plugin-contributions-v1.md",
+      "contract/plugin-routing-v1.md",
       "schema/node-metadata.v2.schema.json",
       "contract/recipient-id-v1.md",
       "contract/host-management-v1.json",
