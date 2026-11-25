@@ -6,8 +6,17 @@ use serde_json::Value;
 fn rust_and_schema_accept_the_same_canonical_corpus() {
     let schema: Value =
         serde_json::from_str(include_str!("../schema/onboard.v1.schema.json")).unwrap();
-    let corpus: Value = serde_json::from_str(include_str!("../fixtures/conformance.json")).unwrap();
-    for case in corpus["cases"].as_array().unwrap() {
+    let cases: Vec<Value> = [
+        include_str!("../fixtures/conformance.json"),
+        include_str!("../fixtures/authority.conformance.json"),
+    ]
+    .into_iter()
+    .flat_map(|text| {
+        let corpus: Value = serde_json::from_str(text).unwrap();
+        corpus["cases"].as_array().unwrap().clone()
+    })
+    .collect();
+    for case in &cases {
         let kind = case["kind"].as_str().unwrap();
         let value = case["value"].clone();
         let expected = case["valid"].as_bool().unwrap();

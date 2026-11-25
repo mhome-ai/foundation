@@ -9,5 +9,6 @@
     "contract/authority-v1.md",
     "contract/product-lifecycle-v1.md"
   ],
-  "businessIntegrationRequired": false
+  "businessIntegrationRequired": false,
+  "authorityFixtures": "fixtures/authority.conformance.json"
 }

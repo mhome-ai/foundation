@@ -5,7 +5,8 @@ use serde_json::Value;
 const NOW: u64 = 1_795_000_000_123;
 
 fn context() -> (Product, Plan, OperationGrant, AuthorityChallenge) {
-    let corpus: Value = serde_json::from_str(include_str!("../fixtures/conformance.json")).unwrap();
+    let corpus: Value =
+        serde_json::from_str(include_str!("../fixtures/authority.conformance.json")).unwrap();
     let cases = corpus["cases"].as_array().unwrap();
     let grant = cases
         .iter()

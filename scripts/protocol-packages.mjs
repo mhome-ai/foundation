@@ -6,7 +6,10 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     manifest: "manifest/onboard.v1.json",
     additionalFiles: Object.freeze(["contract"]),
     schemas: Object.freeze({ onboard: "schema/onboard.v1.schema.json" }),
-    fixtures: Object.freeze({ conformance: "fixtures/conformance.json" }),
+    fixtures: Object.freeze({
+      conformance: "fixtures/conformance.json",
+      authority: "fixtures/authority.conformance.json",
+    }),
   }),
   artifact: Object.freeze({
     crateDir: "crates/artifact",
