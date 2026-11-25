@@ -137,19 +137,22 @@ impl From<ExternalError> for LlmFailure {
 ///
 /// Provider discovery, credentials, model mappings, and provider-specific retries belong to the
 /// implementation and are intentionally absent from this interface.
+/// The default context preserves existing chat adapters. Background adapters
+/// explicitly implement `Llm<SuggestionInvocationContext>`; payment and authority
+/// are resolved from that trusted context without inventing a chat identity.
 #[async_trait]
-pub trait Llm: Send + Sync {
+pub trait Llm<C: Send + Sync = InvocationContext>: Send + Sync {
     /// Returns limits for the exact route frozen for one logical selector.
     async fn model_profile(
         &self,
-        context: &InvocationContext,
+        context: &C,
         use_case: &UseCase,
     ) -> Result<ModelProfile, ExternalError>;
 
     /// Completes one logical model invocation.
     async fn complete(
         &self,
-        context: &InvocationContext,
+        context: &C,
         request: CompletionRequest,
     ) -> Result<Completion, LlmFailure>;
 }

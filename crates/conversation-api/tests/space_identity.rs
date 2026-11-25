@@ -1,4 +1,6 @@
-use conversation_api::execution::{Actor, InvocationContext, SpaceContext, ThreadKey, stored};
+use conversation_api::execution::{
+    Actor, ExecutionContext, InvocationContext, SpaceContext, ThreadKey, stored,
+};
 use conversation_api::{ClientPrincipal, ConversationSurface};
 
 fn context() -> InvocationContext {
@@ -78,4 +80,16 @@ fn private_context_and_thread_identity_keep_the_existing_storage_shape() {
     let value: serde_json::Value = serde_json::from_str(&bytes).unwrap();
     assert_eq!(value["scope"]["scope_id"], "home");
     assert_eq!(serde_json::from_str::<ThreadKey>(&bytes).unwrap(), key);
+}
+
+#[test]
+fn child_operation_preserves_all_chat_identity_and_deadline_fields() {
+    let mut parent = context();
+    parent.deadline_unix_ms = Some(1000);
+    parent.traceparent = Some("trace".into());
+    let child = parent.with_operation_id("child-op".into());
+    let mut expected = serde_json::to_value(&parent).unwrap();
+    expected["operation_id"] = serde_json::json!("child-op");
+    assert_eq!(serde_json::to_value(child).unwrap(), expected);
+    assert_eq!(parent.operation_id().as_str(), "op");
 }

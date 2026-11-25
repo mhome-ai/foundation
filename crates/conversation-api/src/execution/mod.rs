@@ -15,6 +15,10 @@ pub mod id;
 pub mod llm;
 pub mod operational_context;
 pub mod storage;
+pub mod suggestion;
+pub use suggestion::{
+    ExecutionContext, SuggestionInvocationContext, SuggestionPayer, SuggestionTrigger,
+};
 mod tool_result;
 pub use tool_result::{essential_yaml, tool_result_text};
 

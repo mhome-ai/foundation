@@ -50,11 +50,13 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     schemas: Object.freeze({
       frame: "schema/conversation-frame.v2.schema.json",
       execution: "schema/execution/envelope.v1.schema.json",
+      suggestionExecution: "schema/execution/suggestion.v1.schema.json",
       podTalk: "schema/pod-talk.v1.schema.json",
     }),
     fixtures: Object.freeze({
       valid: "fixtures",
       facadeResponse: "fixtures/response/conformance.json",
+      suggestionExecution: "fixtures/suggestion/conformance.json",
     }),
   }),
   appFacade: Object.freeze({
@@ -98,6 +100,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       storage: "schema/storage.v1.schema.json",
       householdRecording: "schema/household-recording.v1.schema.json",
       nowAttention: "schema/now-attention.v1.schema.json",
+      suggestion: "schema/suggestion.v1.schema.json",
       billing: "schema/billing.v1.schema.json",
       userNavigation: "schema/user-navigation.v1.schema.json",
       pluginInstall: "schema/plugin-install.v1.schema.json",
@@ -133,6 +136,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
     fixtures: Object.freeze({
       dashboardPacking: "fixtures/dashboard/composition-packing.json",
       attention: "fixtures/attention/conformance.json",
+      suggestion: "fixtures/suggestion.conformance.json",
       agentLlm: "fixtures/agent-llm.conformance.json",
       billing: "fixtures/billing.conformance.json",
       entityPresentation: "fixtures/entity-presentation.conformance.json",

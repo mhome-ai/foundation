@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/suggestion-execution.v1.schema.json",
+  "$comment": "Trusted deployment admission only; not a public generate request. Validation does not authenticate a sender or authorize reads.",
+  "$defs": {
+    "Space": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "allOf": [
+            {
+              "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+            },
+            {
+              "not": {
+                "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+              }
+            }
+          ]
+        },
+        "space_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "allOf": [
+            {
+              "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+            },
+            {
+              "not": {
+                "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "tenant_id",
+        "space_id"
+      ],
+      "additionalProperties": false
+    },
+    "Trigger": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "SCHEDULED"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "EXPLICIT"
+            },
+            "userId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "allOf": [
+                {
+                  "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+                },
+                {
+                  "not": {
+                    "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "userId"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SuggestionInvocationContext": {
+      "type": "object",
+      "properties": {
+        "space": {
+          "$ref": "#/$defs/Space"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "allOf": [
+            {
+              "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+            },
+            {
+              "not": {
+                "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+              }
+            }
+          ]
+        },
+        "operationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "allOf": [
+            {
+              "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+            },
+            {
+              "not": {
+                "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+              }
+            }
+          ]
+        },
+        "trigger": {
+          "$ref": "#/$defs/Trigger"
+        },
+        "deadlineUnixMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "traceparent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "space",
+        "runId",
+        "operationId",
+        "trigger",
+        "deadlineUnixMs"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -59,35 +59,34 @@ pub struct FacadeResult {
 ///
 /// Implementations may execute in-process (`MeowCore`) or through RPC (Tiger/Lion), but they
 /// cannot supply prompts, tools, workflows, or model-facing schemas.
+/// `InvocationContext` remains the default for chat. A background implementation
+/// must enforce its own read/validation allowlist; this generic parameter does
+/// not grant permission to execute writes or prepare/commit business operations.
 #[async_trait]
-pub trait AppFacade: Send + Sync {
+pub trait AppFacade<C: Send + Sync = InvocationContext>: Send + Sync {
     /// Executes a direct App Facade request.
     async fn invoke(
         &self,
-        context: &InvocationContext,
+        context: &C,
         request: FacadeRequest,
     ) -> Result<FacadeResult, ExternalError>;
 
     /// Prepares a mutating operation without applying it.
     async fn prepare(
         &self,
-        context: &InvocationContext,
+        context: &C,
         request: FacadeRequest,
     ) -> Result<PreparedAction, ExternalError>;
 
     /// Commits a prepared operation idempotently.
     async fn commit(
         &self,
-        context: &InvocationContext,
+        context: &C,
         action: PreparedAction,
     ) -> Result<FacadeResult, ExternalError>;
 
     /// Rejects a prepared operation idempotently.
-    async fn reject(
-        &self,
-        context: &InvocationContext,
-        action: PreparedAction,
-    ) -> Result<(), ExternalError>;
+    async fn reject(&self, context: &C, action: PreparedAction) -> Result<(), ExternalError>;
 }
 
 fn deserialize_response<'de, D: serde::Deserializer<'de>>(

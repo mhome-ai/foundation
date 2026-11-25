@@ -52,6 +52,7 @@ pub mod resource_read;
 pub mod response;
 
 pub mod storage;
+pub mod suggestion;
 
 pub mod profile;
 

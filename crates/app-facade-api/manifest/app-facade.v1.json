@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.app-facade.v1",
-  "contractVersion": "1.153.0",
+  "contractVersion": "1.154.0",
   "callSchema": "schema/facade-call.v1.schema.json",
   "routing": "manifest/routing.v1.json",
   "routingSchema": "schema/routing.v1.schema.json",
@@ -528,6 +528,10 @@
       "responses": {
         "/app/dashboard/card/authoring/get": "#/definitions/output"
       }
+    },
+    "suggestion": {
+      "schema": "schema/suggestion.v1.schema.json",
+      "contract": "contract/suggestion-v1.md"
     }
   },
   "authorization": "manifest/authorization.v1.json",

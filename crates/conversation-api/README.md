@@ -45,6 +45,31 @@ Model data is re-exported from `llm-api`; there is one model-message representat
 messages intentionally use separate content types and never contain private model continuation.
 Runtime state machines, checkpoint formats, prompts and recovery policy remain in Agent Runtime.
 
+### Suggestion execution
+
+`SuggestionInvocationContext` declares trusted non-conversation generation with
+a Space, run/operation IDs, trigger and deadline. It never invents a chat thread,
+surface, enrolled Space Client or user actor for scheduled work. Public generate
+input cannot supply this context. Core/Lion admission authenticates and binds it;
+`validate()` only checks shape, not authority.
+
+`SuggestionTrigger::Explicit` carries the verified requesting user, who pays for
+that run. `Scheduled` resolves the current Space owner through the existing
+billing adapter. `SuggestionPayer` is a derived reference, not a wire-controlled
+account or an authorization grant. Both kinds produce Space-owned results.
+
+The `Llm`, `AppFacade` and `ContextSource` ports accept a context type parameter
+defaulting to the existing `InvocationContext`, preserving ordinary chat adapter
+implementations. Background adapters explicitly use `SuggestionInvocationContext`.
+`ExecutionContext` exposes only shared Space/run/operation metadata and child
+operation derivation; it does not erase the distinct authority contracts. The
+background Facade adapter must restrict access to authorized reads and script
+validation regardless of what the prompt says.
+
+`schema/execution/suggestion.v1.schema.json` and its shared conformance fixtures
+define this new context. Existing conversation frames and execution wire payloads
+are unchanged; declaring a context does not dispatch a task or register an RPC.
+
 HITL items share one public card contract: `kind` selects approval or user action; `card.type`
 selects trusted frontend presentation and `card.data` retains structured business data. Approval
 responses use approve/reject. User-action responses use continue with required `data` (null when

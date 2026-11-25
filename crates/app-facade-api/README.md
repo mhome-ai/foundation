@@ -28,6 +28,10 @@ Device-only rendering, online rows and chart series use the
 See [Agent LLM settings](contract/agent-llm-v1.md) for active-mode reads,
 independent saved configuration and Provider Operation boundaries.
 
+See the [Suggestion contract](contract/suggestion-v1.md) for generic multi-type
+results, complete Automation drafts, run/handling semantics and payment rules.
+These declarations precede runtime route and product integration.
+
 See [Group operation state](contract/groups-v1.md) for incomplete application,
 manual reapplication, deletion and name-update outcomes.
 

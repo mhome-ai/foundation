@@ -1,0 +1,1213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/suggestion.v1.schema.json",
+  "$comment": "Generic envelopes validate common fields only. Writers must also validate a registered type; AUTOMATION is the first production type. Timestamps and version are safe JSON integers. Cross-field time and authorization checks remain required.",
+  "$defs": {
+    "Evidence": {
+      "type": "object",
+      "properties": {
+        "sourceType": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "occurredAt": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "excerpt": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "sourceType",
+        "sourceId",
+        "excerpt"
+      ],
+      "additionalProperties": false
+    },
+    "AutomationScript": {
+      "type": "object",
+      "properties": {
+        "script": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "scripts": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "sdkVersion": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parseResults": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {}
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "script"
+      ],
+      "additionalProperties": false
+    },
+    "Resolution": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "operationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "handledAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "actor": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "user"
+                },
+                "userId": {
+                  "type": "string",
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "kind",
+                "userId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "space"
+                },
+                "tenantId": {
+                  "type": "string",
+                  "pattern": "\\S"
+                },
+                "spaceId": {
+                  "type": "string",
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "kind",
+                "tenantId",
+                "spaceId"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "resourceIds": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "action",
+        "operationId",
+        "handledAt",
+        "actor"
+      ],
+      "additionalProperties": false
+    },
+    "SuggestionDraft": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "title": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "summary": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "minItems": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1
+        },
+        "expiresAt": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "summary",
+        "reasons",
+        "evidence"
+      ],
+      "additionalProperties": true
+    },
+    "Suggestion": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "title": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "summary": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "minItems": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1
+        },
+        "expiresAt": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "spaceId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "runId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RESOLVED",
+            "DISMISSED",
+            "EXPIRED"
+          ]
+        },
+        "createdAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "updatedAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "resolution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Resolution"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "summary",
+        "reasons",
+        "evidence",
+        "id",
+        "spaceId",
+        "runId",
+        "version",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "RESOLVED",
+                  "DISMISSED"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "resolution"
+            ],
+            "properties": {
+              "resolution": {
+                "$ref": "#/$defs/Resolution"
+              }
+            },
+            "type": "object"
+          },
+          "else": {
+            "properties": {
+              "resolution": {
+                "type": "null"
+              }
+            },
+            "type": "object"
+          }
+        }
+      ]
+    },
+    "AutomationDraft": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "AUTOMATION"
+        },
+        "title": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "summary": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "minItems": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1
+        },
+        "expiresAt": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "enum": [
+            "CREATE",
+            "UPDATE"
+          ]
+        },
+        "automationId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "baseScriptHash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "script": {
+          "$ref": "#/$defs/AutomationScript"
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "summary",
+        "reasons",
+        "evidence",
+        "operation",
+        "script"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "UPDATE"
+              }
+            },
+            "required": [
+              "operation"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "automationId",
+              "baseScriptHash"
+            ],
+            "properties": {
+              "automationId": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "baseScriptHash": {
+                "type": "string",
+                "pattern": "\\S"
+              }
+            },
+            "type": "object"
+          },
+          "else": {
+            "properties": {
+              "automationId": {
+                "type": "null"
+              },
+              "baseScriptHash": {
+                "type": "null"
+              }
+            },
+            "type": "object"
+          }
+        }
+      ]
+    },
+    "AutomationSuggestion": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "AUTOMATION"
+        },
+        "title": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "summary": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "minItems": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1
+        },
+        "expiresAt": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "enum": [
+            "CREATE",
+            "UPDATE"
+          ]
+        },
+        "automationId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "baseScriptHash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "script": {
+          "$ref": "#/$defs/AutomationScript"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "spaceId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "runId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RESOLVED",
+            "DISMISSED",
+            "EXPIRED"
+          ]
+        },
+        "createdAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "updatedAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "resolution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Resolution"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "summary",
+        "reasons",
+        "evidence",
+        "id",
+        "spaceId",
+        "runId",
+        "version",
+        "status",
+        "createdAt",
+        "updatedAt",
+        "operation",
+        "script"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "UPDATE"
+              }
+            },
+            "required": [
+              "operation"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "automationId",
+              "baseScriptHash"
+            ],
+            "properties": {
+              "automationId": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "baseScriptHash": {
+                "type": "string",
+                "pattern": "\\S"
+              }
+            },
+            "type": "object"
+          },
+          "else": {
+            "properties": {
+              "automationId": {
+                "type": "null"
+              },
+              "baseScriptHash": {
+                "type": "null"
+              }
+            },
+            "type": "object"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "RESOLVED",
+                  "DISMISSED"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "resolution"
+            ],
+            "properties": {
+              "resolution": {
+                "$ref": "#/$defs/Resolution"
+              }
+            },
+            "type": "object"
+          },
+          "else": {
+            "properties": {
+              "resolution": {
+                "type": "null"
+              }
+            },
+            "type": "object"
+          }
+        }
+      ]
+    },
+    "GenerateInput": {
+      "type": "object",
+      "properties": {
+        "focus": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "DetailInput": {
+      "type": "object",
+      "properties": {
+        "suggestionId": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "suggestionId"
+      ],
+      "additionalProperties": false
+    },
+    "HandleInput": {
+      "type": "object",
+      "properties": {
+        "suggestionId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "action": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        }
+      },
+      "required": [
+        "suggestionId",
+        "expectedVersion",
+        "action"
+      ],
+      "additionalProperties": false
+    },
+    "FeedbackInput": {
+      "type": "object",
+      "properties": {
+        "suggestionId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "decision": {
+          "const": "DISMISS"
+        },
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "suggestionId",
+        "expectedVersion",
+        "decision"
+      ],
+      "additionalProperties": false
+    },
+    "ListInput": {
+      "type": "object",
+      "properties": {
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          }
+        },
+        "statuses": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "PENDING",
+              "RESOLVED",
+              "DISMISSED",
+              "EXPIRED"
+            ]
+          }
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 50
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "SuggestionSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "title": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "summary": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "RESOLVED",
+            "DISMISSED",
+            "EXPIRED"
+          ]
+        },
+        "createdAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "updatedAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expiresAt": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "version",
+        "title",
+        "summary",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    },
+    "ListOutput": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SuggestionSummary"
+          }
+        },
+        "nextCursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "additionalProperties": false
+    },
+    "GenerationResult": {
+      "type": "object",
+      "properties": {
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SuggestionDraft"
+          }
+        },
+        "contextSummary": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "suggestions"
+      ],
+      "additionalProperties": false
+    },
+    "AutomationGenerationResult": {
+      "type": "object",
+      "properties": {
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AutomationDraft"
+          }
+        },
+        "contextSummary": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "suggestions"
+      ],
+      "additionalProperties": false
+    },
+    "SuggestionRun": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "status": {
+          "enum": [
+            "RUNNING",
+            "SUCCEEDED",
+            "PARTIAL",
+            "FAILED",
+            "CANCELLED"
+          ]
+        },
+        "startedAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "finishedAt": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suggestionIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        },
+        "errorCode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "runId",
+        "status",
+        "startedAt",
+        "suggestionIds"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "RUNNING"
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "properties": {
+              "finishedAt": {
+                "type": "null"
+              }
+            },
+            "type": "object"
+          },
+          "else": {
+            "required": [
+              "finishedAt"
+            ],
+            "properties": {
+              "finishedAt": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              }
+            },
+            "type": "object"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "PARTIAL",
+                  "FAILED"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "errorCode"
+            ],
+            "properties": {
+              "errorCode": {
+                "type": "string",
+                "pattern": "\\S"
+              }
+            },
+            "type": "object"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "RUNNING",
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "properties": {
+              "errorCode": {
+                "type": "null"
+              }
+            },
+            "type": "object"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "RUNNING",
+                  "FAILED",
+                  "CANCELLED"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "properties": {
+              "suggestionIds": {
+                "maxItems": 0,
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        }
+      ]
+    },
+    "GenerateOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "type": "boolean"
+        },
+        "run": {
+          "$ref": "#/$defs/SuggestionRun"
+        }
+      },
+      "required": [
+        "accepted",
+        "run"
+      ]
+    },
+    "GenerationGetInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "\\S"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "GenerationGetOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "run": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SuggestionRun"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "run"
+      ]
+    }
+  }
+}

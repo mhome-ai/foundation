@@ -94,7 +94,9 @@ pub struct OperationalContextDelta {
 }
 
 /// Loads typed facts used by the canonical Agent prompt.
+/// The default context preserves chat callers; deployments can separately load
+/// authorized Space facts for a non-conversation execution context.
 #[async_trait]
-pub trait ContextSource: Send + Sync {
-    async fn load(&self, context: &InvocationContext) -> Result<OperationalContext, ExternalError>;
+pub trait ContextSource<C: Send + Sync = InvocationContext>: Send + Sync {
+    async fn load(&self, context: &C) -> Result<OperationalContext, ExternalError>;
 }

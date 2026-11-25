@@ -1,0 +1,189 @@
+{
+  "valid": [
+    {
+      "name": "scheduled",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "run-fixture",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "SCHEDULED"
+        }
+      }
+    },
+    {
+      "name": "explicit member pays",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "run-fixture",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "EXPLICIT",
+          "userId": "member-b"
+        }
+      }
+    },
+    {
+      "name": "unicode_id_at_limit",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "SCHEDULED"
+        }
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "owner supplied for scheduled",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "run-fixture",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "SCHEDULED",
+          "userId": "forged"
+        }
+      }
+    },
+    {
+      "name": "explicit lacks user",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "run-fixture",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "EXPLICIT"
+        }
+      }
+    },
+    {
+      "name": "missing tenant",
+      "value": {
+        "space": {
+          "space_id": "space-fixture"
+        },
+        "runId": "run-fixture",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "SCHEDULED"
+        }
+      }
+    },
+    {
+      "name": "no deadline",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "run-fixture",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 0,
+        "trigger": {
+          "type": "SCHEDULED"
+        }
+      }
+    },
+    {
+      "name": "oversized deadline",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "run-fixture",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 9007199254740992,
+        "trigger": {
+          "type": "SCHEDULED"
+        }
+      }
+    },
+    {
+      "name": "no synthetic conversation",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "run-fixture",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "SCHEDULED"
+        },
+        "threadId": "pretend"
+      }
+    },
+    {
+      "name": "no payer override",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "run-fixture",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "SCHEDULED"
+        },
+        "payer": "owner"
+      }
+    },
+    {
+      "name": "no whitespace identity",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": " ",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "SCHEDULED"
+        }
+      }
+    },
+    {
+      "name": "unicode_id_over_limit",
+      "value": {
+        "space": {
+          "tenant_id": "tenant-fixture",
+          "space_id": "space-fixture"
+        },
+        "runId": "猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫",
+        "operationId": "operation-fixture",
+        "deadlineUnixMs": 5000,
+        "trigger": {
+          "type": "SCHEDULED"
+        }
+      }
+    }
+  ]
+}
