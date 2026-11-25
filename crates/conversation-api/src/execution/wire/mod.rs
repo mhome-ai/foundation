@@ -120,6 +120,8 @@ pub enum CommandResponse {
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum AdmissionDisposition {
+    /// User input is queued for the current run's next complete step boundary.
+    SteeringQueued,
     /// A Lion-dispatched request entered the Agent process's execution queue.
     Queued,
     /// Interaction decisions are durable and ready to resume.
@@ -412,6 +414,7 @@ impl Envelope {
         match &self.payload {
             Payload::Command(request) => match &request.command {
                 AgentCommand::Enqueue { context, .. }
+                | AgentCommand::Steer { context, .. }
                 | AgentCommand::SubmitInteraction { context, .. }
                 | AgentCommand::Cancel { context } => Some(context),
             },
@@ -513,6 +516,19 @@ fn validate_checkpoint_reference(reference: &CheckpointReference) -> Result<(), 
 }
 
 fn validate_command_binding(request: &CommandRequest) -> Result<(), ProtocolError> {
+    if matches!(request.command, AgentCommand::Steer { .. }) {
+        let live = request.llm_plan.is_none()
+            && request.context_generation.is_none()
+            && request.base_checkpoint.is_none();
+        let resume = request.llm_plan.is_some()
+            && request.context_generation.is_some()
+            && request.base_checkpoint.is_some();
+        if (!live && !resume) || request.abandoned_run_id.is_some() {
+            return Err(ProtocolError::InvalidBinding(
+                "steer must target a live dispatch or resume a complete frozen checkpoint".into(),
+            ));
+        }
+    }
     match (&request.command, &request.context_generation) {
         (AgentCommand::Enqueue { .. } | AgentCommand::SubmitInteraction { .. }, Some(value))
             if value.is_complete() => {}
@@ -522,6 +538,13 @@ fn validate_command_binding(request: &CommandRequest) -> Result<(), ProtocolErro
             ));
         }
         (AgentCommand::Cancel { .. }, None) => {}
+        (AgentCommand::Steer { .. }, None) => {}
+        (AgentCommand::Steer { .. }, Some(value)) if value.is_complete() => {}
+        (AgentCommand::Steer { .. }, Some(_)) => {
+            return Err(ProtocolError::InvalidBinding(
+                "steer context generation is incomplete".into(),
+            ));
+        }
         (AgentCommand::Cancel { .. }, Some(_)) => {
             return Err(ProtocolError::InvalidBinding(
                 "cancel must not carry a context generation".to_owned(),
@@ -537,6 +560,7 @@ fn validate_command_binding(request: &CommandRequest) -> Result<(), ProtocolErro
             "enqueue requires a frozen LLM plan".to_owned(),
         )),
         (AgentCommand::SubmitInteraction { .. }, Some(plan)) => validate_llm_plan(plan),
+        (AgentCommand::Steer { .. }, Some(plan)) => validate_llm_plan(plan),
         (AgentCommand::SubmitInteraction { .. }, None) => Err(ProtocolError::InvalidBinding(
             "submit_interaction requires the run's frozen LLM plan".to_owned(),
         )),

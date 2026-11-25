@@ -4,6 +4,9 @@ use serde_json::Value;
 pub(super) fn project(target: &str, data: &Value) -> Option<Value> {
     let mut result = data.clone();
     match target {
+        "/app/agent/conversation/get" | "/app/agent/conversation/save" => {
+            retain(&mut result, &["runningMessageBehavior", "version"]);
+        }
         "/app/agent/session/get" | "/app/agent/session/save" => {
             retain(&mut result, &["idleTimeoutMinutes", "source"]);
         }

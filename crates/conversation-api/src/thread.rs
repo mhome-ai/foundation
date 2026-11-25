@@ -61,6 +61,9 @@ pub struct ThreadCatalog {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct QueuedMessage {
+    /// Existing run receiving this input; absent for a separate queued task.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub run_id: Option<String>,
     pub request_id: String,
     pub thread_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]

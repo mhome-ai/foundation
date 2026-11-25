@@ -16,6 +16,7 @@
     "temperature": null,
     "allowTools": true,
     "debug": false,
-    "occurredAtUnixMs": 1787587200000
+    "occurredAtUnixMs": 1787587200000,
+    "delivery": "default"
   }
 }

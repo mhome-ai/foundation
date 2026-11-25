@@ -74,6 +74,7 @@ pub struct MessageEnqueueResponse {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum MessageEnqueueDisposition {
+    Steering,
     Scheduled,
     Queued,
     Duplicate,
@@ -97,6 +98,7 @@ pub struct TurnSubmitResponse {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum TurnSubmitDisposition {
+    Steering,
     Scheduled,
     Queued,
     Duplicate,
@@ -187,6 +189,8 @@ pub enum RequestCancelOutcome {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RequestAdmission {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub run_id: Option<String>,
     pub state: RequestAdmissionState,
     pub admission_version: u64,
     #[serde(default, skip_serializing_if = "Option::is_none")]

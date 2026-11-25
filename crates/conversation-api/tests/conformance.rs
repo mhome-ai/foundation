@@ -15,6 +15,14 @@ use serde_json::Value;
 
 const FIXTURES: &[(&str, &str)] = &[
     (
+        "turn-submit-steering.response.json",
+        include_str!("../fixtures/turn-submit-steering.response.json"),
+    ),
+    (
+        "thread-load-steered.response.json",
+        include_str!("../fixtures/thread-load-steered.response.json"),
+    ),
+    (
         "control-get.request.json",
         include_str!("../fixtures/control-get.request.json"),
     ),
@@ -339,6 +347,14 @@ fn request_and_response_fixtures_deserialize_to_their_typed_dtos() {
         turn_response.session_disposition,
         Some(TurnSessionDisposition::RotatedIdleTimeout)
     );
+    let steering = receipt::<TurnSubmitResponse>("turn-submit-steering.response.json");
+    assert_eq!(steering.disposition, TurnSubmitDisposition::Steering);
+    assert_eq!(steering.admission.unwrap().run_id.as_deref(), Some("root"));
+    let steered = body::<ThreadLoadResponse>("thread-load-steered.response.json");
+    let conversation_api::ThreadSync::Snapshot { snapshot } = steered.sync else {
+        panic!("snapshot")
+    };
+    assert_eq!(snapshot.messages[1].run_id.as_deref(), Some("root"));
     let waiting = receipt::<TurnSubmitResponse>("turn-submit-waiting.response.json");
     assert_eq!(waiting.thread_id, None);
     assert_eq!(waiting.queue_version, None);

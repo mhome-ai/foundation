@@ -4,6 +4,15 @@ use serde::{Deserialize, Serialize};
 
 use crate::execution::{InvocationContext, Message, MessageId, RunId, UseCase};
 
+/// One independently identified user input joining an existing run.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SteeringInput {
+    pub request_id: String,
+    pub actor: crate::execution::Actor,
+    pub message: Message,
+}
+
 /// Mutation policy for tools that can change application state.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -71,6 +80,11 @@ impl QueuedRun {
 #[serde(tag = "type", rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 pub enum AgentCommand {
+    /// Adds input at the next complete model/tool boundary of the named run.
+    Steer {
+        context: InvocationContext,
+        inputs: Vec<SteeringInput>,
+    },
     /// Enqueues a new user message.
     Enqueue {
         /// Invocation identity and ownership.

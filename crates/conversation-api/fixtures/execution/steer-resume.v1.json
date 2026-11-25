@@ -1,0 +1,112 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "message-1",
+    "correlation_id": "correlation-1",
+    "causation_id": null,
+    "sent_at_unix_ms": 1700000000000,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "command",
+    "payload": {
+      "command": {
+        "type": "steer",
+        "context": {
+          "actor": {
+            "principal": {
+              "kind": "user",
+              "userId": "user-1"
+            },
+            "client_id": "client-1",
+            "credential_id": null
+          },
+          "thread_id": "thread-1",
+          "run_id": "run-1",
+          "operation_id": "operation-1",
+          "deadline_unix_ms": null,
+          "traceparent": null,
+          "surface_id": "cs1:cp:dXNlci0x",
+          "space": {
+            "tenant_id": "tenant-1",
+            "space_id": "scope-1"
+          }
+        },
+        "inputs": [
+          {
+            "request_id": "input-1",
+            "actor": {
+              "principal": {
+                "kind": "user",
+                "userId": "user-1"
+              },
+              "client_id": "client-1",
+              "credential_id": null
+            },
+            "message": {
+              "role": "user",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "hello"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "context_generation": {
+        "user_space": "scope-1",
+        "identity": "identity-1",
+        "memory": "memory-1",
+        "integration_guide": "guide-1",
+        "installed_integrations": "installed-1",
+        "space_integrations": "scope-integrations-1"
+      },
+      "llm_plan": {
+        "revision": "1700000000000",
+        "route": {
+          "backend": "openrouter",
+          "profile": "cloud_openrouter",
+          "model": "openai/gpt-5.4-mini",
+          "provider_preferences": [
+            "OpenAI"
+          ],
+          "temperature": 0.5,
+          "context_window_tokens": 128000,
+          "cache_control": true,
+          "reasoning_effort": null,
+          "model_snapshot": {
+            "capabilities": {
+              "input": [
+                "image"
+              ],
+              "tool_calling": true,
+              "structured_output": true
+            },
+            "generation_support": {
+              "temperature": true,
+              "maxTokens": true,
+              "thinking": true,
+              "reasoningEfforts": [
+                "high"
+              ],
+              "temperatureWithReasoning": true,
+              "temperatureMax": null,
+              "maxOutputTokens": null
+            }
+          }
+        }
+      },
+      "base_checkpoint": {
+        "object_key": "checkpoints/abc.json",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "format_version": 1
+      },
+      "abandoned_run_id": null
+    }
+  }
+}

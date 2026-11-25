@@ -66,6 +66,8 @@ pub struct MessageEnqueueRequest {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TurnSubmitRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delivery: Option<MessageDelivery>,
     pub request_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
@@ -78,6 +80,39 @@ pub struct TurnSubmitRequest {
     pub allow_tools: bool,
     pub debug: bool,
     pub occurred_at_unix_ms: i64,
+}
+
+/// Default follows the current Space policy at admission, never a client cache.
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum MessageDelivery {
+    #[default]
+    Default,
+    Steer,
+    Queue,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AgentConversationPolicy {
+    pub space_id: String,
+    pub running_message_behavior: RunningMessageBehavior,
+    pub version: u64,
+    pub updated_at_ms: Option<i64>,
+}
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RunningMessageBehavior {
+    #[default]
+    Steer,
+    Queue,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SaveAgentConversationPolicy {
+    pub running_message_behavior: RunningMessageBehavior,
 }
 
 /// Starts a new active session without exposing thread storage preconditions to the caller.

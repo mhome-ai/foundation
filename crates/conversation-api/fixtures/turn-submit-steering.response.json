@@ -1,0 +1,60 @@
+{
+  "target": "/chat/turn/submit",
+  "direction": "response",
+  "body": {
+    "receipt": {
+      "requestId": "addition",
+      "threadId": "thread-2",
+      "disposition": "steering",
+      "sessionDisposition": "existing",
+      "queueVersion": 1,
+      "admission": {
+        "state": "bound",
+        "admissionVersion": 1,
+        "reason": "accepted",
+        "threadId": "thread-2",
+        "queueVersion": 1,
+        "runId": "root"
+      }
+    },
+    "control": {
+      "surfaceId": "cs1:cp:dXNlcg",
+      "version": "00000000000000000001:00000000000000000001",
+      "activeThread": {
+        "threadId": "thread-2",
+        "title": "New conversation",
+        "state": "active",
+        "createdAt": "2026-08-22T00:00:00Z",
+        "updatedAt": "2026-08-22T00:00:00Z",
+        "archivedAt": null,
+        "purgeAfter": null
+      },
+      "activeRun": {
+        "requestId": "root",
+        "startedAt": "2026-08-22T00:00:00Z"
+      },
+      "pendingInteraction": null,
+      "queue": {
+        "queueVersion": 1,
+        "items": [
+          {
+            "requestId": "addition",
+            "threadId": "thread-2",
+            "runId": "root",
+            "authorUserId": "user",
+            "content": {
+              "parts": [
+                {
+                  "type": "text",
+                  "text": "also do this"
+                }
+              ]
+            },
+            "createdAt": "2026-08-22T00:00:01Z"
+          }
+        ]
+      },
+      "historyVersion": 0
+    }
+  }
+}

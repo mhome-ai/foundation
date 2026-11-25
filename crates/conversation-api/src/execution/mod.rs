@@ -22,7 +22,7 @@ pub use crate::{
     ConversationSurface, InteractionAnswer, InteractionCard, InteractionKind, InteractionResponse,
     InteractionTone, PendingInteractionItem,
 };
-pub use agent::{AccessMode, AgentCommand, Interaction, QueuedRun, RunOptions};
+pub use agent::{AccessMode, AgentCommand, Interaction, QueuedRun, RunOptions, SteeringInput};
 pub use artifact_api::{
     ARTIFACT_URL_PREFIX, ArtifactKind, ArtifactMetadata, ArtifactReference, ArtifactUri,
 };

@@ -494,7 +494,9 @@
     },
     "dashboardWidgetCardCreate": {
       "contract": "contract/dashboard-widget-card-create-v1.md",
-      "requestTargets": ["/app/dashboard/card/widget/create"]
+      "requestTargets": [
+        "/app/dashboard/card/widget/create"
+      ]
     },
     "dashboardComposition": {
       "layoutSchema": "schema/canvas-layout.v1.schema.json",
@@ -504,6 +506,16 @@
         "/app/dashboard/canvas/composition/create",
         "/app/dashboard/canvas/composition/ungroup",
         "/app/dashboard/canvas/composition/layout/update"
+      ]
+    },
+    "agentConversation": {
+      "contract": "contract/agent-conversation-v1.md",
+      "requestTargets": [
+        "/app/agent/conversation/get",
+        "/app/agent/conversation/save"
+      ],
+      "eventTargets": [
+        "/app/agent/conversation/changed"
       ]
     }
   },

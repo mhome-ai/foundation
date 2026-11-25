@@ -88,6 +88,9 @@
         "queueVersion": {
           "type": "integer",
           "minimum": 0
+        },
+        "runId": {
+          "$ref": "#/$defs/id"
         }
       }
     },
@@ -121,6 +124,9 @@
         "queueVersion": {
           "type": "integer",
           "minimum": 0
+        },
+        "runId": {
+          "$ref": "#/$defs/id"
         }
       }
     },
@@ -485,6 +491,9 @@
         },
         "createdAt": {
           "$ref": "#/$defs/time"
+        },
+        "runId": {
+          "$ref": "#/$defs/id"
         }
       }
     },
@@ -603,6 +612,9 @@
         },
         "createdAt": {
           "$ref": "#/$defs/time"
+        },
+        "runId": {
+          "$ref": "#/$defs/id"
         }
       }
     },
@@ -1732,6 +1744,13 @@
             "occurredAtUnixMs": {
               "type": "integer",
               "minimum": 0
+            },
+            "delivery": {
+              "enum": [
+                "default",
+                "steer",
+                "queue"
+              ]
             }
           }
         }
@@ -1936,7 +1955,8 @@
                   "enum": [
                     "scheduled",
                     "queued",
-                    "duplicate"
+                    "duplicate",
+                    "steering"
                   ]
                 },
                 "queueVersion": {
@@ -2004,7 +2024,8 @@
                     "scheduled",
                     "queued",
                     "duplicate",
-                    "blocked_pending_interaction"
+                    "blocked_pending_interaction",
+                    "steering"
                   ]
                 },
                 "sessionDisposition": {

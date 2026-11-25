@@ -110,6 +110,8 @@ pub enum ConversationMessageRole {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ConversationMessage {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub run_id: Option<String>,
     pub message_id: String,
     pub request_id: String,
     pub role: ConversationMessageRole,

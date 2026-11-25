@@ -22,6 +22,10 @@ pub struct InteractionRequest {
 #[serde(tag = "type", rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 pub enum AgentEvent {
+    /// Inputs committed to the prompt history of the original run.
+    Steered {
+        inputs: Vec<crate::execution::SteeringInput>,
+    },
     /// A run has started or resumed.
     #[serde(deserialize_with = "crate::execution::deserialize_empty_variant")]
     Started,
