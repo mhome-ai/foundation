@@ -94,6 +94,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       "schema/delegated-call.v1.schema.json",
     ]),
     schemas: Object.freeze({
+      dashboardCardAuthoring: "schema/dashboard-card-authoring.v1.schema.json",
       storage: "schema/storage.v1.schema.json",
       householdRecording: "schema/household-recording.v1.schema.json",
       nowAttention: "schema/now-attention.v1.schema.json",
