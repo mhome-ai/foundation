@@ -1581,5 +1581,94 @@
       },
       "status": "success"
     }
+  },
+  {
+    "target": "/app/suggestion/generate",
+    "input": {
+      "focus": "private household detail"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "accepted": true,
+        "run": {
+          "runId": "run",
+          "status": "RUNNING"
+        }
+      }
+    },
+    "expected": {
+      "event": "suggestion.generate",
+      "accepted": true,
+      "run": {
+        "runId": "run",
+        "status": "RUNNING"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/suggestion/handle",
+    "input": {
+      "suggestionId": "s",
+      "expectedVersion": 1,
+      "action": "APPLY"
+    },
+    "outcome": {
+      "status": "partial",
+      "data": {
+        "automationId": "a",
+        "enabled": false
+      }
+    },
+    "expected": {
+      "event": "suggestion.handle",
+      "suggestionId": "s",
+      "expectedVersion": 1,
+      "action": "APPLY",
+      "automationId": "a",
+      "enabled": false,
+      "status": "partial"
+    }
+  },
+  {
+    "target": "/app/suggestion/feedback",
+    "input": {
+      "suggestionId": "s",
+      "expectedVersion": 1,
+      "decision": "DISMISS",
+      "comment": "private"
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "id": "s",
+        "status": "DISMISSED"
+      }
+    },
+    "expected": {
+      "event": "suggestion.dismiss",
+      "suggestionId": "s",
+      "expectedVersion": 1,
+      "id": "s",
+      "status": "success"
+    }
+  },
+  {
+    "target": "/app/suggestion/settings/save",
+    "input": {
+      "enabled": false
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "enabled": false
+      }
+    },
+    "expected": {
+      "event": "suggestion.settings",
+      "enabled": false,
+      "status": "success"
+    }
   }
 ]

@@ -535,7 +535,17 @@
     },
     "suggestion": {
       "schema": "schema/suggestion.v1.schema.json",
-      "contract": "contract/suggestion-v1.md"
+      "contract": "contract/suggestion-v1.md",
+      "requestTargets": [
+        "/app/suggestion/generate",
+        "/app/suggestion/generation/get",
+        "/app/suggestion/list",
+        "/app/suggestion/detail/get",
+        "/app/suggestion/handle",
+        "/app/suggestion/feedback",
+        "/app/suggestion/settings/get",
+        "/app/suggestion/settings/save"
+      ]
     }
   },
   "authorization": "manifest/authorization.v1.json",

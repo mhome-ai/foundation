@@ -224,3 +224,23 @@ The execution identity has a separate shared corpus in conversation-api.
 These tests cover shape, multiple types, complete bundles, backend-field rejection,
 status invariants and payment selection. They do not prove runtime authorization,
 script compilation, billing settlement, persistence or local/cloud integration.
+
+## Space migration
+
+The `suggestion/data` DataSync category transfers portable values, not storage keys:
+`SETTINGS` carries `tenantId`, `spaceId` and settings; `STATE` carries that owner,
+`current` (run, trusted invocation, optional focus and observed usage), and optional
+`contextSummary`; `SUGGESTION` carries `tenantId` and the full typed `item`, whose
+`spaceId` supplies its Space owner. The shared `suggestion.migration.json` fixture
+covers disabled settings, retained context, complete source bundles and a partial
+handling receipt. Internal dispatch bindings, object addresses and handling claims
+are never transferred.
+
+Existing Space migration fencing owns the handoff. An active run or unfinished
+handling claim cannot be exported as a portable snapshot. Validate every incoming
+record, exact bundle ownership, duplicate singleton/item identities, registered
+content and terminal run state before replacing any category. Import preserves
+IDs, versions, timestamps and business outcomes; it does not generate, apply or
+replay Suggestions. Cloud content uploads precede metadata replacement. A failed
+migration follows the existing lifecycle's explicit retry, with no Suggestion-specific
+retry service or cross-store transaction.

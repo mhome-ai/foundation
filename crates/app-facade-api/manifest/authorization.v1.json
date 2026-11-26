@@ -382,7 +382,15 @@
     "/app/wave/discover": "spaceManage",
     "/app/wave/list": "spaceManage",
     "/app/wave/refresh": "spaceManage",
-    "/app/wave/remove": "spaceManage"
+    "/app/wave/remove": "spaceManage",
+    "/app/suggestion/detail/get": "spaceRead",
+    "/app/suggestion/feedback": "spaceWrite",
+    "/app/suggestion/generate": "spaceWrite",
+    "/app/suggestion/generation/get": "spaceRead",
+    "/app/suggestion/handle": "spaceWrite",
+    "/app/suggestion/list": "spaceRead",
+    "/app/suggestion/settings/get": "spaceRead",
+    "/app/suggestion/settings/save": "spaceWrite"
   },
   "nodePrefix": "/app/plugin/",
   "serviceOperations": [

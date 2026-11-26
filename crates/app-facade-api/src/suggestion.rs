@@ -17,6 +17,16 @@ pub const HANDLE: &str = "/app/suggestion/handle";
 pub const FEEDBACK: &str = "/app/suggestion/feedback";
 pub const SETTINGS_GET: &str = "/app/suggestion/settings/get";
 pub const SETTINGS_SAVE: &str = "/app/suggestion/settings/save";
+pub const TARGETS: &[&str] = &[
+    GENERATE,
+    GENERATION_GET,
+    LIST,
+    DETAIL_GET,
+    HANDLE,
+    FEEDBACK,
+    SETTINGS_GET,
+    SETTINGS_SAVE,
+];
 
 /// Space-owned periodic generation policy. Missing storage uses this default;
 /// saving still requires an explicit boolean. Explicit generation is independent.

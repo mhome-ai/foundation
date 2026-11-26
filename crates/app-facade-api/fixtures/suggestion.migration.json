@@ -1,0 +1,154 @@
+[
+  {
+    "kind": "SETTINGS",
+    "tenantId": "tenant",
+    "spaceId": "space",
+    "settings": {
+      "enabled": false
+    }
+  },
+  {
+    "kind": "STATE",
+    "tenantId": "tenant",
+    "spaceId": "space",
+    "current": {
+      "run": {
+        "runId": "run",
+        "status": "SUCCEEDED",
+        "startedAt": 1000,
+        "finishedAt": 2500,
+        "suggestionIds": [
+          "pending",
+          "resolved"
+        ]
+      },
+      "invocation": {
+        "space": {
+          "tenant_id": "tenant",
+          "space_id": "space"
+        },
+        "runId": "run",
+        "operationId": "generate",
+        "trigger": {
+          "type": "EXPLICIT",
+          "userId": "alice"
+        },
+        "deadlineUnixMs": 9000
+      },
+      "focus": null,
+      "usage": {
+        "model_requests": 0,
+        "reported_model_requests": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cached_input_tokens": null,
+        "reasoning_output_tokens": null,
+        "peak_input_tokens": 0,
+        "credits": null,
+        "tool_calls": 0,
+        "window_truncations": 0,
+        "trimmed_messages": 0
+      }
+    },
+    "contextSummary": "Previous successful review"
+  },
+  {
+    "kind": "SUGGESTION",
+    "tenantId": "tenant",
+    "item": {
+      "type": "AUTOMATION",
+      "operation": "CREATE",
+      "title": "Evening lighting",
+      "summary": "Suggest a lower evening brightness",
+      "reasons": [
+        "Observed manual adjustments after the evening routine"
+      ],
+      "evidence": [
+        {
+          "sourceType": "BEHAVIOR",
+          "sourceId": "fixture-operation-1",
+          "occurredAt": 1000,
+          "excerpt": "The user selected brightness 30 after brightness 80"
+        }
+      ],
+      "script": {
+        "script": "name: Contract fixture\ntask: []\n",
+        "scripts": {
+          "lighting": "// Fixture source bundle\n",
+          "empty": ""
+        },
+        "sdkVersion": "test-sdk-1",
+        "parseResults": []
+      },
+      "id": "pending",
+      "spaceId": "space",
+      "runId": "run",
+      "version": 1,
+      "status": "PENDING",
+      "createdAt": 2000,
+      "updatedAt": 2000
+    }
+  },
+  {
+    "kind": "SUGGESTION",
+    "tenantId": "tenant",
+    "item": {
+      "type": "AUTOMATION",
+      "operation": "CREATE",
+      "title": "Evening lighting",
+      "summary": "Suggest a lower evening brightness",
+      "reasons": [
+        "Observed manual adjustments after the evening routine"
+      ],
+      "evidence": [
+        {
+          "sourceType": "BEHAVIOR",
+          "sourceId": "fixture-operation-1",
+          "occurredAt": 1000,
+          "excerpt": "The user selected brightness 30 after brightness 80"
+        }
+      ],
+      "script": {
+        "script": "name: Contract fixture\ntask: []\n",
+        "scripts": {
+          "lighting": "// Fixture source bundle\n",
+          "empty": ""
+        },
+        "sdkVersion": "test-sdk-1",
+        "parseResults": []
+      },
+      "id": "resolved",
+      "spaceId": "space",
+      "runId": "run",
+      "version": 1,
+      "status": "RESOLVED",
+      "createdAt": 2000,
+      "updatedAt": 3000,
+      "resolution": {
+        "action": "APPLY",
+        "operationId": "fixture-apply",
+        "handledAt": 3000,
+        "actor": {
+          "kind": "user",
+          "userId": "fixture-user"
+        },
+        "resourceIds": {
+          "automationId": "fixture-automation"
+        },
+        "result": {
+          "status": "partial",
+          "data": {
+            "automationId": "fixture-automation",
+            "saved": true
+          },
+          "warnings": [
+            {
+              "code": "ENABLE_FAILED",
+              "message": "Saved, but enabling failed"
+            }
+          ]
+        }
+      }
+    }
+  }
+]

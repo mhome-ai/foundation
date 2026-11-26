@@ -385,3 +385,50 @@ fn extension_content_cannot_shadow_common_fields_or_misdeclare_its_type() {
         assert!(candidate.validate().is_err());
     }
 }
+
+#[test]
+fn suggestion_routes_require_space_authority_and_record_only_declared_mutations() {
+    use app_facade_api::{
+        authorization::{self, OperationPolicy},
+        recording,
+    };
+    for target in TARGETS {
+        let write = [GENERATE, HANDLE, FEEDBACK, SETTINGS_SAVE].contains(target);
+        assert_eq!(
+            authorization::required(target),
+            Some(if write {
+                OperationPolicy::SpaceWrite
+            } else {
+                OperationPolicy::SpaceRead
+            })
+        );
+        assert!(!authorization::allows_service(target));
+        assert_eq!(recording::selected(target), write);
+    }
+    let records: Vec<Value> =
+        serde_json::from_str(include_str!("../fixtures/suggestion.migration.json")).unwrap();
+    for record in records {
+        match record["kind"].as_str().unwrap() {
+            "SUGGESTION" => serde_json::from_value::<AutomationSuggestion>(record["item"].clone())
+                .unwrap()
+                .validate()
+                .unwrap(),
+            "STATE" => {
+                serde_json::from_value::<SuggestionRun>(record["current"]["run"].clone())
+                    .unwrap()
+                    .validate()
+                    .unwrap();
+                serde_json::from_value::<conversation_api::execution::SuggestionInvocationContext>(
+                    record["current"]["invocation"].clone(),
+                )
+                .unwrap()
+                .validate()
+                .unwrap();
+            }
+            "SETTINGS" => {
+                serde_json::from_value::<SuggestionSettings>(record["settings"].clone()).unwrap();
+            }
+            _ => panic!("unknown fixture kind"),
+        }
+    }
+}

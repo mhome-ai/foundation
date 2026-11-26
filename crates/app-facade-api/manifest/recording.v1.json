@@ -232,6 +232,50 @@
       ],
       "output": [],
       "hook": "circadianDelete"
+    },
+    {
+      "target": "/app/suggestion/generate",
+      "event": "suggestion.generate",
+      "input": [],
+      "output": [
+        "accepted",
+        "run"
+      ]
+    },
+    {
+      "target": "/app/suggestion/handle",
+      "event": "suggestion.handle",
+      "input": [
+        "suggestionId",
+        "expectedVersion",
+        "action"
+      ],
+      "output": [
+        "automationId",
+        "enabled"
+      ]
+    },
+    {
+      "target": "/app/suggestion/feedback",
+      "event": "suggestion.dismiss",
+      "input": [
+        "suggestionId",
+        "expectedVersion"
+      ],
+      "output": [
+        "id",
+        "status"
+      ]
+    },
+    {
+      "target": "/app/suggestion/settings/save",
+      "event": "suggestion.settings",
+      "input": [
+        "enabled"
+      ],
+      "output": [
+        "enabled"
+      ]
     }
   ],
   "deviceCommands": {
