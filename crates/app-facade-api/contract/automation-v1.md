@@ -62,7 +62,7 @@ An already absent and cleaned definition is a completed delete target.
   A started external call without a result is uncertain, not a confirmed failure.
 - `/app/automation/diagnostic/get` takes `{automationId, cursor?, limit?}` and returns
   `{diagnostics, nextCursor}`. The default page size is 50, with a maximum of 100.
-  Follow `nextCursor` until absent, including when a filtered page is empty.
+  Follow `nextCursor` until absent.
   Cursors are opaque and bound to the authorized Space and Automation. Metadata
   is ordered by frozen completion time (capture time while active), then thread and
   raw instance identity, all newest first. Each thread exposes its latest 10 retained
