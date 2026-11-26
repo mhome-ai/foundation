@@ -1536,7 +1536,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.160.0"
+version = "1.161.0"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -1565,7 +1565,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-ble-commission"
-version = "0.18.15"
+version = "0.18.16"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
