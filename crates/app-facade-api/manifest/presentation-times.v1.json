@@ -53,8 +53,7 @@
       "diagnostics.*.timestamp",
       "diagnostics.*.startedAt",
       "diagnostics.*.finishedAt",
-      "diagnostics.*.availableAt",
-      "diagnostics.*.expiresAt"
+      "diagnostics.*.availableAt"
     ]
   },
   "/app/group/list": {

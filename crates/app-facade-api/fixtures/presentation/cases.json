@@ -354,8 +354,7 @@
           "startedAt": 90,
           "finishedAt": 100,
           "captured": false,
-          "availableAt": 100,
-          "expiresAt": 86400100
+          "availableAt": 100
         }
       ],
       "nextCursor": null
@@ -380,8 +379,7 @@
           "startedAt": "1970-01-01 00:00:00.090 +00:00 (UTC)",
           "finishedAt": "1970-01-01 00:00:00.100 +00:00 (UTC)",
           "captured": false,
-          "availableAt": "1970-01-01 00:00:00.100 +00:00 (UTC)",
-          "expiresAt": "1970-01-02 00:00:00.100 +00:00 (UTC)"
+          "availableAt": "1970-01-01 00:00:00.100 +00:00 (UTC)"
         }
       ],
       "nextCursor": null

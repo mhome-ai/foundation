@@ -64,14 +64,18 @@ An already absent and cleaned definition is a completed delete target.
   `{diagnostics, nextCursor}`. The default page size is 50, with a maximum of 100.
   Follow `nextCursor` until absent, including when a filtered page is empty.
   Cursors are opaque and bound to the authorized Space and Automation. Metadata
-  is ordered by availability (or capture time for active records), newest first.
-  Bodies are read separately; expired records are unavailable even before physical cleanup.
-  Terminal metadata includes `availableAt` and `expiresAt`. Retain failed/interrupted,
-  DEBUG and explicitly stopped/captured executions for 24 hours on cloud and 72 hours
-  locally, from the first completed publication. Reads and retries do not extend expiry.
-  Active captures and pending terminal publication are protected. Ordinary successful
+  is ordered by frozen completion time (capture time while active), then thread and
+  raw instance identity, all newest first. Each thread exposes its latest 10 retained
+  terminal instances across revisions. Failed/interrupted, DEBUG and explicitly
+  stopped/captured executions share this quota; ordinary successful
   runs create no run-history event and retain no completed execution detail; their
   checkpoint objects are reclaimed asynchronously. Last-run state remains separate.
+  Active captures are additional. `availableAt` records first terminal publication;
+  there is no `expiresAt` or age expiry. Reads/retries and richer updates never refresh
+  terminal order. Internal storage may buffer about 20 records before batch trimming
+  to 10; periodic cleanup handles lower volume and failed object deletion. Buffered
+  older terminal records are unavailable through both list and direct-read APIs.
+  Active and pending-publication bytes are protected until settlement/acknowledgement.
 - `/app/automation/diagnostic/read` takes the execution identity and optional
   `cursor`, and returns `{logs, nextCursor}`. Follow the opaque cursor for older
   events. Pages contain up to 100 events with a target size of 256 KiB; a single
