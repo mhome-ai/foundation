@@ -81,6 +81,7 @@ const FORWARD_PREFIXES: &[&str] = &[
 ];
 
 const STORED_SCRIPT_SAVE: &[&str] = &[
+    "/app/suggestion/handle",
     "/app/automation/snapshot/rollback",
     "/app/presentation/automation/overview/save",
     "/app/presentation/automation/copy",

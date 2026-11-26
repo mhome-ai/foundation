@@ -240,5 +240,19 @@
     "payload": {},
     "operation": "hubMigration",
     "totalMs": 600000
+  },
+  {
+    "target": "/app/suggestion/handle",
+    "payload": {},
+    "operation": "scriptSave",
+    "totalMs": 60000,
+    "lionWaitMs": 90000
+  },
+  {
+    "target": "/dispatch/app/suggestion/handle",
+    "payload": {},
+    "operation": "scriptSave",
+    "totalMs": 60000,
+    "lionWaitMs": 90000
   }
 ]
