@@ -20,7 +20,7 @@ llm-api = { package = "mhome-llm-api", version = "=3.5.1", path = "../llm-api" }
 person-api = { package = "mhome-person-api", version = "=1.2.1", path = "../person-api" }
 core-api = { package = "mhome-core-api", version = "=1.79.2", path = "../core-api" }
 artifact-api = { package = "mhome-artifact-api", version = "=1.16.1", path = "../artifact" }
-conversation-api = { package = "mhome-conversation-api", version = "=5.8.0", path = "../conversation-api" }
+conversation-api = { package = "mhome-conversation-api", version = "=5.8.1", path = "../conversation-api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"

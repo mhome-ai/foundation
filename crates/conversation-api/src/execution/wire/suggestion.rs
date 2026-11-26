@@ -24,7 +24,7 @@ pub enum SuggestionPayload {
         #[serde(deserialize_with = "deserialize_closed")]
         facts: OperationalContext,
         #[serde(deserialize_with = "deserialize_closed")]
-        llm_plan: LlmExecutionPlan,
+        llm_plan: Box<LlmExecutionPlan>,
     },
     #[serde(deserialize_with = "crate::execution::deserialize_empty_variant")]
     Cancel,
