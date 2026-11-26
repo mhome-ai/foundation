@@ -1,6 +1,6 @@
 [package]
 name = "mhome-ble-commission"
-version = "0.18.17"
+version = "0.18.18"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
