@@ -1367,6 +1367,20 @@
       },
       "minProperties": 1,
       "additionalProperties": false
+    },
+    "SuggestionScheduleState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "intervalStartedAt"
+      ],
+      "properties": {
+        "intervalStartedAt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      }
     }
   }
 }

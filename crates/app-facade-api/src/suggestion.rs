@@ -69,6 +69,25 @@ impl SuggestionSettings {
     }
 }
 
+/// Durable automatic interval origin. Initialized once when the backend first
+/// observes an enabled Space, then advanced only by an admitted automatic run.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SuggestionScheduleState {
+    pub interval_started_at: u64,
+}
+impl SuggestionScheduleState {
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if !timestamp(self.interval_started_at) {
+            return Err("Invalid Suggestion automatic interval origin");
+        }
+        Ok(())
+    }
+    pub fn is_due(&self, now: u64, settings: &SuggestionSettings) -> bool {
+        settings.enabled && now.saturating_sub(self.interval_started_at) >= settings.interval_ms()
+    }
+}
+
 /// Update only supplied fields, at the Space backend. Null is not a reset value.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

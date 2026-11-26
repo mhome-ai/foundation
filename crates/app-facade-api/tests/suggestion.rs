@@ -449,6 +449,10 @@ fn suggestion_routes_require_space_authority_and_record_only_declared_mutations(
                 .validate()
                 .unwrap();
             }
+            "SCHEDULE" => {
+                serde_json::from_value::<SuggestionScheduleState>(record["schedule"].clone())
+                    .unwrap().validate().unwrap();
+            }
             "SETTINGS" => {
                 serde_json::from_value::<SuggestionSettings>(record["settings"].clone())
                     .unwrap()
@@ -458,4 +462,25 @@ fn suggestion_routes_require_space_authority_and_record_only_declared_mutations(
             _ => panic!("unknown fixture kind"),
         }
     }
+}
+
+#[test]
+fn automatic_schedule_waits_a_full_interval_and_has_no_calendar_semantics() {
+    use app_facade_api::suggestion::{SuggestionScheduleState, SuggestionSettings};
+    let schedule = SuggestionScheduleState {
+        interval_started_at: 1_000,
+    };
+    schedule.validate().unwrap();
+    let mut settings = SuggestionSettings::default();
+    assert!(!schedule.is_due(1_000, &settings));
+    assert!(!schedule.is_due(1_000 + 6 * 60 * 60 * 1000 - 1, &settings));
+    assert!(schedule.is_due(1_000 + 6 * 60 * 60 * 1000, &settings));
+    assert!(!schedule.is_due(999, &settings));
+    settings.enabled = false;
+    assert!(!schedule.is_due(u64::MAX, &settings));
+    assert!(SuggestionScheduleState {
+        interval_started_at: 0
+    }
+    .validate()
+    .is_err());
 }

@@ -44,8 +44,7 @@ the public input and model output cannot select a payer. Billing failure must
 not silently select another member or account.
 
 This is a payment rule, not an authorization grant. A scheduled service is not
-an enrolled `ClientPrincipal::Space`, nor a user impersonation. Core/Lion must
-authenticate the internal admission, bind its Space and current execution
+an enrolled `ClientPrincipal::Space`, nor a user impersonation. Core/Lion use a backend-only scheduled entry, bind its Space and current execution
 ownership, check enabled settings/model/budget, and restrict reads and validation
 to that Space. Explicit generation additionally checks the requesting user's
 Space access. Shape validation cannot substitute for those checks.
@@ -218,6 +217,11 @@ null values are rejected. Existing enabled-only calls remain valid. Stored setti
 from before interval configuration use the same six-hour default.
 The switch controls periodic generation only; explicit authorized generation remains
 available. The UI places these controls in a separate Agent Suggestion Settings page.
+The first enabled backend observation initializes the durable interval origin;
+the first automatic run waits one full configured interval (six hours by default).
+`SuggestionScheduleState` stores only `intervalStartedAt`; it is initialized once
+and advanced atomically with each admitted automatic run. It is not a run and
+does not change generation/get before the first real run. Manual runs never write it.
 Automatic intervals are measured from the previous admitted automatic start,
 regardless of completion time or outcome. Explicit runs never reset that clock.
 This is an interval, not a calendar schedule or a promise of an exact next start.
@@ -237,7 +241,8 @@ script compilation, billing settlement, persistence or local/cloud integration.
 ## Space migration
 
 The `suggestion/data` DataSync category transfers portable values, not storage keys:
-`SETTINGS` carries `tenantId`, `spaceId` and settings; `STATE` carries that owner,
+`SETTINGS` carries `tenantId`, `spaceId` and settings; `SCHEDULE` carries the same
+owner and `schedule` (`SuggestionScheduleState`); `STATE` carries that owner,
 `current` (run, trusted invocation, optional focus and observed usage), and optional
 `contextSummary`; `SUGGESTION` carries `tenantId` and the full typed `item`, whose
 `spaceId` supplies its Space owner. The shared `suggestion.migration.json` fixture
