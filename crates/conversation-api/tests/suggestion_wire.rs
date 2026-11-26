@@ -67,6 +67,25 @@ fn cancellation_and_failure_are_terminal_messages_not_chat_commands() {
 }
 
 #[test]
+fn suggestion_generation_reuses_frozen_model_plan_validation() {
+    for (field, value) in [
+        ("backend", json!(" ")),
+        ("profile", json!("")),
+        ("model", json!("")),
+        ("context_window_tokens", json!(20_000)),
+        ("temperature", json!(-1)),
+        ("provider_preferences", json!([""])),
+    ] {
+        let mut input = fixture();
+        input["payload"]["payload"]["payload"]["llm_plan"]["route"][field] = value;
+        assert!(
+            Envelope::decode_json(&input.to_string()).is_err(),
+            "{field}"
+        );
+    }
+}
+
+#[test]
 fn nested_route_and_error_fields_remain_closed() {
     for (payload, field) in [
         (

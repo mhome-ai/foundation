@@ -1536,7 +1536,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "mhome-app-facade-api"
-version = "1.161.1"
+version = "1.162.0"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -1594,7 +1594,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-conversation-api"
-version = "5.8.1"
+version = "5.8.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -1610,7 +1610,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-core-api"
-version = "1.80.1"
+version = "1.80.2"
 dependencies = [
  "base64 0.22.1",
  "jsonschema",
@@ -1635,7 +1635,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-host-auth"
-version = "1.17.5"
+version = "1.17.6"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1706,7 +1706,7 @@ dependencies = [
 
 [[package]]
 name = "mhome-os-permissions"
-version = "1.5.5"
+version = "1.5.6"
 dependencies = [
  "cc",
  "mhome-core-api",

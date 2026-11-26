@@ -79,9 +79,16 @@ impl SuggestionMessage {
             .validate()
             .map_err(|e| ProtocolError::InvalidBinding(e.into()))?;
         match &self.payload {
-            SuggestionPayload::Generate { input, .. } if !input.is_object() => Err(
-                ProtocolError::InvalidBinding("Suggestion input must be an object".into()),
-            ),
+            SuggestionPayload::Generate {
+                input, llm_plan, ..
+            } => {
+                if !input.is_object() {
+                    return Err(ProtocolError::InvalidBinding(
+                        "Suggestion input must be an object".into(),
+                    ));
+                }
+                super::validate_llm_plan(llm_plan)
+            }
             SuggestionPayload::Completed { result, .. } if !result.is_object() => Err(
                 ProtocolError::InvalidBinding("Suggestion result must be an object".into()),
             ),

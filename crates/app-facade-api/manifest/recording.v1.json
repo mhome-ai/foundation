@@ -252,7 +252,8 @@
       ],
       "output": [
         "automationId",
-        "enabled"
+        "previousStatus",
+        "restoreIssue"
       ]
     },
     {
@@ -263,18 +264,19 @@
         "expectedVersion"
       ],
       "output": [
-        "id",
-        "status"
+        "id"
       ]
     },
     {
       "target": "/app/suggestion/settings/save",
       "event": "suggestion.settings",
       "input": [
-        "enabled"
+        "enabled",
+        "intervalMinutes"
       ],
       "output": [
-        "enabled"
+        "enabled",
+        "intervalMinutes"
       ]
     }
   ],

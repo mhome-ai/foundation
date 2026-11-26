@@ -1618,7 +1618,9 @@
       "status": "partial",
       "data": {
         "automationId": "a",
-        "enabled": false
+        "previousStatus": "new",
+        "status": "saved, but could not enable",
+        "restoreIssue": "FAILED"
       }
     },
     "expected": {
@@ -1627,8 +1629,9 @@
       "expectedVersion": 1,
       "action": "APPLY",
       "automationId": "a",
-      "enabled": false,
-      "status": "partial"
+      "status": "partial",
+      "previousStatus": "new",
+      "restoreIssue": "FAILED"
     }
   },
   {
@@ -1657,17 +1660,39 @@
   {
     "target": "/app/suggestion/settings/save",
     "input": {
-      "enabled": false
+      "enabled": false,
+      "intervalMinutes": 120
     },
     "outcome": {
       "status": "success",
       "data": {
-        "enabled": false
+        "enabled": false,
+        "intervalMinutes": 120
       }
     },
     "expected": {
       "event": "suggestion.settings",
       "enabled": false,
+      "status": "success",
+      "intervalMinutes": 120
+    }
+  },
+  {
+    "target": "/app/suggestion/settings/save",
+    "input": {
+      "intervalMinutes": 60
+    },
+    "outcome": {
+      "status": "success",
+      "data": {
+        "enabled": false,
+        "intervalMinutes": 60
+      }
+    },
+    "expected": {
+      "event": "suggestion.settings",
+      "enabled": false,
+      "intervalMinutes": 60,
       "status": "success"
     }
   }
