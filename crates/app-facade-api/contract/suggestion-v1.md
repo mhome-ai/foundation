@@ -102,7 +102,13 @@ The first Automation handler declares `APPLY`: a newly created Automation is
 saved and enabled; an update preserves the existing Automation's enabled or
 stopped state within the editing boundary. A deliberately stopped Automation must
 not be re-enabled by applying an update. UI labels state the resulting action.
-Save/enable failure or an unknown outcome is not a completed resolution.
+Handling is one-shot. After an admitted action ends, its Suggestion is `RESOLVED`
+regardless of success, partial success, failure or an unknown write outcome. For
+example, saving the new Automation and failing to enable it records a `partial`
+result with its Automation ID and the enable failure. The UI says what succeeded
+and failed and offers the ordinary Automation entrypoint. It does not leave a
+pending Suggestion, retry button, recovery task or compensation workflow.
+Enabling a new task-flow Automation does not mean executing its task immediately.
 
 Other type handlers declare their own actions. The common framework does not
 equate acceptance with enabling or running a resource. UI opens the already
@@ -134,19 +140,27 @@ unbounded run log, a retry service or catch-up runs for every missed period.
 
 ## Suggestion lifecycle and handling
 
-`PENDING` means available for review, `RESOLVED` means the declared type action
-completed, `DISMISSED` records rejection, and `EXPIRED` means no longer applicable.
+`PENDING` means available for review, `RESOLVED` means one-shot handling has ended,
+`DISMISSED` records rejection, and `EXPIRED` means no longer applicable.
 Resolved/dismissed records require a backend resolution. Pending/expired records
 have none. Resolution records the action, existing operation ID, time, canonical
-actor and resulting resource IDs/feedback. `RESOLVED` is not proof that a physical
-device reached its target. Failed or unknown outcomes cannot be marked resolved.
+actor, resulting resource IDs/feedback, and the full canonical `FacadeResponse`
+in `result`. Handling lifecycle and business outcome are independent: `RESOLVED`
+is not a success claim or proof that a physical device reached its target.
+An unknown outcome uses the existing error/problem representation, not a new
+status or recovery state. New action handlers always write `result`; older receipts
+without it remain readable and must not be inferred to have succeeded. Summary
+`outcome` projects only the recorded result status, without copying its details.
 
 Handling and feedback bind `suggestionId` plus `expectedVersion` to what the
 user reviewed. Business authorization and existing prepare/commit or idempotency
 protocols remain authoritative. The backend checks expiry, current resources and
-type-specific preconditions before performing the declared action. Repeated
-requests retain the same operation identity; unknown outcomes do not justify
-unconditional write replay. The model cannot create its own handler or action.
+type-specific preconditions before performing the declared action. An invalid or
+unauthorized request is rejected before admission; it does not consume the
+Suggestion. Once admitted, handling may run at most once. Repeated requests return
+the persisted receipt instead of repeating the business action; an unknown outcome
+does not justify write replay. A host must not claim exactly-once execution across
+an unconfirmed storage failure. The model cannot create its own handler or action.
 
 Next-run context includes current facts, pending Suggestions and recent decisions
 and actual results, plus a bounded summary. Do not append all old prompts forever
@@ -167,14 +181,23 @@ The following are contract declarations, not a current support inventory.
 | `/app/suggestion/generation/get` | `GenerationGetInput`: optional `runId` | `GenerationGetOutput`: current/latest run, or null before any run |
 | `/app/suggestion/list` | `ListInput`: type/status filters, cursor, limit (default 50, maximum 100) | `ListOutput`: summaries and optional cursor |
 | `/app/suggestion/detail/get` | `DetailInput`: `suggestionId` | Complete typed Suggestion |
-| `/app/suggestion/handle` | `HandleInput`: ID, expected version, declared action | Updated Suggestion summary on completed success |
+| `/app/suggestion/handle` | `HandleInput`: ID, expected version, declared action | Canonical business result, also stored in the resolution |
 | `/app/suggestion/feedback` | `FeedbackInput`: ID, expected version, `DISMISS`, optional comment | Updated Suggestion summary on completed success |
+| `/app/suggestion/settings/get` | Empty input | `SuggestionSettings` |
+| `/app/suggestion/settings/save` | `SuggestionSettings`: explicit `enabled` boolean | Saved `SuggestionSettings` |
 
 An explicit unknown or no-longer-retained run ID returns `NOT_FOUND`; it must not
 silently return an unrelated run. Lists are bounded and omit script bundles,
 evidence and resolutions; detail reads return the saved complete content.
-Business errors/partial or unknown outcomes use the canonical Facade result and
-must not be converted to a successful lifecycle transition.
+Business errors/partial or unknown outcomes use the canonical Facade result;
+marking handling finished must not replace that result with `success`.
+
+Settings belong to the authorized Space. Absent storage defaults to `enabled: true`.
+The switch controls periodic generation only; explicit authorized generation remains
+available. The UI places it in the existing Agent Settings page. Turning it off
+prevents future periodic admissions; it does not delete results or replay/cancel
+an admitted run. Settings follow the Space migration/deletion boundary. This adds
+no per-Suggestion timer, follow-up task or separate scheduler per output type.
 
 ## Conformance
 

@@ -130,6 +130,56 @@ fn resolutions_require_actual_backend_outcomes() {
         .is_err());
 }
 
+#[test]
+fn completed_handling_preserves_each_business_outcome_without_reopening() {
+    for result in [
+        json!({"status":"success", "data":{"automationId":"automation-1", "enabled":true}}),
+        json!({"status":"partial", "data":{"automationId":"automation-1", "saved":true},
+            "warnings":[{"code":"ENABLE_FAILED", "message":"Saved, but enabling failed"}]}),
+        json!({"status":"error", "error":{"code":"INVALID_SCRIPT", "message":"Script validation failed"}}),
+        json!({"status":"error", "error":{"code":"OUTCOME_UNKNOWN", "message":"The write outcome is unknown"}}),
+        json!({"status":"cancelled"}),
+    ] {
+        let mut value = suggestion_value();
+        value["status"] = json!("RESOLVED");
+        value["updatedAt"] = json!(3000);
+        value["resolution"] = json!({"action":"APPLY", "operationId":"apply-1", "handledAt":3000,
+            "actor":{"kind":"user","userId":"user-1"}, "result":result});
+        let suggestion: AutomationSuggestion = serde_json::from_value(value.clone()).unwrap();
+        suggestion.validate().unwrap();
+        let summary = serde_json::to_value(suggestion.summary()).unwrap();
+        assert_eq!(summary["status"], "RESOLVED");
+        assert_eq!(summary["outcome"], result["status"]);
+        for field in ["resolution", "script", "evidence", "reasons"] {
+            assert!(summary.get(field).is_none());
+        }
+        assert_eq!(serde_json::to_value(suggestion).unwrap(), value);
+    }
+}
+
+#[test]
+fn old_receipts_do_not_invent_a_success_outcome() {
+    let mut value = suggestion_value();
+    value["status"] = json!("RESOLVED");
+    value["resolution"] = json!({"action":"APPLY", "operationId":"apply-1", "handledAt":2000,
+        "actor":{"kind":"user","userId":"user-1"}});
+    let suggestion: AutomationSuggestion = serde_json::from_value(value.clone()).unwrap();
+    suggestion.validate().unwrap();
+    assert_eq!(suggestion.summary().outcome, None);
+    assert_eq!(serde_json::to_value(suggestion).unwrap(), value);
+}
+
+#[test]
+fn periodic_settings_default_on_but_save_requires_an_explicit_choice() {
+    assert!(SuggestionSettings::default().enabled);
+    assert!(serde_json::from_value::<SuggestionSettings>(json!({})).is_err());
+    assert!(
+        !serde_json::from_value::<SuggestionSettings>(json!({"enabled":false}))
+            .unwrap()
+            .enabled
+    );
+}
+
 // This type is deliberately test-only, not another registered production feature.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "SCREAMING_SNAKE_CASE", deny_unknown_fields)]
@@ -233,6 +283,8 @@ fn typed_valid(name: &str, value: Value) -> bool {
         "HandleInput" => checked!(HandleInput),
         "FeedbackInput" => checked!(FeedbackInput),
         "SuggestionRun" => checked!(SuggestionRun),
+        "SuggestionSettings" => serde_json::from_value::<SuggestionSettings>(value).is_ok(),
+        "SuggestionSummary" => serde_json::from_value::<SuggestionSummary>(value).is_ok(),
         _ => panic!("unhandled fixture {name}"),
     }
 }

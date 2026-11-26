@@ -4,6 +4,7 @@
 //! select a registered content model and validate it before persistence. A model
 //! supplies a draft; the backend owns identity, version, lifecycle and outcomes.
 
+use crate::{FacadeResponse, FacadeStatus};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -14,6 +15,22 @@ pub const LIST: &str = "/app/suggestion/list";
 pub const DETAIL_GET: &str = "/app/suggestion/detail/get";
 pub const HANDLE: &str = "/app/suggestion/handle";
 pub const FEEDBACK: &str = "/app/suggestion/feedback";
+pub const SETTINGS_GET: &str = "/app/suggestion/settings/get";
+pub const SETTINGS_SAVE: &str = "/app/suggestion/settings/save";
+
+/// Space-owned periodic generation policy. Missing storage uses this default;
+/// saving still requires an explicit boolean. Explicit generation is independent.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SuggestionSettings {
+    pub enabled: bool,
+}
+
+impl Default for SuggestionSettings {
+    fn default() -> Self {
+        Self { enabled: true }
+    }
+}
 
 /// A concrete excerpt, not a model confidence score or a substitute for evidence.
 /// The producer checks references against authorized reads; consumers do not
@@ -114,8 +131,9 @@ pub enum SuggestionStatus {
 }
 
 /// Resolution is supplied by the business handler, not by SuggestionGenerator.
-/// RESOLVED means the declared operation completed; it does not assert a physical
-/// device outcome. Failed/unknown operations do not resolve the Suggestion.
+/// RESOLVED means the one-shot handling has ended, not that every business step
+/// succeeded. Preserve its canonical full result, including partial/error outcomes;
+/// this is a receipt, not a recovery task. Legacy completed receipts may omit it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SuggestionResolution {
@@ -127,6 +145,8 @@ pub struct SuggestionResolution {
     pub resource_ids: BTreeMap<String, String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub feedback: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub result: Option<FacadeResponse>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -304,6 +324,9 @@ pub struct SuggestionSummary {
     pub title: String,
     pub summary: String,
     pub status: SuggestionStatus,
+    /// Outcome of the completed handling, independent of lifecycle status.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub outcome: Option<FacadeStatus>,
     pub created_at: u64,
     pub updated_at: u64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -319,6 +342,11 @@ impl<C: SuggestionContent> Suggestion<C> {
             title: self.draft.title.clone(),
             summary: self.draft.summary.clone(),
             status: self.status,
+            outcome: self
+                .resolution
+                .as_ref()
+                .and_then(|r| r.result.as_ref())
+                .map(FacadeResponse::status),
             created_at: self.created_at,
             updated_at: self.updated_at,
             expires_at: self.draft.expires_at,
