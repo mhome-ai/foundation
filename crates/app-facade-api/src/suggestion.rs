@@ -28,17 +28,92 @@ pub const TARGETS: &[&str] = &[
     SETTINGS_SAVE,
 ];
 
-/// Space-owned periodic generation policy. Missing storage uses this default;
-/// saving still requires an explicit boolean. Explicit generation is independent.
+pub const DEFAULT_SUGGESTION_INTERVAL_MINUTES: u32 = 360;
+
+const fn default_interval_minutes() -> u32 {
+    DEFAULT_SUGGESTION_INTERVAL_MINUTES
+}
+
+/// Space-owned periodic generation policy. The interval is measured between
+/// automatic start times; explicit generation does not change that clock.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SuggestionSettings {
     pub enabled: bool,
+    #[serde(default = "default_interval_minutes")]
+    pub interval_minutes: u32,
 }
 
 impl Default for SuggestionSettings {
     fn default() -> Self {
-        Self { enabled: true }
+        Self {
+            enabled: true,
+            interval_minutes: default_interval_minutes(),
+        }
+    }
+}
+
+impl SuggestionSettings {
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if self.interval_minutes == 0 {
+            return Err("Suggestion intervalMinutes must be a positive integer");
+        }
+        Ok(())
+    }
+
+    pub fn interval_ms(&self) -> u64 {
+        u64::from(self.interval_minutes) * 60_000
+    }
+}
+
+/// Update only supplied fields, at the Space backend. Null is not a reset value.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SaveSettingsInput {
+    #[serde(
+        default,
+        deserialize_with = "present",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub enabled: Option<bool>,
+    #[serde(
+        default,
+        deserialize_with = "present",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub interval_minutes: Option<u32>,
+}
+
+fn present<'de, T: Deserialize<'de>, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<T>, D::Error> {
+    T::deserialize(deserializer).map(Some)
+}
+
+impl SaveSettingsInput {
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if self.enabled.is_none() && self.interval_minutes.is_none() {
+            return Err("Provide enabled or intervalMinutes");
+        }
+        if self.interval_minutes == Some(0) {
+            return Err("Suggestion intervalMinutes must be a positive integer");
+        }
+        Ok(())
+    }
+
+    pub fn apply_to(
+        &self,
+        mut settings: SuggestionSettings,
+    ) -> Result<SuggestionSettings, &'static str> {
+        self.validate()?;
+        if let Some(enabled) = self.enabled {
+            settings.enabled = enabled;
+        }
+        if let Some(minutes) = self.interval_minutes {
+            settings.interval_minutes = minutes;
+        }
+        settings.validate()?;
+        Ok(settings)
     }
 }
 

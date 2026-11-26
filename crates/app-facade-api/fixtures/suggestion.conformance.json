@@ -747,6 +747,36 @@
       "value": {
         "enabled": false
       }
+    },
+    {
+      "name": "partial settings update {'enabled': False}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "enabled": false
+      }
+    },
+    {
+      "name": "partial settings update {'intervalMinutes': 60}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "intervalMinutes": 60
+      }
+    },
+    {
+      "name": "partial settings update {'enabled': True, 'intervalMinutes': 360}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "enabled": true,
+        "intervalMinutes": 360
+      }
+    },
+    {
+      "name": "stored interval",
+      "type": "SuggestionSettings",
+      "value": {
+        "enabled": false,
+        "intervalMinutes": 90
+      }
     }
   ],
   "invalid": [
@@ -1436,6 +1466,108 @@
         "createdAt": 2000,
         "updatedAt": 3000,
         "outcome": "unknown"
+      }
+    },
+    {
+      "name": "invalid settings update {}",
+      "type": "SaveSettingsInput",
+      "value": {}
+    },
+    {
+      "name": "invalid settings update {'enabled': None}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "enabled": null
+      }
+    },
+    {
+      "name": "invalid settings update {'intervalMinutes': None}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "intervalMinutes": null
+      }
+    },
+    {
+      "name": "invalid settings update {'intervalMinutes': 0}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "intervalMinutes": 0
+      }
+    },
+    {
+      "name": "invalid settings update {'intervalMinutes': -1}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "intervalMinutes": -1
+      }
+    },
+    {
+      "name": "invalid settings update {'intervalMinutes': 1.5}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "intervalMinutes": 1.5
+      }
+    },
+    {
+      "name": "invalid settings update {'intervalMinutes': 4294967296}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "intervalMinutes": 4294967296
+      }
+    },
+    {
+      "name": "invalid settings update {'intervalMinutes': '360'}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "intervalMinutes": "360"
+      }
+    },
+    {
+      "name": "invalid settings update {'enabled': True, 'spaceId': 'other'}",
+      "type": "SaveSettingsInput",
+      "value": {
+        "enabled": true,
+        "spaceId": "other"
+      }
+    },
+    {
+      "name": "invalid stored interval 0",
+      "type": "SuggestionSettings",
+      "value": {
+        "enabled": true,
+        "intervalMinutes": 0
+      }
+    },
+    {
+      "name": "invalid stored interval -1",
+      "type": "SuggestionSettings",
+      "value": {
+        "enabled": true,
+        "intervalMinutes": -1
+      }
+    },
+    {
+      "name": "invalid stored interval 1.5",
+      "type": "SuggestionSettings",
+      "value": {
+        "enabled": true,
+        "intervalMinutes": 1.5
+      }
+    },
+    {
+      "name": "invalid stored interval 4294967296",
+      "type": "SuggestionSettings",
+      "value": {
+        "enabled": true,
+        "intervalMinutes": 4294967296
+      }
+    },
+    {
+      "name": "invalid stored interval None",
+      "type": "SuggestionSettings",
+      "value": {
+        "enabled": true,
+        "intervalMinutes": null
       }
     }
   ]

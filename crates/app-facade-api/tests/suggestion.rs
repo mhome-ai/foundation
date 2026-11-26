@@ -172,12 +172,35 @@ fn old_receipts_do_not_invent_a_success_outcome() {
 #[test]
 fn periodic_settings_default_on_but_save_requires_an_explicit_choice() {
     assert!(SuggestionSettings::default().enabled);
+    assert_eq!(SuggestionSettings::default().interval_minutes, 360);
+    assert_eq!(SuggestionSettings::default().interval_ms(), 21_600_000);
     assert!(serde_json::from_value::<SuggestionSettings>(json!({})).is_err());
     assert!(
         !serde_json::from_value::<SuggestionSettings>(json!({"enabled":false}))
             .unwrap()
             .enabled
     );
+}
+
+#[test]
+fn settings_updates_preserve_unspecified_fields_and_accept_existing_callers() {
+    let saved = SuggestionSettings {
+        enabled: false,
+        interval_minutes: 90,
+    };
+    let enabled: SaveSettingsInput = serde_json::from_value(json!({"enabled":true})).unwrap();
+    let updated = enabled.apply_to(saved).unwrap();
+    assert!(updated.enabled);
+    assert_eq!(updated.interval_minutes, 90);
+    let interval: SaveSettingsInput =
+        serde_json::from_value(json!({"intervalMinutes":360})).unwrap();
+    let updated = interval.apply_to(updated).unwrap();
+    assert!(updated.enabled);
+    assert_eq!(updated.interval_minutes, 360);
+    let old: SuggestionSettings = serde_json::from_value(json!({"enabled":false})).unwrap();
+    assert!(!old.enabled);
+    assert_eq!(old.interval_minutes, 360);
+    assert!(SaveSettingsInput::default().apply_to(updated).is_err());
 }
 
 // This type is deliberately test-only, not another registered production feature.
@@ -283,7 +306,8 @@ fn typed_valid(name: &str, value: Value) -> bool {
         "HandleInput" => checked!(HandleInput),
         "FeedbackInput" => checked!(FeedbackInput),
         "SuggestionRun" => checked!(SuggestionRun),
-        "SuggestionSettings" => serde_json::from_value::<SuggestionSettings>(value).is_ok(),
+        "SuggestionSettings" => checked!(SuggestionSettings),
+        "SaveSettingsInput" => checked!(SaveSettingsInput),
         "SuggestionSummary" => serde_json::from_value::<SuggestionSummary>(value).is_ok(),
         _ => panic!("unhandled fixture {name}"),
     }
@@ -426,7 +450,10 @@ fn suggestion_routes_require_space_authority_and_record_only_declared_mutations(
                 .unwrap();
             }
             "SETTINGS" => {
-                serde_json::from_value::<SuggestionSettings>(record["settings"].clone()).unwrap();
+                serde_json::from_value::<SuggestionSettings>(record["settings"].clone())
+                    .unwrap()
+                    .validate()
+                    .unwrap();
             }
             _ => panic!("unknown fixture kind"),
         }

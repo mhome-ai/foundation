@@ -1340,11 +1340,32 @@
         "enabled": {
           "type": "boolean",
           "default": true
+        },
+        "intervalMinutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295,
+          "default": 360
         }
       },
       "required": [
         "enabled"
       ],
+      "additionalProperties": false
+    },
+    "SaveSettingsInput": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "intervalMinutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        }
+      },
+      "minProperties": 1,
       "additionalProperties": false
     }
   }

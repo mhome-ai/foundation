@@ -4,7 +4,8 @@
     "tenantId": "tenant",
     "spaceId": "space",
     "settings": {
-      "enabled": false
+      "enabled": false,
+      "intervalMinutes": 90
     }
   },
   {

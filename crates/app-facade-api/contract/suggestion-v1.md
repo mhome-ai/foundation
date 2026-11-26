@@ -202,7 +202,7 @@ The following are contract declarations, not a current support inventory.
 | `/app/suggestion/handle` | `HandleInput`: ID, expected version, declared action | Canonical business result, also stored in the resolution |
 | `/app/suggestion/feedback` | `FeedbackInput`: ID, expected version, `DISMISS`, optional comment | Updated Suggestion summary on completed success |
 | `/app/suggestion/settings/get` | Empty input | `SuggestionSettings` |
-| `/app/suggestion/settings/save` | `SuggestionSettings`: explicit `enabled` boolean | Saved `SuggestionSettings` |
+| `/app/suggestion/settings/save` | `SaveSettingsInput`: one or both of `enabled`, `intervalMinutes` | Complete saved `SuggestionSettings` |
 
 An explicit unknown or no-longer-retained run ID returns `NOT_FOUND`; it must not
 silently return an unrelated run. Lists are bounded and omit script bundles,
@@ -210,9 +210,18 @@ evidence and resolutions; detail reads return the saved complete content.
 Business errors/partial or unknown outcomes use the canonical Facade result;
 marking handling finished must not replace that result with `success`.
 
-Settings belong to the authorized Space. Absent storage defaults to `enabled: true`.
+Settings belong to the authorized Space. Absent storage defaults to `enabled: true`
+and `intervalMinutes: 360` (six hours). The interval is a positive integer number
+of minutes, bounded by the shared unsigned 32-bit field. Save updates only supplied
+fields at the backend; omitted fields retain their value, and empty changes or
+null values are rejected. Existing enabled-only calls remain valid. Stored settings
+from before interval configuration use the same six-hour default.
 The switch controls periodic generation only; explicit authorized generation remains
-available. The UI places it in the existing Agent Settings page. Turning it off
+available. The UI places these controls in a separate Agent Suggestion Settings page.
+Automatic intervals are measured from the previous admitted automatic start,
+regardless of completion time or outcome. Explicit runs never reset that clock.
+This is an interval, not a calendar schedule or a promise of an exact next start.
+Turning it off
 prevents future periodic admissions; it does not delete results or replay/cancel
 an admitted run. Settings follow the Space migration/deletion boundary. This adds
 no per-Suggestion timer, follow-up task or separate scheduler per output type.
