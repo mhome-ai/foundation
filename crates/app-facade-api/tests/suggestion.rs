@@ -430,7 +430,7 @@ fn suggestion_routes_require_space_authority_and_record_only_declared_mutations(
         assert_eq!(recording::selected(target), write);
     }
     let records: Vec<Value> =
-        serde_json::from_str(include_str!("../fixtures/suggestion.migration.json")).unwrap();
+        serde_json::from_str(app_facade_api::suggestion::MIGRATION_FIXTURES_JSON).unwrap();
     for record in records {
         match record["kind"].as_str().unwrap() {
             "SUGGESTION" => serde_json::from_value::<AutomationSuggestion>(record["item"].clone())

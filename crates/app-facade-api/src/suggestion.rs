@@ -17,6 +17,9 @@ pub const HANDLE: &str = "/app/suggestion/handle";
 pub const FEEDBACK: &str = "/app/suggestion/feedback";
 pub const SETTINGS_GET: &str = "/app/suggestion/settings/get";
 pub const SETTINGS_SAVE: &str = "/app/suggestion/settings/save";
+/// Canonical portable migration examples for cross-host conformance tests.
+/// Embedded from this package so consumers do not need a Foundation checkout.
+pub const MIGRATION_FIXTURES_JSON: &str = include_str!("../fixtures/suggestion.migration.json");
 pub const TARGETS: &[&str] = &[
     GENERATE,
     GENERATION_GET,
