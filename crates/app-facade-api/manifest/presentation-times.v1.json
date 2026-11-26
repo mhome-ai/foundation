@@ -52,7 +52,9 @@
     "ms": [
       "diagnostics.*.timestamp",
       "diagnostics.*.startedAt",
-      "diagnostics.*.finishedAt"
+      "diagnostics.*.finishedAt",
+      "diagnostics.*.availableAt",
+      "diagnostics.*.expiresAt"
     ]
   },
   "/app/group/list": {

@@ -60,8 +60,18 @@ An already absent and cleaned definition is a completed delete target.
   completed before the stop request keeps its actual outcome; ordinary success
   may already have discarded its details. Already performed effects are not undone.
   A started external call without a result is uncertain, not a confirmed failure.
-- `/app/automation/diagnostic/get` takes `{automationId}` and lists retained
-  execution metadata across all threads, newest first. Bodies are read separately.
+- `/app/automation/diagnostic/get` takes `{automationId, cursor?, limit?}` and returns
+  `{diagnostics, nextCursor}`. The default page size is 50, with a maximum of 100.
+  Follow `nextCursor` until absent, including when a filtered page is empty.
+  Cursors are opaque and bound to the authorized Space and Automation. Metadata
+  is ordered by availability (or capture time for active records), newest first.
+  Bodies are read separately; expired records are unavailable even before physical cleanup.
+  Terminal metadata includes `availableAt` and `expiresAt`. Retain failed/interrupted,
+  DEBUG and explicitly stopped/captured executions for 24 hours on cloud and 72 hours
+  locally, from the first completed publication. Reads and retries do not extend expiry.
+  Active captures and pending terminal publication are protected. Ordinary successful
+  runs create no run-history event and retain no completed execution detail; their
+  checkpoint objects are reclaimed asynchronously. Last-run state remains separate.
 - `/app/automation/diagnostic/read` takes the execution identity and optional
   `cursor`, and returns `{logs, nextCursor}`. Follow the opaque cursor for older
   events. Pages contain up to 100 events with a target size of 256 KiB; a single
