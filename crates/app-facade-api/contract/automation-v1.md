@@ -87,9 +87,9 @@ storage uses epoch milliseconds; Essential renders timestamps in Home time witho
 changing stored instants. Agent fetches source through the standard source interface;
 execution records never duplicate the original Plan or source.
 
-Normal success discards details. Failures/interruption, DEBUG and explicit capture
-retain at most ten instances per thread across revisions. Activity summaries have
-separate retention. Checkpoints persist only new immutable JSONL segments and a
+Execution records follow the time-based retention above, with no retained-count cap.
+Management events and last-run state remain separate; ordinary completed runs do not
+append activity history. Checkpoints persist only new immutable JSONL segments and a
 constant-size head reference, plus runtime memory. An empty segment is not written.
 The Plan is fetched by automation/thread and must match the run's revision; a missing
 or changed Plan ends the old run. Generation and ownership checks still apply.
