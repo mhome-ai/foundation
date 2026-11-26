@@ -50,6 +50,24 @@ ownership, check enabled settings/model/budget, and restrict reads and validatio
 to that Space. Explicit generation additionally checks the requesting user's
 Space access. Shape validation cannot substitute for those checks.
 
+## Cloud transport
+
+The existing authenticated execution envelope has a `suggestion` family with
+`generate`, `read`, `completed`, `failed` and `cancel` messages. Each carries the
+trusted Suggestion invocation and existing dispatch/session binding, without
+inventing a conversation identity. `generate` freezes the collected input, facts
+and model plan. `completed` carries registered result documents, candidate
+failures and measured usage. Input/result JSON remains opaque to the leaf wire
+crate; the shared generator and Space host validate the registered business
+models. Nested transport facts, plans, errors and usage remain strict.
+
+Lion authorizes callback reads against the stored active invocation and dispatch,
+then uses existing Facade authorization. Explicit callbacks retain the requesting
+user. Internal scheduled authorization is a separate host integration; recognizing
+its wire shape does not enable periodic generation or grant service authority.
+Terminal delivery is best-effort with bounded execution deadlines, without a
+second durable outbox, reasoning replay or write replay.
+
 ## Generic content and validation
 
 `SuggestionDraft<C>` contains title, summary, reasons, evidence, optional expiry,

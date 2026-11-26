@@ -3,6 +3,9 @@
 //! This crate defines envelopes but no WebSocket client, authentication, reconnect policy, or
 //! server. Transport implementations belong to their deployment repository.
 
+mod suggestion;
+pub use suggestion::{SuggestionFailure, SuggestionMessage, SuggestionPayload};
+
 /// Golden enqueue envelope used by deployment and Runtime conformance tests.
 pub const ENQUEUE_FIXTURE: &str = include_str!("../../../fixtures/execution/enqueue.v1.json");
 
@@ -284,6 +287,8 @@ pub enum AppFacadeResponse {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "family", content = "payload", rename_all = "snake_case")]
 pub enum Payload {
+    /// Independent background execution, with no conversation surface or checkpoint.
+    Suggestion(Box<SuggestionMessage>),
     /// Command entering Runtime.
     Command(Box<CommandRequest>),
     /// Immediate command-admission response.
@@ -370,6 +375,9 @@ impl Envelope {
                 "observation sequence must be positive".into(),
             ));
         }
+        if let Payload::Suggestion(message) = &self.payload {
+            message.validate()?;
+        }
         if let Some(context) = self.context() {
             validate_context(context)?;
         }
@@ -431,7 +439,8 @@ impl Envelope {
                 CommandResponse::Accepted { context, .. }
                 | CommandResponse::Rejected { context, .. } => Some(context),
             },
-            Payload::EventAck(_)
+            Payload::Suggestion(_)
+            | Payload::EventAck(_)
             | Payload::CheckpointPurge(_)
             | Payload::CheckpointPurgeAck(_)
             | Payload::AppFacadeResponse(_) => None,

@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "version": 1,
+    "message_id": "message-1",
+    "correlation_id": "correlation-1",
+    "causation_id": null,
+    "sent_at_unix_ms": 1700000000000,
+    "dispatch": {
+      "dispatch_id": "dispatch-1",
+      "agent_session_id": "agent-session-1"
+    }
+  },
+  "payload": {
+    "family": "suggestion",
+    "payload": {
+      "context": {
+        "space": {
+          "tenant_id": "tenant-1",
+          "space_id": "space-1"
+        },
+        "runId": "suggestion-run-1",
+        "operationId": "suggestion-operation-1",
+        "trigger": {
+          "type": "SCHEDULED"
+        },
+        "deadlineUnixMs": 1700000600000
+      },
+      "payload": {
+        "type": "generate",
+        "input": {
+          "space": {
+            "tenant_id": "tenant-1",
+            "space_id": "space-1"
+          },
+          "focus": null,
+          "evidence": [],
+          "pending": [],
+          "priorSummary": null
+        },
+        "facts": {
+          "user_space": "",
+          "identity": "",
+          "memory": "",
+          "integration_guide": "",
+          "installed_integrations": "",
+          "space_integrations": "",
+          "home_timezone": "UTC",
+          "display_units": {}
+        },
+        "llm_plan": {
+          "revision": "1700000000000",
+          "route": {
+            "backend": "openrouter",
+            "profile": "cloud_openrouter",
+            "model": "openai/gpt-5.4-mini",
+            "provider_preferences": [
+              "OpenAI"
+            ],
+            "temperature": 0.5,
+            "context_window_tokens": 128000,
+            "cache_control": true,
+            "reasoning_effort": null,
+            "model_snapshot": {
+              "capabilities": {
+                "input": [
+                  "image"
+                ],
+                "tool_calling": true,
+                "structured_output": true
+              },
+              "generation_support": {
+                "temperature": true,
+                "maxTokens": true,
+                "thinking": true,
+                "reasoningEfforts": [
+                  "high"
+                ],
+                "temperatureWithReasoning": true,
+                "temperatureMax": null,
+                "maxOutputTokens": null
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

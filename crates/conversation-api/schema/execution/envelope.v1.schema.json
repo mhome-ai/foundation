@@ -1650,6 +1650,22 @@
               "$ref": "#/$defs/app_facade_response"
             }
           }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "family",
+            "payload"
+          ],
+          "properties": {
+            "family": {
+              "const": "suggestion"
+            },
+            "payload": {
+              "$ref": "#/$defs/suggestion_message"
+            }
+          }
         }
       ]
     },
@@ -2268,6 +2284,361 @@
         },
         "message": {
           "$ref": "#/$defs/message"
+        }
+      }
+    },
+    "suggestion_Space": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "allOf": [
+            {
+              "pattern": "^[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000](?:[\\s\\S]*[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000])?$"
+            },
+            {
+              "not": {
+                "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+              }
+            }
+          ]
+        },
+        "space_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "allOf": [
+            {
+              "pattern": "^[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000](?:[\\s\\S]*[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000])?$"
+            },
+            {
+              "not": {
+                "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "tenant_id",
+        "space_id"
+      ],
+      "additionalProperties": false
+    },
+    "suggestion_Trigger": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "SCHEDULED"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "EXPLICIT"
+            },
+            "userId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "allOf": [
+                {
+                  "pattern": "^[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000](?:[\\s\\S]*[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000])?$"
+                },
+                {
+                  "not": {
+                    "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "userId"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "suggestion_SuggestionInvocationContext": {
+      "type": "object",
+      "properties": {
+        "space": {
+          "$ref": "#/$defs/suggestion_Space"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "allOf": [
+            {
+              "pattern": "^[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000](?:[\\s\\S]*[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000])?$"
+            },
+            {
+              "not": {
+                "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+              }
+            }
+          ]
+        },
+        "operationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "allOf": [
+            {
+              "pattern": "^[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000](?:[\\s\\S]*[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000])?$"
+            },
+            {
+              "not": {
+                "pattern": "[\\u0000-\\u001f\\u007f-\\u009f]"
+              }
+            }
+          ]
+        },
+        "trigger": {
+          "$ref": "#/$defs/suggestion_Trigger"
+        },
+        "deadlineUnixMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "traceparent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "space",
+        "runId",
+        "operationId",
+        "trigger",
+        "deadlineUnixMs"
+      ],
+      "additionalProperties": false
+    },
+    "suggestion_error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "message"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "invalid_request",
+            "unauthorized",
+            "unavailable",
+            "rate_limited",
+            "context_limit",
+            "credit_budget_exceeded",
+            "timeout",
+            "cancelled",
+            "internal"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "retry_after_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "suggestion_facts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "home_timezone",
+        "user_space",
+        "identity",
+        "memory",
+        "integration_guide",
+        "installed_integrations",
+        "space_integrations",
+        "display_units"
+      ],
+      "properties": {
+        "home_timezone": {
+          "type": "string"
+        },
+        "user_space": {
+          "type": "string"
+        },
+        "identity": {
+          "type": "string"
+        },
+        "memory": {
+          "type": "string"
+        },
+        "integration_guide": {
+          "type": "string"
+        },
+        "installed_integrations": {
+          "type": "string"
+        },
+        "space_integrations": {
+          "type": "string"
+        },
+        "display_units": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "suggestion_failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "error"
+      ],
+      "properties": {
+        "candidate_index": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "error": {
+          "$ref": "#/$defs/suggestion_error"
+        }
+      }
+    },
+    "suggestion_message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "payload"
+      ],
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/suggestion_SuggestionInvocationContext"
+        },
+        "payload": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "input",
+                "facts",
+                "llm_plan"
+              ],
+              "properties": {
+                "type": {
+                  "const": "generate"
+                },
+                "input": {
+                  "type": "object"
+                },
+                "facts": {
+                  "$ref": "#/$defs/suggestion_facts"
+                },
+                "llm_plan": {
+                  "$ref": "#/$defs/llm_execution_plan"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "const": "cancel"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "request"
+              ],
+              "properties": {
+                "type": {
+                  "const": "read"
+                },
+                "request": {
+                  "$ref": "#/$defs/facade_request"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "result",
+                "failures",
+                "usage"
+              ],
+              "properties": {
+                "type": {
+                  "const": "completed"
+                },
+                "result": {
+                  "type": "object"
+                },
+                "failures": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/suggestion_failure"
+                  }
+                },
+                "usage": {
+                  "$ref": "#/$defs/usage"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "error"
+              ],
+              "properties": {
+                "type": {
+                  "const": "failed"
+                },
+                "error": {
+                  "$ref": "#/$defs/suggestion_error"
+                }
+              }
+            }
+          ]
         }
       }
     }
