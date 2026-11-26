@@ -229,6 +229,46 @@
         "state",
         "outcome"
       ]
+    },
+    "instanceListInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "automationId"
+      ]
+    },
+    "diagnosticGetInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "automationId": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "limit": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "automationId"
+      ]
     }
   }
 }

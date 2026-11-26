@@ -47,3 +47,33 @@ fn closed_inputs_separate_rename_from_description_and_identity_from_display_cont
         Some(app_facade_api::authorization::OperationPolicy::SpaceWrite)
     );
 }
+
+#[test]
+fn diagnostic_metadata_and_instance_list_have_distinct_closed_input_schemas() {
+    let schema: serde_json::Value =
+        serde_json::from_str(include_str!("../schema/automation.v1.schema.json")).unwrap();
+    let compile = |name: &str| jsonschema::validator_for(&schema["$defs"][name]).unwrap();
+    let list = compile("instanceListInput");
+    let get = compile("diagnosticGetInput");
+    let identity = json!({"automationId":"a"});
+    assert!(list.is_valid(&identity));
+    assert!(get.is_valid(&identity));
+    for value in [
+        json!({"automationId":"a","cursor":"x"}),
+        json!({"automationId":"a","limit":10}),
+    ] {
+        assert!(!list.is_valid(&value));
+        assert!(get.is_valid(&value));
+    }
+    for value in [
+        json!({}),
+        json!({"automationId":" "}),
+        json!({"automationId":"a","threadId":0}),
+    ] {
+        assert!(!list.is_valid(&value));
+        assert!(!get.is_valid(&value));
+    }
+    for limit in [0, 101] {
+        assert!(!get.is_valid(&json!({"automationId":"a","limit":limit})));
+    }
+}
