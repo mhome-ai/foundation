@@ -278,3 +278,68 @@ fn warning_evidence_is_displayed_without_changing_full_or_outcome() {
         before
     );
 }
+
+#[test]
+fn suggestion_display_formats_only_declared_times_and_preserves_full_data() {
+    let time = 123_u64;
+    for (target, data, pointers) in [
+        (
+            "/app/suggestion/generate",
+            json!({"run":{"startedAt":time,"finishedAt":time}}),
+            vec!["/run/startedAt", "/run/finishedAt"],
+        ),
+        (
+            "/app/suggestion/generation/get",
+            json!({"run":{"startedAt":time,"finishedAt":time}}),
+            vec!["/run/startedAt", "/run/finishedAt"],
+        ),
+        (
+            "/app/suggestion/list",
+            json!({"items":[{"createdAt":time,"updatedAt":time,"expiresAt":time}]}),
+            vec![
+                "/items/0/createdAt",
+                "/items/0/updatedAt",
+                "/items/0/expiresAt",
+            ],
+        ),
+        (
+            "/app/suggestion/detail/get",
+            json!({"createdAt":time,"updatedAt":time,"expiresAt":time,"evidence":[{"occurredAt":time}],"resolution":{"handledAt":time},"script":{"script":"123","scripts":{"helper":"123"}}}),
+            vec![
+                "/createdAt",
+                "/updatedAt",
+                "/expiresAt",
+                "/evidence/0/occurredAt",
+                "/resolution/handledAt",
+            ],
+        ),
+        (
+            "/app/suggestion/feedback",
+            json!({"createdAt":time,"updatedAt":time,"expiresAt":time}),
+            vec!["/createdAt", "/updatedAt", "/expiresAt"],
+        ),
+    ] {
+        let full = serde_json::to_value(
+            response::present(target, data.clone(), ResponseDetail::Full).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(full["data"], data);
+        let rendered = serde_json::to_value(
+            response::present_in_timezone(
+                target,
+                data.clone(),
+                ResponseDetail::Essential,
+                "Asia/Shanghai",
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        let actual: Value = serde_yaml::from_str(rendered["data"].as_str().unwrap()).unwrap();
+        let mut expected = data;
+        for pointer in pointers {
+            *expected.pointer_mut(pointer).unwrap() =
+                json!("1970-01-01 08:00:00.123 +08:00 (Asia/Shanghai)");
+        }
+        assert_eq!(actual, expected, "{target}");
+    }
+}

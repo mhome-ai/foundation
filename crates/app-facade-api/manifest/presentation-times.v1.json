@@ -511,5 +511,40 @@
       "results.*.items.*.latest.event.timestamp",
       "results.*.items.*.latest.log.timestamp"
     ]
+  },
+  "/app/suggestion/generate": {
+    "ms": [
+      "run.startedAt",
+      "run.finishedAt"
+    ]
+  },
+  "/app/suggestion/generation/get": {
+    "ms": [
+      "run.startedAt",
+      "run.finishedAt"
+    ]
+  },
+  "/app/suggestion/list": {
+    "ms": [
+      "items.*.createdAt",
+      "items.*.updatedAt",
+      "items.*.expiresAt"
+    ]
+  },
+  "/app/suggestion/detail/get": {
+    "ms": [
+      "createdAt",
+      "updatedAt",
+      "expiresAt",
+      "evidence.*.occurredAt",
+      "resolution.handledAt"
+    ]
+  },
+  "/app/suggestion/feedback": {
+    "ms": [
+      "createdAt",
+      "updatedAt",
+      "expiresAt"
+    ]
   }
 }
