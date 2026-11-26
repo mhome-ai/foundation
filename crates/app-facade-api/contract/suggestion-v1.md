@@ -44,7 +44,8 @@ the public input and model output cannot select a payer. Billing failure must
 not silently select another member or account.
 
 This is a payment rule, not an authorization grant. A scheduled service is not
-an enrolled `ClientPrincipal::Space`, nor a user impersonation. Core/Lion use a backend-only scheduled entry, bind its Space and current execution
+an enrolled `ClientPrincipal::Space`, nor a user impersonation. Core/Lion use a
+backend-only scheduled entry, bind its Space and current execution
 ownership, check enabled settings/model/budget, and restrict reads and validation
 to that Space. Explicit generation additionally checks the requesting user's
 Space access. Shape validation cannot substitute for those checks.
@@ -60,10 +61,10 @@ failures and measured usage. Input/result JSON remains opaque to the leaf wire
 crate; the shared generator and Space host validate the registered business
 models. Nested transport facts, plans, errors and usage remain strict.
 
-Lion authorizes callback reads against the stored active invocation and dispatch,
-then uses existing Facade authorization. Explicit callbacks retain the requesting
-user. Internal scheduled authorization is a separate host integration; recognizing
-its wire shape does not enable periodic generation or grant service authority.
+Lion authorizes callback reads against the stored active invocation and dispatch.
+Explicit callbacks retain the requesting user's Facade authority; scheduled
+callbacks use the backend-only read port and the same business dispatch and
+presentation. Recognizing the wire shape alone grants no internal authority.
 Terminal delivery is best-effort with bounded execution deadlines, without a
 second durable outbox, reasoning replay or write replay.
 
