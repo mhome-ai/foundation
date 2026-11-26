@@ -451,7 +451,9 @@ fn suggestion_routes_require_space_authority_and_record_only_declared_mutations(
             }
             "SCHEDULE" => {
                 serde_json::from_value::<SuggestionScheduleState>(record["schedule"].clone())
-                    .unwrap().validate().unwrap();
+                    .unwrap()
+                    .validate()
+                    .unwrap();
             }
             "SETTINGS" => {
                 serde_json::from_value::<SuggestionSettings>(record["settings"].clone())
