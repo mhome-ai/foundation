@@ -54,6 +54,14 @@
     "contextSummary": "Previous successful review"
   },
   {
+    "kind": "SCHEDULE",
+    "tenantId": "tenant",
+    "spaceId": "space",
+    "schedule": {
+      "intervalStartedAt": 2000
+    }
+  },
+  {
     "kind": "SUGGESTION",
     "tenantId": "tenant",
     "item": {
