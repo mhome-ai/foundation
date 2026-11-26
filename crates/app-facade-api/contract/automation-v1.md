@@ -91,7 +91,6 @@ storage uses epoch milliseconds; Essential renders timestamps in Home time witho
 changing stored instants. Agent fetches source through the standard source interface;
 execution records never duplicate the original Plan or source.
 
-Execution records follow the time-based retention above, with no retained-count cap.
 Management events and last-run state remain separate; ordinary completed runs do not
 append activity history. Checkpoints persist only new immutable JSONL segments and a
 constant-size head reference, plus runtime memory. An empty segment is not written.
