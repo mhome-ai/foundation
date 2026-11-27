@@ -27,7 +27,8 @@ pub use media::{ArtifactUri, ImportArtifactRequest, MediaReference};
 pub use put::{PutArtifactRequest, PutArtifactResponse, PutArtifactValidationError};
 
 pub use resolve::{
-    ArtifactDelivery, ResolveArtifactRequest, ResolveArtifactResponse, ResolveArtifactResponseError,
+    ArtifactDelivery, ArtifactDeliveryOptions, ArtifactDeliveryRoute, ArtifactDeliveryTransport,
+    ResolveArtifactRequest, ResolveArtifactResponse, ResolveArtifactResponseError,
 };
 pub use upload::{
     PrepareArtifactUploadRequest, PrepareArtifactUploadResponse,
@@ -668,5 +669,12 @@ pub struct HostTlsPublicKey {
 }
 }
 
-/// Lifecycle operations use the same canonical, scope-checked URI as resolve.
-pub type DeleteArtifactRequest = ResolveArtifactRequest;
+/// Deletion accepts only the canonical URI, without delivery requirements.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArtifactUriRequest {
+    pub uri: String,
+}
+
+/// Delete only the selected canonical Artifact identity.
+pub type DeleteArtifactRequest = ArtifactUriRequest;

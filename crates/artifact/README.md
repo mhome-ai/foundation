@@ -13,6 +13,15 @@ embedding them in a control-plane message.
 Delivery is an explicit `DATA_URL` or `SIGNED_URL` union; a signed URL may point to a
 cloud object store or an authenticated local streaming endpoint.
 
+Resolve accepts optional `delivery: {"transport":"https","route":"local"|"cloud"}`.
+Omitting it preserves the runtime's existing delivery behavior. Explicit requests
+must return HTTPS on the selected route or fail; they never downgrade or switch
+routes. Local delivery reuses the Host's self-signed HTTPS endpoint and does not
+establish trust in external receivers. Cloud delivery preserves the storage owner,
+URI and retention, with a separately issued short-lived grant. Hub-owned cloud
+relay content is currently bounded to 1,523,712 bytes; resolution rejects larger
+content before issuing a URL. Deletion remains a separate URI-only request.
+
 Finite producers whose length and digest are unknown at start use
 `/artifact/upload/start`, one binary HTTP PUT, then `/artifact/upload/complete`
 or `/artifact/upload/cancel`. Start declares a byte limit; completion confirms

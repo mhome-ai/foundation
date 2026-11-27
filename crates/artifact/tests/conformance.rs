@@ -130,7 +130,7 @@ fn resolve_fixture_matches_rust_contract_and_schema() {
             "{} must match the resolve schema",
             case.name
         );
-        if case.value.get("delivery").is_some() {
+        if case.value.get("kind").is_some() {
             let response: ResolveArtifactResponse = serde_json::from_value(case.value)
                 .unwrap_or_else(|error| panic!("{} response must parse: {error}", case.name));
             response

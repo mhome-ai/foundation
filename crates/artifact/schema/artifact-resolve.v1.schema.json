@@ -22,6 +22,9 @@
           "type": "string",
           "pattern": "^meow-artifact://v3/",
           "maxLength": 2048
+        },
+        "delivery": {
+          "$ref": "#/$defs/deliveryOptions"
         }
       }
     },
@@ -201,6 +204,25 @@
           }
         }
       ]
+    },
+    "deliveryOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transport",
+        "route"
+      ],
+      "properties": {
+        "transport": {
+          "const": "https"
+        },
+        "route": {
+          "enum": [
+            "local",
+            "cloud"
+          ]
+        }
+      }
     }
   }
 }

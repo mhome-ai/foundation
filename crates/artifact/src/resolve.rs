@@ -8,6 +8,33 @@ use crate::{ArtifactKind, ArtifactReference};
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ResolveArtifactRequest {
     pub uri: String,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::deserialize_optional_non_null"
+    )]
+    pub delivery: Option<ArtifactDeliveryOptions>,
+}
+
+/// Explicit delivery requirements. Omission preserves the existing delivery behavior.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ArtifactDeliveryOptions {
+    pub transport: ArtifactDeliveryTransport,
+    pub route: ArtifactDeliveryRoute,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ArtifactDeliveryTransport {
+    Https,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ArtifactDeliveryRoute {
+    Local,
+    Cloud,
 }
 
 impl ResolveArtifactRequest {

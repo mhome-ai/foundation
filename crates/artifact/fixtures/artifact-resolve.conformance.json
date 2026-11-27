@@ -50,6 +50,26 @@
         "retention": "tmp",
         "expiresAtUnixMs": 2000000000000
       }
+    },
+    {
+      "name": "request-https-local",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": {
+          "transport": "https",
+          "route": "local"
+        }
+      }
+    },
+    {
+      "name": "request-https-cloud",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": {
+          "transport": "https",
+          "route": "cloud"
+        }
+      }
     }
   ],
   "invalid": [
@@ -84,6 +104,79 @@
         "delivery": {
           "type": "SIGNED_URL",
           "url": "https://example.test/artifact"
+        }
+      }
+    },
+    {
+      "name": "request-delivery-null",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": null
+      }
+    },
+    {
+      "name": "request-delivery-empty",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": {}
+      }
+    },
+    {
+      "name": "request-delivery-missing-route",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": {
+          "transport": "https"
+        }
+      }
+    },
+    {
+      "name": "request-delivery-missing-transport",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": {
+          "route": "local"
+        }
+      }
+    },
+    {
+      "name": "request-delivery-http",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": {
+          "transport": "http",
+          "route": "local"
+        }
+      }
+    },
+    {
+      "name": "request-delivery-auto",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": {
+          "transport": "https",
+          "route": "auto"
+        }
+      }
+    },
+    {
+      "name": "request-delivery-unknown-field",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": {
+          "transport": "https",
+          "route": "local",
+          "verifyCertificate": false
+        }
+      }
+    },
+    {
+      "name": "request-delivery-null-route",
+      "value": {
+        "uri": "meow-artifact://v3/tenant/scope/std/auto/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/eyJrIjoiaSIsIm0iOiJpbWFnZS9wbmciLCJzIjoxMiwidyI6MiwiaCI6M30",
+        "delivery": {
+          "transport": "https",
+          "route": null
         }
       }
     }

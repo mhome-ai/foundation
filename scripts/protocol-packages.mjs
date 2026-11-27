@@ -22,6 +22,7 @@ export const PROTOCOL_PACKAGES = Object.freeze({
       artifactResolve: "schema/artifact-resolve.v1.schema.json",
       artifactPut: "schema/artifact-put.v1.schema.json",
       artifactDelete: "schema/artifact-delete.v1.schema.json",
+      artifactDeleteRequest: "schema/artifact-delete-request.v1.schema.json",
       artifactImport: "schema/artifact-import.v1.schema.json",
       mediaReference: "schema/media-reference.v1.schema.json",
       artifactUpload: "schema/artifact-upload.v1.schema.json",

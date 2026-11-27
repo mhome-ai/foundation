@@ -389,6 +389,8 @@ pub struct ArtifactDeliveryProjectionRequest {
     /// Explicit compatibility request; native traffic must remain HTTPS.
     #[serde(default)]
     pub third_party: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transport: Option<artifact_api::ArtifactDeliveryTransport>,
     pub grant: String,
     pub expires_at_unix_ms: u64,
     pub client_id: String,
@@ -695,6 +697,7 @@ mod tests {
 
         let request = ArtifactDeliveryProjectionRequest {
             third_party: false,
+            transport: None,
             grant: "payload.signature".to_string(),
             expires_at_unix_ms: 123,
             client_id: "L:client".to_string(),

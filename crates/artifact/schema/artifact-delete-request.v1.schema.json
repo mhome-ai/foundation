@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mhome.ai/schema/artifact-delete-request.v1.schema.json",
+  "title": "mHome Artifact Delete Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "uri"
+  ],
+  "properties": {
+    "uri": {
+      "type": "string",
+      "pattern": "^meow-artifact://v3/",
+      "maxLength": 2048
+    }
+  }
+}

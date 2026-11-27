@@ -1,6 +1,6 @@
 {
   "manifest": "mhome.artifact.v1",
-  "contractVersion": "1.16.1",
+  "contractVersion": "1.17.0",
   "uriPrefix": "meow-artifact://v3/",
   "kinds": [
     "image",
@@ -33,7 +33,7 @@
   },
   "delete": {
     "target": "/artifact/delete",
-    "requestSchema": "schema/artifact-resolve.v1.schema.json#/$defs/request",
+    "requestSchema": "schema/artifact-delete-request.v1.schema.json",
     "responseSchema": "schema/artifact-delete.v1.schema.json",
     "schemaVersion": 1
   },
