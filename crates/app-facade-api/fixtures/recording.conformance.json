@@ -1305,32 +1305,6 @@
   {
     "target": "/app/capability/invoke/json",
     "input": {
-      "capabilityId": "basic.device.command.setCameraRecording",
-      "request": {
-        "device": "camera",
-        "mode": "off",
-        "internal": "private-request"
-      }
-    },
-    "outcome": {
-      "status": "success",
-      "data": {
-        "internal": "private-response"
-      }
-    },
-    "expected": {
-      "event": "device.command",
-      "capabilityId": "basic.device.command.setCameraRecording",
-      "parameters": {
-        "device": "camera",
-        "mode": "off"
-      },
-      "status": "success"
-    }
-  },
-  {
-    "target": "/app/capability/invoke/json",
-    "input": {
       "capabilityId": "basic.device.command.setCameraSetting",
       "request": {
         "device": "camera",

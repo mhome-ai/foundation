@@ -385,10 +385,6 @@
       "speed",
       "duration"
     ],
-    "setCameraRecording": [
-      "device",
-      "mode"
-    ],
     "setCameraSetting": [
       "device",
       "monitoringMode",
@@ -424,7 +420,6 @@
     "basic.device.command.setAudioMute": "setAudioMute",
     "basic.device.command.setAudioVolume": "setAudioVolume",
     "basic.device.command.setBrightness": "setBrightness",
-    "basic.device.command.setCameraRecording": "setCameraRecording",
     "basic.device.command.setCameraSetting": "setCameraSetting",
     "basic.device.command.setColor": "setColor",
     "basic.device.command.setColorTemperature": "setColorTemperature",
