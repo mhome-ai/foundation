@@ -1,5 +1,5 @@
 {
-  "contractVersion": "1.164.1",
+  "contractVersion": "1.165.0",
   "operations": {
     "/app/agent/context/get": "spaceRead",
     "/app/agent/conversation/get": "spaceRead",
@@ -273,6 +273,7 @@
     "/app/space/beta/update": "spaceManage",
     "/app/space/context/get": "spaceRead",
     "/app/space/create": "userWrite",
+    "/app/space/create/cancel": "userWrite",
     "/app/space/delete": "userWrite",
     "/app/space/delete/status": "userRead",
     "/app/space/detail/get": "spaceRead",

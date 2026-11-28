@@ -317,3 +317,34 @@ Agent Profile Markdown image ownership and canonical read-back are specified in
 [Agent Profile media](contract/agent-profile-media-v1.md).
 
 NFC management: [contract](contract/nfc-v1.md), [schema](schema/nfc.v1.schema.json).
+
+### Space creation identity and cancellation
+
+`/app/space/create` commits the initial Owner and default data before `ACTIVE`.
+A completed retry checks current Owner authority; it never restores a removed membership.
+The authenticated, unspaced `/app/space/create/cancel` takes `{ "requestId": "..." }`.
+It resolves the same server-derived Space identity without name searches or client-side ID derivation.
+For missing/incomplete creation it durably starts the normal deletion operation; for `ACTIVE`
+it returns `accepted: false`, the exact `spaceId`, `state: "ACTIVE"`, and `deleted: false`.
+The caller must use normal Space deletion for that completed Space. Other results expose
+`accepted`, nullable `operationId`, `spaceId`, `state`, `message`, and `deleted`; use
+`/app/space/delete/status` with the accepted operation ID to observe completion.
+Cancellation never renews a request or its retry deadline and remains available after expiry.
+
+Testing accounts are identified by the server's enabled testing-account registry. Their new
+creation request IDs have the form `e2e-v1:<Unix deadline seconds>:<canonical UUID>` with a
+maximum 24-hour creation window (one minute of clock skew). The whole string is immutable;
+changing its deadline changes the creation identity. All authentication methods enforce expiry.
+Ordinary opaque creation request IDs keep their existing identity derivation.
+
+Ordinary deletion retains only a terminal identity marker after business cleanup. For registered
+testing creations with a bounded request ID, only confirmed terminal identity/operation records
+receive AWS per-item `expireAt` TTL, after the creation cutoff and delayed final-sweep/in-flight
+budgets. Live, failed and uncertain work has no automatic TTL. Database TTL is asynchronous;
+Aliyun's table-wide TTL is not used for mixed ordinary/testing identities.
+
+All Lion instances sharing this Space store must enforce the expiring-request contract
+before terminal TTL records are produced. Upgrade both the public AWS service and local
+cloud instances together. An old writer that accepts expired IDs would invalidate the
+retention guarantee after collection; rolling back to that creation behavior is unsupported.
+Enabling database TTL alone does not expire rows that have no `expireAt` attribute.
