@@ -7,7 +7,7 @@ document is not a list of registered App/CLI routes. There is no legacy wire or
 stored-state fallback.
 
 [Operation authority](authority-v1.md) defines the signed grant, possession and
-renewal profile. [Product lifecycle](product-lifecycle-v1.md) defines the unique
+user-retry profile. [Product lifecycle](product-lifecycle-v1.md) defines the unique
 runtime owner and whole-product management/removal boundaries.
 
 ## Ownership and layers
@@ -86,7 +86,7 @@ and Space to this operation. Structurally valid JSON is not authorization. Proof
 use a nonempty printable ASCII encoding, at most 8192 bytes, and never appear in Debug, status or persisted
 public operation state. The SDK must not accept a caller-supplied `verified` flag.
 Expired authority cannot start new effects. Reconciliation of an already committed
-fact is distinct from starting another action. Renewing authority can only continue
+fact is distinct from starting another action. User-retried authority can only continue
 the exact original operation and cannot change its target or component set.
 
 The operation ID is an idempotency key, not authorization. Repeating the same
@@ -129,9 +129,13 @@ Already-networked products skip the BLE prelude. Pure BLE products use their
 protected operational carrier and do not invent an IP or Wi-Fi requirement.
 
 No promise to finish without the App applies before necessary inputs/authority
-have reached the device. Afterwards a reachable authorized device continues
-without keeping the commissioning App alive. Temporary transport or cloud loss
-never erases product ownership or silently opens another claim window.
+have reached the device. Afterwards the device owns execution while authority
+remains valid. An error, restart or expiry pauses unfinished work for explicit
+user retry; the product does not run an unattended authority-renewal loop. The
+retry reads and continues the same saved Plan with fresh authority, preserving
+confirmed roles and candidates. Temporary transport or cloud loss never erases
+product ownership or silently opens another claim window. Routine operational
+reconnect after completed onboarding follows its existing role lifecycle.
 
 ## Device-owned operation
 

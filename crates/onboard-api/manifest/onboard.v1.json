@@ -1,6 +1,6 @@
 {
   "protocol": "mhome.onboard",
-  "contractVersion": "0.2.0",
+  "contractVersion": "0.3.0",
   "wireVersion": 1,
   "schema": "schema/onboard.v1.schema.json",
   "fixtures": "fixtures/conformance.json",

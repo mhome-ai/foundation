@@ -19,6 +19,9 @@ See [onboarding v1](contract/onboarding-v1.md), the
 [product lifecycle](contract/product-lifecycle-v1.md). The claim types cover exact
 operation binding, bounded UTC-millisecond lifetimes and fresh challenge binding.
 `Product::operation_owner` selects the single installed runtime for all seven role sets.
+Failures, restart and expired authority pause unfinished work for explicit user
+retry of the same saved Plan. Necessary root possession proofs remain required;
+there is no unattended device authority-renewal loop.
 `validate()` checks structure
 and relationships only; signature verification and operation authority remain
 required at the device boundary. Fictional fixtures are not valid grants.

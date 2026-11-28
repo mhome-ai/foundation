@@ -19,13 +19,13 @@ generation + operation ID, including the exact descriptor, Plan, approving User
 and the admitted Hub/setup intent. This record is not a role credential or a new
 User session. Initial approval is durable before returning a usable operation
 grant. The same operation cannot acquire another target or different roles.
-Revoked, superseded, reset or completed admissions cannot be repurposed by renewal.
+Revoked, superseded, reset or completed admissions cannot be repurposed by retry.
 Retries of a completed admission may retrieve its original outcome without starting
 new effects. Completion does not itself terminate the ordinary role credentials.
 
 Use compact JWS with unpadded base64url and a three-member protected header:
 `alg`, `typ`, `kid`. Cloud signs RS256 using the existing configured Cloud signing
-key infrastructure; this does not create a second signing-key lifecycle. The
+key infrastructure; this does not create a second signing-key lifecycle.
 Unknown protected-header members and duplicate JSON member names are rejected.
 The accepted key set is environment-specific, provisioned or refreshed through the
 configured trusted Cloud. Honor disabled keys and key-set rollback checks. Never
@@ -51,13 +51,26 @@ component admissions also authenticate a fresh root-signed exchange, rather than
 redeeming a copied operation token as an unbound bearer credential. The signed
 plan authorizes only its declared components in the same Space.
 
-## Restart and renewal
+## User retry and root possession
 
-The approving User is independent of the commissioning phone. The device renews
-the same approved operation using its own root private key. It neither saves the
-User's login token nor requires the original App to remain alive. Root keys and
-role credential candidates stay in their protected owners' stores; raw operation
-proofs never enter the public operation journal or status.
+The approving User is independent of the commissioning phone. Once inputs and
+valid authority reach the product, the device owns execution. An error, restart
+or expired authority pauses unfinished onboarding; no unattended authority-renewal
+loop is required or exposed. A user explicitly retries through an authenticated
+App. The App reads the saved Plan and operation ID and requests fresh authority
+for that exact operation. It does not generate a replacement operation, execute
+role steps, clear healthy credentials or treat a timeout as confirmed absence.
+The issuer rechecks the actual Owner, original approval and current Hub/setup
+intent before approving the retry. A different authenticated Client can carry
+this exchange; possession of the original phone is not authority.
+
+The following challenge/possession exchange remains required for initial and
+user-retried approval and applicable role admission. Removing unattended renewal
+does not turn an operation grant into an unbound bearer credential. The App may
+carry the bounded exchange, but only the product holds its root private key.
+Root keys and role credential candidates stay in their protected owners' stores;
+User login tokens are not saved on the product, and raw operation proofs never
+enter the public operation journal or status.
 
 1. The device creates a fresh random 128-bit `deviceNonce` for this live exchange.
 2. Cloud returns a signed `AuthorityChallenge`, with type
@@ -74,10 +87,11 @@ proofs never enter the public operation journal or status.
    the approving User's current Owner authority and the admitted Hub/setup intent.
    Only then may it issue another short-lived grant for the exact same operation.
 
-A lost renewal reply does not change the approval, candidates or component grants;
-retry with a fresh challenge. Challenge consumption and the approved target are
-serialized by the issuer. Reset/revocation invalidates outstanding challenges.
-Knowing an operation ID or a challenge cannot renew or transfer a product.
+A lost approval reply does not change the approval, candidates or component grants;
+a later explicit user retry uses a fresh challenge for the same Plan. Challenge
+consumption and the approved target are serialized by the issuer. Reset/revocation
+invalidates outstanding challenges. Knowing an operation ID or a challenge cannot
+approve, continue or transfer a product.
 
 Native adapters use OS UTC. MCU uptime is never epoch time. An MCU obtains a
 trusted time anchor from a pinned Hub's fresh authenticated exchange or the
@@ -89,9 +103,16 @@ new effects. Ordinary role reconnect remains separate from this onboarding gate.
 
 Expired authority cannot initiate writes. Reading/reconciling already committed
 facts does not imply permission to issue another grant. On restart, load the
-pending operation, renew authority, reconcile its original candidate, and only
-then continue. Never create a replacement candidate merely because the old grant
-or transport session expired.
+pending operation and expose the paused result. On an explicit user retry, verify
+fresh authority for the same Plan, reconcile its original candidate, and only
+then continue. Reconciliation does not replay business actions. Never create a
+replacement candidate merely because the old grant or transport session expired.
+
+Clock unavailability pauses new effects and is reported as `clock_unavailable`.
+Do not persist a fabricated zero or uptime `updatedAtMs`; retain the last valid
+saved timestamp while reporting the current volatile blocked reason. Restoring
+time alone does not restart a paused operation: explicit retry with valid
+authority is still required. Ordinary role reconnect is unaffected.
 
 ## Component admission, including Wave
 
@@ -110,15 +131,17 @@ physical authorization for each declared role. In particular, a first-Hub cloud
 sync can outlast Wave's ordinary 120-second addition window. A product adapter
 therefore needs an explicit, verified operation-bound Wave admission path. It
 must not silently extend/reopen the public Wave window or skip its security
-checks by calling an internal `confirmed` hook. The existing independently added
-Wave path keeps its bounded physical window.
+checks by calling an internal `confirmed` hook. Standalone Wave physical pairing
+keeps its bounded window and still requires the approved product operation;
+physical pairing alone is never a Cloud-approval bypass.
 
 The operation-bound path authenticates both the product approval/root and the
 selected Core, then uses Wave's existing candidate persistence, grant commitment
 and authenticated access checks. It is not a local grant import or a public
-bypass API. A reboot after physical pairing requires renewed operation authority,
-not another physical pairing while the original approved operation is recoverable.
-Test this with first-Hub synchronization exceeding 120 seconds, restart between
+bypass API. After a reboot, an explicit user retry obtains fresh operation
+authority; it does not require another physical pairing while the original
+approved operation is recoverable. Test this with first-Hub synchronization
+exceeding 120 seconds, restart between
 components, expired/revoked approvals and lost Wave commit replies.
 
 Wave admission completes with confirmed credentials and authenticated protocol
@@ -131,5 +154,6 @@ Production acceptance includes wrong issuer/key/type/algorithm, disabled keys,
 wrong root/environment/generation/descriptor/Space/Hub, changed roles or Plan,
 expired/future/overlong authority, invalid signatures, replayed challenge, copied
 grants without root possession, Owner removal, superseded first-Hub intent and
-restart with uncertain credential commitment. Schema/fixture tests do not satisfy
-these cryptographic or installed-product acceptance checks.
+user retry after restart/expiry, unavailable time, and uncertain credential
+commitment. Schema/fixture tests do not satisfy these cryptographic or
+installed-product acceptance checks.

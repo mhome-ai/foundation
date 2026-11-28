@@ -74,7 +74,8 @@ impl OperationGrant {
     }
 }
 
-/// Public, signed Cloud challenge. Both nonces are fresh 128-bit random values.
+/// Public, signed Cloud challenge for initial approval or an explicit user retry.
+/// Both nonces are fresh 128-bit random values; this is not a renewal scheduler.
 /// The requesting device retains its own nonce only for this live exchange.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

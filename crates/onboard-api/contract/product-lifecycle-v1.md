@@ -11,7 +11,9 @@ roles. With a Host, the Host runtime owns the engine, endpoint and private journ
 Without a Host, a Pod runtime owns them when present; otherwise Wave firmware owns
 them. A combined firmware still instantiates one engine, not one per role. Native
 role processes communicate with that local owner through authenticated private
-IPC. The commissioning App never takes over this responsibility after a crash.
+IPC. The commissioning App never takes over this responsibility after a crash. It
+can explicitly request a retry with fresh authority for the saved operation;
+role sequencing and candidate reconciliation remain device-owned.
 
 | Roles | Operation owner |
 | --- | --- |
@@ -77,9 +79,11 @@ or recovery operation and sees its data consequences. Reestablishing an interrup
 first Hub still requires the matching online, cloud-approved setup intent.
 
 Healthy completed roles can exist while a later role is pending. The public product
-outcome remains incomplete and reports the blocked phase; retries reconcile the
-same facts. Do not describe this as a distributed transaction, promise all-or-nothing
-rollback, or clear healthy credentials just to hide partial progress.
+outcome remains incomplete and reports the blocked phase; explicit user retries
+reconcile the same facts. A restart or expired authority requires fresh approval
+for the saved Plan, not a background renewal worker or a new operation. Do not
+describe this as a distributed transaction, promise all-or-nothing rollback, or
+clear healthy credentials just to hide partial progress.
 
 Required product tests include all seven owner mappings, two local writers, old
 component unbind attempts, disable/reenable without re-enrollment, uncertain remove,

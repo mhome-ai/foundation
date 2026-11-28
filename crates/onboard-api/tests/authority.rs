@@ -96,7 +96,7 @@ fn grant_time_is_bounded_epoch_milliseconds_without_seconds_fallback() {
 }
 
 #[test]
-fn renewal_challenge_is_bound_to_the_live_device_nonce_and_exact_operation() {
+fn approval_challenge_is_bound_to_the_live_device_nonce_and_exact_operation() {
     let (product, plan, _, challenge) = context();
     let nonce = challenge.device_nonce.clone();
     assert!(challenge.validate(&product, &plan, &nonce, NOW).is_ok());
